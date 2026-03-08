@@ -1,0 +1,131 @@
+// Trajet d'Aragorn dans La Communauté de l'Anneau (Tome 1)
+// Coordonnées en % (x = gauche→droite, y = haut→bas) sur la carte "Ouest de la Terre du Milieu"
+// Ces valeurs peuvent être ajustées selon l'image réelle.
+
+export const aragornJourney = [
+  {
+    id: 0,
+    etape: 1,
+    scene: "comte",
+    lieu: "La Comté",
+    sous_lieu: "Hobbitebourg, Pays hobbit",
+    chapitre: "La Communauté de l'Anneau, I-2",
+    action:
+      "Grands-Pas surveille secrètement la Comté depuis les marges. Mandaté par Gandalf, il protège les hobbits qui ignorent encore leur destin et la nature de l'objet qu'ils transportent.",
+    allies: [],
+    x: 17,
+    y: 25,
+  },
+  {
+    id: 1,
+    etape: 2,
+    scene: "bree",
+    lieu: "Bree",
+    sous_lieu: "L'Auberge du Poney Fringant",
+    chapitre: "La Communauté de l'Anneau, I-9/10",
+    action:
+      "Aragorn se révèle aux hobbits sous son nom de Grands-Pas. Il prend la tête du groupe, les convainc de le suivre et propose de les guider jusqu'à Fondcombe à travers les terres sauvages.",
+    allies: ["Frodo Sacquet", "Samsagace Gamegie", "Meriadoc Brandebouc", "Peregrin Touque"],
+    x: 28,
+    y: 28,
+  },
+  {
+    id: 2,
+    etape: 3,
+    scene: "hauts_galgals",
+    lieu: "Hauts-des-Galgals",
+    sous_lieu: "Landes brumeuses et tumulus",
+    chapitre: "La Communauté de l'Anneau, I-8",
+    action:
+      "Traversée des terres hantées par les Galagals (Barrow-wights). Nuits de veille au milieu des tumulus. Aragorn maintient le groupe en sécurité malgré le danger des anciennes malédictions.",
+    allies: ["Frodo", "Sam", "Merry", "Pippin"],
+    x: 22,
+    y: 32,
+  },
+  {
+    id: 3,
+    etape: 4,
+    scene: "amon_sul",
+    lieu: "Amon Sûl",
+    sous_lieu: "Tour du Météore-Solitaire, en ruines",
+    chapitre: "La Communauté de l'Anneau, I-11",
+    action:
+      "Attaque nocturne des Neuf Cavaliers Noirs. Frodo cède à la tentation et enfile l'Anneau, révélant sa position. Il est poignardé par une lame de Morgul. Aragorn repousse les Nazgûl à la lumière des torches.",
+    allies: ["Frodo (grièvement blessé)", "Sam", "Merry", "Pippin"],
+    x: 37,
+    y: 30,
+  },
+  {
+    id: 4,
+    etape: 5,
+    scene: "gue_bruinen",
+    lieu: "Gué de Bruinen",
+    sous_lieu: "Frontière de Fondcombe",
+    chapitre: "La Communauté de l'Anneau, I-12",
+    action:
+      "Course désespérée vers Fondcombe. Glorfindel confie sa monture elfique à Frodo. Les flots du Bruinen, invoqués par Elrond, emportent les Cavaliers Noirs dans les eaux déchaînées.",
+    allies: ["Frodo (semi-inconscient)", "Glorfindel", "Sam", "Merry", "Pippin"],
+    x: 47,
+    y: 25,
+  },
+  {
+    id: 5,
+    etape: 6,
+    scene: "fondcombe",
+    lieu: "Fondcombe",
+    sous_lieu: "Demeure d'Elrond, Imladris",
+    chapitre: "La Communauté de l'Anneau, II-1/3",
+    action:
+      "Conseil d'Elrond. Aragorn dévoile Andúril, reforgée des fragments de Narsil. La Communauté de l'Anneau est constituée — neuf marcheurs face aux Neuf Cavaliers. Le destin de la Terre du Milieu est en jeu.",
+    allies: ["Frodo", "Gandalf le Gris", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin", "Elrond"],
+    x: 51,
+    y: 22,
+  },
+  {
+    id: 6,
+    etape: 7,
+    scene: "moria",
+    lieu: "Mines de la Moria",
+    sous_lieu: "Khazad-dûm, Pont de Durin",
+    chapitre: "La Communauté de l'Anneau, II-4/5",
+    action:
+      "Traversée des mines souterraines de l'ancien royaume nain. Combat dans la Salle de Mazarbul. Au Pont de Khazad-dûm, Gandalf affronte le Balrog : « Vous ne passerez pas ! » Il tombe dans l'abîme. Aragorn prend la tête de la Communauté.",
+    allies: ["Frodo", "Sam", "Merry", "Pippin", "Legolas", "Gimli", "Boromir"],
+    x: 57,
+    y: 40,
+  },
+  {
+    id: 7,
+    etape: 8,
+    scene: "lothlorien",
+    lieu: "Lothlórien",
+    sous_lieu: "Caras Galadhon, Forêt d'Or",
+    chapitre: "La Communauté de l'Anneau, II-6/8",
+    action:
+      "Refuge dans la Forêt d'Or des Elfes. Galadriel sonde chaque membre de la Communauté. Elle leur offre des dons précieux. Aragorn reçoit le fourreau d'Andúril, ouvrage de Galadriel elle-même, symbole de l'héritier d'Isildur.",
+    allies: ["Frodo", "Sam", "Merry", "Pippin", "Legolas", "Gimli", "Boromir", "Galadriel", "Celeborn"],
+    x: 63,
+    y: 48,
+  },
+  {
+    id: 8,
+    etape: 9,
+    scene: "parth_galen",
+    lieu: "Parth Galen — Amon Hen",
+    sous_lieu: "Rive ouest du Grand Fleuve (Anduin)",
+    chapitre: "La Communauté de l'Anneau, II-10",
+    action:
+      "Boromir cède à la corruption de l'Anneau et tente de le ravir à Frodo. Attaque massive des Uruk-Haï de Saroumane. Aragorn combat vaillamment. Boromir est mortellement blessé. Il lui rend hommage en serment de fidélité. Frodo et Sam fuient seuls. La Communauté se brise à jamais.",
+    allies: [
+      "Frodo (fuite solitaire)",
+      "Sam",
+      "Merry (capturé)",
+      "Pippin (capturé)",
+      "Legolas",
+      "Gimli",
+      "Boromir (mort au combat)",
+    ],
+    x: 62,
+    y: 58,
+  },
+];

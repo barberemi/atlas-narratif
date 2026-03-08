@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* ── Scrollbar masquée ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* ── Animations ── */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-slide-in {
+  animation: fadeSlideIn 0.4s ease forwards;
+}
+
+/* ── Slider personnalisé pour la timeline ── */
+.journey-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.journey-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--slider-color, #3f51b5);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--slider-color, #3f51b5) 70%, transparent), 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+}
+
+.journey-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.journey-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--slider-color, #3f51b5);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--slider-color, #3f51b5) 70%, transparent);
+}
+
+.journey-slider::-moz-range-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}

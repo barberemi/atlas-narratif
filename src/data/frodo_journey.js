@@ -1,0 +1,136 @@
+// Arc narratif de Frodo Sacquet dans La Communauté de l'Anneau (Tome 1)
+// Chronologie : de Cul-de-Sac à la rive est du Grand Fleuve
+// Couleur associée : #10B981 (vert émeraude — la Comté, la vie, l'innocence perdue)
+
+export const frodoJourney = [
+  {
+    id: 0,
+    etape: 1,
+    scene: "comte",
+    lieu: "La Comté — Cul-de-Sac",
+    sous_lieu: "Hobbitebourg, Comté",
+    chapitre: "La Communauté de l'Anneau, I-1/2",
+    action:
+      "Frodo hérite de l'Anneau Unique lors du départ de Bilbo. Gandalf lui révèle des années plus tard la vraie nature de l'objet. Frodo comprend qu'il ne peut rester chez lui — l'Anneau met la Comté en danger. Il décide de partir vers Fondcombe.",
+    allies: ["Samsagace Gamegie"],
+    x: 17,
+    y: 25,
+  },
+  {
+    id: 1,
+    etape: 2,
+    scene: "hauts_galgals",
+    lieu: "La Forêt des Hauts-des-Galgals",
+    sous_lieu: "Forêt Ancienne, puis Tom Bombadil",
+    chapitre: "La Communauté de l'Anneau, I-6/7",
+    action:
+      "Les hobbits s'aventurent dans la Vieille Forêt. Frodo est attiré dans un tumulus par un Galagal (Barrow-wight). Il résiste à la terreur, appelle Tom Bombadil. Celui-ci les libère et leur offre des armes des Hommes de l'Ouest.",
+    allies: ["Sam", "Merry", "Pippin", "Tom Bombadil"],
+    x: 21,
+    y: 31,
+  },
+  {
+    id: 2,
+    etape: 3,
+    scene: "bree",
+    lieu: "Bree",
+    sous_lieu: "L'Auberge du Poney Fringant",
+    chapitre: "La Communauté de l'Anneau, I-9/10",
+    action:
+      "Frodo attend Gandalf qui n'arrive pas. Il rencontre Grands-Pas (Aragorn). En enfilant accidentellement l'Anneau dans la salle commune, il révèle sa présence aux espions de Sauron. Grands-Pas les prend en charge.",
+    allies: ["Sam", "Merry", "Pippin", "Aragorn (Grands-Pas)"],
+    x: 28,
+    y: 28,
+  },
+  {
+    id: 3,
+    etape: 4,
+    scene: "amon_sul",
+    lieu: "Amon Sûl",
+    sous_lieu: "Tour du Météore-Solitaire",
+    chapitre: "La Communauté de l'Anneau, I-11",
+    action:
+      "Guet nocturne au sommet de la tour en ruines. Frodo cède à la tentation et enfile l'Anneau — entrant dans le monde des Ombres. Le Roi-Sorcier lui plante une lame de Morgul dans l'épaule. Il résiste à l'obscurité, mais le poison s'infiltre.",
+    allies: ["Sam", "Merry", "Pippin", "Aragorn"],
+    x: 37,
+    y: 30,
+  },
+  {
+    id: 4,
+    etape: 5,
+    scene: "gue_bruinen",
+    lieu: "Gué de Bruinen",
+    sous_lieu: "Frontière de Fondcombe",
+    chapitre: "La Communauté de l'Anneau, I-12",
+    action:
+      "Frodo, à demi-mort du venin de Morgul, est mis en selle sur Asfaloth, la monture de Glorfindel. Il galope vers le gué, les Neuf à ses trousses. Il défie le Roi-Sorcier : « Je vous défie ! » Les flots engloutissent les Nazgûl.",
+    allies: ["Glorfindel", "Sam", "Aragorn"],
+    x: 47,
+    y: 25,
+  },
+  {
+    id: 5,
+    etape: 6,
+    scene: "fondcombe",
+    lieu: "Fondcombe",
+    sous_lieu: "Demeure d'Elrond, Imladris",
+    chapitre: "La Communauté de l'Anneau, II-1/3",
+    action:
+      "Frodo est soigné par Elrond. Après sa guérison, il assiste au Conseil d'Elrond. Face à la querelle des races, il prend seul la parole : « Je prendrai l'Anneau, bien que je ne sache pas le chemin. » Il devient le Porteur officiel.",
+    allies: ["Gandalf", "Aragorn", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin", "Elrond", "Bilbo"],
+    x: 51,
+    y: 22,
+  },
+  {
+    id: 6,
+    etape: 7,
+    scene: "caradhras",
+    lieu: "Col de Caradhras",
+    sous_lieu: "Flancs de la Montagne Rouge",
+    chapitre: "La Communauté de l'Anneau, II-3",
+    action:
+      "La Communauté tente le col de Caradhras. Blizzard déchaîné par Saroumane. Frodo trébuche dans la neige, l'Anneau lui glisse au cou — Boromir le ramasse et le contemple une seconde de trop, avant de le rendre. Premier signe du danger.",
+    allies: ["Sam", "Gandalf", "Aragorn", "Legolas", "Gimli", "Boromir", "Merry", "Pippin"],
+    x: 55,
+    y: 30,
+  },
+  {
+    id: 7,
+    etape: 8,
+    scene: "moria",
+    lieu: "Mines de la Moria",
+    sous_lieu: "Khazad-dûm",
+    chapitre: "La Communauté de l'Anneau, II-4/5",
+    action:
+      "Dans les mines, Frodo est transpercé par la lance d'un Troll des Cavernes — sauvé par sa cotte de mailles en mithril, don de Bilbo. Il assiste à la chute de Gandalf au Pont de Khazad-dûm. Le monde bascule pour lui.",
+    allies: ["Sam", "Aragorn", "Legolas", "Gimli", "Boromir", "Merry", "Pippin"],
+    x: 57,
+    y: 40,
+  },
+  {
+    id: 8,
+    etape: 9,
+    scene: "lothlorien",
+    lieu: "Lothlórien",
+    sous_lieu: "Caras Galadhon, Forêt d'Or",
+    chapitre: "La Communauté de l'Anneau, II-6/8",
+    action:
+      "Dans le Lothlórien, Frodo regarde dans le Miroir de Galadriel. Il voit la Comté ravagée, l'Œil de Sauron, le feu de l'Anneau. Il offre l'Anneau à Galadriel. Elle refuse : « Je resterai Galadriel. » Il comprend qu'il doit porter ce fardeau seul.",
+    allies: ["Sam", "Aragorn", "Legolas", "Gimli", "Boromir", "Merry", "Pippin", "Galadriel"],
+    x: 63,
+    y: 48,
+  },
+  {
+    id: 9,
+    etape: 10,
+    scene: "parth_galen",
+    lieu: "Parth Galen — Rive de l'Anduin",
+    sous_lieu: "Rive ouest du Grand Fleuve",
+    chapitre: "La Communauté de l'Anneau, II-10",
+    action:
+      "Boromir tente de prendre l'Anneau de force. Frodo l'enfile et fuit. Seul, invisible dans le monde des Ombres, il voit l'Œil de Sauron se poser sur lui. Il choisit de traverser le fleuve avec Sam pour continuer seul vers le Mordor.",
+    allies: ["Sam (seul fidèle)"],
+    x: 64,
+    y: 60,
+  },
+];
