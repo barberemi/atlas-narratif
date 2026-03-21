@@ -1,21 +1,23 @@
 import { useState } from 'react';
-import mapImage from '../../assets/ouest_terre_du_milieu.jpg';
-import { loreDB } from '../../data/lore_database';
+import lotrMapImage from '../../assets/ouest_terre_du_milieu.jpg';
 
 /**
  * Carte multi-personnages.
  * Reçoit un tableau `characters`, chacun avec :
  *   { journey, currentStep, color, name }
+ * Reçoit un tableau `locations` avec : { id, name, coordinates: { x, y } }
+ * Reçoit `mapSrc` : data URL de la carte custom (ou null → fallback carte LOTR)
  * Chaque personnage a son propre tracé SVG et son marqueur animé.
  */
-export default function MapCanvas({ characters, onLocationClick }) {
+export default function MapCanvas({ characters, locations = [], onLocationClick, mapSrc = null }) {
+  const activeSrc = mapSrc ?? lotrMapImage;
   const [hoveredLoc, setHoveredLoc] = useState(null);
   return (
     <div className="relative w-full h-full overflow-hidden bg-stone-950">
       {/* Carte de fond */}
       <img
-        src={mapImage}
-        alt="Carte de l'Ouest de la Terre du Milieu"
+        src={activeSrc}
+        alt="Carte"
         className="absolute inset-0 w-full h-full object-cover select-none"
         draggable={false}
       />
@@ -74,8 +76,8 @@ export default function MapCanvas({ characters, onLocationClick }) {
         })}
       </svg>
 
-      {/* Pins de lieux — loreDB.locations */}
-      {loreDB.locations.map((loc) => {
+      {/* Pins de lieux */}
+      {locations.map((loc) => {
         const { x, y } = loc.coordinates;
         const isHovered = hoveredLoc === loc.id;
         return (

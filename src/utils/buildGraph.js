@@ -1,4 +1,4 @@
-import { loreDB } from '../data/lore_database';
+import { getLoreCache } from './entityUtils';
 
 // ── Couleurs par type de relation ───────────────────────────────────────────
 export const RELATION_COLORS = {
@@ -53,7 +53,7 @@ function nameIncludes(haystack, needle) {
  * Retourne : { central, satellites, edges } ou null si entité introuvable.
  */
 export function buildGraph(entityId) {
-  const { characters, locations, objects } = loreDB;
+  const { characters, locations, objects } = getLoreCache();
 
   let central = null;
   let centralType = null;
@@ -231,7 +231,7 @@ export function buildGraph(entityId) {
  * Retourne : { nodes, edges, degree, maxDegree }
  */
 export function buildFullGraph() {
-  const { characters, locations, objects } = loreDB;
+  const { characters, locations, objects } = getLoreCache();
 
   const nodes   = new Map();
   const edgeSet = new Set();

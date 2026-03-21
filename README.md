@@ -130,3 +130,13 @@ Toutes les données sont côté client, sans backend. La base de données (`lore
 - **Objets** : L'Anneau Unique, Narya, etc.
 
 Les voyages des personnages incluent les coordonnées cartographiques, les références aux chapitres, les descriptions narratives et les alliés présents à chaque étape.
+
+
+# A faire
+
+
+1- Ajouter des type de narration (Le voyage du héro, Structure en 3 actes, Story Circle ?)
+
+2- Arc emotionnel : Courbe de tension dramatique chapitre par chapitre, générée ou saisie manuellement
+
+9- Onboarding guidé pour nouveaux auteurs

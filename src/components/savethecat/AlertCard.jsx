@@ -1,5 +1,3 @@
-import { chaptersDB } from '../../data/save_the_cat_database';
-
 export default function AlertCard({ alert, isHovered, onHover }) {
   const isCritical = alert.severity === 'critical';
   const isMissing  = alert.type === 'missing';
@@ -35,7 +33,7 @@ export default function AlertCard({ alert, isHovered, onHover }) {
             className="text-[11px] px-2 py-0.5 rounded font-mono"
             style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#64748b' }}
           >
-            Ch.{chaptersDB.find(c => c.beats.includes(alert.beat.id))?.number}
+            Ch.{alert.chapterNumber}
           </span>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { BEATS, chaptersDB, getBeatActualPercent, getChapterPercent } from '../../data/save_the_cat_database';
+import { BEATS } from '../../data/beats_config';
 
 const FRISE_H   = 340;
 const BAR_TOP   = 225;
@@ -7,20 +7,27 @@ const BAR_H     = 10;
 const BEAT_SIZE = 28;
 const BEAT_STEP = 34;
 
-export default function Frise({ alerts, hoveredBeat, onHoverBeat }) {
+export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
   const [hoveredChapterId, setHoveredChapterId] = useState(null);
+
+  const total = chapters.length;
+  const getChapterPercent = (n) => ((n - 1 + 0.5) / total) * 100;
+  const getBeatActualPercent = (beatId) => {
+    const ch = chapters.find(c => c.beats.includes(beatId));
+    return ch ? ((ch.number - 1 + 0.5) / total) * 100 : null;
+  };
 
   const alertBeatIds = useMemo(() => new Set(alerts.map(a => a.beat.id)), [alerts]);
 
   const beatsByChapter = useMemo(() => {
     const map = {};
-    chaptersDB.forEach(ch => {
+    chapters.forEach(ch => {
       map[ch.number] = ch.beats
         .map(id => BEATS.find(b => b.id === id))
         .filter(Boolean);
     });
     return map;
-  }, []);
+  }, [chapters]);
 
   return (
     <div className="relative w-full select-none" style={{ height: FRISE_H }}>
@@ -51,7 +58,7 @@ export default function Frise({ alerts, hoveredBeat, onHoverBeat }) {
       ))}
 
       {/* ── Chapitres : lignes verticales + labels ── */}
-      {chaptersDB.map((ch) => {
+      {chapters.map((ch) => {
         const x       = getChapterPercent(ch.number);
         const chBeats = beatsByChapter[ch.number] || [];
         const lineTop = chBeats.length > 0
