@@ -6,6 +6,8 @@
 import {
   loreDB, timelineDB, chaptersDB, incoherencesDB,
   aragornJourney, gandalfJourney, frodoJourney,
+  groupsDB, plantsDB, arcPointsDB,
+  threadsDB, eventExtrasDB, characterArcsDB,
 } from '../data/lotr_seed_data';
 import { seedProject } from './seed.generic';
 
@@ -25,6 +27,12 @@ const DATA = {
     { key: 'gandalf', data: gandalfJourney },
     { key: 'frodo',   data: frodoJourney   },
   ],
+  groupsDB,
+  plantsDB,
+  arcPointsDB,
+  threadsDB,
+  eventExtrasDB,
+  characterArcsDB,
 };
 
 export async function seedLotr(db) {

@@ -1,13 +1,15 @@
-import { create } from 'zustand';
-import { getTimelineEvents } from '../db/queries';
+import { createEntityStore } from './createEntityStore';
+import {
+  getTimelineEvents,
+  insertTimelineEvent,
+  updateTimelineEvent,
+  deleteTimelineEvent,
+} from '../db/queries';
 
-export const useTimelineStore = create((set) => ({
-  events: null,
-
-  load: async (db, projectId) => {
-    const events = await getTimelineEvents(db, projectId);
-    set({ events });
-  },
-
-  reset: () => set({ events: null }),
-}));
+export const useTimelineStore = createEntityStore({
+  initialState: { events: null },
+  fetchFn:  async (db, projectId) => ({ events: await getTimelineEvents(db, projectId) }),
+  insertFn: insertTimelineEvent,
+  updateFn: updateTimelineEvent,
+  deleteFn: deleteTimelineEvent,
+});

@@ -79,10 +79,10 @@ function runSimulation(init, edges, centralId, setPositions, posRef) {
   return () => cancelAnimationFrame(frameId);
 }
 
-export function useGraphSimulation({ mode, graph, fullGraph, visibleFullEdges, setPositions, posRef }) {
+export function useGraphSimulation({ graph, setPositions, posRef }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (mode !== 'centered' || !graph) return;
+    if (!graph) return;
     const N    = graph.satellites.length;
     const NRel = (graph.relNodes ?? []).length;
     const init = { [graph.central.id]: { x: CX, y: CY, vx: 0, vy: 0 } };
@@ -104,21 +104,5 @@ export function useGraphSimulation({ mode, graph, fullGraph, visibleFullEdges, s
       };
     });
     return runSimulation(init, graph.edges, graph.central.id, setPositions, posRef);
-  }, [mode, graph]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (mode !== 'full') return;
-    const N = fullGraph.nodes.length;
-    const init = {};
-    fullGraph.nodes.forEach((node, i) => {
-      const angle = (i / N) * 2 * Math.PI;
-      init[node.id] = {
-        x: CX + 300 * Math.cos(angle) + (Math.random() - 0.5) * 40,
-        y: CY + 280 * Math.sin(angle) + (Math.random() - 0.5) * 40,
-        vx: 0, vy: 0,
-      };
-    });
-    return runSimulation(init, visibleFullEdges, null, setPositions, posRef);
-  }, [mode, fullGraph, visibleFullEdges]);
+  }, [graph]);
 }

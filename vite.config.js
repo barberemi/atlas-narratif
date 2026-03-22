@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// @vitest/globals → pas besoin d'importer describe/it/expect dans chaque test
+
 // Headers requis pour SharedArrayBuffer (nécessaire pour OPFS / PGlite)
 const crossOriginHeaders = {
   'Cross-Origin-Opener-Policy':   'same-origin',
@@ -9,6 +11,11 @@ const crossOriginHeaders = {
 
 export default defineConfig({
   plugins: [react()],
+
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
 
   // PGlite contient du WASM et des workers — exclure du pre-bundling Vite
   optimizeDeps: {
@@ -30,7 +37,11 @@ export default defineConfig({
     },
     watch: {
       usePolling: true,
-      interval: 50,      // plus réactif (était 100ms)
+      interval: 100,
+      awaitWriteFinish: {
+        stabilityThreshold: 100,
+        pollInterval: 50,
+      },
       ignored: ['**/node_modules/**', '**/.git/**'],
     },
   },

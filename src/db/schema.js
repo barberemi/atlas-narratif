@@ -32,8 +32,14 @@ CREATE TABLE IF NOT EXISTS characters (
   color       TEXT DEFAULT '#64748b',
   journey_key TEXT,
   extra       JSONB DEFAULT '{}',
+  source      TEXT DEFAULT 'import',
   PRIMARY KEY (id, project_id)
 );
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'import';
+ALTER TABLE characters DROP COLUMN IF EXISTS role;
+ALTER TABLE characters DROP COLUMN IF EXISTS affiliations;
+ALTER TABLE characters DROP COLUMN IF EXISTS traits;
+ALTER TABLE characters DROP COLUMN IF EXISTS race;
 
 -- ── Lieux ─────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS locations (
@@ -45,8 +51,10 @@ CREATE TABLE IF NOT EXISTS locations (
   description TEXT,
   coordinates JSONB DEFAULT 'null',
   extra       JSONB DEFAULT '{}',
+  source      TEXT DEFAULT 'import',
   PRIMARY KEY (id, project_id)
 );
+ALTER TABLE locations ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'import';
 
 -- ── Objets ────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS objects (
@@ -58,21 +66,36 @@ CREATE TABLE IF NOT EXISTS objects (
   creator        TEXT,
   current_holder TEXT,
   extra          JSONB DEFAULT '{}',
+  source         TEXT DEFAULT 'import',
   PRIMARY KEY (id, project_id)
 );
+ALTER TABLE objects ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'import';
 
 -- ── Événements timeline ───────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS timeline_events (
-  id            TEXT NOT NULL,
-  project_id    TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  chapter_num   INTEGER NOT NULL,
-  chapter_title TEXT NOT NULL,
-  title         TEXT NOT NULL,
-  description   TEXT,
-  location_id   TEXT,
-  extra         JSONB DEFAULT '{}',
+  id               TEXT NOT NULL,
+  project_id       TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  chapter_num      INTEGER NOT NULL,
+  chapter_title    TEXT NOT NULL,
+  title            TEXT NOT NULL,
+  description      TEXT,
+  location_id      TEXT,
+  extra            JSONB DEFAULT '{}',
+  source           TEXT DEFAULT 'import',
+  pov_character_id TEXT,
+  scene_order      INTEGER DEFAULT 0,
+  scene_goal       TEXT,
+  scene_conflict   TEXT,
+  scene_outcome    TEXT,
   PRIMARY KEY (id, project_id)
 );
+-- Migrations additives pour les DBs existantes
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS source           TEXT DEFAULT 'import';
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS pov_character_id TEXT;
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_order      INTEGER DEFAULT 0;
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_goal       TEXT;
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_conflict   TEXT;
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_outcome    TEXT;
 
 -- Jonction événements ↔ entités
 CREATE TABLE IF NOT EXISTS event_entities (
@@ -85,15 +108,17 @@ CREATE TABLE IF NOT EXISTS event_entities (
 
 -- ── Incohérences ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS incoherences (
-  id          TEXT NOT NULL,
-  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  type        TEXT NOT NULL,
-  severity    TEXT NOT NULL CHECK (severity IN ('critical','high','medium','low')),
-  title       TEXT NOT NULL,
-  explanation TEXT,
-  resolved    BOOLEAN DEFAULT false,
+  id              TEXT NOT NULL,
+  project_id      TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  type            TEXT NOT NULL,
+  severity        TEXT NOT NULL CHECK (severity IN ('critical','high','medium','low')),
+  title           TEXT NOT NULL,
+  explanation     TEXT,
+  resolved        BOOLEAN DEFAULT false,
+  resolution_note TEXT,
   PRIMARY KEY (id, project_id)
 );
+ALTER TABLE incoherences ADD COLUMN IF NOT EXISTS resolution_note TEXT;
 
 CREATE TABLE IF NOT EXISTS incoherence_links (
   incoherence_id TEXT NOT NULL,
@@ -130,6 +155,23 @@ CREATE TABLE IF NOT EXISTS stc_chapter_entities (
   PRIMARY KEY (chapter_id, project_id, entity_id, entity_type)
 );
 
+-- ── Arc émotionnel (indépendant du format d'écriture) ────────────────────────
+CREATE TABLE IF NOT EXISTS arc_points (
+  project_id     TEXT    NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  chapter_number INTEGER NOT NULL,
+  intensity      INTEGER CHECK (intensity >= 1 AND intensity <= 10),
+  note           TEXT,
+  PRIMARY KEY (project_id, chapter_number)
+);
+
+-- ── Notes libres par chapitre ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS chapter_notes (
+  project_id  TEXT    NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  chapter_num INTEGER NOT NULL,
+  content     TEXT    NOT NULL DEFAULT '',
+  PRIMARY KEY (project_id, chapter_num)
+);
+
 -- ── Trajets personnages ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS character_journeys (
   project_id TEXT    NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -137,6 +179,75 @@ CREATE TABLE IF NOT EXISTS character_journeys (
   step_index INTEGER NOT NULL,
   data       JSONB   NOT NULL,
   PRIMARY KEY (project_id, char_key, step_index)
+);
+
+-- ── Plant / Payoff (amorces narratives) ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS plant_payoffs (
+  id                 TEXT NOT NULL,
+  project_id         TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  label              TEXT NOT NULL,
+  type               TEXT DEFAULT 'information',
+  plant_chapter_num  INTEGER,
+  plant_event_id     TEXT,
+  payoff_chapter_num INTEGER,
+  payoff_event_id    TEXT,
+  entity_id          TEXT,
+  entity_type        TEXT,
+  status             TEXT DEFAULT 'open',
+  notes              TEXT,
+  PRIMARY KEY (id, project_id)
+);
+
+-- ── Groupes d'appartenance (races, clans, factions…) ────────────────────────
+CREATE TABLE IF NOT EXISTS groups (
+  id          TEXT NOT NULL,
+  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  type        TEXT NOT NULL DEFAULT 'autre',
+  color       TEXT DEFAULT '#64748B',
+  description TEXT,
+  homeland_id TEXT,
+  PRIMARY KEY (id, project_id)
+);
+
+CREATE TABLE IF NOT EXISTS character_groups (
+  character_id  TEXT NOT NULL,
+  group_id      TEXT NOT NULL,
+  project_id    TEXT NOT NULL,
+  role_in_group TEXT,
+  PRIMARY KEY (character_id, group_id, project_id)
+);
+
+-- ── Fils narratifs ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS narrative_threads (
+  id          TEXT NOT NULL,
+  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  color       TEXT DEFAULT '#3F51B5',
+  role        TEXT DEFAULT 'subplot',
+  description TEXT,
+  sort_order  INTEGER DEFAULT 0,
+  PRIMARY KEY (id, project_id)
+);
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS thread_ids TEXT DEFAULT '[]';
+
+-- ── Arc des personnages ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS character_arc_axes (
+  id           TEXT NOT NULL,
+  project_id   TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  character_id TEXT NOT NULL,
+  label        TEXT NOT NULL,
+  color        TEXT DEFAULT '#64748b',
+  PRIMARY KEY (id, project_id)
+);
+
+CREATE TABLE IF NOT EXISTS character_arc_points (
+  project_id  TEXT    NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  axis_id     TEXT    NOT NULL,
+  chapter_num INTEGER NOT NULL,
+  value       INTEGER CHECK (value >= 0 AND value <= 10),
+  note        TEXT,
+  PRIMARY KEY (project_id, axis_id, chapter_num)
 );
 
 `;

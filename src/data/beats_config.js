@@ -16,6 +16,11 @@ export const BEATS = [
       too_late: "Ta scène d'ouverture arrive trop tard. Le lecteur n'est pas immédiatement immergé dans l'univers et le ton de l'histoire.",
       missing: "Aucune scène d'ouverture. Ton début risque de sembler abrupt — pose l'ambiance dès la première page.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "La rue des Privet, monde banal — mais des sorciers en robes croisent Vernon Dursley sans qu'il comprenne pourquoi." },
+      { work: 'Avengers: Endgame', text: "Les survivants du snap errent dans un monde dévasté et silencieux. L'ampleur de la catastrophe est immédiatement posée." },
+      { work: 'Le Roi Lion', text: "L'aube sur la savane africaine, \"Circle of Life\" — tous les animaux convergent pour voir le futur roi présenté." },
+    ],
   },
   {
     id: 'theme_stated',
@@ -30,6 +35,11 @@ export const BEATS = [
       too_late: "Ton thème arrive trop tard. Le lecteur avance sans boussole narrative.",
       missing: "Le thème n'est pas exposé. Assure-toi qu'il transparaît tôt dans une réplique ou une situation clé.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Dumbledore à McGonagall : \"Il sera célèbre... ce sera une lourde charge pour lui.\" Le thème du poids de la destinée est posé." },
+      { work: 'Avengers: Endgame', text: "\"Whatever it takes\" — phrase répétée par chaque héros. Le thème du sacrifice est énoncé avant même que le plan soit lancé." },
+      { work: 'Le Roi Lion', text: "Mufasa explique à Simba le cycle de la vie sur Pride Rock : tout est connecté, chacun a une place et une responsabilité." },
+    ],
   },
   {
     id: 'setup',
@@ -44,6 +54,11 @@ export const BEATS = [
       too_late: "Ta mise en place s'étire trop longtemps. Le lecteur attend que quelque chose démarre.",
       missing: "La mise en place est absente ou trop courte. Le lecteur ne connaît pas le monde ordinaire du héros.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry vit sous l'escalier, maltraité par les Dursley. Il est invisible, ignorant de sa véritable identité et de son monde." },
+      { work: 'Avengers: Endgame', text: "Cinq ans après le snap : Natasha gère un monde brisé, Steve anime un groupe de soutien, Tony s'est retiré avec sa famille." },
+      { work: 'Le Roi Lion', text: "Simba, insouciant et curieux, explore la savane avec son père Mufasa qui lui enseigne l'art d'être roi." },
+    ],
   },
   {
     id: 'catalyst',
@@ -58,6 +73,11 @@ export const BEATS = [
       too_late: "Ton élément déclencheur arrive trop tard. Le lecteur risque de s'ennuyer avant que l'histoire ne démarre vraiment.",
       missing: "Aucun élément déclencheur identifié. Sans lui, l'histoire n'a pas de vrai point de départ.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "La première lettre de Poudlard arrive. Le monde ordinaire de Harry est soudainement remis en question." },
+      { work: 'Avengers: Infinity War', text: "Thanos attaque le vaisseau asgardien et tue Loki sous les yeux de Thor. La menace devient immédiate et personnelle." },
+      { work: 'Le Roi Lion', text: "Scar tend un piège à Simba dans la gorge, provoque une stampede et tue Mufasa. L'enfance de Simba s'arrête brutalement." },
+    ],
   },
   {
     id: 'debate',
@@ -72,6 +92,11 @@ export const BEATS = [
       too_late: "La phase de réflexion s'éternise. L'histoire tarde trop à s'engager vers l'acte 2.",
       missing: "Ton héros ne semble pas hésiter. Un moment de doute le rendrait plus humain et le choix plus significatif.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Les Dursley détruisent les lettres. Harry est tenté mais retenu par sa vie ordinaire — est-il vraiment prêt à tout quitter ?" },
+      { work: 'Avengers: Endgame', text: "Tony refuse catégoriquement d'aider : \"Je ne risquerai pas ma fille pour ça.\" Il a trouvé la paix — pourquoi la remettre en jeu ?" },
+      { work: 'Le Roi Lion', text: "Simba erre dans le désert après la mort de Mufasa, convaincu d'être coupable. Timon et Pumbaa lui proposent \"Hakuna Matata\" comme échappatoire." },
+    ],
   },
   {
     id: 'break_into_two',
@@ -86,6 +111,11 @@ export const BEATS = [
       too_late: "Le basculement est trop tardif. La transition vers l'acte 2 tarde à s'opérer et le rythme s'en ressent.",
       missing: "Pas de basculement clairement identifié. Le passage à l'aventure doit être un moment fort et actif du héros.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry monte dans le Poudlard Express avec Hagrid. Il choisit d'entrer dans ce monde nouveau, laissant les Dursley derrière lui." },
+      { work: 'Avengers: Endgame', text: "Tony résout l'équation du voyage dans le temps et apporte sa solution à Steve. Il décide de tout risquer pour ramener les disparus." },
+      { work: 'Le Roi Lion', text: "Simba adopte pleinement \"Hakuna Matata\" et s'installe dans la jungle avec Timon et Pumbaa — il renonce consciemment à son identité royale." },
+    ],
   },
   {
     id: 'b_story',
@@ -100,6 +130,11 @@ export const BEATS = [
       too_late: "Ta sous-intrigue démarre trop tard pour avoir un impact suffisant sur la transformation du héros.",
       missing: "Aucune sous-intrigue définie. Une histoire secondaire enrichit la profondeur émotionnelle du récit.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "L'amitié de Ron et Hermione se construit — deux miroirs opposés qui aident Harry à définir qui il est." },
+      { work: 'Avengers: Endgame', text: "Thor retrouve sa mère Frigga dans le passé. Elle lui dit : \"Tu n'as pas à être le roi qu'on attend.\" Début de sa reconstruction." },
+      { work: 'Le Roi Lion', text: "Simba retrouve Nala, son amie d'enfance. Elle lui rappelle qu'il a une identité, une responsabilité, un peuple qui l'attend." },
+    ],
   },
   {
     id: 'fun_and_games',
@@ -114,6 +149,11 @@ export const BEATS = [
       too_late: "Les moments palpitants tardent. Le lecteur attend l'action centrale promise par le concept.",
       missing: "La section 'fun and games' est absente. C'est pourtant le cœur et la vitrine de ton concept narratif.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Cours de magie, Quidditch, exploration du château, miroir du Rised — Harry découvre un monde à la hauteur de ses rêves." },
+      { work: 'Avengers: Endgame', text: "Les voyages dans le temps : New York 2012, Asgard 2013, Camp Lehigh 1970. Chaque saut est une aventure dans l'histoire du MCU." },
+      { work: 'Le Roi Lion', text: "Simba adulte vit une vie insouciante avec Timon et Pumbaa : chasse aux insectes, bains de boue, nuits étoilées et chants." },
+    ],
   },
   {
     id: 'midpoint',
@@ -128,6 +168,11 @@ export const BEATS = [
       too_late: "Ton milieu arrive trop tard. Le rythme de la seconde moitié sera écrasé et la résolution précipitée.",
       missing: "Pas de milieu identifié. Ce pivot central est essentiel pour relancer les enjeux à mi-parcours.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry réalise que Rogue n'est pas le traître et que c'est Quirrell qui le menace. Fausse piste levée, vraie menace révélée." },
+      { work: 'Avengers: Infinity War', text: "Sur Titan, les Avengers immobilisent presque Thanos — fausse victoire. Starlord perd son sang-froid et tout bascule." },
+      { work: 'Le Roi Lion', text: "L'esprit de Mufasa apparaît à Simba dans les nuages : \"Souviens-toi de qui tu es.\" Fausse victoire intérieure — Simba hésite encore." },
+    ],
   },
   {
     id: 'bad_guys',
@@ -142,6 +187,11 @@ export const BEATS = [
       too_late: "Les antagonistes n'exercent pas assez rapidement leur pression après le milieu de l'histoire.",
       missing: "La montée en pression des antagonistes n'est pas clairement marquée dans le récit.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Voldemort se rapproche de la Pierre, les obstacles se lèvent un à un. Quirrell sabote activement le Quidditch pour éliminer Harry." },
+      { work: 'Avengers: Infinity War', text: "Thanos récupère toutes les pierres une par une, malgré chaque tentative pour l'arrêter. Rien ne fonctionne, les héros accumulent les défaites." },
+      { work: 'Le Roi Lion', text: "Simba revient à Pride Rock mais Scar règne sur des terres dévastées. Les hyènes encerclent Simba, Scar a tout le pouvoir." },
+    ],
   },
   {
     id: 'all_is_lost',
@@ -156,6 +206,11 @@ export const BEATS = [
       too_late: "Ton 'Tout est perdu' arrive trop tard. La résolution finale sera précipitée et moins satisfaisante.",
       missing: "Pas de moment 'Tout est perdu'. Sans ce nadir, la résolution manquera d'impact émotionnel.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry affronte Quirrell/Voldemort seul dans la chambre. Piégé, sans secours possible — tout semble perdu pour lui." },
+      { work: 'Avengers: Infinity War', text: "Thanos claque des doigts. Des héros se désintègrent un à un. Le plan a échoué. Les survivants regardent, impuissants." },
+      { work: 'Le Roi Lion', text: "Scar révèle publiquement que Simba serait responsable de la mort de Mufasa. Simba est au bord du précipice, tout le monde le croit coupable." },
+    ],
   },
   {
     id: 'dark_night',
@@ -170,6 +225,11 @@ export const BEATS = [
       too_late: "La nuit noire est trop tardive. Il ne restera pas assez de place pour la transformation et la résolution.",
       missing: "La 'Nuit noire de l'âme' est absente. Sans ce creux, la transformation du héros manquera de crédibilité.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry inconscient après l'affrontement, convaincu d'avoir échoué. Il se réveille à l'infirmerie sans savoir s'il a réussi." },
+      { work: 'Avengers: Endgame', text: "Tony, seul sur sa ferme cinq ans après, refuse d'agir : \"J'ai trouvé la paix. Je ne risquerai pas ma fille pour des morts.\"" },
+      { work: 'Le Roi Lion', text: "Simba suspendu au bord du précipice par Scar qui chuchote la vérité sur Mufasa. Le poids de la culpabilité écrase tout." },
+    ],
   },
   {
     id: 'break_into_three',
@@ -184,6 +244,11 @@ export const BEATS = [
       too_late: "La révélation du héros arrive trop tard pour laisser assez de place à une résolution satisfaisante.",
       missing: "Pas de twist ou révélation identifié. C'est le moteur indispensable de la résolution finale.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Dumbledore révèle à Harry que l'amour de sa mère l'a protégé. Ce n'est pas la magie — c'est le sacrifice qui le rend invincible." },
+      { work: 'Avengers: Endgame', text: "Hulk/Banner ramène tous les disparus avec les pierres. Tony comprend alors que le sacrifice final lui appartient : \"I am Iron Man.\"" },
+      { work: 'Le Roi Lion', text: "Scar, coincé, avoue devant tous que c'est lui qui a tué Mufasa. La vérité libère Simba de sa culpabilité — il peut enfin agir." },
+    ],
   },
   {
     id: 'finale',
@@ -198,6 +263,11 @@ export const BEATS = [
       too_late: "Ta finale est très tardive. Elle sera précipitée ou l'histoire aura semblé traîner en longueur.",
       missing: "Pas de finale identifiée.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry touche Quirrell et le brûle grâce à l'amour de sa mère. Il triomphe non par la puissance magique, mais par ce qu'il incarne." },
+      { work: 'Avengers: Endgame', text: "Tony enfile les pierres et claque des doigts, sachant que cela lui coûtera la vie. \"I am Iron Man.\" Il sacrifie tout pour tous." },
+      { work: 'Le Roi Lion', text: "Simba affronte Scar au sommet de Pride Rock sous la tempête. Il comprend que fuir sa responsabilité était son vrai crime." },
+    ],
   },
   {
     id: 'final_image',
@@ -212,5 +282,10 @@ export const BEATS = [
       too_late: null,
       missing: "Pas de scène finale. La boucle avec la scène d'ouverture n'est pas fermée.",
     },
+    examples: [
+      { work: 'Harry Potter', text: "Harry, Ron et Hermione remontent dans le Poudlard Express. Même train, même monde — mais Harry n'est plus l'orphelin sous l'escalier." },
+      { work: 'Avengers: Endgame', text: "Steve Rogers, vieilli, passe le bouclier à Sam. La vie a suivi son cours — le héros a trouvé la paix qu'il cherchait depuis le début." },
+      { work: 'Le Roi Lion', text: "Simba rugit au sommet de Pride Rock, son fils est présenté à tous les animaux. Même image qu'au début — la boucle du cycle de la vie est fermée." },
+    ],
   },
 ];

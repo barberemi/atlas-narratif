@@ -33,13 +33,18 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     stcChapterBeats    = [],
     stcChapterEntities = [],
     characterJourneys  = [],
+    groups             = [],
+    characterGroups    = [],
+    plantPayoffs       = [],
+    arcPoints          = [],
+    narrativeThreads   = [],
+    characterArcAxes   = [],
+    characterArcPoints = [],
   } = payload;
 
   // ── Nouveau project_id unique ──────────────────────────────────────────────
   const slug      = project.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').slice(0, 20);
   const newId     = `${slug}_${Date.now()}`;
-  const origId    = project.id;
-
   // ── Insertion en transaction ───────────────────────────────────────────────
   onProgress?.('Création du projet…');
   await db.exec('BEGIN');
@@ -51,7 +56,6 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     );
 
     // Helpers
-    const id    = (row) => row.id    === origId ? newId : row.id;
     const pid   = ()    => newId;
     const json  = (v)   => v === null || v === undefined ? null
                          : typeof v === 'string' ? v
@@ -62,14 +66,13 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of characters) {
       await db.query(
         `INSERT INTO characters
-           (id, project_id, name, aliases, race, role, origin, affiliations, description, traits, color, journey_key, extra)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+           (id, project_id, name, aliases, origin, description, color, journey_key, extra)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(), r.name,
-          json(r.aliases), r.race, r.role, r.origin,
-          json(r.affiliations), r.description,
-          json(r.traits), r.color ?? '#64748b',
+          json(r.aliases), r.origin, r.description,
+          r.color ?? '#64748b',
           r.journey_key ?? null,
           json(r.extra ?? {}),
         ],
@@ -113,14 +116,21 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of timelineEvents) {
       await db.query(
         `INSERT INTO timeline_events
-           (id, project_id, chapter_num, chapter_title, title, description, location_id, extra)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+           (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
+            pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(),
           r.chapter_num, r.chapter_title,
           r.title, r.description ?? null,
           r.location_id ?? null, json(r.extra ?? {}),
+          r.pov_character_id ?? null,
+          json(r.thread_ids ?? []),
+          r.scene_order    ?? 0,
+          r.scene_goal     ?? null,
+          r.scene_conflict ?? null,
+          r.scene_outcome  ?? null,
         ],
       );
     }
@@ -187,6 +197,75 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
         `INSERT INTO character_journeys (project_id, char_key, step_index, data)
          VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
         [pid(), r.char_key, r.step_index, json(r.data)],
+      );
+    }
+
+    // Groupes
+    onProgress?.('Import des groupes…');
+    for (const r of groups) {
+      await db.query(
+        `INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`,
+        [r.id, pid(), r.name, r.type ?? 'autre', r.color ?? '#64748B', r.description ?? null, r.homeland_id ?? null],
+      );
+    }
+    for (const r of characterGroups) {
+      await db.query(
+        `INSERT INTO character_groups (character_id, group_id, project_id, role_in_group)
+         VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+        [r.character_id, r.group_id, pid(), r.role_in_group ?? null],
+      );
+    }
+
+    // Amorces
+    onProgress?.('Import des amorces…');
+    for (const r of plantPayoffs) {
+      await db.query(
+        `INSERT INTO plant_payoffs
+           (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT DO NOTHING`,
+        [
+          r.id, pid(), r.label, r.type ?? 'information',
+          r.plant_chapter_num ?? null, r.plant_event_id ?? null,
+          r.payoff_chapter_num ?? null, r.payoff_event_id ?? null,
+          r.entity_id ?? null, r.entity_type ?? null,
+          r.status ?? 'open', r.notes ?? null,
+        ],
+      );
+    }
+
+    // Arc émotionnel
+    for (const r of arcPoints) {
+      await db.query(
+        `INSERT INTO arc_points (project_id, chapter_number, intensity, note)
+         VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+        [pid(), r.chapter_number, r.intensity, r.note ?? null],
+      );
+    }
+
+    // Fils narratifs
+    onProgress?.('Import des fils narratifs…');
+    for (const r of narrativeThreads) {
+      await db.query(
+        `INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`,
+        [r.id, pid(), r.name, r.color ?? '#3F51B5', r.role ?? 'subplot', r.description ?? null, r.sort_order ?? 0],
+      );
+    }
+
+    // Arcs des personnages
+    for (const r of characterArcAxes) {
+      await db.query(
+        `INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+        [r.id, pid(), r.character_id, r.label, r.color ?? '#64748b'],
+      );
+    }
+    for (const r of characterArcPoints) {
+      await db.query(
+        `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+        [pid(), r.axis_id, r.chapter_num, r.value, r.note ?? null],
       );
     }
 
