@@ -1,7 +1,7 @@
-import { getBeatActualPercent } from '../../data/save_the_cat_database';
-
-export default function BeatRow({ beat, chapter, isAlert, isHovered, onHover }) {
-  const actualPct = chapter ? getBeatActualPercent(beat.id) : null;
+export default function BeatRow({ beat, chapter, isAlert, isHovered, onHover, totalChapters }) {
+  const actualPct = (chapter && totalChapters)
+    ? ((chapter.number - 1 + 0.5) / totalChapters) * 100
+    : null;
 
   return (
     <div

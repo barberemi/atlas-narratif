@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { buildGraph, buildFullGraph, RELATION_COLORS, RELATION_LABELS } from '../../utils/buildGraph';
-import { getEntityIncoherences, getMaxSeverity, SEVERITY_CONFIG } from '../../data/incoherences_database';
+import { getMaxSeverity, SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
 import { getEntityInfo } from '../../utils/entityUtils';
 import { useGraphSimulation, W, H, CX, CY } from './useGraphSimulation';
 import IncPanel from './IncPanel';
+import { useIncStore } from '../../stores/useIncStore';
 
 // ── Constantes de rendu ───────────────────────────────────────────────────────
 const CENTER_R   = 52;
@@ -28,6 +29,7 @@ function truncate(str, n) {
 
 // ── Composant principal ──────────────────────────────────────────────────────
 export default function EntityGraph({ entityId, initialMode = 'centered', onNodeClick }) {
+  const rawIncs = useIncStore(s => s.data);
   const [mode, setMode]                     = useState(initialMode);
   const [currentId, setCurrentId]           = useState(entityId);
   const [history, setHistory]               = useState([entityId]);
@@ -40,6 +42,17 @@ export default function EntityGraph({ entityId, initialMode = 'centered', onNode
   const [incPanelId, setIncPanelId]         = useState(null);
   const posRef      = useRef({});
   const internalNav = useRef(false);
+
+  const entityIncMap = useMemo(() => {
+    const map = {};
+    (rawIncs ?? []).forEach(inc => {
+      (inc.links ?? []).forEach(link => {
+        if (!map[link.entityId]) map[link.entityId] = [];
+        map[link.entityId].push(inc);
+      });
+    });
+    return map;
+  }, [rawIncs]);
 
   const graph     = useMemo(() => buildGraph(currentId), [currentId]);
   const fullGraph = useMemo(() => buildFullGraph(), []);
@@ -314,7 +327,7 @@ export default function EntityGraph({ entityId, initialMode = 'centered', onNode
                 if (!pos) return null;
                 const color  = getColor(node), rgb = hexToRgb(color);
                 const isHov  = hovered === node.id;
-                const nodeIncs = getEntityIncoherences(node.id);
+                const nodeIncs = entityIncMap[node.id] ?? [];
                 const incSev   = getMaxSeverity(nodeIncs);
                 const incColor = incSev ? SEVERITY_CONFIG[incSev].color : null;
                 return (
@@ -382,7 +395,7 @@ export default function EntityGraph({ entityId, initialMode = 'centered', onNode
               })}
 
               {(() => {
-                const centralIncs  = getEntityIncoherences(central.id);
+                const centralIncs  = entityIncMap[central.id] ?? [];
                 const centralSev   = getMaxSeverity(centralIncs);
                 const centralIncC  = centralSev ? SEVERITY_CONFIG[centralSev].color : null;
                 return (
@@ -554,6 +567,7 @@ export default function EntityGraph({ entityId, initialMode = 'centered', onNode
         {mode === 'centered' && incPanelId && (
           <IncPanel
             incPanelId={incPanelId}
+            panelIncs={entityIncMap[incPanelId] ?? []}
             onClose={() => setIncPanelId(null)}
             central={central}
             satellites={satellites}

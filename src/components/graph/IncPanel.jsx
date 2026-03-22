@@ -1,10 +1,8 @@
-import { loreDB } from '../../data/lore_database';
-import { getEntityIncoherences, SEVERITY_CONFIG } from '../../data/incoherences_database';
+import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
-import { getEntityInfo } from '../../utils/entityUtils';
+import { getEntityInfo, getEntityMeta } from '../../utils/entityUtils';
 
-export default function IncPanel({ incPanelId, onClose, central, satellites, navigateTo }) {
-  const panelIncs   = getEntityIncoherences(incPanelId);
+export default function IncPanel({ incPanelId, panelIncs = [], onClose, central, satellites, navigateTo }) {
   const panelEntity = incPanelId === central?.id ? central : satellites.find(s => s.id === incPanelId);
   const entityName  = panelEntity?.name ?? incPanelId;
 
@@ -50,9 +48,7 @@ export default function IncPanel({ incPanelId, onClose, central, satellites, nav
                 <div className="flex flex-wrap gap-1 mt-2">
                   {inc.links.filter(l => l.entityId !== incPanelId).map(link => {
                     const info   = getEntityInfo(link.entityId);
-                    const exists = !!loreDB.characters.find(e => e.id === link.entityId)
-                      || !!loreDB.locations.find(e => e.id === link.entityId)
-                      || !!loreDB.objects.find(e => e.id === link.entityId);
+                    const exists = !!getEntityMeta(link.entityId);
                     return (
                       <button
                         key={link.entityId}

@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
-import { incoherencesDB, SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/incoherences_database';
-import { loreDB } from '../../data/lore_database';
+import { useState, useMemo, useEffect } from 'react';
+import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
+import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
+import { useIncStore } from '../../stores/useIncStore';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const TYPE_ICONS = {
@@ -25,15 +26,9 @@ const FILTER_OPTIONS  = [
 
 // ── Chip d'entité cliquable ───────────────────────────────────────────────────
 function EntityChip({ link, onEntityClick }) {
-  const entity = useMemo(() => {
-    const { entityId, entityType } = link;
-    if (entityType === 'character') return loreDB.characters.find(c => c.id === entityId);
-    if (entityType === 'location')  return loreDB.locations.find(l => l.id === entityId);
-    if (entityType === 'object')    return loreDB.objects.find(o => o.id === entityId);
-    return null;
-  }, [link]);
+  const meta = useMemo(() => getEntityMeta(link.entityId, link.entityType), [link]);
 
-  const color = entity?.color ?? '#64748B';
+  const color = meta?.color ?? ENTITY_COLORS[link.entityType] ?? '#64748B';
   const hex   = color.replace('#', '');
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
@@ -45,16 +40,16 @@ function EntityChip({ link, onEntityClick }) {
 
   return (
     <button
-      onClick={() => entity && onEntityClick(link.entityId, link.entityType)}
+      onClick={() => meta && onEntityClick(link.entityId, link.entityType)}
       className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-all duration-150 hover:scale-105"
       style={{
         backgroundColor: `rgba(${rgb},0.15)`,
         color:           color,
         border:          `1px solid rgba(${rgb},0.35)`,
-        cursor:          entity ? 'pointer' : 'default',
-        opacity:         entity ? 1 : 0.5,
+        cursor:          meta ? 'pointer' : 'default',
+        opacity:         meta ? 1 : 0.5,
       }}
-      title={entity ? `Ouvrir la fiche de ${link.label}` : 'Entité non trouvée dans la base'}
+      title={meta ? `Ouvrir la fiche de ${link.label}` : 'Entité non trouvée dans la base'}
     >
       <span>{icon}</span>
       {link.label}
@@ -69,7 +64,7 @@ function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick }) {
 
   return (
     <div
-      className="rounded-xl border overflow-hidden transition-all duration-300"
+      className="rounded-xl border overflow-hidden transition-all duration-300 relative"
       style={{
         borderColor:     resolved ? 'rgba(255,255,255,0.05)' : cfg.border,
         backgroundColor: resolved ? 'rgba(255,255,255,0.015)' : cfg.bg,
@@ -165,26 +160,41 @@ function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick }) {
 }
 
 // ── IncoherencesBrowser principal ────────────────────────────────────────────
-export default function IncoherencesBrowser({ onEntityClick, resolvedIds, onToggleResolved, initialFilter = 'all' }) {
+export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'all' }) {
+  const incoherences = useIncStore(s => s.data);
+  const toggle       = useIncStore(s => s.toggle);
   const [severityFilter, setSeverityFilter] = useState(initialFilter);
 
+  useEffect(() => { setSeverityFilter(initialFilter); }, [initialFilter]);
+
+  const handleToggle = (incId) => toggle(incId);
+
   const filtered = useMemo(() => {
-    const list = severityFilter === 'all'
-      ? [...incoherencesDB]
-      : incoherencesDB.filter(i => i.severity === severityFilter);
-    return list.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
-  }, [severityFilter]);
+    const list = incoherences ?? [];
+    const base = severityFilter === 'all' ? list : list.filter(i => i.severity === severityFilter);
+    return [...base].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
+  }, [incoherences, severityFilter]);
 
   const counts = useMemo(() => {
-    const c = { all: incoherencesDB.length, critical: 0, high: 0, medium: 0, low: 0 };
-    incoherencesDB.forEach(i => c[i.severity]++);
+    const list = incoherences ?? [];
+    const c = { all: list.length, critical: 0, high: 0, medium: 0, low: 0 };
+    list.forEach(i => c[i.severity]++);
     return c;
-  }, []);
+  }, [incoherences]);
 
-  const resolvedCount = resolvedIds.size;
+  const resolvedCount = useMemo(
+    () => (incoherences ?? []).filter(i => i.resolved).length,
+    [incoherences],
+  );
+
+  if (!incoherences) return (
+    <div className="h-full flex items-center justify-center">
+      <span className="text-slate-600 font-serif italic">Chargement…</span>
+    </div>
+  );
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200">
+    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
 
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
@@ -198,7 +208,7 @@ export default function IncoherencesBrowser({ onEntityClick, resolvedIds, onTogg
         </div>
 
         <span className="text-xs font-mono text-slate-600">
-          {resolvedCount} résolu{resolvedCount !== 1 ? 's' : ''} / {incoherencesDB.length}
+          {resolvedCount} résolu{resolvedCount !== 1 ? 's' : ''} / {incoherences.length}
         </span>
       </header>
 
@@ -235,7 +245,7 @@ export default function IncoherencesBrowser({ onEntityClick, resolvedIds, onTogg
       </div>
 
       {/* ── Grille de cartes ── */}
-      <main className="flex-1 overflow-y-auto px-6 py-6">
+      <main className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
         {filtered.length === 0 ? (
           <p className="text-slate-600 font-serif italic text-center mt-20">
             Aucune incohérence dans cette catégorie.
@@ -246,8 +256,8 @@ export default function IncoherencesBrowser({ onEntityClick, resolvedIds, onTogg
               <IncoherenceCard
                 key={inc.id}
                 inc={inc}
-                resolved={resolvedIds.has(inc.id)}
-                onToggleResolved={onToggleResolved}
+                resolved={inc.resolved}
+                onToggleResolved={handleToggle}
                 onEntityClick={onEntityClick}
               />
             ))}

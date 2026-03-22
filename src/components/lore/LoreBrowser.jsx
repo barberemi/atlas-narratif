@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { loreDB } from '../../data/lore_database';
-import { getEntityIncoherences, getMaxSeverity, SEVERITY_CONFIG } from '../../data/incoherences_database';
+import { getMaxSeverity, SEVERITY_CONFIG } from '../../data/severity_config';
+import { useLoreStore } from '../../stores/useLoreStore';
+import { useIncStore }  from '../../stores/useIncStore';
 
 // ── Badge incohérences ────────────────────────────────────────────────────────
-function IncBadge({ entityId }) {
-  const incs = useMemo(() => getEntityIncoherences(entityId), [entityId]);
+function IncBadge({ incs }) {
   if (!incs.length) return null;
   const sev = getMaxSeverity(incs);
   const cfg = SEVERITY_CONFIG[sev];
@@ -19,14 +19,14 @@ function IncBadge({ entityId }) {
   );
 }
 
-const TABS = [
-  { key: 'characters', label: 'Personnages', data: loreDB.characters },
-  { key: 'locations',  label: 'Lieux',       data: loreDB.locations  },
-  { key: 'objects',    label: 'Objets',       data: loreDB.objects    },
+const TAB_DEFS = [
+  { key: 'characters', label: 'Personnages' },
+  { key: 'locations',  label: 'Lieux'       },
+  { key: 'objects',    label: 'Objets'      },
 ];
 
 // ── Carte Personnage ─────────────────────────────────────────────────────────
-function CharacterCard({ char, highlighted }) {
+function CharacterCard({ char, highlighted, incs = [] }) {
   const ref = useRef(null);
   useEffect(() => {
     if (highlighted && ref.current) {
@@ -52,7 +52,7 @@ function CharacterCard({ char, highlighted }) {
         boxShadow: highlighted ? `0 0 20px rgba(${rgb},0.25)` : 'none',
       }}
     >
-      <IncBadge entityId={char.id} />
+      <IncBadge incs={incs} />
       {/* Bandeau couleur */}
       <div className="h-1" style={{ backgroundColor: char.color }} />
 
@@ -111,7 +111,7 @@ function CharacterCard({ char, highlighted }) {
 }
 
 // ── Carte Lieu ────────────────────────────────────────────────────────────────
-function LocationCard({ loc, highlighted, onCharacterClick }) {
+function LocationCard({ loc, highlighted, onCharacterClick, incs = [] }) {
   const ref = useRef(null);
   const [hoveredChar, setHoveredChar] = useState(null);
   useEffect(() => {
@@ -130,7 +130,7 @@ function LocationCard({ loc, highlighted, onCharacterClick }) {
         boxShadow: highlighted ? '0 0 20px rgba(129,140,248,0.2)' : 'none',
       }}
     >
-      <IncBadge entityId={loc.id} />
+      <IncBadge incs={incs} />
       <div className="h-1 bg-gradient-to-r from-slate-600 to-slate-700" />
       <div className="p-4 flex flex-col gap-3">
         <div>
@@ -212,7 +212,7 @@ function LocationCard({ loc, highlighted, onCharacterClick }) {
 }
 
 // ── Carte Objet ───────────────────────────────────────────────────────────────
-function ObjectCard({ obj, highlighted, onCharacterClick }) {
+function ObjectCard({ obj, highlighted, onCharacterClick, incs = [] }) {
   const ref = useRef(null);
   const [hoveredChar, setHoveredChar] = useState(null);
   useEffect(() => {
@@ -231,7 +231,7 @@ function ObjectCard({ obj, highlighted, onCharacterClick }) {
         boxShadow: highlighted ? '0 0 20px rgba(245,158,11,0.2)' : 'none',
       }}
     >
-      <IncBadge entityId={obj.id} />
+      <IncBadge incs={incs} />
       <div className="h-1 bg-gradient-to-r from-amber-600 to-amber-400" />
       <div className="p-4 flex flex-col gap-3">
         <div>
@@ -318,12 +318,30 @@ function ObjectCard({ obj, highlighted, onCharacterClick }) {
  *   onEntityClick   — (id) => void — ouvre le graphe de l'entité
  */
 export default function LoreBrowser({ initialTab = 'characters', initialSearch = '', onEntityClick, onCharacterClick }) {
+  const { characters, locations, objects, ready } = useLoreStore();
+  const rawIncs = useIncStore(s => s.data);
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [search, setSearch] = useState(initialSearch);
+  const [search,    setSearch]    = useState(initialSearch);
 
-  // Sync si les props changent (navigation depuis la carte)
   useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
   useEffect(() => { setSearch(initialSearch); }, [initialSearch]);
+
+  const entityIncMap = useMemo(() => {
+    const map = {};
+    (rawIncs ?? []).forEach(inc => {
+      (inc.links ?? []).forEach(link => {
+        if (!map[link.entityId]) map[link.entityId] = [];
+        map[link.entityId].push(inc);
+      });
+    });
+    return map;
+  }, [rawIncs]);
+
+  const TABS = useMemo(() => ready ? [
+    { key: 'characters', label: 'Personnages', data: characters },
+    { key: 'locations',  label: 'Lieux',       data: locations  },
+    { key: 'objects',    label: 'Objets',       data: objects    },
+  ] : TAB_DEFS.map(t => ({ ...t, data: [] })), [ready, characters, locations, objects]);
 
   const currentTab = TABS.find((t) => t.key === activeTab) ?? TABS[0];
 
@@ -358,8 +376,14 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
     return found?.id ?? null;
   }, [initialSearch, currentTab]);
 
+  if (!ready) return (
+    <div className="h-full flex items-center justify-center">
+      <span className="text-slate-600 font-serif italic">Chargement…</span>
+    </div>
+  );
+
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200">
+    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="text-center flex-1">
@@ -427,7 +451,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
       </div>
 
       {/* ── Grille ── */}
-      <main className="flex-1 overflow-y-auto px-6 py-6">
+      <main className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-slate-600">
             <p className="text-4xl mb-4">◯</p>
@@ -443,7 +467,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
                   className="relative group"
                   style={{ cursor: onEntityClick ? 'pointer' : 'default' }}
                 >
-                  <CharacterCard char={item} highlighted={item.id === highlightedId} />
+                  <CharacterCard char={item} highlighted={item.id === highlightedId} incs={entityIncMap[item.id] ?? []} />
                   {onEntityClick && (
                     <span className="absolute top-3 right-3 text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors select-none pointer-events-none">
                       Voir graphe →
@@ -459,7 +483,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
                   className="relative group"
                   style={{ cursor: onEntityClick ? 'pointer' : 'default' }}
                 >
-                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick} />
+                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick} incs={entityIncMap[item.id] ?? []} />
                   {onEntityClick && (
                     <span className="absolute top-3 right-3 text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors select-none pointer-events-none">
                       Voir graphe →
@@ -475,7 +499,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
                   className="relative group"
                   style={{ cursor: onEntityClick ? 'pointer' : 'default' }}
                 >
-                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick} />
+                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick} incs={entityIncMap[item.id] ?? []} />
                   {onEntityClick && (
                     <span className="absolute top-3 right-3 text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors select-none pointer-events-none">
                       Voir graphe →

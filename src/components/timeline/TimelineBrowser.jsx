@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDragScroll } from '../../hooks/useDragScroll';
-import { timelineDB, getChapters, detectConflicts, getConflictDetails } from '../../data/timeline_database';
-import { incoherencesDB, SEVERITY_CONFIG } from '../../data/incoherences_database';
+import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
 import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
+import { useTimelineStore } from '../../stores/useTimelineStore';
+import { useIncStore }      from '../../stores/useIncStore';
+import { computeConflicts, computeConflictDetails } from '../../db/queries';
 
 // ── Chip d'entité ─────────────────────────────────────────────────────────────
 function EntityChip({ entity, onClick }) {
@@ -42,17 +44,17 @@ function EntityChip({ entity, onClick }) {
 }
 
 // ── Carte événement ───────────────────────────────────────────────────────────
-function EventCard({ event, isConflict, isHighlighted, isDimmed, onEntityClick }) {
+function EventCard({ event, isConflict, isHighlighted, isDimmed, onEntityClick, allIncoherences, allEvents }) {
   const [expanded, setExpanded] = useState(false);
 
   const linkedIncs = useMemo(() =>
-    (event.incoherenceIds ?? []).map(id => incoherencesDB.find(i => i.id === id)).filter(Boolean),
-    [event]
+    (event.incoherenceIds ?? []).map(id => allIncoherences.find(i => i.id === id)).filter(Boolean),
+    [event, allIncoherences]
   );
 
   const conflictDetails = useMemo(() =>
-    isConflict ? getConflictDetails(event.id) : [],
-    [event.id, isConflict]
+    isConflict ? computeConflictDetails(event.id, allEvents) : [],
+    [event.id, isConflict, allEvents]
   );
 
   return (
@@ -150,43 +152,69 @@ function EventCard({ event, isConflict, isHighlighted, isDimmed, onEntityClick }
 
 // ── TimelineBrowser ───────────────────────────────────────────────────────────
 export default function TimelineBrowser() {
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
+  const events       = useTimelineStore(s => s.events);
+  const incoherences = useIncStore(s => s.data) ?? [];
   const [focusedCharId, setFocusedCharId] = useState(null);
   const dragScroll = useDragScroll();
 
-  const chapters      = useMemo(() => getChapters(), []);
-  const conflictIds   = useMemo(() => detectConflicts(), []);
+  const scrollRef   = useRef(null);
+  const [canLeft,  setCanLeft]  = useState(false);
+  const [canRight, setCanRight] = useState(false);
 
-  // Liste des personnages présents dans la timeline
-  const characters = useMemo(() => {
-    const map = new Map();
-    timelineDB.forEach(evt => {
-      evt.entities.forEach(e => {
-        if (e.entityType !== 'character') return;
-        if (map.has(e.id)) return;
-        const meta = getEntityMeta(e.id, 'character');
-        if (meta) map.set(e.id, { id: e.id, ...meta });
-      });
-    });
-    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }, []);
 
-  const handleEntityClick = (entity) => {
-    if (entity.entityType === 'character' || entity.entityType === 'object') {
-      navigate(`/graph?entity=${entity.id}`);
-    } else if (entity.entityType === 'location') {
-      const loc = loreDB.locations.find(l => l.id === entity.id);
-      navigate(`/lore?tab=locations&search=${encodeURIComponent(loc?.name ?? entity.id)}`);
+  const scrollBy = (dir) => {
+    scrollRef.current?.scrollBy({ left: dir * 290, behavior: 'smooth' });
+  };
+
+  const chapters    = useMemo(() => {
+    if (!events) return [];
+    const seen = new Set();
+    const chs  = [];
+    for (const e of events) {
+      if (!seen.has(e.chapter)) { seen.add(e.chapter); chs.push({ number: e.chapter, title: e.chapterTitle }); }
     }
+    return chs.sort((a, b) => a.number - b.number);
+  }, [events]);
+
+  useEffect(() => { updateArrows(); }, [chapters, updateArrows]);
+
+  const conflictIds = useMemo(() => events ? computeConflicts(events) : new Set(), [events]);
+
+  const characters = useMemo(() => {
+    if (!events) return [];
+    const map = new Map();
+    events.forEach(evt => evt.entities.forEach(e => {
+      if (e.entityType !== 'character' || map.has(e.id)) return;
+      const meta = getEntityMeta(e.id, 'character');
+      if (meta) map.set(e.id, { id: e.id, ...meta });
+    }));
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [events]);
+
+  const handleEntityClick = (entity) => {
+    navigate(`/relations?entity=${entity.id}`);
   };
 
   const conflictCount = useMemo(() =>
-    timelineDB.filter(e => conflictIds.has(e.id)).length,
-    [conflictIds]
+    (events ?? []).filter(e => conflictIds.has(e.id)).length,
+    [events, conflictIds],
+  );
+
+  if (!events) return (
+    <div className="h-full flex items-center justify-center">
+      <span className="text-slate-600 font-serif italic">Chargement…</span>
+    </div>
   );
 
   return (
-    <div className="min-h-full w-full flex flex-col bg-[#0B1621] text-slate-200">
+    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
 
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
@@ -195,7 +223,7 @@ export default function TimelineBrowser() {
             Timeline <span style={{ color: '#3F51B5' }}>Narrative</span>
           </h1>
           <p className="text-sm text-slate-500 font-serif italic">
-            {chapters.length} chapitres · {timelineDB.length} événements
+            {chapters.length} chapitres · {events.length} événements
             {conflictCount > 0 && (
               <span style={{ color: '#EF4444' }}> · {conflictCount} conflits détectés</span>
             )}
@@ -205,7 +233,7 @@ export default function TimelineBrowser() {
 
       {/* ── Filtre personnages ── */}
       <div
-        className="flex items-center gap-2 px-4 py-2 border-b border-white/5 overflow-x-auto flex-shrink-0"
+        className="flex items-center gap-2 px-4 py-2 border-b border-white/5 overflow-x-auto no-scrollbar flex-shrink-0"
         style={{ background: 'rgba(0,0,0,0.2)' }}
       >
         <span className="text-xs text-slate-600 uppercase tracking-widest flex-shrink-0">Suivre</span>
@@ -247,18 +275,50 @@ export default function TimelineBrowser() {
       </div>
 
       {/* ── Timeline horizontale ── */}
-      <div
-        ref={dragScroll.ref}
-        className="overflow-x-auto no-scrollbar"
-        style={{ cursor: 'grab' }}
-        onMouseDown={dragScroll.onMouseDown}
-        onMouseMove={dragScroll.onMouseMove}
-        onMouseUp={dragScroll.onMouseUp}
-        onMouseLeave={dragScroll.onMouseLeave}
-      >
+      <div className="flex-1 min-h-0 relative">
+        {/* Flèche gauche */}
+        {canLeft && (
+          <>
+            <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
+              style={{ background: 'linear-gradient(to right, #0B1621 0%, transparent 100%)' }} />
+            <button
+              onClick={() => scrollBy(-1)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 hover:scale-110"
+              style={{ backgroundColor: 'rgba(63,81,181,0.25)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
+            >
+              ‹
+            </button>
+          </>
+        )}
+
+        {/* Flèche droite */}
+        {canRight && (
+          <>
+            <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
+              style={{ background: 'linear-gradient(to left, #0B1621 0%, transparent 100%)' }} />
+            <button
+              onClick={() => scrollBy(1)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 hover:scale-110"
+              style={{ backgroundColor: 'rgba(63,81,181,0.25)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
+            >
+              ›
+            </button>
+          </>
+        )}
+
+        <div
+          ref={(el) => { dragScroll.ref.current = el; scrollRef.current = el; }}
+          className="h-full overflow-x-auto overflow-y-auto no-scrollbar"
+          style={{ cursor: 'grab' }}
+          onScroll={updateArrows}
+          onMouseDown={dragScroll.onMouseDown}
+          onMouseMove={dragScroll.onMouseMove}
+          onMouseUp={dragScroll.onMouseUp}
+          onMouseLeave={dragScroll.onMouseLeave}
+        >
         <div className="flex" style={{ minWidth: `${chapters.length * 290}px` }}>
           {chapters.map(({ number, title }) => {
-            const events = timelineDB.filter(e => e.chapter === number);
+            const chEvts = events.filter(e => e.chapter === number);
             return (
               <div
                 key={number}
@@ -277,8 +337,8 @@ export default function TimelineBrowser() {
                     {title}
                   </p>
                   <p className="text-xs text-slate-600 mt-1">
-                    {events.length} événement{events.length > 1 ? 's' : ''}
-                    {events.some(e => conflictIds.has(e.id)) && (
+                    {chEvts.length} événement{chEvts.length > 1 ? 's' : ''}
+                    {chEvts.some(e => conflictIds.has(e.id)) && (
                       <span style={{ color: '#EF4444' }}> · ⚠ conflit</span>
                     )}
                   </p>
@@ -286,7 +346,7 @@ export default function TimelineBrowser() {
 
                 {/* Événements */}
                 <div className="p-3 space-y-2.5">
-                  {events.map(evt => {
+                  {chEvts.map(evt => {
                     const isConflict    = conflictIds.has(evt.id);
                     const evtCharIds    = new Set(evt.entities.filter(e => e.entityType === 'character').map(e => e.id));
                     const isHighlighted = !focusedCharId || evtCharIds.has(focusedCharId);
@@ -299,6 +359,8 @@ export default function TimelineBrowser() {
                         isHighlighted={isHighlighted}
                         isDimmed={isDimmed}
                         onEntityClick={handleEntityClick}
+                        allIncoherences={incoherences}
+                        allEvents={events}
                       />
                     );
                   })}
@@ -306,6 +368,7 @@ export default function TimelineBrowser() {
               </div>
             );
           })}
+        </div>
         </div>
       </div>
     </div>

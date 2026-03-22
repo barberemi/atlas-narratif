@@ -1,0 +1,81 @@
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useDb } from './DbContext';
+import { getProjects } from './queries';
+import { useLoreStore }     from '../stores/useLoreStore';
+import { useIncStore }      from '../stores/useIncStore';
+import { useTimelineStore } from '../stores/useTimelineStore';
+import { useStcStore }      from '../stores/useStcStore';
+import { useMapStore }      from '../stores/useMapStore';
+
+const LS_KEY = 'atlas_active_project';
+
+const ProjectCtx = createContext(null);
+
+/** Charge toutes les données en parallèle pour un projet donné. */
+async function loadAll(db, projectId) {
+  await Promise.all([
+    useLoreStore.getState().load(db, projectId),
+    useIncStore.getState().load(db, projectId),
+    useTimelineStore.getState().load(db, projectId),
+    useStcStore.getState().load(db, projectId),
+    useMapStore.getState().load(db, projectId),
+  ]);
+}
+
+/** Vide tous les stores avant de charger un autre projet. */
+function resetAll() {
+  useLoreStore.getState().reset();
+  useIncStore.getState().reset();
+  useTimelineStore.getState().reset();
+  useStcStore.getState().reset();
+  useMapStore.getState().reset();
+}
+
+export function ProjectProvider({ children }) {
+  const db = useDb();
+  const [projects,      setProjects]     = useState([]);
+  const [projectId,     setProjectIdRaw] = useState(null);
+  const [loading,       setLoading]      = useState(true);
+
+  const reloadProjects = useCallback(async () => {
+    if (!db) return;
+    const list = await getProjects(db);
+    setProjects(list);
+    return list;
+  }, [db]);
+
+  // Premier chargement : récupère les projets et choisit le projet actif
+  useEffect(() => {
+    if (!db) return;
+    reloadProjects().then(list => {
+      if (list?.length) {
+        const saved  = localStorage.getItem(LS_KEY);
+        const exists = list.find(p => p.id === saved);
+        setProjectIdRaw(exists ? saved : list[0].id);
+      }
+      setLoading(false);
+    });
+  }, [db, reloadProjects]);
+
+  // Quand le projet actif change → vide les stores et recharge tout
+  useEffect(() => {
+    if (!db || !projectId) return;
+    resetAll();
+    loadAll(db, projectId);
+  }, [db, projectId]);
+
+  const setProjectId = (id) => {
+    localStorage.setItem(LS_KEY, id);
+    setProjectIdRaw(id);
+  };
+
+  return (
+    <ProjectCtx.Provider value={{ projectId, setProjectId, projects, reloadProjects, loading }}>
+      {children}
+    </ProjectCtx.Provider>
+  );
+}
+
+export function useProject() {
+  return useContext(ProjectCtx);
+}

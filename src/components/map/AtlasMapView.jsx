@@ -1,39 +1,10 @@
-import { useState } from 'react';
-import { aragornJourney } from '../../data/aragorn_journey';
-import { gandalfJourney } from '../../data/gandalf_journey';
-import { frodoJourney } from '../../data/frodo_journey';
+import { useState, useMemo, useEffect } from 'react';
 import MapCanvas from './MapCanvas';
 import JourneySidebar from './JourneySidebar';
 import JourneyTimeline from './JourneyTimeline';
 import { hexToRgb } from '../../utils/color';
-
-const CHARACTERS = {
-  frodo: {
-    key: 'frodo',
-    label: 'Frodo Sacquet',
-    sublabel: 'Le Porteur de l\'Anneau',
-    color: '#10B981',
-    journey: frodoJourney,
-    defaultStep: 0,
-  },
-  aragorn: {
-    key: 'aragorn',
-    label: 'Aragorn',
-    sublabel: 'Héritier d\'Isildur',
-    color: '#3F51B5',
-    journey: aragornJourney,
-    defaultStep: 0,
-  },
-  gandalf: {
-    key: 'gandalf',
-    label: 'Mithrandir',
-    sublabel: 'Gandalf le Gris',
-    color: '#F59E0B',
-    journey: gandalfJourney,
-    defaultStep: 0,
-  },
-};
-
+import { useMapStore }  from '../../stores/useMapStore';
+import { useLoreStore } from '../../stores/useLoreStore';
 
 function ControlButton({ active, onClick, children }) {
   return (
@@ -52,70 +23,115 @@ function ControlButton({ active, onClick, children }) {
 }
 
 /**
- * Vue principale — deux arcs narratifs simultanés.
- *
- * États :
- *   steps    — position de chaque personnage sur sa timeline
- *   focused  — quel personnage apparaît dans la sidebar (mode solo)
- *   visible  — quels personnages sont affichés sur la carte
- *   linked   — les deux timelines bougent ensemble
- *   compare  — sidebar splitée, les deux infos côte à côte
+ * Vue principale — arcs narratifs sur la carte.
+ * Les personnages affichés sont ceux qui ont un journey_key et un trajet en DB.
  */
 export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
-  const [steps, setSteps] = useState({
-    frodo: CHARACTERS.frodo.defaultStep,
-    aragorn: CHARACTERS.aragorn.defaultStep,
-    gandalf: CHARACTERS.gandalf.defaultStep,
-  });
-  const [focused, setFocused] = useState('aragorn');
-  const [visible, setVisible] = useState({ frodo: true, aragorn: true, gandalf: true });
-  const [linked, setLinked] = useState(false);
+  const journeys     = useMapStore(s => s.journeys);
+  const mapImage     = useMapStore(s => s.mapImage);
+  const allChars     = useLoreStore(s => s.characters);
+  const allLocations = useLoreStore(s => s.locations);
+
+  const locations = useMemo(() => allLocations.filter(l => l.coordinates), [allLocations]);
+
+  // Construction dynamique des personnages depuis le lore + les journeys
+  const CHARACTERS = useMemo(() => {
+    if (!journeys) return {};
+    const result = {};
+    allChars.forEach(c => {
+      if (c.journeyKey && journeys[c.journeyKey]?.length > 0) {
+        result[c.journeyKey] = {
+          key:     c.journeyKey,
+          label:   c.name,
+          sublabel: c.role ?? '',
+          color:   c.color,
+          journey: journeys[c.journeyKey],
+        };
+      }
+    });
+    return result;
+  }, [allChars, journeys]);
+
+  const charKeys = useMemo(() => Object.keys(CHARACTERS), [CHARACTERS]);
+
+  const [steps,   setSteps]   = useState({});
+  const [focused, setFocused] = useState(null);
+  const [visible, setVisible] = useState({});
+  const [linked,  setLinked]  = useState(false);
   const [compare, setCompare] = useState(false);
+
+  // Initialise steps/visible/focused quand les personnages sont connus
+  useEffect(() => {
+    if (!charKeys.length) return;
+    setSteps(prev => {
+      const next = { ...prev };
+      charKeys.forEach(k => { if (next[k] === undefined) next[k] = 0; });
+      return next;
+    });
+    setVisible(prev => {
+      const next = { ...prev };
+      charKeys.forEach(k => { if (next[k] === undefined) next[k] = true; });
+      return next;
+    });
+    setFocused(prev => prev ?? charKeys[0]);
+  }, [charKeys]);
+
+  if (!journeys) return (
+    <div className="h-full flex items-center justify-center">
+      <span className="text-slate-600 font-serif italic">Chargement…</span>
+    </div>
+  );
+
+  if (!charKeys.length) return (
+    <div className="h-full flex items-center justify-center flex-col gap-3">
+      <p className="text-slate-500 font-serif italic">Aucun trajet disponible pour ce projet.</p>
+      <p className="text-xs text-slate-700">Importez un projet avec une carte pour activer cette vue.</p>
+    </div>
+  );
 
   const handleStepChange = (charKey, newStep) => {
     if (linked) {
       const targetScene = CHARACTERS[charKey].journey[newStep]?.scene;
       const synced = {};
-      Object.values(CHARACTERS).forEach((char) => {
-        if (char.key === charKey) {
-          synced[char.key] = newStep;
+      charKeys.forEach(key => {
+        if (key === charKey) {
+          synced[key] = newStep;
         } else if (targetScene) {
-          const match = char.journey.findIndex((s) => s.scene === targetScene);
-          synced[char.key] = match !== -1 ? match : Math.min(newStep, char.journey.length - 1);
+          const match = CHARACTERS[key].journey.findIndex(s => s.scene === targetScene);
+          synced[key] = match !== -1 ? match : Math.min(newStep, CHARACTERS[key].journey.length - 1);
         } else {
-          synced[char.key] = Math.min(newStep, char.journey.length - 1);
+          synced[key] = Math.min(newStep, CHARACTERS[key].journey.length - 1);
         }
       });
       setSteps(synced);
     } else {
-      setSteps((prev) => ({ ...prev, [charKey]: newStep }));
+      setSteps(prev => ({ ...prev, [charKey]: newStep }));
     }
   };
 
   const toggleVisible = (charKey) => {
-    setVisible((prev) => {
-      // Au moins un personnage doit rester visible
+    setVisible(prev => {
       const next = { ...prev, [charKey]: !prev[charKey] };
-      if (!next.aragorn && !next.gandalf) return prev;
+      // Garder au moins un personnage visible
+      if (Object.values(next).every(v => !v)) return prev;
       return next;
     });
   };
 
-  // Config MapCanvas — seulement les personnages visibles
-  const mapCharacters = Object.values(CHARACTERS)
-    .filter((c) => visible[c.key])
-    .map((c) => ({
-      journey: c.journey,
-      currentStep: steps[c.key],
-      color: c.color,
-      name: c.label,
+  const mapCharacters = charKeys
+    .filter(k => visible[k])
+    .map(k => ({
+      journey:     CHARACTERS[k].journey,
+      currentStep: steps[k] ?? 0,
+      color:       CHARACTERS[k].color,
+      name:        CHARACTERS[k].label,
     }));
 
-  // Largeur sidebar : fixe en solo, dynamique en compare (220px par personnage)
-  const visibleCount = Object.values(CHARACTERS).length; // tous affichés en compare
   const sidebarStyle = compare
-    ? { width: `${visibleCount * 220}px`, maxWidth: '55vw' }
+    ? { width: `${charKeys.length * 220}px`, maxWidth: '55vw' }
     : { width: '320px' };
+
+  const focusedChar = focused ? CHARACTERS[focused] : null;
 
   return (
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200">
@@ -126,20 +142,16 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
             Carte <span style={{ color: '#3F51B5' }}>Interactive</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            La Communauté de l'Anneau — Arcs narratifs
+            {charKeys.length} personnage{charKeys.length > 1 ? 's' : ''} — arcs narratifs
           </p>
         </div>
-
-        {/* Contrôles globaux */}
         <div className="flex items-center gap-2">
-          <ControlButton active={linked} onClick={() => setLinked((v) => !v)}>
-            <span
-              className="w-3 h-3 rounded-full border-2 transition-colors"
-              style={{ borderColor: linked ? '#818cf8' : '#475569' }}
-            />
+          <ControlButton active={linked} onClick={() => setLinked(v => !v)}>
+            <span className="w-3 h-3 rounded-full border-2 transition-colors"
+              style={{ borderColor: linked ? '#818cf8' : '#475569' }} />
             Lier
           </ControlButton>
-          <ControlButton active={compare} onClick={() => setCompare((v) => !v)}>
+          <ControlButton active={compare} onClick={() => setCompare(v => !v)}>
             <span>⚖</span>
             Comparer
           </ControlButton>
@@ -148,12 +160,15 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
 
       {/* ── Corps : Carte plein cadre + Sidebar flottante ── */}
       <div className="flex-1 relative overflow-hidden min-h-0">
-        {/* Carte plein cadre */}
         <div className="absolute inset-0">
-          <MapCanvas characters={mapCharacters} onLocationClick={onLocationClick} />
+          <MapCanvas
+            characters={mapCharacters}
+            locations={locations}
+            onLocationClick={onLocationClick}
+            mapSrc={mapImage}
+          />
         </div>
 
-        {/* Sidebar flottante */}
         <aside
           className="absolute top-0 right-0 bottom-0 flex-shrink-0 overflow-hidden transition-all duration-300"
           style={{
@@ -165,93 +180,73 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
           }}
         >
           {compare ? (
-            /* ── Mode Compare : colonnes par personnage ── */
             <div className="flex h-full divide-x divide-white/10 overflow-x-auto">
-              {Object.values(CHARACTERS).map((char) => (
-                <div key={char.key} className="flex-shrink-0 p-4 overflow-y-auto" style={{ width: '220px' }}>
-                  {/* En-tête personnage */}
-                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{
-                        backgroundColor: char.color,
-                        boxShadow: `0 0 6px rgba(${hexToRgb(char.color)},0.8)`,
-                      }}
-                    />
-                    <div>
-                      <p className="text-sm font-bold text-white">{char.label}</p>
-                      <p className="text-xs text-slate-500 italic">{char.sublabel}</p>
+              {charKeys.map(key => {
+                const char = CHARACTERS[key];
+                return (
+                  <div key={key} className="flex-shrink-0 p-4 overflow-y-auto" style={{ width: '220px' }}>
+                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: char.color, boxShadow: `0 0 6px rgba(${hexToRgb(char.color)},0.8)` }} />
+                      <div>
+                        <p className="text-sm font-bold text-white">{char.label}</p>
+                        <p className="text-xs text-slate-500 italic">{char.sublabel}</p>
+                      </div>
                     </div>
+                    <JourneySidebar
+                      key={`${key}-${steps[key]}`}
+                      step={char.journey[steps[key] ?? 0]}
+                      color={char.color}
+                      totalSteps={char.journey.length}
+                      compact
+                    />
                   </div>
-                  <JourneySidebar
-                    key={`${char.key}-${steps[char.key]}`}
-                    step={char.journey[steps[char.key]]}
-                    color={char.color}
-                    totalSteps={char.journey.length}
-                    compact
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
-          ) : (
-            /* ── Mode Solo : sélecteur + personnage focalisé ── */
+          ) : focusedChar ? (
             <div className="flex flex-col h-full">
-              {/* Onglets de sélection du personnage */}
               <div className="flex border-b border-white/10 flex-shrink-0">
-                {Object.values(CHARACTERS).map((char) => {
-                  const isActive = focused === char.key;
+                {charKeys.map(key => {
+                  const char = CHARACTERS[key];
+                  const isActive = focused === key;
                   return (
                     <button
-                      key={char.key}
-                      onClick={() => setFocused(char.key)}
+                      key={key}
+                      onClick={() => setFocused(key)}
                       className="flex-1 flex flex-col items-center py-2.5 px-1 gap-1 transition-all duration-200 relative"
-                      style={{
-                        backgroundColor: isActive
-                          ? `rgba(${hexToRgb(char.color)},0.1)`
-                          : 'transparent',
-                      }}
+                      style={{ backgroundColor: isActive ? `rgba(${hexToRgb(char.color)},0.1)` : 'transparent' }}
                       title={char.sublabel}
                     >
-                      <span
-                        className="w-2.5 h-2.5 rounded-full transition-all duration-200"
+                      <span className="w-2.5 h-2.5 rounded-full transition-all duration-200"
                         style={{
                           backgroundColor: char.color,
-                          boxShadow: isActive
-                            ? `0 0 8px rgba(${hexToRgb(char.color)},0.9)`
-                            : 'none',
+                          boxShadow: isActive ? `0 0 8px rgba(${hexToRgb(char.color)},0.9)` : 'none',
                           opacity: isActive ? 1 : 0.4,
-                        }}
-                      />
-                      <span
-                        className="text-xs font-bold leading-tight text-center"
-                        style={{ color: isActive ? char.color : '#475569' }}
-                      >
+                        }} />
+                      <span className="text-xs font-bold leading-tight text-center"
+                        style={{ color: isActive ? char.color : '#475569' }}>
                         {char.label}
                       </span>
-                      {/* Bordure active */}
                       {isActive && (
-                        <span
-                          className="absolute bottom-0 left-0 right-0 h-0.5"
-                          style={{ backgroundColor: char.color }}
-                        />
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5"
+                          style={{ backgroundColor: char.color }} />
                       )}
                     </button>
                   );
                 })}
               </div>
-
-              {/* Contenu */}
               <div className="flex-1 p-6 overflow-y-auto">
                 <JourneySidebar
                   key={`${focused}-${steps[focused]}`}
-                  step={CHARACTERS[focused].journey[steps[focused]]}
-                  color={CHARACTERS[focused].color}
-                  totalSteps={CHARACTERS[focused].journey.length}
+                  step={focusedChar.journey[steps[focused] ?? 0]}
+                  color={focusedChar.color}
+                  totalSteps={focusedChar.journey.length}
                   onCharacterClick={onCharacterClick}
                 />
               </div>
             </div>
-          )}
+          ) : null}
         </aside>
       </div>
 
@@ -261,29 +256,20 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
         style={{ background: 'rgba(5,10,18,0.97)', backdropFilter: 'blur(12px)' }}
       >
         {linked && (
-          <div
-            className="flex items-center gap-2 text-xs pb-2 border-b border-white/5"
-            style={{ color: '#818cf8' }}
-          >
-            <span
-              className="w-2 h-2 rounded-full animate-pulse"
-              style={{ backgroundColor: '#818cf8' }}
-            />
+          <div className="flex items-center gap-2 text-xs pb-2 border-b border-white/5" style={{ color: '#818cf8' }}>
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#818cf8' }} />
             Timelines synchronisées — les personnages se retrouvent sur la même scène narrative
           </div>
         )}
-
-        {Object.values(CHARACTERS).map((char) => {
-          const isFocused = focused === char.key;
-          const isVisible = visible[char.key];
-
+        {charKeys.map(key => {
+          const char = CHARACTERS[key];
+          const isFocused = focused === key;
+          const isVisible = visible[key] ?? true;
           return (
-            <div key={char.key} className="flex items-start gap-3">
-              {/* Identité du personnage */}
+            <div key={key} className="flex items-start gap-3">
               <div className="flex items-center gap-2 w-36 flex-shrink-0 pt-1">
-                {/* Dot — toggle visibilité sur la carte */}
                 <button
-                  onClick={() => toggleVisible(char.key)}
+                  onClick={() => toggleVisible(key)}
                   title={isVisible ? 'Masquer de la carte' : 'Afficher sur la carte'}
                   className="w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all duration-200"
                   style={{
@@ -293,29 +279,23 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
                     opacity: isVisible ? 1 : 0.5,
                   }}
                 />
-                {/* Nom — toggle focus sidebar */}
                 <button
-                  onClick={() => { setFocused(char.key); if (compare) setCompare(false); }}
+                  onClick={() => { setFocused(key); if (compare) setCompare(false); }}
                   className="text-left transition-all duration-200"
-                  title="Focaliser dans la sidebar"
                 >
-                  <p
-                    className="text-xs font-bold leading-tight"
-                    style={{ color: isFocused && !compare ? char.color : '#64748b' }}
-                  >
+                  <p className="text-xs font-bold leading-tight"
+                    style={{ color: isFocused && !compare ? char.color : '#64748b' }}>
                     {char.label}
                   </p>
                   <p className="text-xs text-slate-600 italic leading-tight">{char.sublabel}</p>
                 </button>
               </div>
-
-              {/* Slider */}
               <JourneyTimeline
                 journey={char.journey}
-                currentStep={steps[char.key]}
-                onStepChange={(step) => {
-                  handleStepChange(char.key, step);
-                  if (!compare) setFocused(char.key);
+                currentStep={steps[key] ?? 0}
+                onStepChange={step => {
+                  handleStepChange(key, step);
+                  if (!compare) setFocused(key);
                 }}
                 color={char.color}
                 showLabels={isFocused || compare}
