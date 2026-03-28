@@ -18,6 +18,7 @@ import { useDb } from './db/DbContext';
 import { importFromBackup } from './db/importFromBackup';
 import ReviewPage    from './pages/ReviewPage';
 import EmotionalArc  from './pages/EmotionalArc';
+import HeroJourney   from './pages/HeroJourney';
 import PlantsBrowser   from './pages/PlantsBrowser';
 import ThreadsBrowser  from './pages/ThreadsBrowser';
 import GlobalSearch  from './components/search/GlobalSearch';
@@ -245,14 +246,7 @@ function HomePage() {
       label:   'Voyage du Héros',
       desc:    '12 étapes archétypales de Joseph Campbell',
       icon:    '⚔️',
-      available: false,
-    },
-    {
-      id:      'trois_actes',
-      label:   'Structure en 3 actes',
-      desc:    'Exposition, confrontation, résolution',
-      icon:    '🎭',
-      available: false,
+      available: true,
     },
   ];
 
@@ -794,6 +788,7 @@ function AppLayout() {
           <Route path="/arc"          element={<RequireProject><EmotionalArc /></RequireProject>} />
           <Route path="/plants"       element={<RequireProject><PlantsBrowser /></RequireProject>} />
           <Route path="/threads"      element={<RequireProject><ThreadsBrowser /></RequireProject>} />
+          <Route path="/heros"        element={<RequireProject><HeroJourney /></RequireProject>} />
           <Route path="/review"       element={<RequireProject><ReviewPage /></RequireProject>} />
         </Routes>
       </div>

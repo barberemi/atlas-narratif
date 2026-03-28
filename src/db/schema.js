@@ -250,6 +250,19 @@ CREATE TABLE IF NOT EXISTS character_arc_points (
   PRIMARY KEY (project_id, axis_id, chapter_num)
 );
 
+-- ── Voyage du Héros ───────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS hero_journey_entries (
+  id           TEXT PRIMARY KEY,
+  project_id   TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  stage_key    TEXT NOT NULL,
+  character_id TEXT,
+  chapter_num  INTEGER,
+  summary      TEXT
+);
+ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS character_id TEXT;
+ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS chapter_num INTEGER;
+ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS summary TEXT;
+
 `;
 
 /** Applique le schéma sur la connexion PGlite donnée (idempotent). */

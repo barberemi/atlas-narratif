@@ -1,17 +1,26 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
 import { useIncStore }      from '../../stores/useIncStore';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
+import { usePlantStore }    from '../../stores/usePlantStore';
+import { useThreadStore }   from '../../stores/useThreadStore';
+import { DETECTOR_CATALOG } from '../../db/detectIncoherences';
 import EntityEditor      from '../lore/EntityEditor';
 import IncoherenceCard   from './IncoherenceCard';
+import DetectorCatalog   from './DetectorCatalog';
 
-const FILTER_OPTIONS  = [
+const SEVERITY_OPTIONS = [
   { key: 'all',      label: 'Toutes' },
   { key: 'critical', label: 'Critique' },
   { key: 'high',     label: 'Élevée' },
   { key: 'medium',   label: 'Moyenne' },
   { key: 'low',      label: 'Faible' },
+];
+
+const TYPE_OPTIONS = [
+  { key: 'all', label: 'Tous les types' },
+  ...DETECTOR_CATALOG.map(d => ({ key: d.type, label: `${d.icon} ${d.type}` })),
 ];
 
 // ── IncoherencesBrowser principal ────────────────────────────────────────────
@@ -24,14 +33,46 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
   const characters    = useLoreStore(s => s.characters);
   const locations     = useLoreStore(s => s.locations);
   const objects       = useLoreStore(s => s.objects);
-  const events        = useTimelineStore(s => s.events) ?? [];
+  const groups        = useLoreStore(s => s.groups)        ?? [];
+  const events        = useTimelineStore(s => s.events)    ?? [];
+  const plants        = usePlantStore(s => s.plants)       ?? [];
+  const threads       = useThreadStore(s => s.threads)     ?? [];
+
   const [severityFilter, setSeverityFilter] = useState(initialFilter);
-  const [editorState,    setEditorState]    = useState(null); // { entity, entityType }
+  const [typeFilter,     setTypeFilter]     = useState('all');
+  const [entityFilter,   setEntityFilter]   = useState(null); // { entityId, entityType, label }
+  const [editorState,    setEditorState]    = useState(null);
+  const [showCatalog,    setShowCatalog]    = useState(false);
+  const [typeDropOpen,   setTypeDropOpen]   = useState(false);
+  const typeDropRef = useRef(null);
 
   useEffect(() => { setSeverityFilter(initialFilter); }, [initialFilter]);
 
-  const handleToggle = (incId) => toggle(incId);
+  useEffect(() => {
+    if (!typeDropOpen) return;
+    const handler = (e) => {
+      if (typeDropRef.current && !typeDropRef.current.contains(e.target)) setTypeDropOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [typeDropOpen]);
 
+  // ── Scan automatique ────────────────────────────────────────────────────────
+  // Se déclenche 1.5s après un changement de données (après le mount initial).
+  const mountedRef  = useRef(false);
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    if (scanning) return;
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      rescan({ characters, locations, objects, events, plants, threads, groups });
+    }, 1500);
+    return () => clearTimeout(debounceRef.current);
+  }, [characters, locations, objects, events, plants, threads, groups]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
   const handleFix = (link) => {
     const storeMap = { character: characters, location: locations, object: objects };
     const entity   = storeMap[link.entityType]?.find(e => e.id === link.entityId);
@@ -39,11 +80,25 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
     setEditorState({ entity, entityType: link.entityType });
   };
 
+  const handleEntityFilter = (entityId, entityType, label) => {
+    setEntityFilter(prev =>
+      prev?.entityId === entityId ? null : { entityId, entityType, label }
+    );
+  };
+
+  const runRescan = () =>
+    rescan({ characters, locations, objects, events, plants, threads, groups });
+
+  // ── Filtrage ────────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    const list = incoherences ?? [];
-    const base = severityFilter === 'all' ? list : list.filter(i => i.severity === severityFilter);
-    return [...base].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
-  }, [incoherences, severityFilter]);
+    let list = incoherences ?? [];
+    if (severityFilter !== 'all') list = list.filter(i => i.severity === severityFilter);
+    if (typeFilter     !== 'all') list = list.filter(i => i.type === typeFilter);
+    if (entityFilter)             list = list.filter(i =>
+      i.links?.some(l => l.entityId === entityFilter.entityId)
+    );
+    return [...list].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
+  }, [incoherences, severityFilter, typeFilter, entityFilter]);
 
   const counts = useMemo(() => {
     const list = incoherences ?? [];
@@ -54,6 +109,12 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
 
   const resolvedCount = useMemo(
     () => (incoherences ?? []).filter(i => i.resolved).length,
+    [incoherences],
+  );
+
+  // Types présents dans les données actuelles (pour griser les options vides)
+  const presentTypes = useMemo(
+    () => new Set((incoherences ?? []).map(i => i.type)),
     [incoherences],
   );
 
@@ -73,14 +134,14 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
             Détecteur d'<span style={{ color: '#EF4444' }}>Incohérences</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            Analyse narrative — La Communauté de l'Anneau
+            Analyse narrative — scan auto actif
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-center gap-0.5">
             <button
-              onClick={() => rescan({ characters, locations, objects, events })}
+              onClick={runRescan}
               disabled={scanning}
               className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-all duration-150"
               style={{
@@ -92,7 +153,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
             >
               {scanning
                 ? <><span className="animate-spin inline-block w-3 h-3 border border-indigo-400/30 border-t-indigo-400 rounded-full" /> Analyse…</>
-                : '⚡ Relancer l\'analyse'
+                : '⚡ Relancer'
               }
             </button>
             {lastScanCount !== null && (
@@ -101,16 +162,26 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
               </span>
             )}
           </div>
+          <button
+            onClick={() => setShowCatalog(true)}
+            className="text-xs px-2.5 py-1.5 rounded-lg font-bold transition-all duration-150"
+            style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#475569', border: '1px solid rgba(255,255,255,0.08)' }}
+            title="Voir tous les types d'incohérences détectables"
+          >
+            ? Guide
+          </button>
           <span className="text-xs font-mono text-slate-600">
             {resolvedCount} résolu{resolvedCount !== 1 ? 's' : ''} / {incoherences.length}
           </span>
         </div>
       </header>
 
-      {/* ── Filtres par sévérité ── */}
-      <div className="px-6 pt-4 pb-0 flex-shrink-0">
+      {/* ── Filtres ── */}
+      <div className="px-6 pt-4 pb-3 flex flex-col gap-3 flex-shrink-0">
+
+        {/* Sévérité */}
         <nav className="flex gap-1 border-b border-white/10">
-          {FILTER_OPTIONS.map(opt => {
+          {SEVERITY_OPTIONS.map(opt => {
             const isActive = severityFilter === opt.key;
             const cfg      = opt.key !== 'all' ? SEVERITY_CONFIG[opt.key] : null;
             return (
@@ -137,10 +208,88 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
             );
           })}
         </nav>
+
+        {/* Type + filtre entité actif */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative" ref={typeDropRef}>
+            <button
+              onClick={() => setTypeDropOpen(v => !v)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
+              style={{
+                minWidth: 200,
+                backgroundColor: typeFilter !== 'all' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.06)',
+                color:           typeFilter !== 'all' ? '#818cf8' : '#94a3b8',
+                border:          typeFilter !== 'all' ? '1px solid rgba(99,102,241,0.35)' : '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
+              {typeFilter === 'all'
+                ? <><span className="text-slate-500">⚠</span> Tous les types</>
+                : <>{DETECTOR_CATALOG.find(d => d.type === typeFilter)?.icon} {typeFilter}</>
+              }
+              <span className="ml-auto text-slate-600 text-[10px]">{typeDropOpen ? '▲' : '▼'}</span>
+            </button>
+
+            {typeDropOpen && (
+              <div
+                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden overflow-y-auto"
+                style={{ minWidth: 240, maxHeight: 320, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+              >
+                {TYPE_OPTIONS.map(opt => {
+                  const isActive   = typeFilter === opt.key;
+                  const isDisabled = opt.key !== 'all' && !presentTypes.has(opt.key);
+                  return (
+                    <div
+                      key={opt.key}
+                      onClick={() => { if (!isDisabled) { setTypeFilter(opt.key); setTypeDropOpen(false); } }}
+                      className="flex items-center gap-2 px-3 py-2 text-xs transition-all duration-100"
+                      style={{
+                        cursor:          isDisabled ? 'default' : 'pointer',
+                        opacity:         isDisabled ? 0.3 : 1,
+                        backgroundColor: isActive ? 'rgba(99,102,241,0.15)' : 'transparent',
+                        color:           isActive ? '#818cf8' : '#94a3b8',
+                      }}
+                      onMouseEnter={e => { if (!isDisabled && !isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
+                      onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                      {opt.key === 'all' ? <span className="text-slate-500">⚠</span> : <span>{DETECTOR_CATALOG.find(d => d.type === opt.key)?.icon}</span>}
+                      <span>{opt.key === 'all' ? 'Tous les types' : opt.key}</span>
+                      {isActive && <span className="ml-auto text-[10px]">✓</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {entityFilter && (
+            <button
+              onClick={() => setEntityFilter(null)}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all duration-150"
+              style={{ backgroundColor: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
+              title="Supprimer le filtre entité"
+            >
+              👤 {entityFilter.label}
+              <span className="opacity-60 ml-0.5">✕</span>
+            </button>
+          )}
+
+          {(typeFilter !== 'all' || entityFilter) && (
+            <button
+              onClick={() => { setTypeFilter('all'); setEntityFilter(null); }}
+              className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors"
+            >
+              Tout effacer
+            </button>
+          )}
+
+          <span className="ml-auto text-xs font-mono text-slate-600">
+            {filtered.length} résultat{filtered.length !== 1 ? 's' : ''}
+          </span>
+        </div>
       </div>
 
       {/* ── Grille de cartes ── */}
-      <main className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
+      <main className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-4 bg-[#0B1621]">
         {filtered.length === 0 ? (
           <p className="text-slate-600 font-serif italic text-center mt-20">
             Aucune incohérence dans cette catégorie.
@@ -152,8 +301,9 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
                 key={inc.id}
                 inc={inc}
                 resolved={inc.resolved}
-                onToggleResolved={handleToggle}
+                onToggleResolved={toggle}
                 onEntityClick={onEntityClick}
+                onEntityFilter={handleEntityFilter}
                 onFix={handleFix}
               />
             ))}
@@ -168,6 +318,8 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
           onClose={() => setEditorState(null)}
         />
       )}
+
+      {showCatalog && <DetectorCatalog onClose={() => setShowCatalog(false)} />}
     </div>
   );
 }

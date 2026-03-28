@@ -1982,3 +1982,20 @@ export const characterArcsDB = [
     ],
   },
 ];
+
+// ── Voyage du Héros ────────────────────────────────────────────────────────────
+
+export const heroJourneyDB = [
+  { stageKey: 'ordinary_world',     characterId: 'char_frodo', chapterNum: 1, summary: "Frodo mène une vie paisible au Comté, héritier de Bilbo, sans ambition héroïque." },
+  { stageKey: 'call_to_adventure',  characterId: 'char_frodo', chapterNum: 2, summary: "Gandalf révèle la vérité sur l'Anneau Unique — Frodo doit le porter loin du Comté." },
+  { stageKey: 'refusal',            characterId: 'char_frodo', chapterNum: 2, summary: "Frodo tente de confier l'Anneau à Gandalf, cherchant à fuir la responsabilité." },
+  { stageKey: 'mentor',             characterId: 'char_frodo', chapterNum: 2, summary: "Gandalf guide et protège Frodo, lui révèle l'histoire de l'Anneau et lui montre la voie." },
+  { stageKey: 'threshold',          characterId: 'char_frodo', chapterNum: 3, summary: "Frodo quitte le Comté avec Sam. La rencontre avec Aragorn scelle son engagement dans l'aventure." },
+  { stageKey: 'tests',              characterId: 'char_frodo', chapterNum: 4, summary: "Amon Sûl, la blessure du Roi-Sorcier, la fuite vers le Gué — Frodo apprend le prix du courage." },
+  { stageKey: 'inmost_cave',        characterId: 'char_frodo', chapterNum: 6, summary: "La Moria : Frodo pénètre dans l'obscurité absolue, confronté à l'ancienne terreur du Balrog." },
+  { stageKey: 'ordeal',             characterId: 'char_frodo', chapterNum: 7, summary: "Chute de Gandalf au Pont de Khazad-dûm. La Communauté perd son guide — Frodo doit assumer seul." },
+  { stageKey: 'reward',             characterId: 'char_frodo', chapterNum: 8, summary: "Lothlórien : repos, dons de Galadriel, la Phiale de lumière — Frodo reçoit les outils de sa victoire." },
+  { stageKey: 'road_back',          characterId: 'char_frodo', chapterNum: 9, summary: "Frodo décide de partir seul vers la Mordor, refusant de mettre ses compagnons en danger." },
+  { stageKey: 'resurrection',       characterId: 'char_frodo', chapterNum: 9, summary: "La confrontation avec Boromir révèle la corruption de l'Anneau — Frodo doit mourir à son ancienne vie." },
+  { stageKey: 'return_with_elixir', characterId: 'char_frodo', chapterNum: 9, summary: "Frodo et Sam traversent le fleuve. L'élixir n'est pas encore gagné — la vraie épreuve commence." },
+];

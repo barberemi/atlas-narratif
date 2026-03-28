@@ -34,6 +34,11 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
   useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
   useEffect(() => { setSearch(initialSearch); }, [initialSearch]);
 
+  const handleCharacterClick = (charName) => {
+    setActiveTab('characters');
+    setSearch(charName);
+  };
+
   const TABS = useMemo(() => ready ? [
     { key: 'characters', label: 'Personnages', data: characters },
     { key: 'locations',  label: 'Lieux',       data: locations  },
@@ -175,7 +180,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             {activeTab === 'locations' &&
               filtered.map((item) => (
                 <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
-                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick}
+                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={handleCharacterClick}
                     onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
                   />
                 </div>
@@ -183,18 +188,20 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             {activeTab === 'objects' &&
               filtered.map((item) => (
                 <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
-                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick}
+                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={handleCharacterClick}
                     onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
                   />
                 </div>
               ))}
             {activeTab === 'groups' &&
               filtered.map((item) => (
-                <GroupCard
-                  key={item.id}
-                  group={item}
-                  onEdit={g => setGroupEditorGrp(g)}
-                />
+                <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setGroupEditorGrp(item)}>
+                  <GroupCard
+                    group={item}
+                    onCharacterClick={handleCharacterClick}
+                    onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
+                  />
+                </div>
               ))}
           </div>
         )}

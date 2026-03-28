@@ -134,8 +134,7 @@ Les voyages des personnages incluent les coordonnées cartographiques, les réf�
 
 # A faire
 
-
-1- Ajouter des type de narration (Le voyage du héro, Structure en 3 actes, Story Circle ? Annatomie du scénario)
+1- Notion de flashback ? multivers ?
 
 2- Revoir la homepage (claude code + )
 

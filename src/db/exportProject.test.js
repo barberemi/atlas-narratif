@@ -32,6 +32,7 @@ function makeDb(projectName = 'Mon Roman') {
       if (sql.includes('FROM character_groups')) return { rows: [] };
       if (sql.includes('FROM plant_payoffs'))   return { rows: [] };
       if (sql.includes('FROM arc_points'))      return { rows: [] };
+      if (sql.includes('FROM hero_journey_entries')) return { rows: [] };
       return { rows: [] };
     }),
   };
@@ -57,11 +58,11 @@ describe('exportProject', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
   });
 
-  it('lance 19 requêtes SQL (1 projet + 18 tables)', async () => {
+  it('lance 20 requêtes SQL (1 projet + 19 tables)', async () => {
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
     const db = makeDb();
     await exportProject(db, 'proj_1');
-    expect(db.query).toHaveBeenCalledTimes(19);
+    expect(db.query).toHaveBeenCalledTimes(20);
   });
 
   it('lève une erreur si le projet est introuvable', async () => {

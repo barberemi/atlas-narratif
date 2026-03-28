@@ -40,6 +40,7 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     narrativeThreads   = [],
     characterArcAxes   = [],
     characterArcPoints = [],
+    heroJourneyEntries = [],
   } = payload;
 
   // ── Nouveau project_id unique ──────────────────────────────────────────────
@@ -266,6 +267,16 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
         `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
          VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
         [pid(), r.axis_id, r.chapter_num, r.value, r.note ?? null],
+      );
+    }
+
+    // Voyage du Héros
+    onProgress?.('Import du Voyage du Héros…');
+    for (const r of heroJourneyEntries) {
+      await db.query(
+        `INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary)
+         VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
+        [r.id, pid(), r.stage_key, r.character_id ?? null, r.chapter_num ?? null, r.summary ?? null],
       );
     }
 

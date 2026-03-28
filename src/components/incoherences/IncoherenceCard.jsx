@@ -7,17 +7,25 @@ import FixButton from './FixButton';
 const SEVERITY_LABELS = { critical: 'Critique', high: 'Élevée', medium: 'Moyenne', low: 'Faible' };
 
 const TYPE_ICONS = {
-  'Contradiction Temporelle':    '⏱',
-  'Entité Non Référencée':       '🔗',
-  'Incohérence de Porteur':      '🎒',
-  'Téléportation de Personnage': '🌀',
-  'Créateur Non Référencé':      '⚒',
-  "Lieu d'Origine Inexistant":   '📍',
-  'Affiliation Fantôme':         '👻',
-  'Objet sans Lieu de Création': '❓',
+  // critical
+  'Continuité de Personnage':       '💀',
+  // high
+  "Continuité d'Objet":             '⚙',
+  'Conflit de Lieu Intra-Chapitre': '⚡',
+  'Payoff Avant Plant':             '⏪',
+  'Entité Non Référencée':          '🔗',
+  // medium
+  'Incohérence de Porteur':         '🎒',
+  'Affiliation Fantôme':            '👻',
+  'Personnage POV Absent':          '👁',
+  'Plant Sans Payoff':              '🌱',
+  // low
+  'Fil Narratif Vide':              '🧵',
+  'Entité Orpheline':               '🔗',
+  'Scène Vide':                     '◯',
 };
 
-export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick, onFix }) {
+export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick, onEntityFilter, onFix }) {
   const cfg  = SEVERITY_CONFIG[inc.severity];
   const icon = TYPE_ICONS[inc.type] ?? '⚠';
   const setNote = useIncStore(s => s.setNote);
@@ -65,7 +73,7 @@ export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEnt
         {inc.links?.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-white/5">
             {inc.links.map(link => (
-              <EntityChip key={link.entityId + link.label} link={link} onEntityClick={onEntityClick} />
+              <EntityChip key={link.entityId + link.label} link={link} onEntityClick={onEntityClick} onEntityFilter={onEntityFilter} />
             ))}
             <div className="ml-auto">
               <FixButton links={inc.links} onFix={onFix} />

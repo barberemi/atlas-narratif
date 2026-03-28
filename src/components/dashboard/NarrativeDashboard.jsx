@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
 import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
-import { useIncStore } from '../../stores/useIncStore';
-import { useLoreStore } from '../../stores/useLoreStore';
-import { useTimelineStore } from '../../stores/useTimelineStore';
-import { useStcStore } from '../../stores/useStcStore';
-import { usePlantStore } from '../../stores/usePlantStore';
-import { PLANT_TYPES } from '../../pages/PlantsBrowser';
+import { useIncStore }          from '../../stores/useIncStore';
+import { useLoreStore }         from '../../stores/useLoreStore';
+import { useTimelineStore }     from '../../stores/useTimelineStore';
+import { useStcStore }          from '../../stores/useStcStore';
+import { usePlantStore }        from '../../stores/usePlantStore';
+import { useArcStore }          from '../../stores/useArcStore';
+import { useHeroJourneyStore }  from '../../stores/useHeroJourneyStore';
+import { PLANT_TYPES }          from '../../pages/PlantsBrowser';
 import EntityEditor      from '../lore/EntityEditor';
 import CircularGauge     from './CircularGauge';
 import SectionTitle      from './SectionTitle';
@@ -25,12 +27,52 @@ const TYPE_ICONS = {
   'Objet sans Lieu de Création': '❓',
 };
 
-const TOTAL_BEATS = 15;
+const TOTAL_BEATS    = 15;
+const TOTAL_VH_STAGES = 12;
+
+// ── FrameworkCard ─────────────────────────────────────────────────────────────
+
+function FrameworkCard({ icon, title, filled, total, score, path, onNavigate, subtitle }) {
+  const color = score >= 80 ? '#10B981' : score >= 40 ? '#f59e0b' : score > 0 ? '#ef4444' : '#475569';
+  return (
+    <div
+      className="rounded-2xl p-4 flex flex-col gap-3"
+      style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{icon}</span>
+          <span className="text-xs font-bold text-slate-300">{title}</span>
+        </div>
+        <button
+          onClick={() => onNavigate(path)}
+          className="text-[10px] font-bold transition-opacity opacity-50 hover:opacity-100"
+          style={{ color: '#818cf8' }}
+        >
+          Ouvrir →
+        </button>
+      </div>
+      <div className="flex items-end gap-2">
+        <span className="text-2xl font-black leading-none" style={{ color }}>{filled}</span>
+        <span className="text-sm text-slate-500 mb-0.5">/ {total}</span>
+        <span className="text-xs text-slate-600 mb-0.5 ml-auto font-mono">{score}%</span>
+      </div>
+      {subtitle && <p className="text-[10px] text-slate-600 -mt-1">{subtitle}</p>}
+      <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${score}%`, backgroundColor: color }}
+        />
+      </div>
+    </div>
+  );
+}
 
 // ── Dashboard principal ───────────────────────────────────────────────────────
 export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
   const navigate = useNavigate();
-  const [editorState, setEditorState] = useState(null); // { entity, entityType }
+  const [editorState, setEditorState] = useState(null);
+
   const incoherences = useIncStore(s => s.data);
   const characters   = useLoreStore(s => s.characters);
   const locations    = useLoreStore(s => s.locations);
@@ -39,8 +81,10 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
   const events       = useTimelineStore(s => s.events);
   const stcChapters  = useStcStore(s => s.chapters);
   const plants       = usePlantStore(s => s.plants) ?? [];
+  const arcPoints    = useArcStore(s => s.points);
+  const hjEntries    = useHeroJourneyStore(s => s.entries);
 
-  // ── Calculs ────────────────────────────────────────────────────────────────
+  // ── Calculs incohérences ───────────────────────────────────────────────────
   const { totalWeight, resolvedWeight, bySeverity, resolvedBySeverity, byType, topEntities } = useMemo(() => {
     const weights = { critical: 4, high: 3, medium: 2, low: 1 };
     const list = incoherences ?? [];
@@ -81,6 +125,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     return { totalWeight, resolvedWeight, bySeverity: bySev, resolvedBySeverity: resolvedBySev, byType, topEntities };
   }, [incoherences]);
 
+  // ── Inventaire ────────────────────────────────────────────────────────────
   const inventory = useMemo(() => {
     const chapterCount = new Set((events ?? []).map(e => e.chapter)).size;
     const assignedBeats = new Set(
@@ -96,6 +141,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     };
   }, [characters, locations, objects, events, stcChapters]);
 
+  // ── Couverture entités ─────────────────────────────────────────────────────
   const coverage = useMemo(() => {
     const evtList = events ?? [];
     const charIdsInTimeline = new Set(
@@ -128,6 +174,51 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     return { orphanChars, orphanLocs, topChars, maxCount };
   }, [characters, locations, events]);
 
+  // ── Couverture des méthodes ────────────────────────────────────────────────
+  const frameworkCoverage = useMemo(() => {
+    const evtList      = events ?? [];
+    const eventsTotal  = evtList.length;
+    const chapterCount = inventory.chapters;
+    const hjList       = hjEntries ?? [];
+    const arcList      = arcPoints ?? [];
+
+    // STC
+    const beatsScore = Math.round((inventory.beats / TOTAL_BEATS) * 100);
+
+    // Voyage du Héros — étapes uniques renseignées (au moins un summary)
+    const filledVHStages = new Set(
+      hjList.filter(e => e.summary?.trim()).map(e => e.stageKey)
+    ).size;
+    const vjScore = Math.round((filledVHStages / TOTAL_VH_STAGES) * 100);
+    // Subtitle : personnage le plus avancé
+    const hjByChar = new Map();
+    for (const e of hjList.filter(x => x.summary?.trim())) {
+      const cid = e.characterId ?? '__none__';
+      hjByChar.set(cid, (hjByChar.get(cid) ?? 0) + 1);
+    }
+    const bestCharId = [...hjByChar.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const bestChar   = bestCharId && bestCharId !== '__none__' ? characters.find(c => c.id === bestCharId) : null;
+    const vjSubtitle = bestChar ? `Meilleur : ${bestChar.name} (${hjByChar.get(bestCharId)}/12)` : null;
+
+    // Arc émotionnel — chapitres avec au moins un point
+    const arcCoveredChapters = new Set(arcList.map(p => p.chapterNumber)).size;
+    const arcScore = chapterCount === 0 ? 0 : Math.round((arcCoveredChapters / chapterCount) * 100);
+
+    // Anatomie de scène — événements avec goal + conflict + outcome
+    const evtWithAnatomy = evtList.filter(
+      e => e.sceneGoal && e.sceneConflict && e.sceneOutcome
+    ).length;
+    const anatomyScore = eventsTotal === 0 ? 0 : Math.round((evtWithAnatomy / eventsTotal) * 100);
+
+    return {
+      stc:     { filled: inventory.beats,    total: TOTAL_BEATS,    score: beatsScore,   subtitle: null },
+      vj:      { filled: filledVHStages,     total: TOTAL_VH_STAGES, score: vjScore,     subtitle: vjSubtitle },
+      arc:     { filled: arcCoveredChapters, total: chapterCount,    score: arcScore,    subtitle: null },
+      anatomy: { filled: evtWithAnatomy,     total: eventsTotal,     score: anatomyScore, subtitle: null },
+    };
+  }, [events, inventory, hjEntries, arcPoints, characters]);
+
+  // ── Rythme narratif ───────────────────────────────────────────────────────
   const rhythm = useMemo(() => {
     const evtList = events ?? [];
     const byChapter = new Map();
@@ -147,12 +238,25 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     return { chapters, maxEvents, maxChars };
   }, [events]);
 
-  // ── Score global (penaltyScore calculé ici pour être dispo avant le guard) ──
+  // ── Scores de base ─────────────────────────────────────────────────────────
   const penaltyScore  = totalWeight === 0 ? 100 : Math.round(100 - ((totalWeight - resolvedWeight) / totalWeight) * 100);
   const coverageScore = inventory.characters === 0 ? 100
     : Math.round(((inventory.characters - coverage.orphanChars.length) / inventory.characters) * 100);
-  const beatsScore  = Math.round((inventory.beats / TOTAL_BEATS) * 100);
-  const globalScore = Math.round((penaltyScore * 2 + coverageScore + beatsScore) / 4);
+
+  // Score global adaptatif (n'inclut un axe que s'il y a des données)
+  const globalScore = useMemo(() => {
+    const parts = [
+      { w: 2, v: penaltyScore },
+      { w: 1, v: coverageScore },
+      { w: 1, v: frameworkCoverage.stc.score },
+    ];
+    if (inventory.chapters > 0)      parts.push({ w: 1, v: frameworkCoverage.arc.score });
+    if (inventory.events > 0)        parts.push({ w: 1, v: frameworkCoverage.anatomy.score });
+    if ((hjEntries?.length ?? 0) > 0) parts.push({ w: 1, v: frameworkCoverage.vj.score });
+    const totalW = parts.reduce((s, x) => s + x.w, 0);
+    return Math.round(parts.reduce((s, x) => s + x.v * x.w, 0) / totalW);
+  }, [penaltyScore, coverageScore, frameworkCoverage, inventory, hjEntries]);
+
   const globalColor = globalScore >= 80 ? '#10B981' : globalScore >= 50 ? '#f59e0b' : '#ef4444';
   const globalLabel = globalScore >= 80 ? 'Bon' : globalScore >= 50 ? 'Moyen' : 'Critique';
 
@@ -162,6 +266,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     const unresolved = (incoherences ?? []).filter(i => !i.resolved);
     const critical   = unresolved.filter(i => i.severity === 'critical');
     const high       = unresolved.filter(i => i.severity === 'high');
+
     if (critical.length > 0) list.push({
       icon: '🔴', color: '#ef4444',
       label: `${critical.length} incohérence${critical.length > 1 ? 's' : ''} critique${critical.length > 1 ? 's' : ''} non résolue${critical.length > 1 ? 's' : ''}`,
@@ -172,27 +277,49 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
       label: `${high.length} incohérence${high.length > 1 ? 's' : ''} de sévérité élevée`,
       actionLabel: 'Corriger', action: () => onOpenIncoherences('high'),
     });
+
     const missingBeats = TOTAL_BEATS - inventory.beats;
     if (missingBeats > 0) list.push({
-      icon: '🟡', color: '#f59e0b',
+      icon: '🐱', color: '#f59e0b',
       label: `${missingBeats} beat${missingBeats > 1 ? 's' : ''} Save the Cat manquant${missingBeats > 1 ? 's' : ''}`,
       actionLabel: 'Structurer', action: () => navigate('/savethecat'),
     });
+
     if (coverage.orphanChars.length > 0) list.push({
       icon: '👤', color: '#818cf8',
       label: `${coverage.orphanChars.length} personnage${coverage.orphanChars.length > 1 ? 's' : ''} absent${coverage.orphanChars.length > 1 ? 's' : ''} de la timeline`,
       actionLabel: 'Timeline', action: () => navigate('/timeline'),
     });
+
+    if (inventory.chapters > 0 && frameworkCoverage.arc.score < 50) list.push({
+      icon: '〰️', color: '#6366f1',
+      label: `Arc émotionnel incomplet — ${frameworkCoverage.arc.filled}/${frameworkCoverage.arc.total} chapitres renseignés`,
+      actionLabel: 'Compléter', action: () => navigate('/arc'),
+    });
+
+    if (frameworkCoverage.vj.score < 50 && characters.length > 0) list.push({
+      icon: '⚔️', color: '#8B5CF6',
+      label: `Voyage du Héros — seulement ${frameworkCoverage.vj.filled}/${TOTAL_VH_STAGES} étapes renseignées`,
+      actionLabel: 'Remplir', action: () => navigate('/heros'),
+    });
+
+    if (inventory.events > 0 && frameworkCoverage.anatomy.score < 30) list.push({
+      icon: '🔬', color: '#14b8a6',
+      label: `${frameworkCoverage.anatomy.total - frameworkCoverage.anatomy.filled} scène${frameworkCoverage.anatomy.total - frameworkCoverage.anatomy.filled > 1 ? 's' : ''} sans anatomie complète`,
+      actionLabel: 'Timeline', action: () => navigate('/timeline'),
+    });
+
     const modifiedCount = [...characters, ...locations, ...objects].filter(e => e.source !== 'import').length;
     if (modifiedCount > 0) list.push({
       icon: '✏️', color: '#34d399',
       label: `${modifiedCount} entité${modifiedCount > 1 ? 's' : ''} modifiée${modifiedCount > 1 ? 's' : ''} ou ajoutée${modifiedCount > 1 ? 's' : ''} manuellement`,
       actionLabel: 'Révision', action: () => navigate('/review'),
     });
-    return list.slice(0, 5);
-  }, [incoherences, inventory, coverage, characters, locations, objects, navigate, onOpenIncoherences]);
 
-  // ── Entités modifiées depuis l'import ───────────────────────────────────────
+    return list.slice(0, 6);
+  }, [incoherences, inventory, coverage, frameworkCoverage, characters, locations, objects, navigate, onOpenIncoherences, hjEntries]);
+
+  // ── Entités modifiées ──────────────────────────────────────────────────────
   const modifiedEntities = useMemo(() => {
     const all = [
       ...characters.filter(e => e.source !== 'import').map(e => ({ ...e, entityType: 'character' })),
@@ -224,33 +351,32 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
           <h1 className="text-lg font-black tracking-tight">
             Santé <span style={{ color: '#3F51B5' }}>Narrative</span>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">Tableau de bord de cohérence</p>
+          <p className="text-xs text-slate-500 font-serif italic">Vue d'ensemble de ton projet</p>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="text-right">
-              <p className="text-3xl font-black leading-none" style={{ color: globalColor }}>{globalScore}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: globalColor }}>{globalLabel}</p>
-            </div>
-            <div className="w-16 h-16 relative flex-shrink-0">
-              <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
-                <circle
-                  cx="18" cy="18" r="15" fill="none"
-                  stroke={globalColor} strokeWidth="3" strokeLinecap="round"
-                  strokeDasharray={`${(globalScore / 100) * 94.25} 94.25`}
-                  style={{ filter: `drop-shadow(0 0 4px ${globalColor})`, transition: 'stroke-dasharray 1s ease' }}
-                />
-              </svg>
-            </div>
+          <div className="text-right">
+            <p className="text-3xl font-black leading-none" style={{ color: globalColor }}>{globalScore}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: globalColor }}>{globalLabel}</p>
+          </div>
+          <div className="w-16 h-16 relative flex-shrink-0">
+            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+              <circle
+                cx="18" cy="18" r="15" fill="none"
+                stroke={globalColor} strokeWidth="3" strokeLinecap="round"
+                strokeDasharray={`${(globalScore / 100) * 94.25} 94.25`}
+                style={{ filter: `drop-shadow(0 0 4px ${globalColor})`, transition: 'stroke-dasharray 1s ease' }}
+              />
+            </svg>
+          </div>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
         <div className="max-w-6xl mx-auto space-y-6">
 
-          <SectionTitle>Vue d'ensemble</SectionTitle>
-
           {/* ── Inventaire narratif ── */}
+          <SectionTitle>Vue d'ensemble</SectionTitle>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             <StatCard icon="👤" value={inventory.characters} label="Personnages" />
             <StatCard icon="📍" value={inventory.locations}  label="Lieux" />
@@ -293,7 +419,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
             </div>
           )}
 
-          {/* ── 3 jauges ── */}
+          {/* ── 3 jauges circulaires ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {
@@ -301,12 +427,12 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                 title: 'Correction des incohérences',
               },
               {
-                score: inventory.characters === 0 ? 100 : Math.round(((inventory.characters - coverage.orphanChars.length) / inventory.characters) * 100),
+                score: coverageScore,
                 title: 'Couverture des personnages',
                 valueLabel: `${inventory.characters - coverage.orphanChars.length}/${inventory.characters}`,
               },
               {
-                score: Math.round((inventory.beats / TOTAL_BEATS) * 100),
+                score: frameworkCoverage.stc.score,
                 title: 'Structure Save the Cat',
                 valueLabel: `${inventory.beats}/${TOTAL_BEATS}`,
               },
@@ -319,6 +445,51 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                 <CircularGauge score={score} title={title} valueLabel={valueLabel} />
               </div>
             ))}
+          </div>
+
+          {/* ── Couverture des méthodes ── */}
+          <SectionTitle>Couverture des méthodes</SectionTitle>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <FrameworkCard
+              icon="🐱"
+              title="Save the Cat"
+              filled={frameworkCoverage.stc.filled}
+              total={frameworkCoverage.stc.total}
+              score={frameworkCoverage.stc.score}
+              path="/savethecat"
+              onNavigate={navigate}
+              subtitle={`${frameworkCoverage.stc.total - frameworkCoverage.stc.filled} beats manquants`}
+            />
+            <FrameworkCard
+              icon="⚔️"
+              title="Voyage du Héros"
+              filled={frameworkCoverage.vj.filled}
+              total={frameworkCoverage.vj.total}
+              score={frameworkCoverage.vj.score}
+              path="/heros"
+              onNavigate={navigate}
+              subtitle={frameworkCoverage.vj.subtitle ?? `${frameworkCoverage.vj.total - frameworkCoverage.vj.filled} étapes manquantes`}
+            />
+            <FrameworkCard
+              icon="〰️"
+              title="Arc émotionnel"
+              filled={frameworkCoverage.arc.filled}
+              total={frameworkCoverage.arc.total}
+              score={frameworkCoverage.arc.score}
+              path="/arc"
+              onNavigate={navigate}
+              subtitle={frameworkCoverage.arc.total === 0 ? 'Aucun chapitre' : `${frameworkCoverage.arc.total - frameworkCoverage.arc.filled} chap. sans point`}
+            />
+            <FrameworkCard
+              icon="🔬"
+              title="Anatomie de scène"
+              filled={frameworkCoverage.anatomy.filled}
+              total={frameworkCoverage.anatomy.total}
+              score={frameworkCoverage.anatomy.score}
+              path="/timeline"
+              onNavigate={navigate}
+              subtitle={`goal + conflit + issue`}
+            />
           </div>
 
           {/* ── À faire maintenant ── */}
@@ -395,9 +566,9 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
             );
           })()}
 
+          {/* ── Rythme & Présences ── */}
           <SectionTitle>Rythme &amp; Présences</SectionTitle>
 
-          {/* ── Couverture des entités ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* Personnages les plus présents */}
@@ -450,7 +621,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                   </span>
                 </div>
                 {coverage.orphanChars.length === 0 ? (
-                  <p className="text-xs text-green-500 italic">Tous les personnages sont présents</p>
+                  <p className="text-xs text-green-500 italic">Tous présents</p>
                 ) : (
                   <div className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 160 }}>
                     {coverage.orphanChars.map(c => (
@@ -478,7 +649,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                   </span>
                 </div>
                 {coverage.orphanLocs.length === 0 ? (
-                  <p className="text-xs text-green-500 italic">Tous les lieux sont utilisés</p>
+                  <p className="text-xs text-green-500 italic">Tous utilisés</p>
                 ) : (
                   <div className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 160 }}>
                     {coverage.orphanLocs.map(l => (
@@ -498,7 +669,6 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
           {rhythm.chapters.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              {/* Événements par chapitre */}
               <div
                 className="rounded-2xl p-5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -527,7 +697,6 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                 </div>
               </div>
 
-              {/* Personnages actifs par chapitre */}
               <div
                 className="rounded-2xl p-5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -559,12 +728,10 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
             </div>
           )}
 
+          {/* ── Incohérences ── */}
           <SectionTitle>Incohérences</SectionTitle>
 
-          {/* ── Progression ── */}
           <div className="grid grid-cols-1 gap-4">
-
-            {/* Progression de résolution */}
             <div
               className="rounded-2xl p-6 flex flex-col justify-between"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -590,7 +757,6 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                 <p className="text-xs text-slate-600 mt-2 font-mono">{resolvedPct}% complété</p>
               </div>
 
-              {/* Blocs par sévérité */}
               <div className="grid grid-cols-4 gap-3 mt-4">
                 {Object.entries(bySeverity).map(([sev, count]) => {
                   const cfg      = SEVERITY_CONFIG[sev];
@@ -618,7 +784,6 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
                         {allDone && <span className="text-[10px] text-green-500 font-bold">✓</span>}
                       </div>
                       <p className="text-[10px] text-slate-500 uppercase tracking-wider">{cfg.label}</p>
-                      {/* Barre de résolution */}
                       <div className="w-full h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
                         <div
                           className="h-full rounded-full transition-all duration-700"
@@ -639,10 +804,9 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
             </div>
           </div>
 
-          {/* ── Ligne 2 : Entités les + touchées + Types ── */}
+          {/* ── Entités les + touchées + Types ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {/* Top entités */}
             <div
               className="rounded-2xl p-5"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -678,7 +842,6 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
               </div>
             </div>
 
-            {/* Types d'incohérences */}
             <div
               className="rounded-2xl p-5"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}

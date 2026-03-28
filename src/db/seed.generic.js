@@ -67,7 +67,7 @@ async function _seedJourneysIfMissing(db, projectId, journeys) {
 }
 
 async function _doSeed(db, projectId, meta, data) {
-  const { loreDB = {}, timelineDB = [], incoherencesDB = [], chaptersDB = [], journeys = [], groupsDB = [], plantsDB = [], arcPointsDB = [], threadsDB = [], eventExtrasDB = {}, characterArcsDB = [] } = data;
+  const { loreDB = {}, timelineDB = [], incoherencesDB = [], chaptersDB = [], journeys = [], groupsDB = [], plantsDB = [], arcPointsDB = [], threadsDB = [], eventExtrasDB = {}, characterArcsDB = [], heroJourneyDB = [] } = data;
 
   // ── Projet ──────────────────────────────────────────────────────────────────
   await db.query(
@@ -277,5 +277,15 @@ async function _doSeed(db, projectId, meta, data) {
         [projectId, axis.id, pt.chapter_num, pt.value, pt.note ?? null],
       );
     }
+  }
+
+  // ── Voyage du Héros ───────────────────────────────────────────────────────────
+  for (const e of heroJourneyDB) {
+    const id = `hj_${e.characterId}_${e.stageKey}`;
+    await db.query(
+      `INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary)
+       VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
+      [id, projectId, e.stageKey, e.characterId ?? null, e.chapterNum ?? null, e.summary ?? null],
+    );
   }
 }

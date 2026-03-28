@@ -107,6 +107,12 @@ export async function exportProject(db, projectId) {
     [projectId],
   );
 
+  // ── Voyage du Héros ───────────────────────────────────────────────────────
+  const { rows: heroJourneyEntries } = await db.query(
+    `SELECT * FROM hero_journey_entries WHERE project_id = $1 ORDER BY stage_key`,
+    [projectId],
+  );
+
   // ── Assemblage ────────────────────────────────────────────────────────────
   const payload = {
     version: '1.0',
@@ -136,6 +142,7 @@ export async function exportProject(db, projectId) {
     narrativeThreads,
     characterArcAxes,
     characterArcPoints,
+    heroJourneyEntries,
   };
 
   // ── Téléchargement ────────────────────────────────────────────────────────
