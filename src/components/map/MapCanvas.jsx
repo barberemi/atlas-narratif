@@ -7,13 +7,28 @@ import lotrMapImage from '../../assets/ouest_terre_du_milieu.jpg';
  *   { journey, currentStep, color, name }
  * Reçoit un tableau `locations` avec : { id, name, coordinates: { x, y } }
  * Reçoit `mapSrc` : data URL de la carte custom (ou null → fallback carte LOTR)
- * Chaque personnage a son propre tracé SVG et son marqueur animé.
+ * Les étapes peuvent avoir x/y à null (lieu non localisé) — gérées proprement.
  */
-export default function MapCanvas({ characters, locations = [], onLocationClick, mapSrc = null }) {
+export default function MapCanvas({ characters, locations = [], onLocationClick, mapSrc = null, editMode = false, onMapClick, onPinRemove }) {
   const activeSrc = mapSrc ?? lotrMapImage;
   const [hoveredLoc, setHoveredLoc] = useState(null);
+
+  const handleContainerClick = (e) => {
+    if (!editMode || !onMapClick) return;
+    // Ignorer les clics sur les pins existants
+    if (e.target.closest('button[data-pin]')) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = +((e.clientX - rect.left) / rect.width * 100).toFixed(2);
+    const y = +((e.clientY - rect.top)  / rect.height * 100).toFixed(2);
+    onMapClick(x, y);
+  };
+
   return (
-    <div className="relative w-full h-full overflow-hidden bg-stone-950">
+    <div
+      className="relative w-full h-full overflow-hidden bg-stone-950"
+      style={{ cursor: editMode ? 'crosshair' : 'default' }}
+      onClick={handleContainerClick}
+    >
       {/* Carte de fond */}
       <img
         src={activeSrc}
@@ -21,7 +36,6 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
         className="absolute inset-0 w-full h-full object-cover select-none"
         draggable={false}
       />
-
 
       {/* SVG overlay — tracés de tous les personnages */}
       <svg
@@ -42,13 +56,16 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
         </defs>
 
         {characters.map(({ journey, currentStep, color, name }) => {
-          const visited = journey.slice(0, currentStep + 1);
+          // Filtrer les étapes sans coordonnées pour le rendu SVG
+          const visited          = journey.slice(0, currentStep + 1);
+          const visitedWithCoords = visited.filter(s => s.x != null && s.y != null);
+
           return (
             <g key={name}>
-              {/* Ligne du trajet */}
-              {visited.length > 1 && (
+              {/* Ligne du trajet (uniquement les points localisés) */}
+              {visitedWithCoords.length > 1 && (
                 <polyline
-                  points={visited.map((s) => `${s.x},${s.y}`).join(' ')}
+                  points={visitedWithCoords.map(s => `${s.x},${s.y}`).join(' ')}
                   fill="none"
                   stroke={color}
                   strokeWidth="0.3"
@@ -59,10 +76,10 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
                   filter={`url(#glow-${name})`}
                 />
               )}
-              {/* Points des étapes passées */}
-              {visited.slice(0, currentStep).map((step) => (
+              {/* Points des étapes passées (localisées) */}
+              {visitedWithCoords.slice(0, -1).map((step, i) => (
                 <circle
-                  key={step.id}
+                  key={i}
                   cx={step.x}
                   cy={step.y}
                   r="0.6"
@@ -83,7 +100,12 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
         return (
           <button
             key={loc.id}
-            onClick={() => onLocationClick?.(loc.name)}
+            data-pin="true"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (editMode) onPinRemove?.(loc.id);
+              else onLocationClick?.(loc.name);
+            }}
             onMouseEnter={() => setHoveredLoc(loc.id)}
             onMouseLeave={() => setHoveredLoc(null)}
             className="absolute z-20 flex flex-col items-center"
@@ -96,9 +118,8 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
               border: 'none',
               padding: 0,
             }}
-            title={loc.name}
+            title={editMode ? `Retirer ${loc.name} de la carte` : loc.name}
           >
-            {/* Tooltip */}
             {isHovered && (
               <span
                 className="absolute whitespace-nowrap text-xs font-semibold px-2 py-1 rounded pointer-events-none"
@@ -106,21 +127,20 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
                   bottom: 'calc(100% + 4px)',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  backgroundColor: 'rgba(8,14,30,0.95)',
+                  backgroundColor: editMode ? 'rgba(239,68,68,0.9)' : 'rgba(8,14,30,0.95)',
                   color: '#e2e8f0',
-                  border: '1px solid rgba(255,255,255,0.15)',
+                  border: `1px solid ${editMode ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.15)'}`,
                   backdropFilter: 'blur(4px)',
                   zIndex: 30,
                 }}
               >
-                {loc.name}
+                {editMode ? `× Retirer` : loc.name}
               </span>
             )}
-            {/* Pin SVG */}
             <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
               <path
                 d="M7 0C3.13 0 0 3.13 0 7c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7z"
-                fill={isHovered ? '#e2e8f0' : 'rgba(255,255,255,0.55)'}
+                fill={editMode ? (isHovered ? '#f87171' : 'rgba(248,113,113,0.7)') : (isHovered ? '#e2e8f0' : 'rgba(255,255,255,0.55)')}
                 style={{ transition: 'fill 0.15s' }}
               />
               <circle cx="7" cy="7" r="2.5" fill="rgba(8,14,30,0.8)" />
@@ -130,74 +150,72 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
       })}
 
       {/* Marqueurs animés — un par personnage */}
-      {characters.map(({ journey, currentStep, color, name }) => {
-        const current = journey[currentStep];
-        // Convertit hex #RRGGBB en "R,G,B" pour rgba()
+      {characters.map(({ journey, currentStep, color, name, deathStepIndex }) => {
+        // Dernière étape localisée jusqu'au step courant
+        const lastLocalized = journey
+          .slice(0, currentStep + 1)
+          .reverse()
+          .find(s => s.x != null && s.y != null);
+
+        if (!lastLocalized) return null;
+
         const hex = color.replace('#', '');
-        const r = parseInt(hex.slice(0, 2), 16);
-        const g = parseInt(hex.slice(2, 4), 16);
-        const b = parseInt(hex.slice(4, 6), 16);
+        const r   = parseInt(hex.slice(0, 2), 16);
+        const g   = parseInt(hex.slice(2, 4), 16);
+        const b   = parseInt(hex.slice(4, 6), 16);
         const rgb = `${r},${g},${b}`;
+
+        const current    = journey[currentStep];
+        const isMissing  = current?.isMissing || current?.x == null;
+        const isDead     = deathStepIndex !== -1 && currentStep >= deathStepIndex;
 
         return (
           <div
             key={name}
             className="absolute pointer-events-none z-10"
             style={{
-              left: `${current.x}%`,
-              top: `${current.y}%`,
+              left: `${lastLocalized.x}%`,
+              top:  `${lastLocalized.y}%`,
               transform: 'translate(-50%, -50%)',
-              transition:
-                'left 0.9s cubic-bezier(0.4, 0, 0.2, 1), top 0.9s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'left 0.9s cubic-bezier(0.4, 0, 0.2, 1), top 0.9s cubic-bezier(0.4, 0, 0.2, 1)',
+              opacity: isMissing ? 0.45 : 1,
             }}
           >
-            {/* Anneau de pulsation */}
+            {isDead ? (
+              <span
+                className="relative block text-xl leading-none select-none"
+                style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.9))' }}
+              >
+                💀
+              </span>
+            ) : (
+              <>
+                <span
+                  className="absolute rounded-full animate-ping"
+                  style={{ width: 32, height: 32, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: color, opacity: 0.3 }}
+                />
+                <span
+                  className="absolute rounded-full"
+                  style={{ width: 28, height: 28, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', border: `1.5px solid rgba(${rgb},0.45)` }}
+                />
+                <span
+                  className="relative block w-4 h-4 rounded-full border-2 border-white z-10"
+                  style={{ backgroundColor: color, boxShadow: `0 0 8px rgba(${rgb},0.9), 0 0 22px rgba(${rgb},0.5), 0 2px 6px rgba(0,0,0,0.7)` }}
+                />
+              </>
+            )}
             <span
-              className="absolute rounded-full animate-ping"
+              className="absolute whitespace-nowrap text-xs font-bold px-2 py-0.5 rounded"
               style={{
-                width: 32,
-                height: 32,
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: color,
-                opacity: 0.3,
-              }}
-            />
-            {/* Anneau externe */}
-            <span
-              className="absolute rounded-full"
-              style={{
-                width: 28,
-                height: 28,
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                border: `1.5px solid rgba(${rgb},0.45)`,
-              }}
-            />
-            {/* Point central */}
-            <span
-              className="relative block w-4 h-4 rounded-full border-2 border-white z-10"
-              style={{
-                backgroundColor: color,
-                boxShadow: `0 0 8px rgba(${rgb},0.9), 0 0 22px rgba(${rgb},0.5), 0 2px 6px rgba(0,0,0,0.7)`,
-              }}
-            />
-            {/* Étiquette */}
-            <span
-              className="absolute whitespace-nowrap text-xs font-bold text-white px-2 py-0.5 rounded"
-              style={{
-                top: 'calc(100% + 6px)',
-                left: '50%',
-                transform: 'translateX(-50%)',
+                top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)',
                 backgroundColor: 'rgba(8,14,30,0.92)',
-                border: `1px solid rgba(${rgb},0.55)`,
+                border: `1px solid ${isDead ? 'rgba(100,100,100,0.4)' : `rgba(${rgb},0.55)`}`,
                 backdropFilter: 'blur(4px)',
                 textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+                color: isDead ? '#64748b' : '#fff',
               }}
             >
-              {name}
+              {name}{isMissing && ' ·?'}
             </span>
           </div>
         );

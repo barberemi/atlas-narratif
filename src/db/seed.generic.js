@@ -7,12 +7,15 @@
  *
  * @param {object} db        — instance PGlite
  * @param {object} meta      — { id, name, description }
- * @param {object} data      — { loreDB, timelineDB, incoherencesDB, chaptersDB, journeys }
+ * @param {object} data      — { loreDB, timelineDB, incoherencesDB, chaptersDB, journeys, groupsDB, plantsDB, arcPointsDB }
  *   loreDB        → { characters[], locations[], objects[] }
  *   timelineDB    → timeline_events[]
  *   incoherencesDB→ incoherences[]
  *   chaptersDB    → stc_chapters[]
  *   journeys      → [{ key, data[] }]  (optionnel)
+ *   groupsDB      → groups[] (optionnel)
+ *   plantsDB      → plant_payoffs[] (optionnel)
+ *   arcPointsDB   → arc_points[] (optionnel)
  */
 export async function seedProject(db, meta, data) {
   const projectId = meta.id;
@@ -64,7 +67,7 @@ async function _seedJourneysIfMissing(db, projectId, journeys) {
 }
 
 async function _doSeed(db, projectId, meta, data) {
-  const { loreDB = {}, timelineDB = [], incoherencesDB = [], chaptersDB = [], journeys = [] } = data;
+  const { loreDB = {}, timelineDB = [], incoherencesDB = [], chaptersDB = [], journeys = [], groupsDB = [], plantsDB = [], arcPointsDB = [], threadsDB = [], eventExtrasDB = {}, characterArcsDB = [] } = data;
 
   // ── Projet ──────────────────────────────────────────────────────────────────
   await db.query(
@@ -76,17 +79,13 @@ async function _doSeed(db, projectId, meta, data) {
   for (const c of (loreDB.characters ?? [])) {
     await db.query(
       `INSERT INTO characters
-         (id, project_id, name, aliases, race, role, origin, affiliations, description, traits, color, journey_key, extra)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+         (id, project_id, name, aliases, origin, description, color, journey_key, extra)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [
         c.id, projectId, c.name,
-        JSON.stringify(c.aliases     ?? []),
-        c.race        ?? null,
-        c.role        ?? null,
+        JSON.stringify(c.aliases  ?? []),
         c.origin      ?? null,
-        JSON.stringify(c.affiliation ?? []),
         c.description ?? null,
-        JSON.stringify(c.traits      ?? []),
         c.color       ?? '#64748b',
         c.journeyKey  ?? null,
         JSON.stringify({}),
@@ -139,15 +138,25 @@ async function _doSeed(db, projectId, meta, data) {
 
   // ── Événements timeline ─────────────────────────────────────────────────────
   for (const evt of timelineDB) {
+    const ex = eventExtrasDB[evt.id] ?? {};
+    const extra = JSON.stringify({ beatId: ex.beatId ?? null });
     await db.query(
       `INSERT INTO timeline_events
-         (id, project_id, chapter_num, chapter_title, title, description, location_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+         (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
+          pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
       [
         evt.id, projectId,
         evt.chapter, evt.chapterTitle,
         evt.title,   evt.description ?? null,
         evt.locationId ?? null,
+        extra,
+        ex.povCharacterId ?? null,
+        JSON.stringify(ex.threadIds ?? []),
+        ex.sceneOrder    ?? 0,
+        ex.sceneGoal     ?? null,
+        ex.sceneConflict ?? null,
+        ex.sceneOutcome  ?? null,
       ],
     );
     for (const entity of (evt.entities ?? [])) {
@@ -200,6 +209,72 @@ async function _doSeed(db, projectId, meta, data) {
         `INSERT INTO character_journeys (project_id, char_key, step_index, data)
          VALUES ($1,$2,$3,$4)`,
         [projectId, key, i, JSON.stringify(data[i])],
+      );
+    }
+  }
+
+  // ── Groupes d'appartenance ───────────────────────────────────────────────────
+  for (const g of groupsDB) {
+    await db.query(
+      `INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`,
+      [g.id, projectId, g.name, g.type ?? 'autre', g.color ?? '#64748B', g.description ?? null, g.homelandId ?? null],
+    );
+    for (const m of (g.members ?? [])) {
+      await db.query(
+        `INSERT INTO character_groups (character_id, group_id, project_id)
+         VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`,
+        [m.characterId, g.id, projectId],
+      );
+    }
+  }
+
+  // ── Amorces narratives ───────────────────────────────────────────────────────
+  for (const p of plantsDB) {
+    await db.query(
+      `INSERT INTO plant_payoffs
+         (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT DO NOTHING`,
+      [
+        p.id, projectId, p.label, p.type ?? 'information',
+        p.plant_chapter_num ?? null, p.plant_event_id ?? null,
+        p.payoff_chapter_num ?? null, p.payoff_event_id ?? null,
+        p.entity_id ?? null, p.entity_type ?? null,
+        p.status ?? 'open', p.notes ?? null,
+      ],
+    );
+  }
+
+  // ── Arc émotionnel ───────────────────────────────────────────────────────────
+  for (const pt of arcPointsDB) {
+    await db.query(
+      `INSERT INTO arc_points (project_id, chapter_number, intensity, note)
+       VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+      [projectId, pt.chapter_number, pt.intensity, pt.note ?? null],
+    );
+  }
+
+  // ── Fils narratifs ────────────────────────────────────────────────────────────
+  for (const t of threadsDB) {
+    await db.query(
+      `INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`,
+      [t.id, projectId, t.name, t.color ?? '#3F51B5', t.role ?? 'subplot', t.description ?? null, t.sort_order ?? 0],
+    );
+  }
+
+  // ── Arcs des personnages ──────────────────────────────────────────────────────
+  for (const axis of characterArcsDB) {
+    await db.query(
+      `INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
+       VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+      [axis.id, projectId, axis.characterId, axis.label, axis.color ?? '#64748b'],
+    );
+    for (const pt of (axis.points ?? [])) {
+      await db.query(
+        `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+        [projectId, axis.id, pt.chapter_num, pt.value, pt.note ?? null],
       );
     }
   }

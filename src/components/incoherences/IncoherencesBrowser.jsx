@@ -1,21 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
-import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
-import { useIncStore } from '../../stores/useIncStore';
+import { useIncStore }      from '../../stores/useIncStore';
+import { useLoreStore }     from '../../stores/useLoreStore';
+import { useTimelineStore } from '../../stores/useTimelineStore';
+import EntityEditor      from '../lore/EntityEditor';
+import IncoherenceCard   from './IncoherenceCard';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const TYPE_ICONS = {
-  'Contradiction Temporelle':  '⏱',
-  'Entité Non Référencée':     '🔗',
-  'Incohérence de Porteur':    '🎒',
-  'Téléportation de Personnage': '🌀',
-  'Créateur Non Référencé':    '⚒',
-  "Lieu d'Origine Inexistant": '📍',
-  'Affiliation Fantôme':       '👻',
-  'Objet sans Lieu de Création': '❓',
-};
-
-const SEVERITY_LABELS = { critical: 'Critique', high: 'Élevée', medium: 'Moyenne', low: 'Faible' };
 const FILTER_OPTIONS  = [
   { key: 'all',      label: 'Toutes' },
   { key: 'critical', label: 'Critique' },
@@ -24,150 +14,30 @@ const FILTER_OPTIONS  = [
   { key: 'low',      label: 'Faible' },
 ];
 
-// ── Chip d'entité cliquable ───────────────────────────────────────────────────
-function EntityChip({ link, onEntityClick }) {
-  const meta = useMemo(() => getEntityMeta(link.entityId, link.entityType), [link]);
-
-  const color = meta?.color ?? ENTITY_COLORS[link.entityType] ?? '#64748B';
-  const hex   = color.replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const rgb = `${r},${g},${b}`;
-
-  const typeIcons = { character: '👤', location: '📍', object: '⚔️' };
-  const icon = typeIcons[link.entityType] ?? '·';
-
-  return (
-    <button
-      onClick={() => meta && onEntityClick(link.entityId, link.entityType)}
-      className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-all duration-150 hover:scale-105"
-      style={{
-        backgroundColor: `rgba(${rgb},0.15)`,
-        color:           color,
-        border:          `1px solid rgba(${rgb},0.35)`,
-        cursor:          meta ? 'pointer' : 'default',
-        opacity:         meta ? 1 : 0.5,
-      }}
-      title={meta ? `Ouvrir la fiche de ${link.label}` : 'Entité non trouvée dans la base'}
-    >
-      <span>{icon}</span>
-      {link.label}
-    </button>
-  );
-}
-
-// ── Carte d'incohérence ───────────────────────────────────────────────────────
-function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick }) {
-  const cfg = SEVERITY_CONFIG[inc.severity];
-  const icon = TYPE_ICONS[inc.type] ?? '⚠';
-
-  return (
-    <div
-      className="rounded-xl border overflow-hidden transition-all duration-300 relative"
-      style={{
-        borderColor:     resolved ? 'rgba(255,255,255,0.05)' : cfg.border,
-        backgroundColor: resolved ? 'rgba(255,255,255,0.015)' : cfg.bg,
-        opacity:         resolved ? 0.2 : 1,
-      }}
-    >
-      {/* Bandeau sévérité */}
-      <div className="h-1" style={{ backgroundColor: resolved ? '#1e293b' : cfg.color }} />
-
-      <div className="p-4 flex flex-col gap-3">
-
-        {/* Header : type + sévérité + checkbox */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Type */}
-            <span
-              className="text-xs px-2 py-0.5 rounded font-mono font-bold tracking-wide"
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.05)',
-                color:           resolved ? '#475569' : cfg.color,
-                border:          `1px solid rgba(255,255,255,0.08)`,
-              }}
-            >
-              {icon} {inc.type}
-            </span>
-            {/* Sévérité */}
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-bold"
-              style={{
-                backgroundColor: resolved ? 'rgba(255,255,255,0.04)' : cfg.bg,
-                color:           resolved ? '#475569' : cfg.color,
-                border:          `1px solid ${resolved ? 'rgba(255,255,255,0.06)' : cfg.border}`,
-              }}
-            >
-              {SEVERITY_LABELS[inc.severity]}
-            </span>
-          </div>
-
-          {/* Checkbox "Résolu" */}
-          <label
-            className="flex items-center gap-1.5 cursor-pointer group flex-shrink-0"
-            title="Marquer comme résolu"
-          >
-            <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">
-              Résolu
-            </span>
-            <div
-              className="w-4 h-4 rounded border flex items-center justify-center transition-all duration-150"
-              style={{
-                backgroundColor: resolved ? cfg.color : 'transparent',
-                borderColor:     resolved ? cfg.color : 'rgba(255,255,255,0.2)',
-              }}
-            >
-              {resolved && <span className="text-white text-xs leading-none">✓</span>}
-            </div>
-            <input
-              type="checkbox"
-              className="sr-only"
-              checked={resolved}
-              onChange={() => onToggleResolved(inc.id)}
-            />
-          </label>
-        </div>
-
-        {/* Titre */}
-        <h3
-          className="text-sm font-black leading-snug"
-          style={{ color: resolved ? '#475569' : '#e2e8f0' }}
-        >
-          {inc.title}
-        </h3>
-
-        {/* Explication */}
-        <p className="text-xs text-slate-400 leading-relaxed font-serif">
-          {inc.explanation}
-        </p>
-
-        {/* Liens vers entités */}
-        {inc.links?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-1 border-t border-white/5">
-            {inc.links.map((link) => (
-              <EntityChip
-                key={link.entityId + link.label}
-                link={link}
-                onEntityClick={onEntityClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── IncoherencesBrowser principal ────────────────────────────────────────────
 export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'all' }) {
-  const incoherences = useIncStore(s => s.data);
-  const toggle       = useIncStore(s => s.toggle);
+  const incoherences  = useIncStore(s => s.data);
+  const toggle        = useIncStore(s => s.toggle);
+  const rescan        = useIncStore(s => s.rescan);
+  const scanning      = useIncStore(s => s.scanning);
+  const lastScanCount = useIncStore(s => s.lastScanCount);
+  const characters    = useLoreStore(s => s.characters);
+  const locations     = useLoreStore(s => s.locations);
+  const objects       = useLoreStore(s => s.objects);
+  const events        = useTimelineStore(s => s.events) ?? [];
   const [severityFilter, setSeverityFilter] = useState(initialFilter);
+  const [editorState,    setEditorState]    = useState(null); // { entity, entityType }
 
   useEffect(() => { setSeverityFilter(initialFilter); }, [initialFilter]);
 
   const handleToggle = (incId) => toggle(incId);
+
+  const handleFix = (link) => {
+    const storeMap = { character: characters, location: locations, object: objects };
+    const entity   = storeMap[link.entityType]?.find(e => e.id === link.entityId);
+    if (!entity) return;
+    setEditorState({ entity, entityType: link.entityType });
+  };
 
   const filtered = useMemo(() => {
     const list = incoherences ?? [];
@@ -198,7 +68,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
 
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-        <div className="text-center flex-1">
+        <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Détecteur d'<span style={{ color: '#EF4444' }}>Incohérences</span>
           </h1>
@@ -207,9 +77,34 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
           </p>
         </div>
 
-        <span className="text-xs font-mono text-slate-600">
-          {resolvedCount} résolu{resolvedCount !== 1 ? 's' : ''} / {incoherences.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-0.5">
+            <button
+              onClick={() => rescan({ characters, locations, objects, events })}
+              disabled={scanning}
+              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-all duration-150"
+              style={{
+                backgroundColor: scanning ? 'rgba(255,255,255,0.03)' : 'rgba(129,140,248,0.12)',
+                color:           scanning ? '#334155'                 : '#818cf8',
+                border:          `1px solid ${scanning ? 'rgba(255,255,255,0.06)' : 'rgba(129,140,248,0.3)'}`,
+                cursor:          scanning ? 'default' : 'pointer',
+              }}
+            >
+              {scanning
+                ? <><span className="animate-spin inline-block w-3 h-3 border border-indigo-400/30 border-t-indigo-400 rounded-full" /> Analyse…</>
+                : '⚡ Relancer l\'analyse'
+              }
+            </button>
+            {lastScanCount !== null && (
+              <span className="text-[10px] text-slate-600">
+                {lastScanCount} détectée{lastScanCount > 1 ? 's' : ''} au dernier scan
+              </span>
+            )}
+          </div>
+          <span className="text-xs font-mono text-slate-600">
+            {resolvedCount} résolu{resolvedCount !== 1 ? 's' : ''} / {incoherences.length}
+          </span>
+        </div>
       </header>
 
       {/* ── Filtres par sévérité ── */}
@@ -251,7 +146,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
             Aucune incohérence dans cette catégorie.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-w-7xl mx-auto items-start">
             {filtered.map(inc => (
               <IncoherenceCard
                 key={inc.id}
@@ -259,11 +154,20 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
                 resolved={inc.resolved}
                 onToggleResolved={handleToggle}
                 onEntityClick={onEntityClick}
+                onFix={handleFix}
               />
             ))}
           </div>
         )}
       </main>
+
+      {editorState && (
+        <EntityEditor
+          entity={editorState.entity}
+          entityType={editorState.entityType}
+          onClose={() => setEditorState(null)}
+        />
+      )}
     </div>
   );
 }

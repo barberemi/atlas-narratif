@@ -135,8 +135,10 @@ Les voyages des personnages incluent les coordonnées cartographiques, les réf�
 # A faire
 
 
-1- Ajouter des type de narration (Le voyage du héro, Structure en 3 actes, Story Circle ?)
+1- Ajouter des type de narration (Le voyage du héro, Structure en 3 actes, Story Circle ? Annatomie du scénario)
 
-2- Arc emotionnel : Courbe de tension dramatique chapitre par chapitre, générée ou saisie manuellement
+2- Revoir la homepage (claude code + )
 
-9- Onboarding guidé pour nouveaux auteurs
+3- Aide nouveau utilisateur (tuto) avec possibilité de relancer l'aide si besoin
+
+7- Multi livre

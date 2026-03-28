@@ -1,10 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
 import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
 import { useIncStore } from '../../stores/useIncStore';
 import { useLoreStore } from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useStcStore } from '../../stores/useStcStore';
+import { usePlantStore } from '../../stores/usePlantStore';
+import { PLANT_TYPES } from '../../pages/PlantsBrowser';
+import EntityEditor      from '../lore/EntityEditor';
+import CircularGauge     from './CircularGauge';
+import SectionTitle      from './SectionTitle';
+import StatCard          from './StatCard';
+import RecommendationRow from './RecommendationRow';
 
 const TYPE_ICONS = {
   'Contradiction Temporelle':    '⏱',
@@ -17,77 +25,24 @@ const TYPE_ICONS = {
   'Objet sans Lieu de Création': '❓',
 };
 
-// ── Jauge circulaire ──────────────────────────────────────────────────────────
-function CircularGauge({ score, title, valueLabel }) {
-  const R = 70;
-  const C = 2 * Math.PI * R;
-  const dash = (score / 100) * C;
-  const color = score === 100 ? '#A78BFA' : score >= 80 ? '#10B981' : score >= 50 ? '#F59E0B' : score >= 25 ? '#F97316' : '#EF4444';
-  const statusLabel = score === 100 ? 'Parfait' : score >= 80 ? 'Bon' : score >= 50 ? 'Moyen' : score >= 25 ? 'Faible' : 'Critique';
-
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <svg width="160" height="160" viewBox="0 0 180 180">
-        <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
-        <circle
-          cx="90" cy="90" r={R} fill="none"
-          stroke={color} strokeWidth="12"
-          strokeLinecap="round"
-          strokeDasharray={`${dash} ${C - dash}`}
-          strokeDashoffset={C / 4}
-          style={{ filter: `drop-shadow(0 0 8px ${color})`, transition: 'stroke-dasharray 1s ease' }}
-        />
-        <circle cx="90" cy="90" r="54" fill={`${color}0d`} />
-        <text x="90" y="84" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="28" fontWeight="900">
-          {valueLabel ?? score}
-        </text>
-        <text x="90" y="106" textAnchor="middle" fill={color} fontSize="11" fontWeight="700">
-          {statusLabel}
-        </text>
-      </svg>
-      <p className="text-xs text-slate-500 font-serif italic text-center">{title}</p>
-    </div>
-  );
-}
-
 const TOTAL_BEATS = 15;
-
-function SectionTitle({ children }) {
-  return (
-    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest pt-2">
-      {children}
-    </p>
-  );
-}
-
-// ── Carte stat ─────────────────────────────────────────────────────────────────
-function StatCard({ icon, value, label, sub }) {
-  return (
-    <div
-      className="rounded-2xl p-4 flex flex-col gap-1"
-      style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-    >
-      <span className="text-lg">{icon}</span>
-      <span className="text-3xl font-black text-white leading-none">{value}</span>
-      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{label}</span>
-      {sub && <span className="text-[10px] text-slate-600">{sub}</span>}
-    </div>
-  );
-}
 
 // ── Dashboard principal ───────────────────────────────────────────────────────
 export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
+  const navigate = useNavigate();
+  const [editorState, setEditorState] = useState(null); // { entity, entityType }
   const incoherences = useIncStore(s => s.data);
   const characters   = useLoreStore(s => s.characters);
   const locations    = useLoreStore(s => s.locations);
   const objects      = useLoreStore(s => s.objects);
+  const groups       = useLoreStore(s => s.groups) ?? [];
   const events       = useTimelineStore(s => s.events);
   const stcChapters  = useStcStore(s => s.chapters);
+  const plants       = usePlantStore(s => s.plants) ?? [];
 
   // ── Calculs ────────────────────────────────────────────────────────────────
-  const weights = { critical: 4, high: 3, medium: 2, low: 1 };
-
   const { totalWeight, resolvedWeight, bySeverity, resolvedBySeverity, byType, topEntities } = useMemo(() => {
+    const weights = { critical: 4, high: 3, medium: 2, low: 1 };
     const list = incoherences ?? [];
     let totalWeight    = 0;
     let resolvedWeight = 0;
@@ -124,7 +79,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
       .map(([id, data]) => ({ id, ...data }));
 
     return { totalWeight, resolvedWeight, bySeverity: bySev, resolvedBySeverity: resolvedBySev, byType, topEntities };
-  }, [incoherences, weights]);
+  }, [incoherences]);
 
   const inventory = useMemo(() => {
     const chapterCount = new Set((events ?? []).map(e => e.chapter)).size;
@@ -192,13 +147,69 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     return { chapters, maxEvents, maxChars };
   }, [events]);
 
+  // ── Score global (penaltyScore calculé ici pour être dispo avant le guard) ──
+  const penaltyScore  = totalWeight === 0 ? 100 : Math.round(100 - ((totalWeight - resolvedWeight) / totalWeight) * 100);
+  const coverageScore = inventory.characters === 0 ? 100
+    : Math.round(((inventory.characters - coverage.orphanChars.length) / inventory.characters) * 100);
+  const beatsScore  = Math.round((inventory.beats / TOTAL_BEATS) * 100);
+  const globalScore = Math.round((penaltyScore * 2 + coverageScore + beatsScore) / 4);
+  const globalColor = globalScore >= 80 ? '#10B981' : globalScore >= 50 ? '#f59e0b' : '#ef4444';
+  const globalLabel = globalScore >= 80 ? 'Bon' : globalScore >= 50 ? 'Moyen' : 'Critique';
+
+  // ── Recommandations ─────────────────────────────────────────────────────────
+  const recommendations = useMemo(() => {
+    const list = [];
+    const unresolved = (incoherences ?? []).filter(i => !i.resolved);
+    const critical   = unresolved.filter(i => i.severity === 'critical');
+    const high       = unresolved.filter(i => i.severity === 'high');
+    if (critical.length > 0) list.push({
+      icon: '🔴', color: '#ef4444',
+      label: `${critical.length} incohérence${critical.length > 1 ? 's' : ''} critique${critical.length > 1 ? 's' : ''} non résolue${critical.length > 1 ? 's' : ''}`,
+      actionLabel: 'Corriger', action: () => onOpenIncoherences('critical'),
+    });
+    else if (high.length > 0) list.push({
+      icon: '🟠', color: '#f97316',
+      label: `${high.length} incohérence${high.length > 1 ? 's' : ''} de sévérité élevée`,
+      actionLabel: 'Corriger', action: () => onOpenIncoherences('high'),
+    });
+    const missingBeats = TOTAL_BEATS - inventory.beats;
+    if (missingBeats > 0) list.push({
+      icon: '🟡', color: '#f59e0b',
+      label: `${missingBeats} beat${missingBeats > 1 ? 's' : ''} Save the Cat manquant${missingBeats > 1 ? 's' : ''}`,
+      actionLabel: 'Structurer', action: () => navigate('/savethecat'),
+    });
+    if (coverage.orphanChars.length > 0) list.push({
+      icon: '👤', color: '#818cf8',
+      label: `${coverage.orphanChars.length} personnage${coverage.orphanChars.length > 1 ? 's' : ''} absent${coverage.orphanChars.length > 1 ? 's' : ''} de la timeline`,
+      actionLabel: 'Timeline', action: () => navigate('/timeline'),
+    });
+    const modifiedCount = [...characters, ...locations, ...objects].filter(e => e.source !== 'import').length;
+    if (modifiedCount > 0) list.push({
+      icon: '✏️', color: '#34d399',
+      label: `${modifiedCount} entité${modifiedCount > 1 ? 's' : ''} modifiée${modifiedCount > 1 ? 's' : ''} ou ajoutée${modifiedCount > 1 ? 's' : ''} manuellement`,
+      actionLabel: 'Révision', action: () => navigate('/review'),
+    });
+    return list.slice(0, 5);
+  }, [incoherences, inventory, coverage, characters, locations, objects, navigate, onOpenIncoherences]);
+
+  // ── Entités modifiées depuis l'import ───────────────────────────────────────
+  const modifiedEntities = useMemo(() => {
+    const all = [
+      ...characters.filter(e => e.source !== 'import').map(e => ({ ...e, entityType: 'character' })),
+      ...locations.filter(e => e.source  !== 'import').map(e => ({ ...e, entityType: 'location'  })),
+      ...objects.filter(e => e.source    !== 'import').map(e => ({ ...e, entityType: 'object'    })),
+    ];
+    return all.slice(0, 5);
+  }, [characters, locations, objects]);
+
+  const SOURCE_COLORS = { manual: '#34d399', modified: '#f59e0b' };
+  const SOURCE_LABELS = { manual: 'Manuel', modified: 'Modifié' };
+
   if (!incoherences) return (
     <div className="h-full flex items-center justify-center">
       <span className="text-slate-600 font-serif italic">Chargement…</span>
     </div>
   );
-
-  const penaltyScore = totalWeight === 0 ? 100 : Math.round(100 - ((totalWeight - resolvedWeight) / totalWeight) * 100);
 
   const resolvedCount = (incoherences ?? []).filter(i => i.resolved).length;
   const total         = (incoherences ?? []).length;
@@ -209,11 +220,28 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
 
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-        <div className="text-center flex-1">
+        <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Santé <span style={{ color: '#3F51B5' }}>Narrative</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">Tableau de bord de cohérence</p>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="text-right">
+              <p className="text-3xl font-black leading-none" style={{ color: globalColor }}>{globalScore}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: globalColor }}>{globalLabel}</p>
+            </div>
+            <div className="w-16 h-16 relative flex-shrink-0">
+              <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+                <circle
+                  cx="18" cy="18" r="15" fill="none"
+                  stroke={globalColor} strokeWidth="3" strokeLinecap="round"
+                  strokeDasharray={`${(globalScore / 100) * 94.25} 94.25`}
+                  style={{ filter: `drop-shadow(0 0 4px ${globalColor})`, transition: 'stroke-dasharray 1s ease' }}
+                />
+              </svg>
+            </div>
         </div>
       </header>
 
@@ -236,6 +264,34 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
               sub={inventory.beats === TOTAL_BEATS ? 'Structure complète' : `${TOTAL_BEATS - inventory.beats} manquant${TOTAL_BEATS - inventory.beats > 1 ? 's' : ''}`}
             />
           </div>
+
+          {/* ── Groupes ── */}
+          {groups.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {groups.map(g => (
+                <button
+                  key={g.id}
+                  onClick={() => navigate('/lore?tab=groups')}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 hover:opacity-80"
+                  style={{
+                    backgroundColor: `${g.color}15`,
+                    color:           g.color,
+                    border:          `1px solid ${g.color}40`,
+                  }}
+                >
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: g.color }} />
+                  {g.name}
+                  <span className="opacity-50 text-[10px] font-normal">{g.type}</span>
+                  <span
+                    className="ml-1 px-1.5 py-0.5 rounded text-[10px] font-black"
+                    style={{ backgroundColor: `${g.color}25`, color: g.color }}
+                  >
+                    {(g.members ?? []).length}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* ── 3 jauges ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -264,6 +320,80 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
               </div>
             ))}
           </div>
+
+          {/* ── À faire maintenant ── */}
+          <SectionTitle>À faire maintenant</SectionTitle>
+          {recommendations.length === 0 ? (
+            <div
+              className="rounded-xl px-5 py-4 flex items-center gap-3"
+              style={{ backgroundColor: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}
+            >
+              <span className="text-lg">✅</span>
+              <p className="text-sm text-emerald-400 font-semibold">Tout est en ordre — aucune action requise.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {recommendations.map((rec, i) => (
+                <RecommendationRow key={i} {...rec} />
+              ))}
+            </div>
+          )}
+
+          {/* ── Amorces narratives ── */}
+          {plants.length > 0 && (() => {
+            const openPlants = plants.filter(p => p.status === 'open');
+            return (
+              <div
+                className="rounded-2xl p-5"
+                style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">Amorces narratives</p>
+                  <button
+                    onClick={() => navigate('/plants')}
+                    className="text-[10px] font-bold transition-colors"
+                    style={{ color: '#818cf8' }}
+                  >
+                    Voir tout →
+                  </button>
+                </div>
+                <div className="flex items-center gap-6 mb-3">
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black" style={{ color: openPlants.length > 0 ? '#818cf8' : '#22c55e' }}>
+                      {openPlants.length}
+                    </span>
+                    <span className="text-[10px] text-slate-500">en suspens</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black text-slate-400">{plants.length}</span>
+                    <span className="text-[10px] text-slate-500">total</span>
+                  </div>
+                </div>
+                {openPlants.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    {openPlants.slice(0, 4).map(p => {
+                      const typeCfg = PLANT_TYPES.find(t => t.id === p.type) ?? PLANT_TYPES[2];
+                      return (
+                        <div key={p.id} className="flex items-center gap-2 text-xs">
+                          <span style={{ color: typeCfg.color }}>{typeCfg.icon}</span>
+                          <span className="text-slate-300 flex-1 truncate">{p.label}</span>
+                          <span className="text-slate-600 font-mono flex-shrink-0">
+                            Ch.{p.plantChapterNum ?? '?'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {openPlants.length > 4 && (
+                      <p className="text-[10px] text-slate-600 italic">+{openPlants.length - 4} autres…</p>
+                    )}
+                  </div>
+                )}
+                {openPlants.length === 0 && (
+                  <p className="text-xs text-emerald-400 font-semibold">Toutes les amorces sont résolues.</p>
+                )}
+              </div>
+            );
+          })()}
 
           <SectionTitle>Rythme &amp; Présences</SectionTitle>
 
@@ -584,8 +714,64 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
             </div>
           </div>
 
+          {/* ── Modifications depuis l'import ── */}
+          {modifiedEntities.length > 0 && (
+            <>
+              <SectionTitle>Modifications depuis l'import</SectionTitle>
+              <div
+                className="rounded-2xl p-5"
+                style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <div className="space-y-1 mb-3">
+                  {modifiedEntities.map(e => {
+                    const srcColor = SOURCE_COLORS[e.source] ?? '#64748b';
+                    const srcLabel = SOURCE_LABELS[e.source] ?? e.source;
+                    return (
+                      <div
+                        key={e.id}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg group transition-colors"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                      >
+                        <span className="text-sm flex-shrink-0">{ENTITY_ICONS[e.entityType]}</span>
+                        <span className="text-sm text-slate-300 flex-1 truncate">{e.name}</span>
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0"
+                          style={{ color: srcColor, backgroundColor: `${srcColor}12`, border: `1px solid ${srcColor}30` }}
+                        >
+                          {srcLabel}
+                        </span>
+                        <button
+                          onClick={() => setEditorState({ entity: e, entityType: e.entityType })}
+                          className="opacity-0 group-hover:opacity-100 text-[11px] w-6 h-6 flex items-center justify-center rounded transition-opacity flex-shrink-0"
+                          style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
+                        >
+                          ✎
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => navigate('/review')}
+                  className="w-full py-2 rounded-lg text-xs font-bold transition-all duration-150"
+                  style={{ backgroundColor: 'rgba(129,140,248,0.08)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.2)' }}
+                >
+                  Voir tout dans Révision →
+                </button>
+              </div>
+            </>
+          )}
+
         </div>
       </main>
+
+      {editorState && (
+        <EntityEditor
+          entity={editorState.entity}
+          entityType={editorState.entityType}
+          onClose={() => setEditorState(null)}
+        />
+      )}
     </div>
   );
 }

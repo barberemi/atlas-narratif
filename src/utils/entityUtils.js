@@ -1,8 +1,8 @@
-export const ENTITY_COLORS = { character: '#64748B', location: '#3B82F6', object: '#F59E0B' };
-export const ENTITY_ICONS  = { character: '👤', location: '📍', object: '⚔️' };
+export const ENTITY_COLORS = { character: '#64748B', location: '#3B82F6', object: '#F59E0B', group: '#64748B' };
+export const ENTITY_ICONS  = { character: '👤', location: '📍', object: '⚔️', group: '⚑' };
 
 // ── Cache module-level (initialisé depuis la DB via DbContext) ────────────────
-let _cache = { characters: [], locations: [], objects: [] };
+let _cache = { characters: [], locations: [], objects: [], groups: [] };
 
 /**
  * Initialise le cache d'entités depuis les données DB.
@@ -37,6 +37,11 @@ export function getEntityMeta(id, type) {
   if (!type || type === 'object') {
     const o = _cache.objects.find(e => e.id === id);
     if (o) return { name: o.name, type: 'object', color: ENTITY_COLORS.object, icon: ENTITY_ICONS.object };
+    if (type) return null;
+  }
+  if (!type || type === 'group') {
+    const g = (_cache.groups ?? []).find(e => e.id === id);
+    if (g) return { name: g.name, type: 'group', color: g.color || ENTITY_COLORS.group, icon: ENTITY_ICONS.group };
   }
   return null;
 }

@@ -48,6 +48,10 @@ lint:
 preview:
 	docker compose exec app npm run preview -- --host
 
+## Lance Vitest en mode watch (interactif)
+test:
+	docker compose exec app npm run test:run
+
 ## Ouvre un shell dans le container
 shell:
 	docker compose exec app sh
@@ -56,4 +60,4 @@ shell:
 install:
 	docker compose exec app npm install
 
-.PHONY: up down stop restart logs ps start build lint preview shell install
+.PHONY: up down stop restart logs ps start build lint preview test shell install

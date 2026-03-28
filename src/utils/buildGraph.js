@@ -2,8 +2,6 @@ import { getLoreCache } from './entityUtils';
 
 // ── Couleurs par type de relation ───────────────────────────────────────────
 export const RELATION_COLORS = {
-  fellowship:  '#3F51B5',  // Communauté de l'Anneau
-  ally:        '#06B6D4',  // Allié / affilié
   holds:       '#F59E0B',  // Possède un objet
   held_by:     '#F59E0B',  // Porté par un personnage
   origin:      '#10B981',  // Lieu d'origine / originaire
@@ -11,11 +9,12 @@ export const RELATION_COLORS = {
   created_by:  '#EF4444',  // Créé par ce personnage
   visited_by:  '#64748B',  // Lieu visité par un personnage
   visited:     '#64748B',  // Personnage ayant visité un lieu
+  member_of:   '#10B981',  // Appartient au groupe
+  has_member:  '#10B981',  // Membre du groupe
+  homeland:    '#0EA5E9',  // Territoire natal du groupe
 };
 
 export const RELATION_LABELS = {
-  fellowship:  'Communauté',
-  ally:        'Allié',
   holds:       'Possède',
   held_by:     'Porté par',
   origin:      'Origine',
@@ -23,6 +22,9 @@ export const RELATION_LABELS = {
   created_by:  'Créé par',
   visited_by:  'Visité par',
   visited:     'A visité',
+  member_of:   'Membre de',
+  has_member:  'Membre',
+  homeland:    'Nation',
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -53,7 +55,7 @@ function nameIncludes(haystack, needle) {
  * Retourne : { central, satellites, edges } ou null si entité introuvable.
  */
 export function buildGraph(entityId) {
-  const { characters, locations, objects } = getLoreCache();
+  const { characters, locations, objects, groups = [] } = getLoreCache();
 
   let central = null;
   let centralType = null;
@@ -66,6 +68,9 @@ export function buildGraph(entityId) {
   }
   if (!central) for (const o of objects) {
     if (o.id === entityId) { central = o; centralType = 'object'; break; }
+  }
+  if (!central) for (const g of groups) {
+    if (g.id === entityId) { central = g; centralType = 'group'; break; }
   }
 
   if (!central) return null;
@@ -97,17 +102,6 @@ export function buildGraph(entityId) {
         addEdge(entityId, obj.id, 'holds');
       }
     }
-    // Personnages avec affiliation commune
-    for (const aff of (central.affiliation ?? [])) {
-      for (const char of characters) {
-        if (char.id === entityId) continue;
-        if ((char.affiliation ?? []).includes(aff)) {
-          addNode(char, 'character');
-          const rel = aff === "La Communauté de l'Anneau" ? 'fellowship' : 'ally';
-          addEdge(entityId, char.id, rel);
-        }
-      }
-    }
     // Lieu d'origine
     for (const loc of locations) {
       if (nameIncludes(central.origin, loc.name)) {
@@ -122,6 +116,33 @@ export function buildGraph(entityId) {
         addEdge(entityId, loc.id, 'visited');
       }
     }
+    // Groupes du personnage
+    for (const group of groups) {
+      if ((group.members ?? []).some(m => m.characterId === entityId)) {
+        addNode(group, 'group');
+        addEdge(entityId, group.id, 'member_of');
+      }
+    }
+  }
+
+  // ── Groupe ────────────────────────────────────────────────────────────────
+  if (centralType === 'group') {
+    // Membres du groupe
+    for (const m of (central.members ?? [])) {
+      const char = characters.find(c => c.id === m.characterId);
+      if (char) {
+        addNode(char, 'character');
+        addEdge(entityId, char.id, 'has_member');
+      }
+    }
+    // Territoire natal
+    if (central.homelandId) {
+      const loc = locations.find(l => l.id === central.homelandId);
+      if (loc) {
+        addNode(loc, 'location');
+        addEdge(entityId, loc.id, 'homeland');
+      }
+    }
   }
 
   // ── Lieu ─────────────────────────────────────────────────────────────────
@@ -131,15 +152,6 @@ export function buildGraph(entityId) {
       if (nameIncludes(char.origin, central.name)) {
         addNode(char, 'character');
         addEdge(entityId, char.id, 'origin');
-      }
-    }
-    // Personnages affiliés à ce lieu
-    for (const char of characters) {
-      if (!nodes.has(char.id) && char.id !== entityId) {
-        if ((char.affiliation ?? []).some(a => nameIncludes(a, central.name))) {
-          addNode(char, 'character');
-          addEdge(entityId, char.id, 'ally');
-        }
       }
     }
     // Objets créés ici
@@ -186,8 +198,8 @@ export function buildGraph(entityId) {
     }
   }
 
-  // Tri des satellites : personnages → lieux → objets
-  const typeOrder = { character: 0, location: 1, object: 2 };
+  // Tri des satellites : groupes → personnages → lieux → objets
+  const typeOrder = { group: 0, character: 1, location: 2, object: 3 };
   const satellites = Array.from(nodes.values())
     .sort((a, b) => typeOrder[a.entityType] - typeOrder[b.entityType]);
 
@@ -225,13 +237,8 @@ export function buildGraph(entityId) {
   return { central: { ...central, entityType: centralType }, satellites, edges: finalEdges, relNodes };
 }
 
-// ── buildFullGraph ────────────────────────────────────────────────────────────
-/**
- * Construit le graphe complet de TOUTES les entités et TOUTES les relations.
- * Retourne : { nodes, edges, degree, maxDegree }
- */
-export function buildFullGraph() {
-  const { characters, locations, objects } = getLoreCache();
+function buildFullGraph() {
+  const { characters, locations, objects, groups = [] } = getLoreCache();
 
   const nodes   = new Map();
   const edgeSet = new Set();
@@ -240,6 +247,7 @@ export function buildFullGraph() {
   characters.forEach(c => nodes.set(c.id, { ...c, entityType: 'character' }));
   locations.forEach(l  => nodes.set(l.id, { ...l, entityType: 'location'  }));
   objects.forEach(o   => nodes.set(o.id, { ...o, entityType: 'object'    }));
+  groups.forEach(g    => nodes.set(g.id, { ...g, entityType: 'group'     }));
 
   const addEdge = (fromId, toId, relType) => {
     if (!fromId || !toId || fromId === toId) return;
@@ -255,15 +263,6 @@ export function buildFullGraph() {
     // Objets possédés
     for (const obj of objects) {
       if (nameIncludes(obj.currentHolder, char.name)) addEdge(char.id, obj.id, 'holds');
-    }
-    // Communauté / alliés via affiliations communes
-    for (const aff of (char.affiliation ?? [])) {
-      for (const other of characters) {
-        if (other.id === char.id) continue;
-        if ((other.affiliation ?? []).includes(aff)) {
-          addEdge(char.id, other.id, aff === "La Communauté de l'Anneau" ? 'fellowship' : 'ally');
-        }
-      }
     }
     // Lieu d'origine
     for (const loc of locations) {
@@ -282,19 +281,20 @@ export function buildFullGraph() {
     }
   }
 
-  // Personnages affiliés à un lieu
-  for (const loc of locations) {
-    for (const char of characters) {
-      if ((char.affiliation ?? []).some(a => nameIncludes(a, loc.name))) {
-        addEdge(loc.id, char.id, 'ally');
-      }
-    }
-  }
-
   // Relations visitedBy depuis les lieux
   for (const loc of locations) {
     for (const visitor of (loc.visitedBy ?? [])) {
       addEdge(loc.id, visitor.id, 'visited_by');
+    }
+  }
+
+  // Membres des groupes + homeland
+  for (const group of groups) {
+    for (const m of (group.members ?? [])) {
+      addEdge(group.id, m.characterId, 'has_member');
+    }
+    if (group.homelandId) {
+      addEdge(group.id, group.homelandId, 'homeland');
     }
   }
 

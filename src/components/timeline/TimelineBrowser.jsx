@@ -1,162 +1,64 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDragScroll } from '../../hooks/useDragScroll';
-import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
-import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
+import { getEntityMeta } from '../../utils/entityUtils';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
-import { computeConflicts, computeConflictDetails } from '../../db/queries';
-
-// ── Chip d'entité ─────────────────────────────────────────────────────────────
-function EntityChip({ entity, onClick }) {
-  const meta = getEntityMeta(entity.id, entity.entityType);
-  if (!meta) return null;
-  const color = meta.color;
-  const rgb   = hexToRgb(color);
-  return (
-    <button
-      onClick={e => { e.stopPropagation(); onClick(entity); }}
-      className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded font-medium transition-all duration-150"
-      style={{
-        cursor: 'pointer',
-        backgroundColor: `rgba(${rgb},0.08)`,
-        color: '#94a3b8',
-        border: `1px solid rgba(${rgb},0.2)`,
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.backgroundColor = `rgba(${rgb},0.15)`;
-        e.currentTarget.style.border = `1px solid rgba(${rgb},0.4)`;
-        e.currentTarget.style.color = '#e2e8f0';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.backgroundColor = `rgba(${rgb},0.08)`;
-        e.currentTarget.style.border = `1px solid rgba(${rgb},0.2)`;
-        e.currentTarget.style.color = '#94a3b8';
-      }}
-      title={`Voir ${meta.name}`}
-    >
-      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color, opacity: 0.7 }} />
-      <span className="leading-none">{ENTITY_ICONS[entity.entityType]}</span>
-      <span className="leading-none">{meta.name}</span>
-    </button>
-  );
-}
-
-// ── Carte événement ───────────────────────────────────────────────────────────
-function EventCard({ event, isConflict, isHighlighted, isDimmed, onEntityClick, allIncoherences, allEvents }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const linkedIncs = useMemo(() =>
-    (event.incoherenceIds ?? []).map(id => allIncoherences.find(i => i.id === id)).filter(Boolean),
-    [event, allIncoherences]
-  );
-
-  const conflictDetails = useMemo(() =>
-    isConflict ? computeConflictDetails(event.id, allEvents) : [],
-    [event.id, isConflict, allEvents]
-  );
-
-  return (
-    <div
-      className="rounded-xl border overflow-hidden transition-all duration-300 cursor-pointer select-none"
-      style={{
-        borderColor: isConflict
-          ? 'rgba(239,68,68,0.5)'
-          : 'rgba(255,255,255,0.07)',
-        backgroundColor: isConflict
-          ? 'rgba(239,68,68,0.07)'
-          : 'rgba(255,255,255,0.03)',
-        opacity: isDimmed ? 0.25 : 1,
-        boxShadow: isConflict ? '0 0 12px rgba(239,68,68,0.15)' : 'none',
-      }}
-      onClick={() => setExpanded(p => !p)}
-    >
-      {/* Bandeau couleur */}
-      <div
-        className="h-0.5"
-        style={{ backgroundColor: isConflict ? '#EF4444' : 'rgba(63,81,181,0.5)' }}
-      />
-
-      <div className="p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-bold text-slate-200 leading-snug flex-1">{event.title}</p>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {isConflict && (
-              <span
-                className="text-[11px] font-black px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.4)' }}
-              >
-                ⚠ CONFLIT
-              </span>
-            )}
-            <span className="text-slate-600 text-xs">{expanded ? '▲' : '▼'}</span>
-          </div>
-        </div>
-
-        {/* Description (collapsible) */}
-        {expanded && (
-          <p className="text-xs text-slate-400 leading-relaxed font-serif">
-            {event.description}
-          </p>
-        )}
-
-        {/* Entités */}
-        <div className="flex flex-wrap gap-1">
-          {event.entities.map(entity => (
-            <EntityChip
-              key={entity.id + entity.entityType}
-              entity={entity}
-              onClick={onEntityClick}
-            />
-          ))}
-        </div>
-
-        {/* Détails du conflit */}
-        {expanded && conflictDetails.length > 0 && (
-          <div className="pt-2 border-t border-red-500/20 space-y-1">
-            {conflictDetails.map((d, i) => (
-              <div
-                key={i}
-                className="text-xs px-2.5 py-1.5 rounded-lg"
-                style={{ backgroundColor: 'rgba(239,68,68,0.08)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.2)' }}
-              >
-                ⚠ {d.charIds.map(id => getEntityMeta(id, 'character')?.name).filter(Boolean).join(', ')} présent(s) aussi dans "{d.otherEventTitle}"
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Incohérences liées */}
-        {expanded && linkedIncs.length > 0 && (
-          <div className="pt-1 border-t border-white/5 space-y-1">
-            {linkedIncs.map(inc => {
-              const cfg = SEVERITY_CONFIG[inc.severity];
-              return (
-                <div
-                  key={inc.id}
-                  className="text-xs px-2.5 py-1 rounded-lg"
-                  style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
-                >
-                  ⚠ {inc.title}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+import { useThreadStore }   from '../../stores/useThreadStore';
+import { useArcStore }      from '../../stores/useArcStore';
+import { useNotesStore }    from '../../stores/useNotesStore';
+import { useDb }            from '../../db/DbContext';
+import { useProject }       from '../../db/ProjectContext';
+import { BEATS }            from '../../data/beats_config';
+import { OUTCOMES }         from '../../data/outcome_config';
+import EventEditor from './EventEditor';
+import EventCard from './EventCard';
+import ArcStrip, { COL_W } from './ArcStrip';
 
 // ── TimelineBrowser ───────────────────────────────────────────────────────────
 export default function TimelineBrowser() {
   const navigate = useNavigate();
+  const db            = useDb();
+  const { projectId } = useProject();
+
   const events       = useTimelineStore(s => s.events);
   const incoherences = useIncStore(s => s.data) ?? [];
-  const [focusedCharId, setFocusedCharId] = useState(null);
+
+  const arcPoints = useArcStore(s => s.points);
+  const loadArc   = useArcStore(s => s.load);
+
+  const threads     = useThreadStore(s => s.threads) ?? [];
+
+  const [focusedCharId,  setFocusedCharId]  = useState(null);
+  const [filterMode,     setFilterMode]     = useState('presence'); // 'presence' | 'pov'
+  const [outcomeFilter,  setOutcomeFilter]  = useState(null); // null = tous
+  const [threadFilter,   setThreadFilter]   = useState(null); // null = tous
+  const [charMenuOpen,  setCharMenuOpen]  = useState(false);
+  const charMenuRef = useRef(null);
+  const [editorEvent,   setEditorEvent]   = useState(undefined); // undefined=fermé, null=créer, obj=éditer
+  const [showArc,       setShowArc]       = useState(false);
+  const [showStc,       setShowStc]       = useState(false);
+  const [noteOpen,      setNoteOpen]      = useState(null); // chapter number
+
+  const beatMap = useMemo(() => new Map(BEATS.map(b => [b.id, b])), []);
   const dragScroll = useDragScroll();
+
+  // Chargement conditionnel de l'arc si pas encore en mémoire
+  useEffect(() => {
+    if (!db || !projectId || arcPoints !== null) return;
+    loadArc(db, projectId);
+  }, [db, projectId, arcPoints, loadArc]);
+
+  const notesRaw  = useNotesStore(s => s.notes);
+  const notes     = notesRaw ?? {};
+  const setNote   = useNotesStore(s => s.setNote);
+  const loadNotes = useNotesStore(s => s.load);
+
+  useEffect(() => {
+    if (!db || !projectId || notesRaw !== null) return;
+    loadNotes(db, projectId);
+  }, [db, projectId, notesRaw, loadNotes]);
 
   const scrollRef   = useRef(null);
   const [canLeft,  setCanLeft]  = useState(false);
@@ -185,7 +87,12 @@ export default function TimelineBrowser() {
 
   useEffect(() => { updateArrows(); }, [chapters, updateArrows]);
 
-  const conflictIds = useMemo(() => events ? computeConflicts(events) : new Set(), [events]);
+  useEffect(() => {
+    if (!charMenuOpen) return;
+    const handler = (e) => { if (charMenuRef.current && !charMenuRef.current.contains(e.target)) setCharMenuOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [charMenuOpen]);
 
   const characters = useMemo(() => {
     if (!events) return [];
@@ -202,11 +109,6 @@ export default function TimelineBrowser() {
     navigate(`/relations?entity=${entity.id}`);
   };
 
-  const conflictCount = useMemo(() =>
-    (events ?? []).filter(e => conflictIds.has(e.id)).length,
-    [events, conflictIds],
-  );
-
   if (!events) return (
     <div className="h-full flex items-center justify-center">
       <span className="text-slate-600 font-serif italic">Chargement…</span>
@@ -218,60 +120,208 @@ export default function TimelineBrowser() {
 
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-        <div className="text-center flex-1">
+        <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Timeline <span style={{ color: '#3F51B5' }}>Narrative</span>
           </h1>
           <p className="text-sm text-slate-500 font-serif italic">
             {chapters.length} chapitres · {events.length} événements
-            {conflictCount > 0 && (
-              <span style={{ color: '#EF4444' }}> · {conflictCount} conflits détectés</span>
-            )}
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowArc(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+            style={{
+              backgroundColor: showArc ? 'rgba(251,146,60,0.15)' : 'rgba(255,255,255,0.04)',
+              color:  showArc ? '#fb923c' : '#475569',
+              border: `1px solid ${showArc ? 'rgba(251,146,60,0.35)' : 'rgba(255,255,255,0.08)'}`,
+            }}
+            title="Afficher / masquer l'arc émotionnel"
+          >
+            ∿ Arc
+          </button>
+          <button
+            onClick={() => setShowStc(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+            style={{
+              backgroundColor: showStc ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.04)',
+              color:  showStc ? '#f97316' : '#475569',
+              border: `1px solid ${showStc ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`,
+            }}
+            title="Afficher / masquer les beats Save the Cat"
+          >
+            🐱 STC
+          </button>
+          <button
+            onClick={() => setEditorEvent(null)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
+            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
+          >
+            + Ajouter
+          </button>
         </div>
       </header>
 
       {/* ── Filtre personnages ── */}
       <div
-        className="flex items-center gap-2 px-4 py-2 border-b border-white/5 overflow-x-auto no-scrollbar flex-shrink-0"
+        className="flex flex-col border-b border-white/5 flex-shrink-0"
         style={{ background: 'rgba(0,0,0,0.2)' }}
       >
-        <span className="text-xs text-slate-600 uppercase tracking-widest flex-shrink-0">Suivre</span>
-        <button
-          onClick={() => setFocusedCharId(null)}
-          className="text-xs px-3 py-1.5 rounded font-semibold flex-shrink-0 transition-all duration-150"
-          style={{
-            cursor:          'pointer',
-            backgroundColor: !focusedCharId ? 'rgba(63,81,181,0.2)' : 'rgba(255,255,255,0.04)',
-            color:           !focusedCharId ? '#818cf8' : '#475569',
-            border:          `1px solid ${!focusedCharId ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)'}`,
-          }}
-          onMouseEnter={e => { if (focusedCharId) { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#94a3b8'; } }}
-          onMouseLeave={e => { if (focusedCharId) { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#475569'; } }}
-        >
-          Tous
-        </button>
-        {characters.map(char => {
-          const isActive = focusedCharId === char.id;
-          const rgb = hexToRgb(char.color);
-          return (
+        {/* Ligne 1 : label + toggle mode + dropdown personnage */}
+        <div className="flex items-center gap-3 px-4 pt-2.5 pb-2">
+          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Suivre par</span>
+          <div className="flex items-center gap-1">
+            {[
+              { id: 'presence', label: 'Présence', icon: '👤' },
+              { id: 'pov',      label: 'POV',      icon: '👁' },
+            ].map(({ id, label, icon }) => {
+              const active = filterMode === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => { setFilterMode(id); setFocusedCharId(null); }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black transition-all duration-150"
+                  style={{
+                    backgroundColor: active ? 'rgba(63,81,181,0.25)' : 'rgba(255,255,255,0.04)',
+                    color:           active ? '#818cf8' : '#475569',
+                    border:          `1px solid ${active ? 'rgba(99,102,241,0.45)' : 'rgba(255,255,255,0.07)'}`,
+                    boxShadow:       active ? '0 0 8px rgba(99,102,241,0.2)' : 'none',
+                  }}
+                >
+                  <span>{icon}</span>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="w-px self-stretch" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
+          {/* Dropdown personnage */}
+          <div className="relative" ref={charMenuRef}>
             <button
-              key={char.id}
-              onClick={() => setFocusedCharId(prev => prev === char.id ? null : char.id)}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded font-semibold flex-shrink-0 transition-all duration-150"
+              onClick={() => setCharMenuOpen(v => !v)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
               style={{
-                cursor:          'pointer',
-                backgroundColor: isActive ? `rgba(${rgb},0.18)` : 'rgba(255,255,255,0.03)',
-                color:           isActive ? char.color : '#475569',
-                border:          `1px solid ${isActive ? `rgba(${rgb},0.4)` : 'rgba(255,255,255,0.06)'}`,
+                backgroundColor: focusedCharId ? (() => { const c = characters.find(c => c.id === focusedCharId); return c ? `rgba(${hexToRgb(c.color)},0.15)` : 'rgba(255,255,255,0.06)'; })() : 'rgba(255,255,255,0.06)',
+                color:           focusedCharId ? (() => { const c = characters.find(c => c.id === focusedCharId); return c?.color ?? '#94a3b8'; })() : '#94a3b8',
+                border:          focusedCharId ? (() => { const c = characters.find(c => c.id === focusedCharId); return c ? `1px solid rgba(${hexToRgb(c.color)},0.35)` : '1px solid rgba(255,255,255,0.1)'; })() : '1px solid rgba(255,255,255,0.1)',
+                minWidth: 160,
               }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.backgroundColor = `rgba(${rgb},0.1)`; e.currentTarget.style.color = char.color; e.currentTarget.style.border = `1px solid rgba(${rgb},0.25)`; } }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = '#475569'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.06)'; } }}
             >
-              👤 {char.name.split(' ')[0]}
+              {focusedCharId ? (
+                <>
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: characters.find(c => c.id === focusedCharId)?.color ?? '#94a3b8' }} />
+                  {characters.find(c => c.id === focusedCharId)?.name ?? '—'}
+                </>
+              ) : (
+                <>
+                  <span className="text-slate-500">👤</span>
+                  Tous les personnages
+                </>
+              )}
+              <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
             </button>
-          );
-        })}
+
+            {charMenuOpen && (
+              <div
+                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
+                style={{ minWidth: 200, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+              >
+                <button
+                  onClick={() => { setFocusedCharId(null); setCharMenuOpen(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
+                  style={{ color: !focusedCharId ? '#818cf8' : '#64748b' }}
+                >
+                  <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
+                  Tous les personnages
+                  {!focusedCharId && <span className="ml-auto text-indigo-400 text-[10px]">✓</span>}
+                </button>
+                <div className="border-t border-white/5" />
+                {characters.map(char => {
+                  const isActive = focusedCharId === char.id;
+                  return (
+                    <button
+                      key={char.id}
+                      onClick={() => { setFocusedCharId(isActive ? null : char.id); setCharMenuOpen(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
+                      style={{ color: isActive ? char.color : '#64748b' }}
+                    >
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: char.color }} />
+                      {char.name}
+                      {isActive && <span className="ml-auto text-[10px]" style={{ color: char.color }}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Ligne 2 : filtre fil narratif */}
+        {threads.length > 0 && (
+          <div className="flex items-center gap-2 px-4 pb-1.5">
+            <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Fil</span>
+            <div className="flex items-center gap-1 flex-wrap">
+              <button
+                onClick={() => setThreadFilter(null)}
+                className="text-[10px] px-2 py-0.5 rounded font-bold transition-all duration-150"
+                style={{
+                  backgroundColor: !threadFilter ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  color:           !threadFilter ? '#cbd5e1' : '#475569',
+                }}
+              >
+                Tous
+              </button>
+              {threads.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setThreadFilter(prev => prev === t.id ? null : t.id)}
+                  className="flex items-center gap-1 text-[10px] px-2 py-1 rounded font-bold transition-all duration-150"
+                  style={{
+                    backgroundColor: threadFilter === t.id ? `${t.color}20` : 'transparent',
+                    color:           threadFilter === t.id ? t.color : '#475569',
+                    border:          threadFilter === t.id ? `1px solid ${t.color}40` : '1px solid transparent',
+                  }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: t.color, opacity: threadFilter === t.id ? 1 : 0.5 }} />
+                  {t.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Ligne 3 : filtre issue */}
+        <div className="flex items-center gap-2 px-4 pb-2.5">
+          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Issue</span>
+          <div className="flex items-center gap-1 rounded-lg px-1.5 py-1" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <button
+              onClick={() => setOutcomeFilter(null)}
+              className="text-[10px] px-2 py-0.5 rounded font-bold transition-all duration-150"
+              style={{
+                backgroundColor: !outcomeFilter ? 'rgba(255,255,255,0.1)' : 'transparent',
+                color:           !outcomeFilter ? '#cbd5e1' : '#475569',
+              }}
+            >
+              Tous
+            </button>
+            {OUTCOMES.map(o => (
+              <button
+                key={o.id}
+                onClick={() => setOutcomeFilter(prev => prev === o.id ? null : o.id)}
+                className="text-[10px] px-2 py-1 rounded font-bold transition-all duration-150"
+                style={{
+                  backgroundColor: outcomeFilter === o.id ? `${o.color}20` : 'transparent',
+                  color:           outcomeFilter === o.id ? o.color : '#475569',
+                  border:          outcomeFilter === o.id ? `1px solid ${o.color}40` : '1px solid transparent',
+                }}
+                title={o.label}
+              >
+                {o.icon}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Timeline horizontale ── */}
@@ -316,7 +366,11 @@ export default function TimelineBrowser() {
           onMouseUp={dragScroll.onMouseUp}
           onMouseLeave={dragScroll.onMouseLeave}
         >
-        <div className="flex" style={{ minWidth: `${chapters.length * 290}px` }}>
+        <div style={{ minWidth: `${chapters.length * 290}px` }}>
+          {showArc && (
+            <ArcStrip chapters={chapters} arcPoints={arcPoints ?? []} />
+          )}
+        <div className="flex">
           {chapters.map(({ number, title }) => {
             const chEvts = events.filter(e => e.chapter === number);
             return (
@@ -330,37 +384,75 @@ export default function TimelineBrowser() {
                   className="flex-shrink-0 px-4 py-3 border-b border-white/10"
                   style={{ background: 'rgba(63,81,181,0.06)' }}
                 >
-                  <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">
-                    Chapitre {number}
-                  </p>
-                  <p className="text-sm font-bold text-slate-300 leading-snug mt-1">
-                    {title}
-                  </p>
-                  <p className="text-xs text-slate-600 mt-1">
-                    {chEvts.length} événement{chEvts.length > 1 ? 's' : ''}
-                    {chEvts.some(e => conflictIds.has(e.id)) && (
-                      <span style={{ color: '#EF4444' }}> · ⚠ conflit</span>
-                    )}
-                  </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">
+                        Chapitre {number}
+                      </p>
+                      <p className="text-sm font-bold text-slate-300 leading-snug mt-1">
+                        {title}
+                      </p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        {chEvts.length} événement{chEvts.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setNoteOpen(prev => prev === number ? null : number)}
+                      className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center mt-0.5 transition-all duration-150"
+                      style={{
+                        backgroundColor: notes[number] ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.04)',
+                        color:           notes[number] ? '#fbbf24' : '#475569',
+                        border:          `1px solid ${notes[number] ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.07)'}`,
+                      }}
+                      title="Notes du chapitre"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                      </svg>
+                    </button>
+                  </div>
+                  {noteOpen === number && (
+                    <textarea
+                      key={number}
+                      defaultValue={notes[number] ?? ''}
+                      onBlur={e => setNote(number, e.target.value)}
+                      onMouseDown={e => e.stopPropagation()}
+                      onClick={e => e.stopPropagation()}
+                      placeholder="Notes libres…"
+                      rows={3}
+                      className="w-full mt-2 text-xs font-serif leading-relaxed resize-none rounded-lg outline-none"
+                      style={{
+                        backgroundColor: 'rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        padding: '8px 10px',
+                        color: '#cbd5e1',
+                      }}
+                    />
+                  )}
                 </div>
 
                 {/* Événements */}
                 <div className="p-3 space-y-2.5">
-                  {chEvts.map(evt => {
-                    const isConflict    = conflictIds.has(evt.id);
+                  {chEvts.filter(evt =>
+                    (!outcomeFilter || evt.sceneOutcome === outcomeFilter) &&
+                    (!threadFilter  || (evt.threadIds ?? []).includes(threadFilter))
+                  ).map(evt => {
                     const evtCharIds    = new Set(evt.entities.filter(e => e.entityType === 'character').map(e => e.id));
-                    const isHighlighted = !focusedCharId || evtCharIds.has(focusedCharId);
-                    const isDimmed      = !!focusedCharId && !evtCharIds.has(focusedCharId);
+                    const matchesFilter = filterMode === 'pov'
+                      ? evt.povCharacterId === focusedCharId
+                      : evtCharIds.has(focusedCharId);
+                    const isHighlighted = !focusedCharId || matchesFilter;
+                    const isDimmed      = !!focusedCharId && !matchesFilter;
                     return (
                       <EventCard
                         key={evt.id}
                         event={evt}
-                        isConflict={isConflict}
                         isHighlighted={isHighlighted}
                         isDimmed={isDimmed}
                         onEntityClick={handleEntityClick}
+                        onEdit={setEditorEvent}
                         allIncoherences={incoherences}
-                        allEvents={events}
+                        beat={showStc && evt.beatId ? beatMap.get(evt.beatId) : null}
                       />
                     );
                   })}
@@ -370,7 +462,17 @@ export default function TimelineBrowser() {
           })}
         </div>
         </div>
+        </div>
       </div>
+
+      {/* ── EventEditor ── */}
+      {editorEvent !== undefined && (
+        <EventEditor
+          event={editorEvent ?? undefined}
+          chapters={chapters}
+          onClose={() => setEditorEvent(undefined)}
+        />
+      )}
     </div>
   );
 }

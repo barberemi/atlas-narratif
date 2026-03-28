@@ -1,313 +1,19 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { getMaxSeverity, SEVERITY_CONFIG } from '../../data/severity_config';
 import { useLoreStore } from '../../stores/useLoreStore';
-import { useIncStore }  from '../../stores/useIncStore';
+import EntityEditor    from './EntityEditor';
+import GroupEditor     from './GroupEditor';
+import CharacterCard   from './CharacterCard';
+import LocationCard    from './LocationCard';
+import ObjectCard      from './ObjectCard';
+import GroupCard       from './GroupCard';
 
-// ── Badge incohérences ────────────────────────────────────────────────────────
-function IncBadge({ incs }) {
-  if (!incs.length) return null;
-  const sev = getMaxSeverity(incs);
-  const cfg = SEVERITY_CONFIG[sev];
-  return (
-    <div
-      className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full font-bold z-10"
-      style={{ backgroundColor: cfg.color, color: '#fff', fontSize: '10px', lineHeight: 1 }}
-      title={`${incs.length} incohérence${incs.length > 1 ? 's' : ''} détectée${incs.length > 1 ? 's' : ''}`}
-    >
-      ⚠ {incs.length}
-    </div>
-  );
-}
 
 const TAB_DEFS = [
   { key: 'characters', label: 'Personnages' },
   { key: 'locations',  label: 'Lieux'       },
   { key: 'objects',    label: 'Objets'      },
+  { key: 'groups',     label: 'Groupes'     },
 ];
-
-// ── Carte Personnage ─────────────────────────────────────────────────────────
-function CharacterCard({ char, highlighted, incs = [] }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    if (highlighted && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [highlighted]);
-
-  const hex = (char.color || '#64748b').replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const rgb = `${r},${g},${b}`;
-
-  return (
-    <div
-      ref={ref}
-      className="rounded-xl border overflow-hidden transition-all duration-300 relative"
-      style={{
-        borderColor: highlighted ? char.color : 'rgba(255,255,255,0.08)',
-        backgroundColor: highlighted
-          ? `rgba(${rgb},0.08)`
-          : 'rgba(255,255,255,0.03)',
-        boxShadow: highlighted ? `0 0 20px rgba(${rgb},0.25)` : 'none',
-      }}
-    >
-      <IncBadge incs={incs} />
-      {/* Bandeau couleur */}
-      <div className="h-1" style={{ backgroundColor: char.color }} />
-
-      <div className="p-4 flex flex-col gap-3">
-        {/* Nom + race */}
-        <div>
-          <h3 className="text-base font-black text-white leading-tight">{char.name}</h3>
-          {char.aliases?.length > 0 && (
-            <p className="text-xs text-slate-500 italic mt-0.5">
-              {char.aliases.slice(0, 2).join(' · ')}
-            </p>
-          )}
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{
-                backgroundColor: `rgba(${rgb},0.15)`,
-                color: char.color,
-                border: `1px solid rgba(${rgb},0.3)`,
-              }}
-            >
-              {char.race}
-            </span>
-            <span className="text-xs text-slate-500">{char.role}</span>
-          </div>
-        </div>
-
-        {/* Description */}
-        <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">
-          {char.description}
-        </p>
-
-        {/* Traits */}
-        {char.traits?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {char.traits.map((t, i) => (
-              <span
-                key={i}
-                className="text-xs px-2 py-0.5 rounded text-slate-300"
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Origine */}
-        <p className="text-xs text-slate-600 italic">{char.origin}</p>
-      </div>
-    </div>
-  );
-}
-
-// ── Carte Lieu ────────────────────────────────────────────────────────────────
-function LocationCard({ loc, highlighted, onCharacterClick, incs = [] }) {
-  const ref = useRef(null);
-  const [hoveredChar, setHoveredChar] = useState(null);
-  useEffect(() => {
-    if (highlighted && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [highlighted]);
-
-  return (
-    <div
-      ref={ref}
-      className="rounded-xl border overflow-hidden transition-all duration-300 relative"
-      style={{
-        borderColor: highlighted ? '#818cf8' : 'rgba(255,255,255,0.08)',
-        backgroundColor: highlighted ? 'rgba(129,140,248,0.06)' : 'rgba(255,255,255,0.03)',
-        boxShadow: highlighted ? '0 0 20px rgba(129,140,248,0.2)' : 'none',
-      }}
-    >
-      <IncBadge incs={incs} />
-      <div className="h-1 bg-gradient-to-r from-slate-600 to-slate-700" />
-      <div className="p-4 flex flex-col gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">
-              {loc.type}
-            </span>
-          </div>
-          <h3 className="text-base font-black text-white">{loc.name}</h3>
-          <p className="text-xs text-slate-500 italic mt-0.5">{loc.regime}</p>
-        </div>
-
-        <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">
-          {loc.description}
-        </p>
-
-        {loc.inhabitants?.filter(Boolean).length > 0 && (
-          <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1">Habitants</p>
-            <div className="flex flex-wrap gap-1.5">
-              {loc.inhabitants.map((h, i) => (
-                <span
-                  key={i}
-                  className="text-xs px-2 py-0.5 rounded text-slate-300 bg-white/5 border border-white/8"
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {loc.keyPlaces?.length > 0 && (
-          <p className="text-xs text-slate-600 italic">
-            {loc.keyPlaces.join(' · ')}
-          </p>
-        )}
-
-        {loc.visitedBy?.length > 0 && (
-          <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">Passés par ici</p>
-            <div className="flex flex-wrap gap-1.5">
-              {loc.visitedBy.map((char) => {
-                const hex = char.color.replace('#', '');
-                const r = parseInt(hex.slice(0, 2), 16);
-                const g = parseInt(hex.slice(2, 4), 16);
-                const b = parseInt(hex.slice(4, 6), 16);
-                return (
-                  <button
-                    key={char.id}
-                    onClick={(e) => { e.stopPropagation(); onCharacterClick?.(char.name); }}
-                    onMouseEnter={() => setHoveredChar(char.id)}
-                    onMouseLeave={() => setHoveredChar(null)}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-all duration-150"
-                    style={{
-                      backgroundColor: hoveredChar === char.id ? `rgba(${r},${g},${b},0.25)` : `rgba(${r},${g},${b},0.12)`,
-                      color: char.color,
-                      border: `1px solid rgba(${r},${g},${b},${hoveredChar === char.id ? '0.6' : '0.3'})`,
-                      cursor: onCharacterClick ? 'pointer' : 'default',
-                      transform: hoveredChar === char.id ? 'translateY(-1px)' : 'none',
-                      boxShadow: hoveredChar === char.id ? `0 3px 8px rgba(${r},${g},${b},0.3)` : 'none',
-                    }}
-                    title={`Voir la fiche de ${char.name}`}
-                  >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: char.color }}
-                    />
-                    {char.name.split(' ')[0]}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Carte Objet ───────────────────────────────────────────────────────────────
-function ObjectCard({ obj, highlighted, onCharacterClick, incs = [] }) {
-  const ref = useRef(null);
-  const [hoveredChar, setHoveredChar] = useState(null);
-  useEffect(() => {
-    if (highlighted && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [highlighted]);
-
-  return (
-    <div
-      ref={ref}
-      className="rounded-xl border overflow-hidden transition-all duration-300 relative"
-      style={{
-        borderColor: highlighted ? '#F59E0B' : 'rgba(255,255,255,0.08)',
-        backgroundColor: highlighted ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.03)',
-        boxShadow: highlighted ? '0 0 20px rgba(245,158,11,0.2)' : 'none',
-      }}
-    >
-      <IncBadge incs={incs} />
-      <div className="h-1 bg-gradient-to-r from-amber-600 to-amber-400" />
-      <div className="p-4 flex flex-col gap-3">
-        <div>
-          <span className="text-xs px-2 py-0.5 rounded bg-amber-900/30 text-amber-400 border border-amber-800/40">
-            {obj.type}
-          </span>
-          <h3 className="text-base font-black text-white mt-1">{obj.name}</h3>
-          {obj.creator && (
-            <p className="text-xs text-slate-500 italic mt-0.5">Forgé par {obj.creator}</p>
-          )}
-        </div>
-
-        <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">
-          {obj.description}
-        </p>
-
-        {obj.powers?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {obj.powers.map((p, i) => (
-              <span
-                key={i}
-                className="text-xs px-2 py-0.5 rounded text-amber-300 bg-amber-900/20 border border-amber-800/30"
-              >
-                {p}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {obj.holders?.length > 0 && (
-          <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">Porteur(s)</p>
-            <div className="flex flex-wrap gap-1.5">
-              {obj.holders.map((char) => {
-                const hex = char.color.replace('#', '');
-                const r = parseInt(hex.slice(0, 2), 16);
-                const g = parseInt(hex.slice(2, 4), 16);
-                const b = parseInt(hex.slice(4, 6), 16);
-                return (
-                  <button
-                    key={char.id}
-                    onClick={(e) => { e.stopPropagation(); onCharacterClick?.(char.name); }}
-                    onMouseEnter={() => setHoveredChar(char.id)}
-                    onMouseLeave={() => setHoveredChar(null)}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-all duration-150"
-                    style={{
-                      backgroundColor: hoveredChar === char.id ? `rgba(${r},${g},${b},0.25)` : `rgba(${r},${g},${b},0.12)`,
-                      color: char.color,
-                      border: `1px solid rgba(${r},${g},${b},${hoveredChar === char.id ? '0.6' : '0.3'})`,
-                      cursor: onCharacterClick ? 'pointer' : 'default',
-                      transform: hoveredChar === char.id ? 'translateY(-1px)' : 'none',
-                      boxShadow: hoveredChar === char.id ? `0 3px 8px rgba(${r},${g},${b},0.3)` : 'none',
-                    }}
-                    title={`Voir la fiche de ${char.name}`}
-                  >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: char.color }}
-                    />
-                    {char.name.split(' ')[0]}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {obj.inscription && (
-          <p className="text-xs text-amber-600/70 font-serif italic border-l-2 border-amber-800/40 pl-2">
-            {obj.inscription}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // ── LoreBrowser principal ─────────────────────────────────────────────────────
 /**
@@ -318,30 +24,22 @@ function ObjectCard({ obj, highlighted, onCharacterClick, incs = [] }) {
  *   onEntityClick   — (id) => void — ouvre le graphe de l'entité
  */
 export default function LoreBrowser({ initialTab = 'characters', initialSearch = '', onEntityClick, onCharacterClick }) {
-  const { characters, locations, objects, ready } = useLoreStore();
-  const rawIncs = useIncStore(s => s.data);
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [search,    setSearch]    = useState(initialSearch);
+  const { characters, locations, objects, groups, ready } = useLoreStore();
+  const [activeTab,    setActiveTab]    = useState(initialTab);
+  const [search,       setSearch]       = useState(initialSearch);
+  // undefined = fermé, null = création, objet = édition
+  const [editorEntity,  setEditorEntity]  = useState(undefined);
+  const [groupEditorGrp, setGroupEditorGrp] = useState(undefined); // undefined=fermé, null=création, obj=édition
 
   useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
   useEffect(() => { setSearch(initialSearch); }, [initialSearch]);
-
-  const entityIncMap = useMemo(() => {
-    const map = {};
-    (rawIncs ?? []).forEach(inc => {
-      (inc.links ?? []).forEach(link => {
-        if (!map[link.entityId]) map[link.entityId] = [];
-        map[link.entityId].push(inc);
-      });
-    });
-    return map;
-  }, [rawIncs]);
 
   const TABS = useMemo(() => ready ? [
     { key: 'characters', label: 'Personnages', data: characters },
     { key: 'locations',  label: 'Lieux',       data: locations  },
     { key: 'objects',    label: 'Objets',       data: objects    },
-  ] : TAB_DEFS.map(t => ({ ...t, data: [] })), [ready, characters, locations, objects]);
+    { key: 'groups',     label: 'Groupes',      data: groups     },
+  ] : TAB_DEFS.map(t => ({ ...t, data: [] })), [ready, characters, locations, objects, groups]);
 
   const currentTab = TABS.find((t) => t.key === activeTab) ?? TABS[0];
 
@@ -353,11 +51,8 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
         item.name,
         item.description,
         ...(item.aliases ?? []),
-        item.race ?? '',
-        item.role ?? '',
         item.type ?? '',
         item.creator ?? '',
-        ...(item.traits ?? []),
         ...(item.inhabitants ?? []),
         ...(item.powers ?? []),
       ].join(' ').toLowerCase();
@@ -386,7 +81,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
       {/* ── Header ── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
-        <div className="text-center flex-1">
+        <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Lore <span style={{ color: '#3F51B5' }}>Browser</span>
           </h1>
@@ -395,10 +90,18 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
           </p>
         </div>
 
-        {/* Compteur */}
-        <span className="text-xs font-mono text-slate-600">
-          {filtered.length} / {currentTab.data.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-slate-600">
+            {filtered.length} / {currentTab.data.length}
+          </span>
+          <button
+            onClick={() => activeTab === 'groups' ? setGroupEditorGrp(null) : setEditorEntity(null)}
+            className="text-xs px-3 py-1.5 rounded-lg font-black transition-all duration-200 flex items-center gap-1.5"
+            style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
+          >
+            + Ajouter
+          </button>
+        </div>
       </header>
 
       {/* ── Tabs + Search ── */}
@@ -455,61 +158,64 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-slate-600">
             <p className="text-4xl mb-4">◯</p>
-            <p className="font-serif italic">Aucun résultat pour « {search} »</p>
+            <p className="font-serif italic">
+              {search ? `Aucun résultat pour « ${search} »` : 'Aucune donnée pour le moment'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {activeTab === 'characters' &&
               filtered.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => onEntityClick?.(item.id)}
-                  className="relative group"
-                  style={{ cursor: onEntityClick ? 'pointer' : 'default' }}
-                >
-                  <CharacterCard char={item} highlighted={item.id === highlightedId} incs={entityIncMap[item.id] ?? []} />
-                  {onEntityClick && (
-                    <span className="absolute top-3 right-3 text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors select-none pointer-events-none">
-                      Voir graphe →
-                    </span>
-                  )}
+                <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
+                  <CharacterCard char={item} highlighted={item.id === highlightedId}
+                    onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
+                  />
                 </div>
               ))}
             {activeTab === 'locations' &&
               filtered.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => onEntityClick?.(item.id)}
-                  className="relative group"
-                  style={{ cursor: onEntityClick ? 'pointer' : 'default' }}
-                >
-                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick} incs={entityIncMap[item.id] ?? []} />
-                  {onEntityClick && (
-                    <span className="absolute top-3 right-3 text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors select-none pointer-events-none">
-                      Voir graphe →
-                    </span>
-                  )}
+                <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
+                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick}
+                    onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
+                  />
                 </div>
               ))}
             {activeTab === 'objects' &&
               filtered.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => onEntityClick?.(item.id)}
-                  className="relative group"
-                  style={{ cursor: onEntityClick ? 'pointer' : 'default' }}
-                >
-                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick} incs={entityIncMap[item.id] ?? []} />
-                  {onEntityClick && (
-                    <span className="absolute top-3 right-3 text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors select-none pointer-events-none">
-                      Voir graphe →
-                    </span>
-                  )}
+                <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
+                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={onCharacterClick}
+                    onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
+                  />
                 </div>
+              ))}
+            {activeTab === 'groups' &&
+              filtered.map((item) => (
+                <GroupCard
+                  key={item.id}
+                  group={item}
+                  onEdit={g => setGroupEditorGrp(g)}
+                />
               ))}
           </div>
         )}
       </main>
+
+      {/* ── Éditeur d'entité ── */}
+      {editorEntity !== undefined && (
+        <EntityEditor
+          entity={editorEntity}
+          entityType={activeTab.replace('characters', 'character').replace('locations', 'location').replace('objects', 'object')}
+          onClose={() => setEditorEntity(undefined)}
+        />
+      )}
+
+      {/* ── Éditeur de groupe ── */}
+      {groupEditorGrp !== undefined && (
+        <GroupEditor
+          group={groupEditorGrp ?? undefined}
+          onClose={() => setGroupEditorGrp(undefined)}
+        />
+      )}
     </div>
   );
 }

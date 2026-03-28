@@ -5,7 +5,11 @@ import { useLoreStore }     from '../stores/useLoreStore';
 import { useIncStore }      from '../stores/useIncStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useStcStore }      from '../stores/useStcStore';
-import { useMapStore }      from '../stores/useMapStore';
+import { useMapStore }          from '../stores/useMapStore';
+import { useNotesStore }       from '../stores/useNotesStore';
+import { useCharacterArcStore } from '../stores/useCharacterArcStore';
+import { usePlantStore }        from '../stores/usePlantStore';
+import { useThreadStore }       from '../stores/useThreadStore';
 
 const LS_KEY = 'atlas_active_project';
 
@@ -19,6 +23,9 @@ async function loadAll(db, projectId) {
     useTimelineStore.getState().load(db, projectId),
     useStcStore.getState().load(db, projectId),
     useMapStore.getState().load(db, projectId),
+    useCharacterArcStore.getState().load(db, projectId),
+    usePlantStore.getState().load(db, projectId),
+    useThreadStore.getState().load(db, projectId),
   ]);
 }
 
@@ -29,6 +36,10 @@ function resetAll() {
   useTimelineStore.getState().reset();
   useStcStore.getState().reset();
   useMapStore.getState().reset();
+  useNotesStore.getState().reset();
+  useCharacterArcStore.getState().reset();
+  usePlantStore.getState().reset();
+  useThreadStore.getState().reset();
 }
 
 export function ProjectProvider({ children }) {

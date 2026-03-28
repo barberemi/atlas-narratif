@@ -7,27 +7,29 @@ const BAR_H     = 10;
 const BEAT_SIZE = 28;
 const BEAT_STEP = 34;
 
-export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
-  const [hoveredChapterId, setHoveredChapterId] = useState(null);
+export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onHoverBeat }) {
+  const [hoveredChapterNum, setHoveredChapterNum] = useState(null);
 
   const total = chapters.length;
-  const getChapterPercent = (n) => ((n - 1 + 0.5) / total) * 100;
+  const getChapterPercent   = (n) => ((n - 1 + 0.5) / total) * 100;
   const getBeatActualPercent = (beatId) => {
-    const ch = chapters.find(c => c.beats.includes(beatId));
-    return ch ? ((ch.number - 1 + 0.5) / total) * 100 : null;
+    const evt = beatEventMap.get(beatId);
+    return evt ? ((evt.chapter - 1 + 0.5) / total) * 100 : null;
   };
 
   const alertBeatIds = useMemo(() => new Set(alerts.map(a => a.beat.id)), [alerts]);
 
+  // beatsByChapter[chapterNumber] = Beat[]
   const beatsByChapter = useMemo(() => {
     const map = {};
-    chapters.forEach(ch => {
-      map[ch.number] = ch.beats
-        .map(id => BEATS.find(b => b.id === id))
-        .filter(Boolean);
+    beatEventMap.forEach((evt, beatId) => {
+      const beat = BEATS.find(b => b.id === beatId);
+      if (!beat) return;
+      if (!map[evt.chapter]) map[evt.chapter] = [];
+      map[evt.chapter].push(beat);
     });
     return map;
-  }, [chapters]);
+  }, [beatEventMap]);
 
   return (
     <div className="relative w-full select-none" style={{ height: FRISE_H }}>
@@ -65,11 +67,11 @@ export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
           ? BAR_TOP - chBeats.length * BEAT_STEP - 12
           : BAR_TOP - 20;
 
-        const isChHovered = hoveredChapterId === ch.id;
-        const chHasAlert  = (beatsByChapter[ch.number] || []).some(b => alertBeatIds.has(b.id));
+        const isChHovered = hoveredChapterNum === ch.number;
+        const chHasAlert  = chBeats.some(b => alertBeatIds.has(b.id));
 
         return (
-          <div key={ch.id}>
+          <div key={ch.number}>
             <div
               className="absolute"
               style={{
@@ -90,14 +92,14 @@ export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
                 transition: 'color 0.15s',
                 zIndex: 20,
               }}
-              onMouseEnter={() => setHoveredChapterId(ch.id)}
-              onMouseLeave={() => setHoveredChapterId(null)}
+              onMouseEnter={() => setHoveredChapterNum(ch.number)}
+              onMouseLeave={() => setHoveredChapterNum(null)}
             >
               Ch.{ch.number}
             </div>
 
             {/* Tooltip chapitre */}
-            {isChHovered && (
+            {isChHovered && chBeats.length > 0 && (
               <div
                 className="absolute z-30 pointer-events-none"
                 style={{
@@ -125,11 +127,8 @@ export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
                     </span>
                     <span className="text-xs font-bold text-slate-200 leading-snug">{ch.title}</span>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-serif italic">
-                    {ch.summary.length > 120 ? ch.summary.slice(0, 120) + '…' : ch.summary}
-                  </p>
                   <div className="flex flex-wrap gap-1 pt-1 border-t border-white/5">
-                    {(beatsByChapter[ch.number] || []).map(beat => (
+                    {chBeats.map(beat => (
                       <span
                         key={beat.id}
                         className="text-[10px] px-1.5 py-0.5 rounded font-medium"
@@ -208,19 +207,12 @@ export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
             opacity: 0.3,
           }}
         />
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{ border: '1px solid rgba(255,255,255,0.12)' }}
-        />
+        <div className="absolute inset-0 rounded-full" style={{ border: '1px solid rgba(255,255,255,0.12)' }} />
         {[0, 10, 25, 50, 75, 90, 100].map(p => (
           <div
             key={p}
             className="absolute top-0 bottom-0"
-            style={{
-              left: `${p}%`, width: 1,
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              transform: 'translateX(-0.5px)',
-            }}
+            style={{ left: `${p}%`, width: 1, backgroundColor: 'rgba(255,255,255,0.2)', transform: 'translateX(-0.5px)' }}
           />
         ))}
       </div>
@@ -233,11 +225,7 @@ export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
           <div
             key={`ideal-${beat.id}`}
             className="absolute cursor-default"
-            style={{
-              left: `${beat.idealPercent}%`,
-              top: BAR_TOP + BAR_H + 12,
-              transform: 'translateX(-50%)',
-            }}
+            style={{ left: `${beat.idealPercent}%`, top: BAR_TOP + BAR_H + 12, transform: 'translateX(-50%)' }}
             title={`${beat.number}. ${beat.label} — idéal : ${beat.idealPercent}%`}
             onMouseEnter={() => onHoverBeat(beat.id)}
             onMouseLeave={() => onHoverBeat(null)}
@@ -268,12 +256,7 @@ export default function Frise({ chapters, alerts, hoveredBeat, onHoverBeat }) {
         <div
           key={p}
           className="absolute font-mono font-semibold"
-          style={{
-            left: `${p}%`, top: BAR_TOP + BAR_H + 32,
-            transform: 'translateX(-50%)',
-            color: 'rgba(100,116,139,0.8)',
-            fontSize: 11,
-          }}
+          style={{ left: `${p}%`, top: BAR_TOP + BAR_H + 32, transform: 'translateX(-50%)', color: 'rgba(100,116,139,0.8)', fontSize: 11 }}
         >
           {p}%
         </div>

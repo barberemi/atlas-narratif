@@ -69,6 +69,44 @@ export async function exportProject(db, projectId) {
     [projectId],
   );
 
+  // ── Groupes ───────────────────────────────────────────────────────────────
+  const { rows: groups } = await db.query(
+    `SELECT * FROM groups WHERE project_id = $1 ORDER BY name`,
+    [projectId],
+  );
+  const { rows: characterGroups } = await db.query(
+    `SELECT * FROM character_groups WHERE project_id = $1`,
+    [projectId],
+  );
+
+  // ── Amorces narratives ────────────────────────────────────────────────────
+  const { rows: plantPayoffs } = await db.query(
+    `SELECT * FROM plant_payoffs WHERE project_id = $1`,
+    [projectId],
+  );
+
+  // ── Arc émotionnel ────────────────────────────────────────────────────────
+  const { rows: arcPoints } = await db.query(
+    `SELECT * FROM arc_points WHERE project_id = $1 ORDER BY chapter_number`,
+    [projectId],
+  );
+
+  // ── Fils narratifs ────────────────────────────────────────────────────────
+  const { rows: narrativeThreads } = await db.query(
+    `SELECT * FROM narrative_threads WHERE project_id = $1 ORDER BY sort_order`,
+    [projectId],
+  );
+
+  // ── Arcs des personnages ──────────────────────────────────────────────────
+  const { rows: characterArcAxes } = await db.query(
+    `SELECT * FROM character_arc_axes WHERE project_id = $1 ORDER BY character_id, label`,
+    [projectId],
+  );
+  const { rows: characterArcPoints } = await db.query(
+    `SELECT * FROM character_arc_points WHERE project_id = $1 ORDER BY axis_id, chapter_num`,
+    [projectId],
+  );
+
   // ── Assemblage ────────────────────────────────────────────────────────────
   const payload = {
     version: '1.0',
@@ -91,6 +129,13 @@ export async function exportProject(db, projectId) {
     stcChapterBeats,
     stcChapterEntities,
     characterJourneys,
+    groups,
+    characterGroups,
+    plantPayoffs,
+    arcPoints,
+    narrativeThreads,
+    characterArcAxes,
+    characterArcPoints,
   };
 
   // ── Téléchargement ────────────────────────────────────────────────────────
