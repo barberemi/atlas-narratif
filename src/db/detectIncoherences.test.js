@@ -15,8 +15,20 @@ function makeObj(id, name, extra = {}) {
   return { id, name, currentHolder: null, status: 'active', statusChangedAtChapter: null, ...extra };
 }
 
-function makeEvent(id, chapter, title, { locationId = null, entities = [] } = {}) {
-  return { id, chapter, chapterTitle: `Chapitre ${chapter}`, title, locationId, entities };
+function makeEvent(id, chapter, title, { locationId = null, entities = [], povCharacterId = null, threadIds = [] } = {}) {
+  return { id, chapter, chapterTitle: `Chapitre ${chapter}`, title, locationId, entities, povCharacterId, threadIds };
+}
+
+function makePlant(id, label, extra = {}) {
+  return { id, label, status: 'open', plantChapterNum: null, payoffChapterNum: null, payoffEventId: null, ...extra };
+}
+
+function makeThread(id, name) {
+  return { id, name };
+}
+
+function makeGroup(id, name, members = []) {
+  return { id, name, members };
 }
 
 function withChar(charId) {
@@ -29,7 +41,7 @@ function withObj(objId) {
   return { entityType: 'object', id: objId };
 }
 
-const empty = { characters: [], locations: [], objects: [], events: [] };
+const empty = { characters: [], locations: [], objects: [], events: [], plants: [], threads: [], groups: [] };
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -45,9 +57,9 @@ describe('detectOrphanCharacters', () => {
     const events = [makeEvent('evt1', 1, 'Scène 1', { entities: [] })];
     const results = runDetection({ ...empty, characters, events });
 
-    expect(results).toHaveLength(1);
-    expect(results[0].severity).toBe('low');
-    expect(results[0].title).toContain('Alice');
+    const orphan = results.filter(r => r.type === 'Entité Orpheline' && r.title.includes('Alice'));
+    expect(orphan).toHaveLength(1);
+    expect(orphan[0].severity).toBe('low');
   });
 
   it('ne signale pas un personnage qui apparaît dans au moins un événement', () => {
@@ -217,3 +229,136 @@ describe('detectUsedInactiveObject', () => {
     expect(results.filter(r => r.severity === 'high')).toHaveLength(0);
   });
 });
+
+describe('detectPayoffBeforePlant', () => {
+  it('signale un payoff antérieur à l\'amorce', () => {
+    const plants = [makePlant('p1', 'L\'Anneau', { plantChapterNum: 5, payoffChapterNum: 2 })];
+    const results = runDetection({ ...empty, plants });
+    const found = results.filter(r => r.type === 'Payoff Avant Plant');
+    expect(found).toHaveLength(1);
+    expect(found[0].severity).toBe('high');
+  });
+
+  it('ne signale pas un payoff après l\'amorce', () => {
+    const plants = [makePlant('p1', 'L\'Anneau', { plantChapterNum: 2, payoffChapterNum: 8 })];
+    const results = runDetection({ ...empty, plants });
+    expect(results.filter(r => r.type === 'Payoff Avant Plant')).toHaveLength(0);
+  });
+
+  it('ne signale pas si payoff ou plant est null', () => {
+    const plants = [makePlant('p1', 'L\'Anneau', { plantChapterNum: 5, payoffChapterNum: null })];
+    const results = runDetection({ ...empty, plants });
+    expect(results.filter(r => r.type === 'Payoff Avant Plant')).toHaveLength(0);
+  });
+});
+
+describe('detectGhostAffiliations', () => {
+  it('signale un groupe dont un membre n\'existe plus', () => {
+    const characters = [makeChar('char_a', 'Alice')];
+    const groups     = [makeGroup('g1', 'La Guilde', [{ characterId: 'char_deleted' }])];
+    const results    = runDetection({ ...empty, characters, groups });
+    const found = results.filter(r => r.type === 'Affiliation Fantôme');
+    expect(found).toHaveLength(1);
+    expect(found[0].title).toContain('La Guilde');
+  });
+
+  it('ne signale pas un groupe dont tous les membres existent', () => {
+    const characters = [makeChar('char_a', 'Alice')];
+    const groups     = [makeGroup('g1', 'La Guilde', [{ characterId: 'char_a' }])];
+    const results    = runDetection({ ...empty, characters, groups });
+    expect(results.filter(r => r.type === 'Affiliation Fantôme')).toHaveLength(0);
+  });
+});
+
+describe('detectOpenPlants', () => {
+  it('signale une amorce ouverte sans payoff quand des chapitres existent après', () => {
+    const plants  = [makePlant('p1', 'Le Médaillon', { plantChapterNum: 2, status: 'open' })];
+    const events  = [
+      makeEvent('evt1', 1, 'Ch1'),
+      makeEvent('evt2', 5, 'Ch5'),
+    ];
+    const results = runDetection({ ...empty, plants, events });
+    const found = results.filter(r => r.type === 'Plant Sans Payoff');
+    expect(found).toHaveLength(1);
+  });
+
+  it('ne signale pas une amorce avec payoffEventId défini', () => {
+    const plants = [makePlant('p1', 'Le Médaillon', { plantChapterNum: 2, payoffEventId: 'evt5' })];
+    const events = [makeEvent('evt1', 5, 'Ch5')];
+    const results = runDetection({ ...empty, plants, events });
+    expect(results.filter(r => r.type === 'Plant Sans Payoff')).toHaveLength(0);
+  });
+
+  it('ne signale pas une amorce posée après le dernier chapitre', () => {
+    const plants = [makePlant('p1', 'Le Médaillon', { plantChapterNum: 10, status: 'open' })];
+    const events = [makeEvent('evt1', 5, 'Ch5')];
+    const results = runDetection({ ...empty, plants, events });
+    expect(results.filter(r => r.type === 'Plant Sans Payoff')).toHaveLength(0);
+  });
+});
+
+describe('detectEmptyThreads', () => {
+  it('signale un fil narratif sans événement associé', () => {
+    const threads = [makeThread('t1', 'La Quête')];
+    const events  = [makeEvent('evt1', 1, 'Sc1', { threadIds: [] })];
+    const results = runDetection({ ...empty, threads, events });
+    const found = results.filter(r => r.type === 'Fil Narratif Vide');
+    expect(found).toHaveLength(1);
+    expect(found[0].title).toContain('La Quête');
+  });
+
+  it('ne signale pas un fil utilisé dans au moins un événement', () => {
+    const threads = [makeThread('t1', 'La Quête')];
+    const events  = [makeEvent('evt1', 1, 'Sc1', { threadIds: ['t1'] })];
+    const results = runDetection({ ...empty, threads, events });
+    expect(results.filter(r => r.type === 'Fil Narratif Vide')).toHaveLength(0);
+  });
+});
+
+describe('detectMissingPovInScene', () => {
+  it('signale une scène dont le personnage POV n\'est pas dans les entités', () => {
+    const events = [
+      makeEvent('evt1', 2, 'Vision', { povCharacterId: 'char_a', entities: [] }),
+    ];
+    const results = runDetection({ ...empty, events });
+    const found = results.filter(r => r.type === 'Personnage POV Absent');
+    expect(found).toHaveLength(1);
+    expect(found[0].severity).toBe('medium');
+  });
+
+  it('ne signale pas si le POV est bien dans les entités', () => {
+    const events = [
+      makeEvent('evt1', 2, 'Vision', { povCharacterId: 'char_a', entities: [withChar('char_a')] }),
+    ];
+    const results = runDetection({ ...empty, events });
+    expect(results.filter(r => r.type === 'Personnage POV Absent')).toHaveLength(0);
+  });
+
+  it('ne signale pas si aucun POV n\'est défini', () => {
+    const events = [makeEvent('evt1', 2, 'Scène', { entities: [withChar('char_a')] })];
+    const results = runDetection({ ...empty, events });
+    expect(results.filter(r => r.type === 'Personnage POV Absent')).toHaveLength(0);
+  });
+});
+
+describe('detectEmptyScenes', () => {
+  it('signale un événement sans entité ni lieu', () => {
+    const events  = [makeEvent('evt1', 1, 'Vide')];
+    const results = runDetection({ ...empty, events });
+    const found = results.filter(r => r.type === 'Scène Vide');
+    expect(found).toHaveLength(1);
+  });
+
+  it('ne signale pas un événement avec au moins un lieu', () => {
+    const events  = [makeEvent('evt1', 1, 'Sc', { locationId: 'loc_a' })];
+    const results = runDetection({ ...empty, events });
+    expect(results.filter(r => r.type === 'Scène Vide')).toHaveLength(0);
+  });
+
+  it('ne signale pas un événement avec au moins une entité', () => {
+    const events  = [makeEvent('evt1', 1, 'Sc', { entities: [withChar('char_a')] })];
+    const results = runDetection({ ...empty, events });
+    expect(results.filter(r => r.type === 'Scène Vide')).toHaveLength(0);
+  });
+});
+

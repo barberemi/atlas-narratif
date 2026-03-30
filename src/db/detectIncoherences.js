@@ -10,7 +10,79 @@ function makeId(type, ...parts) {
   return `scan_${type}_${parts.join('_')}`;
 }
 
-// ── Détecteurs ────────────────────────────────────────────────────────────────
+// ── Catalogue des détecteurs ──────────────────────────────────────────────────
+// Exporté pour l'affichage UI dans DetectorCatalog.
+
+export const DETECTOR_CATALOG = [
+  {
+    type:        'Continuité de Personnage',
+    icon:        '💀',
+    severity:    'critical',
+    description: 'Un personnage marqué comme mort réapparaît dans un événement postérieur à sa mort.',
+  },
+  {
+    type:        "Continuité d'Objet",
+    icon:        '⚙',
+    severity:    'high',
+    description: 'Un objet perdu ou détruit est encore utilisé dans des scènes après son changement de statut.',
+  },
+  {
+    type:        'Payoff Avant Plant',
+    icon:        '⏪',
+    severity:    'high',
+    description: "Le payoff d'une amorce narrative est placé à un chapitre antérieur à l'amorce elle-même.",
+  },
+  {
+    type:        'Entité Non Référencée',
+    icon:        '🔗',
+    severity:    'high',
+    description: 'Une entité supprimée du lore est encore référencée dans des événements de la timeline.',
+  },
+  {
+    type:        'Incohérence de Porteur',
+    icon:        '🎒',
+    severity:    'medium',
+    description: "Le détenteur actuel d'un objet ne correspond à aucun personnage connu dans le lore.",
+  },
+  {
+    type:        'Affiliation Fantôme',
+    icon:        '👻',
+    severity:    'medium',
+    description: 'Un groupe référence un membre dont le personnage a été supprimé du lore.',
+  },
+  {
+    type:        'Personnage POV Absent',
+    icon:        '👁',
+    severity:    'medium',
+    description: "Le personnage défini comme POV d'une scène n'est pas listé parmi les entités de cette scène.",
+  },
+  {
+    type:        'Plant Sans Payoff',
+    icon:        '🌱',
+    severity:    'medium',
+    description: "Une amorce narrative est marquée comme ouverte sans payoff défini jusqu'à la fin du récit.",
+  },
+  {
+    type:        'Fil Narratif Vide',
+    icon:        '🧵',
+    severity:    'low',
+    description: "Un fil narratif existe dans la base mais aucun événement de la timeline n'y est associé.",
+  },
+  {
+    type:        'Entité Orpheline',
+    icon:        '🔗',
+    severity:    'low',
+    description: "Un personnage ou un lieu existe dans le lore mais n'est jamais associé à un événement de la timeline.",
+  },
+  {
+    type:        'Scène Vide',
+    icon:        '◯',
+    severity:    'low',
+    description: "Un événement de la timeline n'est lié à aucune entité (personnage, lieu ou objet).",
+  },
+];
+
+// ── Détecteurs existants ──────────────────────────────────────────────────────
 
 /**
  * Personnages sans aucun événement dans la timeline.
@@ -23,7 +95,7 @@ function detectOrphanCharacters(characters, events) {
     .filter(c => !charIdsInEvents.has(c.id))
     .map(c => ({
       id:          makeId('orphan_char', c.id),
-      type:        'Entité Non Référencée',
+      type:        'Entité Orpheline',
       severity:    'low',
       title:       `${c.name} n'apparaît dans aucun événement`,
       explanation: `Le personnage "${c.name}" existe dans le lore mais n'est associé à aucun événement de la timeline.`,
@@ -45,7 +117,7 @@ function detectOrphanLocations(locations, events) {
     .filter(l => !locIdsInEvents.has(l.id))
     .map(l => ({
       id:          makeId('orphan_loc', l.id),
-      type:        'Entité Non Référencée',
+      type:        'Entité Orpheline',
       severity:    'low',
       title:       `Le lieu "${l.name}" n'est jamais visité`,
       explanation: `Le lieu "${l.name}" existe dans le lore mais n'est associé à aucun événement de la timeline.`,
@@ -117,12 +189,11 @@ function detectDeadCharacterReappearance(characters, events) {
   const results = [];
   const dead = characters.filter(c => c.deathEventId != null);
 
-  // Index de position pour comparer l'ordre des événements (déjà triés chapter_num, id)
   const eventOrderMap = new Map(events.map((e, i) => [e.id, i]));
 
   for (const char of dead) {
     const deathIdx = eventOrderMap.get(char.deathEventId);
-    if (deathIdx === undefined) continue; // événement de mort supprimé
+    if (deathIdx === undefined) continue;
 
     const afterDeath = events.filter((evt, idx) =>
       idx > deathIdx &&
@@ -163,7 +234,7 @@ function detectUsedInactiveObject(objects, events) {
     const eventTitles = afterChange.map(e => `"${e.title}" (ch.${e.chapter})`).join(', ');
     results.push({
       id:          makeId('inactive_obj', obj.id),
-      type:        'Continuité d\'Objet',
+      type:        "Continuité d'Objet",
       severity:    'high',
       title:       `"${obj.name}" utilisé après avoir été ${label} (ch.${obj.statusChangedAtChapter})`,
       explanation: `L'objet "${obj.name}" est marqué comme ${label} depuis le chapitre ${obj.statusChangedAtChapter} mais apparaît dans : ${eventTitles}.`,
@@ -175,19 +246,175 @@ function detectUsedInactiveObject(objects, events) {
   return results;
 }
 
+// ── Nouveaux détecteurs ───────────────────────────────────────────────────────
+
+/**
+ * Payoff d'une amorce narrative placé avant l'amorce elle-même.
+ */
+function detectPayoffBeforePlant(plants) {
+  return plants
+    .filter(p =>
+      p.payoffChapterNum != null &&
+      p.plantChapterNum  != null &&
+      p.payoffChapterNum < p.plantChapterNum
+    )
+    .map(p => ({
+      id:          makeId('payoff_before_plant', p.id),
+      type:        'Payoff Avant Plant',
+      severity:    'high',
+      title:       `Le payoff de "${p.label}" précède son amorce`,
+      explanation: `L'amorce "${p.label}" est posée au chapitre ${p.plantChapterNum} mais son payoff est au chapitre ${p.payoffChapterNum}, ce qui est impossible.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [],
+    }));
+}
+
+/**
+ * Groupe contenant un membre dont le personnage n'existe plus dans le lore.
+ */
+function detectGhostAffiliations(groups, characters) {
+  const charIds = new Set(characters.map(c => c.id));
+  const results = [];
+  const seen    = new Set();
+
+  for (const group of groups) {
+    for (const member of (group.members ?? [])) {
+      if (charIds.has(member.characterId)) continue;
+      const key = `${group.id}_${member.characterId}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      results.push({
+        id:          makeId('ghost_affil', group.id, member.characterId),
+        type:        'Affiliation Fantôme',
+        severity:    'medium',
+        title:       `Membre introuvable dans le groupe "${group.name}"`,
+        explanation: `Le groupe "${group.name}" référence un personnage (id: ${member.characterId}) qui n'existe plus dans le lore.`,
+        resolved:    false,
+        resolutionNote: null,
+        links:       [],
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * Amorce narrative ouverte sans payoff défini jusqu'à la fin du récit.
+ */
+function detectOpenPlants(plants, events) {
+  if (!plants.length) return [];
+  const maxChapter = events.length ? Math.max(...events.map(e => e.chapter)) : 0;
+  return plants
+    .filter(p =>
+      p.status === 'open' &&
+      !p.payoffEventId &&
+      p.payoffChapterNum == null &&
+      p.plantChapterNum  != null &&
+      p.plantChapterNum  <  maxChapter
+    )
+    .map(p => ({
+      id:          makeId('open_plant', p.id),
+      type:        'Plant Sans Payoff',
+      severity:    'medium',
+      title:       `Amorce non résolue : "${p.label}"`,
+      explanation: `L'amorce "${p.label}" (posée ch.${p.plantChapterNum}) n'a aucun payoff défini alors que le récit va jusqu'au chapitre ${maxChapter}.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [],
+    }));
+}
+
+/**
+ * Fil narratif sans aucun événement associé.
+ */
+function detectEmptyThreads(threads, events) {
+  if (!threads.length) return [];
+  const usedThreadIds = new Set(events.flatMap(e => e.threadIds ?? []));
+  return threads
+    .filter(t => !usedThreadIds.has(t.id))
+    .map(t => ({
+      id:          makeId('empty_thread', t.id),
+      type:        'Fil Narratif Vide',
+      severity:    'low',
+      title:       `Le fil narratif "${t.name}" n'est lié à aucune scène`,
+      explanation: `Le fil narratif "${t.name}" existe mais aucun événement de la timeline n'y est associé.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [],
+    }));
+}
+
+/**
+ * Le personnage POV d'une scène n'est pas dans ses entités.
+ */
+function detectMissingPovInScene(events) {
+  return events
+    .filter(e =>
+      e.povCharacterId &&
+      !e.entities.some(ent => ent.entityType === 'character' && ent.id === e.povCharacterId)
+    )
+    .map(e => ({
+      id:          makeId('pov_missing', e.id),
+      type:        'Personnage POV Absent',
+      severity:    'medium',
+      title:       `Le personnage POV est absent de la scène "${e.title}"`,
+      explanation: `La scène "${e.title}" (ch.${e.chapter}) a un personnage POV défini mais ce personnage ne figure pas dans les entités de la scène.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [],
+    }));
+}
+
+/**
+ * Événement sans aucune entité ni lieu associé.
+ */
+function detectEmptyScenes(events) {
+  return events
+    .filter(e => e.entities.length === 0 && !e.locationId)
+    .map(e => ({
+      id:          makeId('empty_scene', e.id),
+      type:        'Scène Vide',
+      severity:    'low',
+      title:       `Scène sans entités ni lieu : "${e.title}"`,
+      explanation: `L'événement "${e.title}" (ch.${e.chapter}) n'est lié à aucun personnage, lieu ou objet.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [],
+    }));
+}
+
 // ── Entrée principale ─────────────────────────────────────────────────────────
 
 /**
  * Lance toutes les détections et retourne un tableau d'incohérences.
- * @param {{ characters, locations, objects, events }} loreAndEvents
+ * @param {{ characters, locations, objects, events, plants, threads, groups }} data
  */
-export function runDetection({ characters, locations, objects, events }) {
+export function runDetection({
+  characters = [],
+  locations  = [],
+  objects    = [],
+  events     = [],
+  plants     = [],
+  threads    = [],
+  groups     = [],
+}) {
   return [
+    // critical
     ...detectDeadCharacterReappearance(characters, events),
+    // high
     ...detectUsedInactiveObject(objects, events),
+    ...detectPayoffBeforePlant(plants),
+    ...detectBrokenReferences(events, characters, locations, objects),
+    // medium
+    ...detectBrokenHolders(objects, characters),
+    ...detectGhostAffiliations(groups, characters),
+    ...detectMissingPovInScene(events),
+    ...detectOpenPlants(plants, events),
+    // low
+    ...detectEmptyThreads(threads, events),
     ...detectOrphanCharacters(characters, events),
     ...detectOrphanLocations(locations, events),
-    ...detectBrokenHolders(objects, characters),
-    ...detectBrokenReferences(events, characters, locations, objects),
+    ...detectEmptyScenes(events),
   ];
 }

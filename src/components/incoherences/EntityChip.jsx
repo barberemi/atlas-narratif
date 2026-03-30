@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
 
-export default function EntityChip({ link, onEntityClick }) {
+export default function EntityChip({ link, onEntityClick, onEntityFilter }) {
   const meta = useMemo(() => getEntityMeta(link.entityId, link.entityType), [link]);
 
   const color = meta?.color ?? ENTITY_COLORS[link.entityType] ?? '#64748B';
@@ -14,9 +14,20 @@ export default function EntityChip({ link, onEntityClick }) {
   const typeIcons = { character: '👤', location: '📍', object: '⚔️' };
   const icon = typeIcons[link.entityType] ?? '·';
 
+  const handleClick = (e) => {
+    if (!meta) return;
+    if (e.shiftKey && onEntityClick) {
+      onEntityClick(link.entityId, link.entityType);
+    } else if (onEntityFilter) {
+      onEntityFilter(link.entityId, link.entityType, link.label);
+    } else if (onEntityClick) {
+      onEntityClick(link.entityId, link.entityType);
+    }
+  };
+
   return (
     <button
-      onClick={() => meta && onEntityClick(link.entityId, link.entityType)}
+      onClick={handleClick}
       className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-all duration-150 hover:scale-105"
       style={{
         backgroundColor: `rgba(${rgb},0.15)`,
@@ -25,7 +36,12 @@ export default function EntityChip({ link, onEntityClick }) {
         cursor:  meta ? 'pointer' : 'default',
         opacity: meta ? 1 : 0.5,
       }}
-      title={meta ? `Ouvrir la fiche de ${link.label}` : 'Entité non trouvée dans la base'}
+      title={meta
+        ? onEntityFilter
+          ? `Filtrer par ${link.label} (Shift+clic → relations)`
+          : `Ouvrir la fiche de ${link.label}`
+        : 'Entité non trouvée dans la base'
+      }
     >
       <span>{icon}</span>
       {link.label}

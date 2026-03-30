@@ -8,6 +8,7 @@ import {
   aragornJourney, gandalfJourney, frodoJourney,
   groupsDB, plantsDB, arcPointsDB,
   threadsDB, eventExtrasDB, characterArcsDB,
+  heroJourneyDB,
 } from '../data/lotr_seed_data';
 import { seedProject } from './seed.generic';
 
@@ -33,6 +34,7 @@ const DATA = {
   threadsDB,
   eventExtrasDB,
   characterArcsDB,
+  heroJourneyDB,
 };
 
 export async function seedLotr(db) {

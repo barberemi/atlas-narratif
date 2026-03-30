@@ -25,6 +25,7 @@ Outil d'analyse et de construction narrative pour auteurs. SPA React, 100% in-br
 | `/arc` | `EmotionalArc` | Arc émotionnel par chapitre |
 | `/plants` | `PlantsBrowser` | Tracker plant / payoff (amorces narratives) |
 | `/threads` | `ThreadsBrowser` | Gestion des fils narratifs (subplots) |
+| `/heros` | `HeroJourney` | Voyage du Héros — 12 étapes de Joseph Campbell |
 | `/incoherences` | `IncoherencesBrowser` | Détection et résolution d'incohérences |
 
 Routes protégées par `<RequireProject>` → redirige vers `/` si aucun projet chargé.
@@ -45,8 +46,9 @@ Routes protégées par `<RequireProject>` → redirige vers `/` si aucun projet 
 - `useCharacterArcStore` — axes d'évolution + points par personnage
 - `usePlantStore` — amorces narratives (plant / payoff)
 - `useThreadStore` — fils narratifs (subplots)
+- `useHeroJourneyStore` — étapes du Voyage du Héros
 
-**Tables SQL principales** : `projects`, `characters`, `locations`, `objects`, `timeline_events`, `event_entities`, `incoherences`, `stc_chapters`, `arc_points`, `character_journeys`, `chapter_notes`, `character_arc_axes`, `character_arc_points`, `plant_payoffs`, `narrative_threads`, `groups`, `character_groups`
+**Tables SQL principales** : `projects`, `characters`, `locations`, `objects`, `timeline_events`, `event_entities`, `incoherences`, `stc_chapters`, `arc_points`, `character_journeys`, `chapter_notes`, `character_arc_axes`, `character_arc_points`, `plant_payoffs`, `narrative_threads`, `groups`, `character_groups`, `hero_journey_entries`
 
 → Détails : `ai/docs/data-layer.md`
 

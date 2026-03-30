@@ -5,6 +5,7 @@ export const NAV_GROUPS = [
     icon:  '✍️',
     items: [
       { path: '/savethecat', label: 'Save the Cat',   icon: '🐱' },
+      { path: '/heros',      label: 'Voyage du Héros', icon: '⚔️' },
       { path: '/arc',        label: 'Arc émotionnel', icon: '〰️' },
       { path: '/plants',     label: 'Amorces',        icon: '◎'  },
       { path: '/threads',    label: 'Fils narratifs', icon: '🧵' },
