@@ -3,6 +3,8 @@ import { useDb } from '../db/DbContext';
 import { useProject } from '../db/ProjectContext';
 import { useHeroJourneyStore } from '../stores/useHeroJourneyStore';
 import { useLoreStore } from '../stores/useLoreStore';
+import { useVolumeStore } from '../stores/useVolumeStore';
+import { useVolumeFilter } from '../hooks/useVolumeFilter';
 import { HERO_PHASES, HERO_STAGES, HERO_PHASE_MAP } from '../data/hero_journey_config';
 
 // ── StageCard ─────────────────────────────────────────────────────────────────
@@ -181,10 +183,13 @@ export default function HeroJourney() {
   const db            = useDb();
   const { projectId } = useProject();
 
-  const entries     = useHeroJourneyStore(s => s.entries);
-  const loadEntries = useHeroJourneyStore(s => s.load);
-  const saveEntry   = useHeroJourneyStore(s => s.saveEntry);
-  const removeEntry = useHeroJourneyStore(s => s.removeEntry);
+  const allEntries     = useHeroJourneyStore(s => s.entries);
+  const loadEntries    = useHeroJourneyStore(s => s.load);
+  const saveEntry      = useHeroJourneyStore(s => s.saveEntry);
+  const removeEntry    = useHeroJourneyStore(s => s.removeEntry);
+  const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
+  const filterByVolume = useVolumeFilter();
+  const entries        = filterByVolume(allEntries);
 
   const characters    = useLoreStore(s => s.characters);
   const loadLore      = useLoreStore(s => s.load);
@@ -248,6 +253,7 @@ export default function HeroJourney() {
       characterId: heroCharId || null,
       chapterNum,
       summary,
+      volumeId: activeVolumeId ?? null,
     });
   };
 

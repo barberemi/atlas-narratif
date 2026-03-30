@@ -8,6 +8,8 @@ import { useIncStore }      from '../../stores/useIncStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
 import { useArcStore }      from '../../stores/useArcStore';
 import { useNotesStore }    from '../../stores/useNotesStore';
+import { useVolumeStore }   from '../../stores/useVolumeStore';
+import { useVolumeFilter }  from '../../hooks/useVolumeFilter';
 import { useDb }            from '../../db/DbContext';
 import { useProject }       from '../../db/ProjectContext';
 import { BEATS }            from '../../data/beats_config';
@@ -15,6 +17,7 @@ import { OUTCOMES }         from '../../data/outcome_config';
 import EventEditor from './EventEditor';
 import EventCard from './EventCard';
 import ArcStrip, { COL_W } from './ArcStrip';
+import SeriesTimeline from './SeriesTimeline';
 
 // ── TimelineBrowser ───────────────────────────────────────────────────────────
 export default function TimelineBrowser() {
@@ -22,8 +25,13 @@ export default function TimelineBrowser() {
   const db            = useDb();
   const { projectId } = useProject();
 
-  const events       = useTimelineStore(s => s.events);
-  const incoherences = useIncStore(s => s.data) ?? [];
+  const allEvents    = useTimelineStore(s => s.events);
+  const filterByVolume = useVolumeFilter();
+  const activeVolumeId  = useVolumeStore(s => s.activeVolumeId);
+  const volumes         = useVolumeStore(s => s.volumes) ?? [];
+  const setActiveVolume = useVolumeStore(s => s.setActiveVolume);
+  const events         = filterByVolume(allEvents);
+  const incoherences   = useIncStore(s => s.data) ?? [];
 
   const arcPoints = useArcStore(s => s.points);
   const loadArc   = useArcStore(s => s.load);
@@ -40,6 +48,15 @@ export default function TimelineBrowser() {
   const [showArc,       setShowArc]       = useState(false);
   const [showStc,       setShowStc]       = useState(false);
   const [noteOpen,      setNoteOpen]      = useState(null); // chapter number
+  const [viewMode,      setViewMode]      = useState('chapters'); // 'chapters' | 'series'
+
+  // Revenir en vue chapitres si on sélectionne un tome
+  const handleSelectVolume = (id) => {
+    setActiveVolume(id);
+    setViewMode('chapters');
+  };
+
+  const showSeriesTab = !activeVolumeId && volumes.length >= 2;
 
   const beatMap = useMemo(() => new Map(BEATS.map(b => [b.id, b])), []);
   const dragScroll = useDragScroll();
@@ -129,41 +146,74 @@ export default function TimelineBrowser() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowArc(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
-            style={{
-              backgroundColor: showArc ? 'rgba(251,146,60,0.15)' : 'rgba(255,255,255,0.04)',
-              color:  showArc ? '#fb923c' : '#475569',
-              border: `1px solid ${showArc ? 'rgba(251,146,60,0.35)' : 'rgba(255,255,255,0.08)'}`,
-            }}
-            title="Afficher / masquer l'arc émotionnel"
-          >
-            ∿ Arc
-          </button>
-          <button
-            onClick={() => setShowStc(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
-            style={{
-              backgroundColor: showStc ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.04)',
-              color:  showStc ? '#f97316' : '#475569',
-              border: `1px solid ${showStc ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`,
-            }}
-            title="Afficher / masquer les beats Save the Cat"
-          >
-            🐱 STC
-          </button>
-          <button
-            onClick={() => setEditorEvent(null)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
-            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
-          >
-            + Ajouter
-          </button>
+          {/* Onglet Vue série */}
+          {showSeriesTab && (
+            <div className="flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0"
+              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {[
+                { id: 'chapters', label: 'Chapitres' },
+                { id: 'series',   label: '📚 Série' },
+              ].map(v => (
+                <button key={v.id} onClick={() => setViewMode(v.id)}
+                  className="px-3 py-1 rounded-md text-xs font-semibold transition-all"
+                  style={{
+                    backgroundColor: viewMode === v.id ? 'rgba(99,102,241,0.2)' : 'transparent',
+                    border:          viewMode === v.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
+                    color:           viewMode === v.id ? '#818cf8' : '#64748b',
+                  }}>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {viewMode === 'chapters' && (<>
+            <button
+              onClick={() => setShowArc(v => !v)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              style={{
+                backgroundColor: showArc ? 'rgba(251,146,60,0.15)' : 'rgba(255,255,255,0.04)',
+                color:  showArc ? '#fb923c' : '#475569',
+                border: `1px solid ${showArc ? 'rgba(251,146,60,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              }}
+              title="Afficher / masquer l'arc émotionnel"
+            >
+              ∿ Arc
+            </button>
+            <button
+              onClick={() => setShowStc(v => !v)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              style={{
+                backgroundColor: showStc ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.04)',
+                color:  showStc ? '#f97316' : '#475569',
+                border: `1px solid ${showStc ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              }}
+              title="Afficher / masquer les beats Save the Cat"
+            >
+              🐱 STC
+            </button>
+            <button
+              onClick={() => setEditorEvent(null)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
+              style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
+            >
+              + Ajouter
+            </button>
+          </>)}
         </div>
       </header>
 
-      {/* ── Filtre personnages ── */}
+      {/* ── Vue série ── */}
+      {viewMode === 'series' && (
+        <SeriesTimeline
+          volumes={volumes}
+          allEvents={allEvents}
+          arcPoints={arcPoints ?? []}
+          onSelectVolume={handleSelectVolume}
+        />
+      )}
+
+      {/* ── Vue chapitres : filtres + timeline horizontale ── */}
+      {viewMode === 'chapters' && <>
       <div
         className="flex flex-col border-b border-white/5 flex-shrink-0"
         style={{ background: 'rgba(0,0,0,0.2)' }}
@@ -443,17 +493,29 @@ export default function TimelineBrowser() {
                       : evtCharIds.has(focusedCharId);
                     const isHighlighted = !focusedCharId || matchesFilter;
                     const isDimmed      = !!focusedCharId && !matchesFilter;
+                    const evtVolume = evt.volumeId
+                      ? volumes.find(v => v.id === evt.volumeId)
+                      : null;
                     return (
-                      <EventCard
-                        key={evt.id}
-                        event={evt}
-                        isHighlighted={isHighlighted}
-                        isDimmed={isDimmed}
-                        onEntityClick={handleEntityClick}
-                        onEdit={setEditorEvent}
-                        allIncoherences={incoherences}
-                        beat={showStc && evt.beatId ? beatMap.get(evt.beatId) : null}
-                      />
+                      <div key={evt.id} className="relative">
+                        {!activeVolumeId && evtVolume && (
+                          <span
+                            className="absolute top-1 right-1 z-10 text-[9px] px-1.5 py-0.5 rounded font-bold pointer-events-none"
+                            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
+                          >
+                            T{evtVolume.number}
+                          </span>
+                        )}
+                        <EventCard
+                          event={evt}
+                          isHighlighted={isHighlighted}
+                          isDimmed={isDimmed}
+                          onEntityClick={handleEntityClick}
+                          onEdit={setEditorEvent}
+                          allIncoherences={incoherences}
+                          beat={showStc && evt.beatId ? beatMap.get(evt.beatId) : null}
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -473,6 +535,7 @@ export default function TimelineBrowser() {
           onClose={() => setEditorEvent(undefined)}
         />
       )}
+      </>}
     </div>
   );
 }

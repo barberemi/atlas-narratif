@@ -80,6 +80,24 @@ export const DETECTOR_CATALOG = [
     severity:    'low',
     description: "Un événement de la timeline n'est lié à aucune entité (personnage, lieu ou objet).",
   },
+  {
+    type:        'Mort Cross-Tomes',
+    icon:        '💀',
+    severity:    'critical',
+    description: 'Un personnage mort dans un tome réapparaît vivant dans un tome ultérieur.',
+  },
+  {
+    type:        'Objet Cross-Tomes',
+    icon:        '⚙',
+    severity:    'high',
+    description: "Un objet perdu ou détruit dans un tome est encore utilisé dans un tome ultérieur.",
+  },
+  {
+    type:        'Plant Cross-Tomes',
+    icon:        '🌱',
+    severity:    'medium',
+    description: "Une amorce narrative posée dans un tome n'a aucun payoff dans toute la série.",
+  },
 ];
 
 // ── Détecteurs existants ──────────────────────────────────────────────────────
@@ -384,11 +402,146 @@ function detectEmptyScenes(events) {
     }));
 }
 
+// ── Détecteurs cross-tomes ────────────────────────────────────────────────────
+
+/**
+ * Personnage mort dans un tome qui réapparaît dans un tome ultérieur.
+ * Requiert que les volumes soient triés par number (croissant).
+ */
+function detectCrossVolumeDeadCharacter(characters, events, volumes) {
+  if (!volumes.length) return [];
+
+  // Map volumeId → order (index dans le tableau trié par number)
+  const volumeOrder = new Map(
+    [...volumes].sort((a, b) => a.number - b.number).map((v, i) => [v.id, i])
+  );
+
+  const results = [];
+  const dead = characters.filter(c => c.deathEventId != null);
+
+  for (const char of dead) {
+    const deathEvent = events.find(e => e.id === char.deathEventId);
+    if (!deathEvent || !deathEvent.volumeId) continue;
+
+    const deathVolumeOrder = volumeOrder.get(deathEvent.volumeId);
+    if (deathVolumeOrder === undefined) continue;
+
+    const afterDeath = events.filter(evt =>
+      evt.volumeId &&
+      (volumeOrder.get(evt.volumeId) ?? -1) > deathVolumeOrder &&
+      evt.entities.some(e => e.entityType === 'character' && e.id === char.id)
+    );
+    if (!afterDeath.length) continue;
+
+    const deathVolume  = volumes.find(v => v.id === deathEvent.volumeId);
+    const eventTitles  = afterDeath.map(e => {
+      const vol = volumes.find(v => v.id === e.volumeId);
+      return `"${e.title}" (T${vol?.number ?? '?'})`;
+    }).join(', ');
+
+    results.push({
+      id:          makeId('cross_dead', char.id),
+      type:        'Mort Cross-Tomes',
+      severity:    'critical',
+      title:       `${char.name} mort au T${deathVolume?.number ?? '?'} réapparaît dans un tome ultérieur`,
+      explanation: `${char.name} est marqué comme mort dans "${deathEvent.title}" (T${deathVolume?.number ?? '?'}) mais apparaît dans : ${eventTitles}.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [{ entityId: char.id, entityType: 'character', label: char.name }],
+    });
+  }
+  return results;
+}
+
+/**
+ * Objet perdu/détruit dans un tome encore utilisé dans un tome ultérieur.
+ */
+function detectCrossVolumeInactiveObject(objects, events, volumes) {
+  if (!volumes.length) return [];
+
+  const volumeOrder = new Map(
+    [...volumes].sort((a, b) => a.number - b.number).map((v, i) => [v.id, i])
+  );
+
+  const results = [];
+  const inactive = objects.filter(o => o.status !== 'active' && o.statusChangedAtChapter != null);
+
+  for (const obj of inactive) {
+    // Find the last event (by chapter) in a volume where the object was used with that status
+    // We use the statusChangedAtChapter to find which volume it happened in
+    const changeEvent = events.find(e =>
+      e.chapter === obj.statusChangedAtChapter &&
+      e.volumeId &&
+      e.entities.some(en => en.entityType === 'object' && en.id === obj.id)
+    ) ?? events.filter(e => e.chapter <= obj.statusChangedAtChapter && e.volumeId).pop();
+
+    if (!changeEvent?.volumeId) continue;
+
+    const changeVolumeOrder = volumeOrder.get(changeEvent.volumeId);
+    if (changeVolumeOrder === undefined) continue;
+
+    const afterChange = events.filter(evt =>
+      evt.volumeId &&
+      (volumeOrder.get(evt.volumeId) ?? -1) > changeVolumeOrder &&
+      evt.entities.some(e => e.entityType === 'object' && e.id === obj.id)
+    );
+    if (!afterChange.length) continue;
+
+    const changeVolume = volumes.find(v => v.id === changeEvent.volumeId);
+    const label        = obj.status === 'lost' ? 'perdu' : 'détruit';
+    const eventTitles  = afterChange.map(e => {
+      const vol = volumes.find(v => v.id === e.volumeId);
+      return `"${e.title}" (T${vol?.number ?? '?'})`;
+    }).join(', ');
+
+    results.push({
+      id:          makeId('cross_obj', obj.id),
+      type:        'Objet Cross-Tomes',
+      severity:    'high',
+      title:       `"${obj.name}" ${label} au T${changeVolume?.number ?? '?'} mais utilisé dans un tome ultérieur`,
+      explanation: `L'objet "${obj.name}" est marqué comme ${label} (ch.${obj.statusChangedAtChapter}, T${changeVolume?.number ?? '?'}) mais apparaît dans : ${eventTitles}.`,
+      resolved:    false,
+      resolutionNote: null,
+      links:       [{ entityId: obj.id, entityType: 'object', label: obj.name }],
+    });
+  }
+  return results;
+}
+
+/**
+ * Amorce posée dans un tome sans aucun payoff dans toute la série.
+ * Ne se déclenche que quand des volumes existent (contexte multi-tomes).
+ */
+function detectCrossVolumePlantWithoutPayoff(plants, volumes) {
+  if (!volumes.length) return [];
+
+  return plants
+    .filter(p =>
+      p.status === 'open' &&
+      !p.payoffEventId &&
+      p.payoffChapterNum == null &&
+      p.plantVolumeId    != null
+    )
+    .map(p => {
+      const plantVol = volumes.find(v => v.id === p.plantVolumeId);
+      return {
+        id:          makeId('cross_plant', p.id),
+        type:        'Plant Cross-Tomes',
+        severity:    'medium',
+        title:       `Amorce "${p.label}" sans payoff dans toute la série`,
+        explanation: `L'amorce "${p.label}" est posée au T${plantVol?.number ?? '?'} mais n'a aucun payoff défini dans l'ensemble de la série.`,
+        resolved:    false,
+        resolutionNote: null,
+        links:       [],
+      };
+    });
+}
+
 // ── Entrée principale ─────────────────────────────────────────────────────────
 
 /**
  * Lance toutes les détections et retourne un tableau d'incohérences.
- * @param {{ characters, locations, objects, events, plants, threads, groups }} data
+ * @param {{ characters, locations, objects, events, plants, threads, groups, volumes }} data
  */
 export function runDetection({
   characters = [],
@@ -398,6 +551,7 @@ export function runDetection({
   plants     = [],
   threads    = [],
   groups     = [],
+  volumes    = [],
 }) {
   return [
     // critical
@@ -416,5 +570,9 @@ export function runDetection({
     ...detectOrphanCharacters(characters, events),
     ...detectOrphanLocations(locations, events),
     ...detectEmptyScenes(events),
+    // cross-tomes (multi-volume only)
+    ...detectCrossVolumeDeadCharacter(characters, events, volumes),
+    ...detectCrossVolumeInactiveObject(objects, events, volumes),
+    ...detectCrossVolumePlantWithoutPayoff(plants, volumes),
   ];
 }

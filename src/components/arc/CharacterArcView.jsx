@@ -5,7 +5,7 @@ import { CHART_H, PAD, yToSvg, xToSvg, smoothPath } from '../../utils/arcUtils';
 
 // ── Composant chart multi-lignes ──────────────────────────────────────────────
 
-function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick }) {
+function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick, volumeSeparators = [] }) {
   if (!svgW || !chapters.length) return null;
   const chartW = svgW - PAD.left - PAD.right;
   const svgH   = CHART_H + PAD.top + PAD.bottom;
@@ -68,6 +68,22 @@ function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick }
             stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
         );
       })()}
+
+      {/* Séparateurs de tomes */}
+      {volumeSeparators.map(sep => {
+        const idx = chapters.findIndex(c => c.number === sep.chapterNum);
+        if (idx < 0) return null;
+        const x = idx === 0 ? PAD.left : xToSvg(idx, chapters.length, chartW);
+        return (
+          <g key={sep.chapterNum}>
+            <line x1={x} y1={PAD.top} x2={x} y2={PAD.top + CHART_H}
+              stroke="rgba(99,102,241,0.35)" strokeWidth="1" strokeDasharray="4,3" />
+            <text x={x + 4} y={PAD.top + 13} fontSize="9" fill="rgba(129,140,248,0.7)" fontWeight="bold">
+              {sep.label}
+            </text>
+          </g>
+        );
+      })}
 
       {/* Lignes par axe/personnage */}
       {lines.map(({ id, color, pointsMap }) => {
@@ -147,7 +163,7 @@ function LabelAutocomplete({ value, onChange, suggestions, onSelect }) {
 
 // ── Vue principale ────────────────────────────────────────────────────────────
 
-export default function CharacterArcView({ chapters }) {
+export default function CharacterArcView({ chapters, chapterOffset = 0, volumes = [], activeVolumeId = null, volumeSeparators = [] }) {
   const axes       = useCharacterArcStore(s => s.axes);
   const points     = useCharacterArcStore(s => s.points);
   const axisLabels = useCharacterArcStore(s => s.axisLabels);
@@ -187,6 +203,9 @@ export default function CharacterArcView({ chapters }) {
     return () => obs.disconnect();
   }, [containerEl]);
 
+  // ── Vue série (read-only) ─────────────────────────────────────────────────
+  const isSeriesView = activeVolumeId === null && volumes.length >= 2;
+
   // ── Données pour le chart ─────────────────────────────────────────────────
 
   const charAxes = useMemo(
@@ -194,13 +213,29 @@ export default function CharacterArcView({ chapters }) {
     [axes, selectedCharId],
   );
 
+  /**
+   * Construit une Map locale (numéro de chapitre affiché → valeur) pour un axe.
+   * En vue tome : filtre par volumeId et soustrait l'offset (local = global - offset).
+   * En vue série : toutes les données, clé = chapter_num global (déjà cohérent avec `chapters`).
+   */
+  const buildPointsMap = (axisPoints) => {
+    if (isSeriesView) {
+      return new Map(axisPoints.map(p => [p.chapterNum, p.value]));
+    }
+    return new Map(
+      axisPoints
+        .filter(p => p.volumeId == null || p.volumeId === activeVolumeId)
+        .map(p => [p.chapterNum - chapterOffset, p.value])
+    );
+  };
+
   // Mode char: une ligne par axe du personnage sélectionné
   const charLines = useMemo(() => charAxes.map(ax => ({
     id:        ax.id,
     label:     ax.label,
     color:     ax.color,
-    pointsMap: new Map((points[ax.id] ?? []).map(p => [p.chapterNum, p.value])),
-  })), [charAxes, points]);
+    pointsMap: buildPointsMap(points[ax.id] ?? []),
+  })), [charAxes, points, isSeriesView, activeVolumeId, chapterOffset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tous les labels d'axes du projet
   const allLabels = useMemo(() => axisLabels, [axisLabels]);
@@ -216,12 +251,12 @@ export default function CharacterArcView({ chapters }) {
         id:        char.id,
         label:     char.name,
         color:     char.color ?? '#64748b',
-        pointsMap: new Map((points[charAx.id] ?? []).map(p => [p.chapterNum, p.value])),
+        pointsMap: buildPointsMap(points[charAx.id] ?? []),
         axisId:    charAx.id,
       });
     }
     return lines;
-  }, [selectedLabel, characters, axes, points]);
+  }, [selectedLabel, characters, axes, points, isSeriesView, activeVolumeId, chapterOffset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const activeLines = mode === 'char' ? charLines : axisLines;
 
@@ -238,8 +273,8 @@ export default function CharacterArcView({ chapters }) {
     setAdding(false);
   };
 
-  const handleSetPoint = async (axisId, chapterNum, value) => {
-    await setPoint(axisId, chapterNum, value, null);
+  const handleSetPoint = async (axisId, localChapterNum, value) => {
+    await setPoint(axisId, localChapterNum + chapterOffset, value, null);
   };
 
   const selectedChar = characters.find(c => c.id === selectedCharId);
@@ -370,24 +405,30 @@ export default function CharacterArcView({ chapters }) {
               svgW={svgW}
               activeChapter={activeChapter}
               onChapterClick={n => setActiveChapter(prev => prev === n ? null : n)}
+              volumeSeparators={volumeSeparators}
             />
+          )}
+          {isSeriesView && (
+            <div className="absolute bottom-2 right-3 text-[10px] text-slate-600 italic pointer-events-none">
+              Vue série — sélectionnez un tome pour éditer
+            </div>
           )}
         </div>
       )}
 
-      {/* Panel chapitre actif (mode char) */}
-      {mode === 'char' && activeChapterData && charAxes.length > 0 && (
+      {/* Panel chapitre actif (mode char) — masqué en vue série */}
+      {mode === 'char' && !isSeriesView && activeChapterData && charAxes.length > 0 && (
         <div
           className="rounded-xl p-4 flex flex-col gap-3"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <p className="text-sm font-black text-slate-200">
-            Chapitre {activeChapterData.number} — {activeChapterData.title}
+            Chapitre {activeChapterData.number}{activeChapterData.localNumber != null ? ` (ch.${activeChapterData.localNumber})` : ''} — {activeChapterData.title}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {charAxes.map(ax => {
-              const pm = new Map((points[ax.id] ?? []).map(p => [p.chapterNum, p.value]));
-              const val = pm.get(activeChapterData.number) ?? null;
+              const line = charLines.find(l => l.id === ax.id);
+              const val  = line?.pointsMap.get(activeChapterData.number) ?? null;
               return (
                 <div key={ax.id} className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
@@ -430,16 +471,17 @@ export default function CharacterArcView({ chapters }) {
                 return (
                   <tr
                     key={ch.number}
-                    onClick={() => setActiveChapter(prev => prev === ch.number ? null : ch.number)}
-                    className="cursor-pointer hover:bg-white/3 transition-colors"
+                    onClick={() => !isSeriesView && setActiveChapter(prev => prev === ch.number ? null : ch.number)}
+                    className={isSeriesView ? '' : 'cursor-pointer hover:bg-white/3 transition-colors'}
                     style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.04)' : undefined }}
                   >
                     <td className="px-2 py-1.5 text-slate-500 border-b border-white/5 sticky left-0 bg-inherit font-mono">
-                      {ch.number}
+                      {ch.localNumber ?? ch.number}
+                      {ch.volumeId && <span className="ml-1 text-[9px] text-indigo-600">T{volumes.findIndex(v => v.id === ch.volumeId) + 1}</span>}
                     </td>
                     {charAxes.map(ax => {
-                      const pm = new Map((points[ax.id] ?? []).map(p => [p.chapterNum, p.value]));
-                      const val = pm.get(ch.number);
+                      const line = charLines.find(l => l.id === ax.id);
+                      const val  = line?.pointsMap.get(ch.number);
                       return (
                         <td key={ax.id} className="px-2 py-1.5 text-center border-b border-white/5">
                           {val != null ? (
@@ -458,8 +500,8 @@ export default function CharacterArcView({ chapters }) {
         </div>
       )}
 
-      {/* Gestion des axes (mode char) */}
-      {mode === 'char' && selectedCharId && (
+      {/* Gestion des axes (mode char) — masqué en vue série */}
+      {mode === 'char' && selectedCharId && !isSeriesView && (
         <div
           className="rounded-xl p-4 flex flex-col gap-3"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}

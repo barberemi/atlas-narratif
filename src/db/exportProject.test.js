@@ -17,6 +17,7 @@ function makeDb(projectName = 'Mon Roman') {
   return {
     query: vi.fn().mockImplementation((sql) => {
       if (sql.includes('FROM projects'))          return { rows: [project] };
+      if (sql.includes('FROM volumes'))           return { rows: [{ id: 'v1', project_id: 'proj_1', number: 1, title: 'Tome 1', description: null }] };
       if (sql.includes('FROM characters'))        return { rows: [{ id: 'c1', name: 'Alice' }] };
       if (sql.includes('FROM locations'))         return { rows: [] };
       if (sql.includes('FROM objects'))           return { rows: [] };
@@ -58,11 +59,11 @@ describe('exportProject', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
   });
 
-  it('lance 20 requêtes SQL (1 projet + 19 tables)', async () => {
+  it('lance 21 requêtes SQL (1 projet + 20 tables)', async () => {
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
     const db = makeDb();
     await exportProject(db, 'proj_1');
-    expect(db.query).toHaveBeenCalledTimes(20);
+    expect(db.query).toHaveBeenCalledTimes(21);
   });
 
   it('lève une erreur si le projet est introuvable', async () => {
@@ -116,11 +117,26 @@ describe('exportProject', () => {
 
     expect(capturedBlob.version).toBe('1.0');
     expect(capturedBlob.project.name).toBe('Mon Roman');
+    expect(capturedBlob.volumes).toBeDefined();
     expect(capturedBlob.characters).toBeDefined();
     expect(capturedBlob.locations).toBeDefined();
     expect(capturedBlob.timelineEvents).toBeDefined();
     expect(capturedBlob.stcChapters).toBeDefined();
     expect(capturedBlob.characterJourneys).toBeDefined();
+  });
+
+  it('le payload inclut les volumes avec leur contenu', async () => {
+    let capturedBlob;
+    const OrigBlob = global.Blob;
+    global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
+    vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
+
+    await exportProject(makeDb(), 'proj_1');
+    global.Blob = OrigBlob;
+
+    expect(Array.isArray(capturedBlob.volumes)).toBe(true);
+    expect(capturedBlob.volumes[0].id).toBe('v1');
+    expect(capturedBlob.volumes[0].number).toBe(1);
   });
 
   it('mappe map_image → mapImage dans project', async () => {

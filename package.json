@@ -12,7 +12,6 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
     "@electric-sql/pglite": "^0.4.1",
     "@tailwindcss/postcss": "^4.2.1",
     "react": "^19.2.0",

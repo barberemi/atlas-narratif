@@ -36,6 +36,7 @@ Routes protégées par `<RequireProject>` → redirige vers `/` si aucun projet 
 **Architecture** : `PGlite (WASM worker)` → `DbContext` (React context) → `stores Zustand` → composants
 
 **Stores** (src/stores/) :
+- `useVolumeStore` — volumes (tomes) + `activeVolumeId` (filtre global de tome)
 - `useLoreStore` — personnages, lieux, objets
 - `useTimelineStore` — événements timeline
 - `useStcStore` — chapitres Save the Cat
@@ -48,7 +49,7 @@ Routes protégées par `<RequireProject>` → redirige vers `/` si aucun projet 
 - `useThreadStore` — fils narratifs (subplots)
 - `useHeroJourneyStore` — étapes du Voyage du Héros
 
-**Tables SQL principales** : `projects`, `characters`, `locations`, `objects`, `timeline_events`, `event_entities`, `incoherences`, `stc_chapters`, `arc_points`, `character_journeys`, `chapter_notes`, `character_arc_axes`, `character_arc_points`, `plant_payoffs`, `narrative_threads`, `groups`, `character_groups`, `hero_journey_entries`
+**Tables SQL principales** : `projects`, `volumes`, `characters`, `locations`, `objects`, `timeline_events`, `event_entities`, `incoherences`, `stc_chapters`, `arc_points`, `character_journeys`, `chapter_notes`, `character_arc_axes`, `character_arc_points`, `plant_payoffs`, `narrative_threads`, `groups`, `character_groups`, `hero_journey_entries`
 
 → Détails : `ai/docs/data-layer.md`
 
@@ -95,6 +96,65 @@ npm run build    # Production build
 npm run lint     # ESLint
 docker compose up  # Prod via Docker
 ```
+
+## Migrations de schéma
+
+**Règle : toute modification de `src/db/schema.js` doit s'accompagner d'un incrément de `SCHEMA_VERSION`.**
+
+`SCHEMA_VERSION` est défini à la fin de `schema.js` (ex: `'2026-04-01.1'`). Il contrôle si `applySchema()` est rejoué au démarrage. Sans incrément, les utilisateurs existants ne recevront pas les nouvelles migrations.
+
+Format suggéré : `'YYYY-MM-DD.N'` (date + numéro de révision du jour).
+
+## Seed de test LOTR (données de démonstration)
+
+Le projet "Le Seigneur des Anneaux" sert de jeu de données de test. Il couvre les Tomes 1 et 2.
+
+**Sources de données :**
+| Fichier | Contenu |
+|---------|---------|
+| `src/data/lotr_seed_data.js` | Lore T1, timeline T1, STC T1, plants T1, arcs T1, hero journey T1, `volumesDB` |
+| `src/data/lotr_t2_seed_data.js` | Tout le Tome 2 : personnages, lieux, événements, STC, plants cross-tomes, arcs, hero journey |
+| `src/db/seed.lotr.js` | Point d'entrée : fusionne T1 + T2, assigne les `volumeId` |
+| `src/db/seed.generic.js` | Seeder générique réutilisable pour tout projet |
+
+**Règle : toute nouvelle fonctionnalité doit être illustrée dans le seed LOTR.**
+
+| Si tu ajoutes… | Mets à jour… |
+|----------------|-------------|
+| Une nouvelle table SQL | `seed.generic.js` (nouveau bloc d'INSERT) + données dans `lotr_seed_data.js` ou `lotr_t2_seed_data.js` |
+| Un nouveau champ dans une table existante | `seed.generic.js` (ajouter le champ dans l'INSERT concerné) + données exemple dans le seed LOTR |
+| Un nouveau store Zustand | Des données représentatives dans `lotr_seed_data.js` ou `lotr_t2_seed_data.js` |
+| Un nouveau tome / volume | Dupliquer le pattern de `lotr_t2_seed_data.js`, fusionner dans `seed.lotr.js` |
+
+**Structure des données T2 (`lotr_t2_seed_data.js`) :**
+- `t2Characters` / `t2Locations` → fusionnés dans `loreDB` via spread
+- `t2TimelineDB` → événements avec `volumeId: 'vol_deux_tours'`
+- `t2ChaptersDB` → chapitres STC avec `volumeId` (requis pour les stats par tome)
+- `t2PlantsDB` → plants avec `plantVolumeId` / `payoffVolumeId` pour les plants cross-tomes
+- `t2EventExtrasDB` → extras indexés par `event_id` (beatId, threadIds, POV, goal/conflict/outcome)
+
+**Pour re-seeder** : supprimer le projet LOTR depuis la page d'accueil, puis cliquer "Charger".
+
+## Prompt d'analyse IA (`src/data/analysis_prompt.js`)
+
+Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gemini, Claude…) pour analyser un manuscrit. Il décrit exactement la structure JSON que l'IA doit retourner, qui est ensuite importée via `src/db/importFromAiOutput.js` → `src/db/seed.generic.js`.
+
+**Règle : toute modification du modèle de données doit être répercutée dans le prompt.**
+
+| Si tu modifies… | Mets à jour dans `analysis_prompt.js`… |
+|-----------------|----------------------------------------|
+| Ajout d'un champ dans `characters` / `locations` / `objects` | La structure de l'entité concernée + éventuellement une règle de cohérence |
+| Suppression ou renommage d'un champ | Retirer ou renommer dans la structure correspondante |
+| Nouvelle table importable (ex: nouvelle entité) | Ajouter la clé au format de sortie JSON + une section `### nomTable[]` |
+| Nouvelle table **non** importable (gérée uniquement en app) | Ne pas l'ajouter au prompt |
+| Nouveau préfixe d'ID | L'ajouter à la section "Règles de génération des IDs" |
+| Contrainte `NOT NULL` sur un champ nullable dans le prompt | Corriger le type dans le prompt + ajouter un `?? ''` / `?? []` dans `seed.generic.js` |
+
+**Cohérence à maintenir entre les fichiers :**
+- `analysis_prompt.js` — déclare ce que l'IA doit générer
+- `importFromAiOutput.js` — initialise les clés manquantes (`??= []`), valide le format
+- `seed.generic.js` — insère les données ; les champs non colonnes SQL doivent passer par `extra` (JSONB)
+- `queries.js` — relit les champs stockés dans `extra` pour les exposer aux stores
 
 ## Maintenance de la documentation IA
 

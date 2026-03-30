@@ -9,6 +9,7 @@ import {
   insertCharacterAxis, deleteCharacterAxis,
   upsertCharacterArcPoint, getCharacterArcPoints, getAllCharacterArcPoints,
   getPlants, insertPlant, updatePlant, deletePlant,
+  getVolumes, insertVolume, updateVolume, deleteVolume,
 } from './queries';
 
 const PID = 'proj_test';
@@ -657,31 +658,57 @@ describe('upsertCharacterArcPoint', () => {
     const params = db.query.mock.calls[0][1];
     expect(params).toContain(null);
   });
+
+  it('stocke volume_id quand fourni', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    await upsertCharacterArcPoint(db, PID, 'ax1', 13, 8, null, 'v2');
+    const [sql, params] = db.query.mock.calls[0];
+    expect(sql).toContain('volume_id');
+    expect(params).toContain('v2');
+  });
+
+  it('volume_id = null si non fourni', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    await upsertCharacterArcPoint(db, PID, 'ax1', 3, 7);
+    const params = db.query.mock.calls[0][1];
+    // le dernier param est volume_id = null
+    expect(params[params.length - 1]).toBe(null);
+  });
 });
 
 describe('getCharacterArcPoints', () => {
-  it('retourne les points mappés correctement', async () => {
+  it('retourne les points mappés correctement avec volumeId', async () => {
     const db = { query: vi.fn().mockResolvedValue({ rows: [
-      { chapter_num: 1, value: 5, note: null },
-      { chapter_num: 3, value: 8, note: 'pic' },
+      { chapter_num: 1, value: 5, note: null, volume_id: null },
+      { chapter_num: 13, value: 8, note: 'pic', volume_id: 'v2' },
     ]}) };
     const pts = await getCharacterArcPoints(db, 'ax1', PID);
     expect(pts).toHaveLength(2);
-    expect(pts[0]).toEqual({ chapterNum: 1, value: 5, note: null });
-    expect(pts[1]).toEqual({ chapterNum: 3, value: 8, note: 'pic' });
+    expect(pts[0]).toEqual({ chapterNum: 1, value: 5, note: null, volumeId: null });
+    expect(pts[1]).toEqual({ chapterNum: 13, value: 8, note: 'pic', volumeId: 'v2' });
   });
 });
 
 describe('getAllCharacterArcPoints', () => {
-  it('retourne tous les points du projet avec axisId', async () => {
+  it('retourne tous les points du projet avec axisId et volumeId', async () => {
     const db = { query: vi.fn().mockResolvedValue({ rows: [
-      { axis_id: 'ax1', chapter_num: 1, value: 5, note: null },
-      { axis_id: 'ax2', chapter_num: 2, value: 3, note: 'note' },
+      { axis_id: 'ax1', chapter_num: 1, value: 5, note: null, volume_id: 'v1' },
+      { axis_id: 'ax2', chapter_num: 13, value: 3, note: 'note', volume_id: 'v2' },
     ]}) };
     const pts = await getAllCharacterArcPoints(db, PID);
     expect(pts).toHaveLength(2);
     expect(pts[0].axisId).toBe('ax1');
+    expect(pts[0].volumeId).toBe('v1');
     expect(pts[1].axisId).toBe('ax2');
+    expect(pts[1].volumeId).toBe('v2');
+  });
+
+  it('volumeId = null quand volume_id absent (données anciennes)', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [
+      { axis_id: 'ax1', chapter_num: 2, value: 4, note: null, volume_id: null },
+    ]}) };
+    const pts = await getAllCharacterArcPoints(db, PID);
+    expect(pts[0].volumeId).toBe(null);
   });
 });
 
@@ -691,8 +718,8 @@ describe('getPlants', () => {
   it('mappe correctement les champs', async () => {
     const db = { query: vi.fn().mockResolvedValue({ rows: [{
       id: 'plant1', label: 'La dague', type: 'object',
-      plant_chapter_num: 2, plant_event_id: 'e1',
-      payoff_chapter_num: 8, payoff_event_id: 'e2',
+      plant_chapter_num: 2, plant_event_id: 'e1', plant_volume_id: 'vol1',
+      payoff_chapter_num: 8, payoff_event_id: 'e2', payoff_volume_id: 'vol2',
       entity_id: 'c1', entity_type: 'character',
       status: 'open', notes: 'important',
     }]}) };
@@ -700,24 +727,25 @@ describe('getPlants', () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       id: 'plant1', label: 'La dague', type: 'object',
-      plantChapterNum: 2, plantEventId: 'e1',
-      payoffChapterNum: 8, payoffEventId: 'e2',
+      plantChapterNum: 2, plantEventId: 'e1', plantVolumeId: 'vol1',
+      payoffChapterNum: 8, payoffEventId: 'e2', payoffVolumeId: 'vol2',
       entityId: 'c1', entityType: 'character',
       status: 'open', notes: 'important',
     });
   });
 
-  it('gère les champs null', async () => {
+  it('gère les champs null (dont volumes)', async () => {
     const db = { query: vi.fn().mockResolvedValue({ rows: [{
       id: 'p2', label: 'Secret', type: 'information',
-      plant_chapter_num: null, plant_event_id: null,
-      payoff_chapter_num: null, payoff_event_id: null,
+      plant_chapter_num: null, plant_event_id: null, plant_volume_id: null,
+      payoff_chapter_num: null, payoff_event_id: null, payoff_volume_id: null,
       entity_id: null, entity_type: null,
       status: 'open', notes: null,
     }]}) };
     const [p] = await getPlants(db, PID);
     expect(p.plantChapterNum).toBeNull();
-    expect(p.payoffChapterNum).toBeNull();
+    expect(p.plantVolumeId).toBeNull();
+    expect(p.payoffVolumeId).toBeNull();
     expect(p.notes).toBeNull();
   });
 });
@@ -770,6 +798,70 @@ describe('deletePlant', () => {
     const [sql, params] = db.query.mock.calls[0];
     expect(sql).toContain('DELETE FROM plant_payoffs');
     expect(params).toContain('p1');
+    expect(params).toContain(PID);
+  });
+});
+
+// ── Volumes ───────────────────────────────────────────────────────────────────
+
+describe('getVolumes', () => {
+  it('mappe correctement les champs', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [
+      { id: 'vol1', number: 1, title: 'Tome 1', description: 'Premier tome' },
+      { id: 'vol2', number: 2, title: 'Tome 2', description: null },
+    ]}) };
+    const volumes = await getVolumes(db, PID);
+    expect(volumes).toHaveLength(2);
+    expect(volumes[0]).toEqual({ id: 'vol1', number: 1, title: 'Tome 1', description: 'Premier tome' });
+    expect(volumes[1].description).toBeNull();
+  });
+
+  it('retourne un tableau vide si aucun volume', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    expect(await getVolumes(db, PID)).toEqual([]);
+  });
+});
+
+describe('insertVolume', () => {
+  it('insère avec les bons paramètres et retourne un id vol_', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    const id = await insertVolume(db, { number: 1, title: 'Tome 1', description: 'Desc' }, PID);
+    expect(id).toMatch(/^vol_/);
+    const [sql, params] = db.query.mock.calls[0];
+    expect(sql).toContain('INSERT INTO volumes');
+    expect(params).toContain(1);
+    expect(params).toContain('Tome 1');
+    expect(params).toContain('Desc');
+    expect(params).toContain(PID);
+  });
+
+  it('description null si non fournie', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    await insertVolume(db, { number: 2, title: 'Tome 2' }, PID);
+    const params = db.query.mock.calls[0][1];
+    expect(params).toContain(null);
+  });
+});
+
+describe('updateVolume', () => {
+  it('met à jour avec les bons paramètres', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    await updateVolume(db, 'vol1', { number: 1, title: 'Modifié', description: null }, PID);
+    const [sql, params] = db.query.mock.calls[0];
+    expect(sql).toContain('UPDATE volumes');
+    expect(params).toContain('Modifié');
+    expect(params).toContain('vol1');
+    expect(params).toContain(PID);
+  });
+});
+
+describe('deleteVolume', () => {
+  it('supprime avec les bons paramètres', async () => {
+    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
+    await deleteVolume(db, 'vol1', PID);
+    const [sql, params] = db.query.mock.calls[0];
+    expect(sql).toContain('DELETE FROM volumes');
+    expect(params).toContain('vol1');
     expect(params).toContain(PID);
   });
 });

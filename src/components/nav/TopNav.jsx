@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useProject } from '../../db/ProjectContext';
 import ProjectPicker from './ProjectPicker';
+import VolumePicker  from './VolumePicker';
 import NavDropdown from './NavDropdown';
 import { NAV_GROUPS } from './navConfig';
 
@@ -31,6 +32,8 @@ export default function TopNav({ onSearchOpen }) {
           <>
             <div className="w-px h-5 bg-white/10 mx-2 flex-shrink-0" />
             <ProjectPicker />
+            <div className="w-px h-5 bg-white/10 mx-1 flex-shrink-0" />
+            <VolumePicker />
             <div className="w-px h-5 bg-white/10 mx-2 flex-shrink-0" />
           </>
         )}

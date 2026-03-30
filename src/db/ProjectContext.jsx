@@ -12,24 +12,33 @@ import { usePlantStore }        from '../stores/usePlantStore';
 import { useThreadStore }      from '../stores/useThreadStore';
 import { useArcStore }         from '../stores/useArcStore';
 import { useHeroJourneyStore } from '../stores/useHeroJourneyStore';
+import { useVolumeStore }      from '../stores/useVolumeStore';
 
 const LS_KEY = 'atlas_active_project';
 
 const ProjectCtx = createContext(null);
 
-/** Charge toutes les données en parallèle pour un projet donné. */
+/** Charge toutes les données pour un projet donné.
+ *  - Critique : lore, volumes, timeline, stc, incoherences → bloquant
+ *  - Secondaire : map, arc, plants, threads, heroJourney, characterArc → différé (arrière-plan)
+ */
 async function loadAll(db, projectId) {
   await Promise.all([
     useLoreStore.getState().load(db, projectId),
-    useIncStore.getState().load(db, projectId),
+    useVolumeStore.getState().load(db, projectId),
     useTimelineStore.getState().load(db, projectId),
     useStcStore.getState().load(db, projectId),
+    useIncStore.getState().load(db, projectId),
+  ]);
+
+  // Stores secondaires : démarrés en arrière-plan sans bloquer l'affichage
+  Promise.all([
     useMapStore.getState().load(db, projectId),
-    useCharacterArcStore.getState().load(db, projectId),
+    useArcStore.getState().load(db, projectId),
     usePlantStore.getState().load(db, projectId),
     useThreadStore.getState().load(db, projectId),
-    useArcStore.getState().load(db, projectId),
     useHeroJourneyStore.getState().load(db, projectId),
+    useCharacterArcStore.getState().load(db, projectId),
   ]);
 }
 
@@ -46,6 +55,7 @@ function resetAll() {
   useThreadStore.getState().reset();
   useArcStore.getState().reset();
   useHeroJourneyStore.getState().reset();
+  useVolumeStore.getState().reset();
 }
 
 export function ProjectProvider({ children }) {

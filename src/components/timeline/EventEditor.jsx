@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
+import { useVolumeStore }   from '../../stores/useVolumeStore';
 import { BEATS }            from '../../data/beats_config';
 import { OUTCOMES }         from '../../data/outcome_config';
 import { Field, Input, Textarea } from '../ui/FormFields';
@@ -249,6 +250,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
       sceneOutcome:   data.sceneOutcome ?? null,
       entities:       buildEntities(),
       threadIds:      data.threadIds ?? [],
+      volumeId:       isEdit ? (event.volumeId ?? null) : (useVolumeStore.getState().activeVolumeId ?? null),
     });
     onClose();
   };

@@ -22,6 +22,7 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
 
   const {
     project,
+    volumes            = [],
     characters         = [],
     locations          = [],
     objects            = [],
@@ -61,6 +62,16 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     const json  = (v)   => v === null || v === undefined ? null
                          : typeof v === 'string' ? v
                          : JSON.stringify(v);
+
+    // Volumes
+    onProgress?.('Import des volumes…');
+    for (const r of volumes) {
+      await db.query(
+        `INSERT INTO volumes (id, project_id, number, title, description)
+         VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+        [r.id, pid(), r.number, r.title, r.description ?? null],
+      );
+    }
 
     // Personnages
     onProgress?.('Import des personnages…');
@@ -118,8 +129,8 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
       await db.query(
         `INSERT INTO timeline_events
            (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
-            pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+            pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome, volume_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(),
@@ -132,6 +143,7 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
           r.scene_goal     ?? null,
           r.scene_conflict ?? null,
           r.scene_outcome  ?? null,
+          r.volume_id      ?? null,
         ],
       );
     }
@@ -223,14 +235,15 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of plantPayoffs) {
       await db.query(
         `INSERT INTO plant_payoffs
-           (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT DO NOTHING`,
+           (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes, plant_volume_id, payoff_volume_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT DO NOTHING`,
         [
           r.id, pid(), r.label, r.type ?? 'information',
           r.plant_chapter_num ?? null, r.plant_event_id ?? null,
           r.payoff_chapter_num ?? null, r.payoff_event_id ?? null,
           r.entity_id ?? null, r.entity_type ?? null,
           r.status ?? 'open', r.notes ?? null,
+          r.plant_volume_id  ?? null, r.payoff_volume_id ?? null,
         ],
       );
     }
@@ -264,9 +277,9 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     }
     for (const r of characterArcPoints) {
       await db.query(
-        `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
-         VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
-        [pid(), r.axis_id, r.chapter_num, r.value, r.note ?? null],
+        `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note, volume_id)
+         VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
+        [pid(), r.axis_id, r.chapter_num, r.value, r.note ?? null, r.volume_id ?? null],
       );
     }
 
@@ -274,9 +287,9 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     onProgress?.('Import du Voyage du Héros…');
     for (const r of heroJourneyEntries) {
       await db.query(
-        `INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary)
-         VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
-        [r.id, pid(), r.stage_key, r.character_id ?? null, r.chapter_num ?? null, r.summary ?? null],
+        `INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`,
+        [r.id, pid(), r.stage_key, r.character_id ?? null, r.chapter_num ?? null, r.summary ?? null, r.volume_id ?? null],
       );
     }
 

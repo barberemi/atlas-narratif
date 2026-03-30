@@ -1,4 +1,5 @@
 services:
+  # Développement : hot-reload via Vite
   app:
     build: .
     ports:
@@ -9,3 +10,13 @@ services:
     command: npm run dev -- --host
     environment:
       - CHOKIDAR_USEPOLLING=true # Utile pour que le rafraîchissement auto marche bien sur Docker (MacOs + Windows)
+
+  # Production : build optimisé servi par nginx avec cache longue durée
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8080:80"
+    profiles:
+      - prod

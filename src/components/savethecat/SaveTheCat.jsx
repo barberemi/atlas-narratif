@@ -3,6 +3,8 @@ import { BEATS } from '../../data/beats_config';
 import { computeAlertsFromEvents } from '../../db/queries';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { useVolumeFilter } from '../../hooks/useVolumeFilter';
+import { useVolumeStore } from '../../stores/useVolumeStore';
 import Frise from './Frise';
 import AlertCard from './AlertCard';
 import BeatRow from './BeatRow';
@@ -128,27 +130,56 @@ function EntityCoveragePanel({ events, characters, locations, objects }) {
 
 // ── SaveTheCat ─────────────────────────────────────────────────────────────────
 export default function SaveTheCat() {
-  const { events }                 = useTimelineStore();
+  const filterByVolume             = useVolumeFilter();
+  const { events: allEvents }      = useTimelineStore();
+  const events                     = filterByVolume(allEvents);
+  const volumes                    = useVolumeStore(s => s.volumes);
+  const activeVolumeId             = useVolumeStore(s => s.activeVolumeId);
   const { characters, locations, objects } = useLoreStore();
   const [hoveredBeat,  setHoveredBeat]  = useState(null);
   const [rightTab,     setRightTab]     = useState('beats'); // 'beats' | 'entities'
   const [assigning,    setAssigning]    = useState(null);    // { beat, event | null }
 
-  // Map<beatId, event> — source de vérité pour les beats placés
+  // Mode série : pas de filtre actif ET plusieurs tomes
+  const isSeriesMode = !activeVolumeId && !!volumes && volumes.length > 1;
+
+  // Map<beatId, event[]> — source de vérité pour les beats placés (supporte multi-tome)
   const beatEventMap = useMemo(() => {
     if (!events) return new Map();
-    return new Map(events.filter(e => e.beatId).map(e => [e.beatId, e]));
+    const map = new Map();
+    for (const e of events) {
+      if (!e.beatId) continue;
+      const existing = map.get(e.beatId) ?? [];
+      map.set(e.beatId, [...existing, e]);
+    }
+    return map;
   }, [events]);
 
-  // Chapitres uniques issus des événements timeline (pour la Frise + EventEditor)
+  // Chapitres uniques issus des événements timeline (pour EventEditor)
   const timelineChapters = useMemo(() => extractChapters(events ?? []), [events]);
 
   const totalChapters = timelineChapters.length;
 
-  const alerts = useMemo(
-    () => totalChapters > 0 ? computeAlertsFromEvents(beatEventMap, totalChapters, BEATS) : [],
-    [beatEventMap, totalChapters],
-  );
+  // Données par tome (mode série uniquement) : chapitres + beatEventMap + alertes propres à chaque tome
+  const volumeData = useMemo(() => {
+    if (!isSeriesMode || !events) return null;
+    return (volumes ?? []).map(vol => {
+      const volEvents  = events.filter(e => e.volumeId === vol.id);
+      const volChaps   = extractChapters(volEvents);
+      const volBeatMap = new Map(volEvents.filter(e => e.beatId).map(e => [e.beatId, e]));
+      const volAlerts  = volChaps.length > 0
+        ? computeAlertsFromEvents(volBeatMap, volChaps.length, BEATS)
+        : [];
+      return { volume: vol, chapters: volChaps, beatEventMap: volBeatMap, alerts: volAlerts };
+    }).filter(vd => vd.chapters.length > 0);
+  }, [isSeriesMode, volumes, events]);
+
+  // Alertes : agrégées par tome en mode série, globales sinon
+  const alerts = useMemo(() => {
+    if (isSeriesMode && volumeData) return volumeData.flatMap(vd => vd.alerts);
+    return totalChapters > 0 ? computeAlertsFromEvents(beatEventMap, totalChapters, BEATS) : [];
+  }, [isSeriesMode, volumeData, beatEventMap, totalChapters]);
+
   const alertBeatIds = useMemo(() => new Set(alerts.map(a => a.beat.id)), [alerts]);
 
   const handleAssign = (beat, event) => setAssigning({ beat, event: event ?? null });
@@ -163,6 +194,11 @@ export default function SaveTheCat() {
   const criticalCount = alerts.filter(a => a.severity === 'critical').length;
   const warningCount  = alerts.filter(a => a.severity !== 'critical').length;
 
+  // En mode série : comptage de beats placés par tome
+  const placedByVolume = isSeriesMode && volumeData
+    ? volumeData.map(vd => ({ volume: vd.volume, count: vd.beatEventMap.size }))
+    : null;
+
   return (
     <div className="h-full w-full overflow-y-auto no-scrollbar flex flex-col bg-[#0B1621] text-slate-200">
 
@@ -173,7 +209,19 @@ export default function SaveTheCat() {
             Save the <span style={{ color: '#f97316' }}>Cat</span>
           </h1>
           <p className="text-sm text-slate-500 font-serif italic">
-            {placedCount}/{BEATS.length} beats placés
+            {placedByVolume
+              ? placedByVolume.map((pv, i) => (
+                  <span key={pv.volume.id}>
+                    {i > 0 && <span className="mx-1.5 opacity-40">·</span>}
+                    <span>T.{pv.volume.number} : </span>
+                    <span style={{ color: pv.count === BEATS.length ? '#10b981' : '#94a3b8' }}>
+                      {pv.count}/{BEATS.length}
+                    </span>
+                  </span>
+                ))
+              : `${placedCount}/${BEATS.length}`
+            }
+            {' '}beats placés
             {criticalCount > 0 && (
               <span style={{ color: '#ef4444' }}>
                 {' '}· {criticalCount} alerte{criticalCount > 1 ? 's' : ''} critique{criticalCount > 1 ? 's' : ''}
@@ -217,16 +265,38 @@ export default function SaveTheCat() {
         </span>
       </div>
 
-      {/* ── Frise ── */}
-      <div className="px-10 pt-6 pb-2 flex-shrink-0">
-        <Frise
-          chapters={timelineChapters}
-          beatEventMap={beatEventMap}
-          alerts={alerts}
-          hoveredBeat={hoveredBeat}
-          onHoverBeat={setHoveredBeat}
-        />
-      </div>
+      {/* ── Frise(s) ── */}
+      {isSeriesMode && volumeData ? (
+        <div className="px-10 pt-5 pb-2 flex-shrink-0 space-y-6">
+          {volumeData.map(vd => (
+            <div key={vd.volume.id}>
+              <p
+                className="text-[11px] font-bold uppercase tracking-widest mb-3"
+                style={{ color: 'rgba(129,140,248,0.6)' }}
+              >
+                Tome {vd.volume.number} — {vd.volume.title}
+              </p>
+              <Frise
+                chapters={vd.chapters}
+                beatEventMap={vd.beatEventMap}
+                alerts={vd.alerts}
+                hoveredBeat={hoveredBeat}
+                onHoverBeat={setHoveredBeat}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="px-10 pt-6 pb-2 flex-shrink-0">
+          <Frise
+            chapters={timelineChapters}
+            beatEventMap={beatEventMap}
+            alerts={alerts}
+            hoveredBeat={hoveredBeat}
+            onHoverBeat={setHoveredBeat}
+          />
+        </div>
+      )}
 
 
       {/* ── Panels bas ── */}
@@ -291,29 +361,56 @@ export default function SaveTheCat() {
                   <BeatRow
                     key={beat.id}
                     beat={beat}
-                    event={beatEventMap.get(beat.id) ?? null}
+                    events={beatEventMap.get(beat.id) ?? []}
+                    volumes={volumes}
                     isAlert={alertBeatIds.has(beat.id)}
                     isHovered={hoveredBeat === beat.id}
                     onHover={setHoveredBeat}
-                    totalChapters={totalChapters}
+                    totalChapters={isSeriesMode ? 0 : totalChapters}
                     onAssign={handleAssign}
                   />
                 ))}
               </div>
               <div
-                className="mt-5 p-4 rounded-xl text-center"
+                className="mt-5 p-4 rounded-xl"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <p className="text-xs text-slate-600 uppercase tracking-widest mb-1">Couverture beats</p>
-                <p className="text-3xl font-black" style={{ color: placedCount === 15 ? '#10b981' : '#fbbf24' }}>
-                  {placedCount}<span className="text-sm font-normal text-slate-600">/15</span>
-                </p>
-                <div className="w-full h-2 rounded-full mt-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${(placedCount / 15) * 100}%`, backgroundColor: placedCount === 15 ? '#10b981' : '#fbbf24' }}
-                  />
-                </div>
+                <p className="text-xs text-slate-600 uppercase tracking-widest mb-3 text-center">Couverture beats</p>
+                {placedByVolume ? (
+                  <div className="space-y-2.5">
+                    {placedByVolume.map(pv => {
+                      const color = pv.count === BEATS.length ? '#10b981' : '#fbbf24';
+                      return (
+                        <div key={pv.volume.id}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] text-slate-500">T.{pv.volume.number} — {pv.volume.title}</span>
+                            <span className="text-xs font-black" style={{ color }}>
+                              {pv.count}<span className="text-[10px] font-normal text-slate-600">/{BEATS.length}</span>
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${(pv.count / BEATS.length) * 100}%`, backgroundColor: color }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-3xl font-black text-center" style={{ color: placedCount === BEATS.length ? '#10b981' : '#fbbf24' }}>
+                      {placedCount}<span className="text-sm font-normal text-slate-600">/{BEATS.length}</span>
+                    </p>
+                    <div className="w-full h-2 rounded-full mt-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${(placedCount / BEATS.length) * 100}%`, backgroundColor: placedCount === BEATS.length ? '#10b981' : '#fbbf24' }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}

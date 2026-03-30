@@ -11,22 +11,29 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
   const [hoveredChapterNum, setHoveredChapterNum] = useState(null);
 
   const total = chapters.length;
-  const getChapterPercent   = (n) => ((n - 1 + 0.5) / total) * 100;
-  const getBeatActualPercent = (beatId) => {
-    const evt = beatEventMap.get(beatId);
-    return evt ? ((evt.chapter - 1 + 0.5) / total) * 100 : null;
-  };
+
+  // Index par numéro de chapitre → position relative (fonctionne même si les chapitres ne démarrent pas à 1)
+  const chapterIndex = useMemo(() => {
+    const map = new Map();
+    chapters.forEach((ch, i) => map.set(ch.number, i));
+    return map;
+  }, [chapters]);
+
+  const getChapterPercent = (n) => ((chapterIndex.get(n) ?? 0) + 0.5) / total * 100;
 
   const alertBeatIds = useMemo(() => new Set(alerts.map(a => a.beat.id)), [alerts]);
 
-  // beatsByChapter[chapterNumber] = Beat[]
+  // beatsByChapter[chapterNumber] = Beat[] — supporte Map<beatId, event[]> (multi-tome)
   const beatsByChapter = useMemo(() => {
     const map = {};
-    beatEventMap.forEach((evt, beatId) => {
+    beatEventMap.forEach((evtOrEvts, beatId) => {
       const beat = BEATS.find(b => b.id === beatId);
       if (!beat) return;
-      if (!map[evt.chapter]) map[evt.chapter] = [];
-      map[evt.chapter].push(beat);
+      const evts = Array.isArray(evtOrEvts) ? evtOrEvts : [evtOrEvts];
+      for (const evt of evts) {
+        if (!map[evt.chapter]) map[evt.chapter] = [];
+        map[evt.chapter].push(beat);
+      }
     });
     return map;
   }, [beatEventMap]);
@@ -220,7 +227,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
       {/* ── Marqueurs idéaux (diamants sous la barre) ── */}
       {BEATS.map(beat => {
         const isHovered = hoveredBeat === beat.id;
-        const hasActual = getBeatActualPercent(beat.id) !== null;
+        const hasActual = beatEventMap.has(beat.id);
         return (
           <div
             key={`ideal-${beat.id}`}

@@ -17,7 +17,7 @@
  *   plantsDB      → plant_payoffs[] (optionnel)
  *   arcPointsDB   → arc_points[] (optionnel)
  */
-export async function seedProject(db, meta, data) {
+export async function seedProject(db, meta, data, { onProgress } = {}) {
   const projectId = meta.id;
 
   await db.exec('BEGIN');
@@ -36,7 +36,7 @@ export async function seedProject(db, meta, data) {
       // Seed partiel → supprimer (CASCADE) et recommencer
       await db.query('DELETE FROM projects WHERE id = $1', [projectId]);
     }
-    await _doSeed(db, projectId, meta, data);
+    await _doSeed(db, projectId, meta, data, onProgress);
     if (meta.mapImage) {
       await db.query(`UPDATE projects SET map_image = $1 WHERE id = $2`, [meta.mapImage, projectId]);
     }
@@ -66,8 +66,25 @@ async function _seedJourneysIfMissing(db, projectId, journeys) {
   }
 }
 
-async function _doSeed(db, projectId, meta, data) {
-  const { loreDB = {}, timelineDB = [], incoherencesDB = [], chaptersDB = [], journeys = [], groupsDB = [], plantsDB = [], arcPointsDB = [], threadsDB = [], eventExtrasDB = {}, characterArcsDB = [], heroJourneyDB = [] } = data;
+async function _doSeed(db, projectId, meta, data, onProgress) {
+  const { loreDB = {}, timelineDB = [], incoherencesDB = [], chaptersDB = [], journeys = [], groupsDB = [], plantsDB = [], arcPointsDB = [], threadsDB = [], eventExtrasDB = {}, characterArcsDB = [], heroJourneyDB = [], volumesDB = [] } = data;
+
+  // Calcul du nombre total d'items pour le pourcentage
+  const characters = loreDB.characters ?? [];
+  const locations  = loreDB.locations  ?? [];
+  const objects    = loreDB.objects    ?? [];
+  const journeySteps = journeys.reduce((s, j) => s + j.data.length, 0);
+  const arcPoints  = characterArcsDB.reduce((s, a) => s + (a.points ?? []).length, 0);
+  const total = (
+    volumesDB.length + characters.length + locations.length + objects.length +
+    timelineDB.length + incoherencesDB.length + chaptersDB.length +
+    journeySteps + groupsDB.length + plantsDB.length +
+    arcPointsDB.length + threadsDB.length + arcPoints + heroJourneyDB.length
+  ) || 1;
+  let done = 0;
+  const report = (message) => {
+    if (onProgress) onProgress({ message, percent: Math.round((done / total) * 100) });
+  };
 
   // ── Projet ──────────────────────────────────────────────────────────────────
   await db.query(
@@ -75,8 +92,20 @@ async function _doSeed(db, projectId, meta, data) {
     [projectId, meta.name, meta.description ?? null],
   );
 
+  // ── Volumes ─────────────────────────────────────────────────────────────────
+  report('Volumes…');
+  for (const v of volumesDB) {
+    await db.query(
+      `INSERT INTO volumes (id, project_id, number, title, description)
+       VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+      [v.id, projectId, v.number, v.title, v.description ?? null],
+    );
+    done++;
+  }
+
   // ── Personnages ─────────────────────────────────────────────────────────────
-  for (const c of (loreDB.characters ?? [])) {
+  report('Personnages…');
+  for (const c of characters) {
     await db.query(
       `INSERT INTO characters
          (id, project_id, name, aliases, origin, description, color, journey_key, extra)
@@ -88,13 +117,20 @@ async function _doSeed(db, projectId, meta, data) {
         c.description ?? null,
         c.color       ?? '#64748b',
         c.journeyKey  ?? null,
-        JSON.stringify({}),
+        JSON.stringify({
+          race:         c.race                       ?? null,
+          role:         c.role                       ?? null,
+          affiliations: c.affiliation ?? c.affiliations ?? [],
+          traits:       c.traits                     ?? [],
+        }),
       ],
     );
+    done++;
   }
 
   // ── Lieux ───────────────────────────────────────────────────────────────────
-  for (const l of (loreDB.locations ?? [])) {
+  report('Lieux…');
+  for (const l of locations) {
     await db.query(
       `INSERT INTO locations
          (id, project_id, name, type, regime, description, coordinates, extra)
@@ -112,10 +148,12 @@ async function _doSeed(db, projectId, meta, data) {
         }),
       ],
     );
+    done++;
   }
 
   // ── Objets ──────────────────────────────────────────────────────────────────
-  for (const o of (loreDB.objects ?? [])) {
+  report('Objets…');
+  for (const o of objects) {
     await db.query(
       `INSERT INTO objects
          (id, project_id, name, type, description, creator, current_holder, extra)
@@ -134,20 +172,22 @@ async function _doSeed(db, projectId, meta, data) {
         }),
       ],
     );
+    done++;
   }
 
   // ── Événements timeline ─────────────────────────────────────────────────────
+  report('Événements…');
   for (const evt of timelineDB) {
     const ex = eventExtrasDB[evt.id] ?? {};
     const extra = JSON.stringify({ beatId: ex.beatId ?? null });
     await db.query(
       `INSERT INTO timeline_events
          (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
-          pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+          pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome, volume_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
       [
         evt.id, projectId,
-        evt.chapter, evt.chapterTitle,
+        evt.chapter, evt.chapterTitle ?? '',
         evt.title,   evt.description ?? null,
         evt.locationId ?? null,
         extra,
@@ -157,6 +197,7 @@ async function _doSeed(db, projectId, meta, data) {
         ex.sceneGoal     ?? null,
         ex.sceneConflict ?? null,
         ex.sceneOutcome  ?? null,
+        evt.volumeId     ?? null,
       ],
     );
     for (const entity of (evt.entities ?? [])) {
@@ -166,9 +207,12 @@ async function _doSeed(db, projectId, meta, data) {
         [evt.id, projectId, entity.id, entity.entityType],
       );
     }
+    done++;
+    report(`Événement ${done} / ${timelineDB.length}…`);
   }
 
   // ── Incohérences ────────────────────────────────────────────────────────────
+  report('Incohérences…');
   for (const inc of incoherencesDB) {
     await db.query(
       `INSERT INTO incoherences
@@ -184,14 +228,16 @@ async function _doSeed(db, projectId, meta, data) {
         [inc.id, projectId, link.entityId, link.entityType, link.label ?? null],
       );
     }
+    done++;
   }
 
   // ── Save the Cat ────────────────────────────────────────────────────────────
+  report('Chapitres STC…');
   for (const ch of chaptersDB) {
     await db.query(
-      `INSERT INTO stc_chapters (id, project_id, number, title, summary)
-       VALUES ($1,$2,$3,$4,$5)`,
-      [ch.id, projectId, ch.number, ch.title, ch.summary ?? null],
+      `INSERT INTO stc_chapters (id, project_id, number, title, summary, volume_id)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [ch.id, projectId, ch.number, ch.title, ch.summary ?? null, ch.volumeId ?? null],
     );
     for (const beatId of (ch.beats ?? [])) {
       await db.query(
@@ -200,9 +246,11 @@ async function _doSeed(db, projectId, meta, data) {
         [ch.id, projectId, beatId],
       );
     }
+    done++;
   }
 
   // ── Trajets personnages ──────────────────────────────────────────────────────
+  report('Trajets…');
   for (const { key, data } of journeys) {
     for (let i = 0; i < data.length; i++) {
       await db.query(
@@ -210,10 +258,12 @@ async function _doSeed(db, projectId, meta, data) {
          VALUES ($1,$2,$3,$4)`,
         [projectId, key, i, JSON.stringify(data[i])],
       );
+      done++;
     }
   }
 
   // ── Groupes d'appartenance ───────────────────────────────────────────────────
+  report('Groupes…');
   for (const g of groupsDB) {
     await db.query(
       `INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
@@ -227,43 +277,52 @@ async function _doSeed(db, projectId, meta, data) {
         [m.characterId, g.id, projectId],
       );
     }
+    done++;
   }
 
   // ── Amorces narratives ───────────────────────────────────────────────────────
+  report('Amorces narratives…');
   for (const p of plantsDB) {
     await db.query(
       `INSERT INTO plant_payoffs
-         (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT DO NOTHING`,
+         (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes, plant_volume_id, payoff_volume_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT DO NOTHING`,
       [
         p.id, projectId, p.label, p.type ?? 'information',
         p.plant_chapter_num ?? null, p.plant_event_id ?? null,
         p.payoff_chapter_num ?? null, p.payoff_event_id ?? null,
         p.entity_id ?? null, p.entity_type ?? null,
         p.status ?? 'open', p.notes ?? null,
+        p.plantVolumeId ?? null, p.payoffVolumeId ?? null,
       ],
     );
+    done++;
   }
 
   // ── Arc émotionnel ───────────────────────────────────────────────────────────
+  report('Arc émotionnel…');
   for (const pt of arcPointsDB) {
     await db.query(
       `INSERT INTO arc_points (project_id, chapter_number, intensity, note)
        VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
       [projectId, pt.chapter_number, pt.intensity, pt.note ?? null],
     );
+    done++;
   }
 
   // ── Fils narratifs ────────────────────────────────────────────────────────────
+  report('Fils narratifs…');
   for (const t of threadsDB) {
     await db.query(
       `INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
        VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`,
       [t.id, projectId, t.name, t.color ?? '#3F51B5', t.role ?? 'subplot', t.description ?? null, t.sort_order ?? 0],
     );
+    done++;
   }
 
   // ── Arcs des personnages ──────────────────────────────────────────────────────
+  report('Arcs des personnages…');
   for (const axis of characterArcsDB) {
     await db.query(
       `INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
@@ -276,10 +335,12 @@ async function _doSeed(db, projectId, meta, data) {
          VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
         [projectId, axis.id, pt.chapter_num, pt.value, pt.note ?? null],
       );
+      done++;
     }
   }
 
   // ── Voyage du Héros ───────────────────────────────────────────────────────────
+  report('Voyage du Héros…');
   for (const e of heroJourneyDB) {
     const id = `hj_${e.characterId}_${e.stageKey}`;
     await db.query(
@@ -287,5 +348,7 @@ async function _doSeed(db, projectId, meta, data) {
        VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
       [id, projectId, e.stageKey, e.characterId ?? null, e.chapterNum ?? null, e.summary ?? null],
     );
+    done++;
   }
+  report('Finalisation…');
 }

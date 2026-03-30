@@ -28,13 +28,11 @@
 - API : `db.exec()` pour DDL, `db.query()` pour SELECT, paramètres positionnels `$1, $2…`
 
 ## IA / LLM
-- **@anthropic-ai/sdk 0.80** — appels streaming vers l'API Anthropic
-- Modèles disponibles (définis dans `importProject.js`) :
-  - `sonnet` — équilibre coût/qualité (défaut)
-  - `haiku` — rapide et économique
-  - `opus` — qualité maximale
-- Clé API dans `.env` (variable `VITE_ANTHROPIC_API_KEY`)
-- L'analyse d'un manuscrit génère du JSON structuré puis l'insère en DB
+- **Pas de dépendance SDK** — l'analyse IA est déléguée à l'utilisateur (Claude.ai)
+- Flux : `buildAnalysisPrompt()` génère un prompt auto-contenu → l'utilisateur le colle dans Claude.ai → il importe le JSON résultant via `importFromClaudeOutput()`
+- Sources :
+  - `src/data/analysis_prompt.js` — générateur du prompt d'analyse (mode manuscrit ou notes)
+  - `src/db/importFromClaudeOutput.js` — import du fichier JSON produit par Claude
 
 ## Contraintes techniques notables
 - **SharedArrayBuffer** : nécessite `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy: require-corp` → configuré dans `vite.config.js` pour le dev, à répliquer en prod (nginx/Docker)
