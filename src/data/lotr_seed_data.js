@@ -1983,6 +1983,13 @@ export const characterArcsDB = [
   },
 ];
 
+// ── Volumes ───────────────────────────────────────────────────────────────────
+
+export const volumesDB = [
+  { id: 'vol_communaute', number: 1, title: "La Communauté de l'Anneau", description: "Premier tome — de la Comté à la rupture de Parth Galen." },
+  { id: 'vol_deux_tours', number: 2, title: "Les Deux Tours",            description: "Second tome — trois fils narratifs entre Fangorn, Rohan et Mordor." },
+];
+
 // ── Voyage du Héros ────────────────────────────────────────────────────────────
 
 export const heroJourneyDB = [

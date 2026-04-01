@@ -23,6 +23,10 @@ const TYPE_ICONS = {
   'Fil Narratif Vide':              '🧵',
   'Entité Orpheline':               '🔗',
   'Scène Vide':                     '◯',
+  // cross-tomes
+  'Mort Cross-Tomes':               '💀',
+  'Objet Cross-Tomes':              '⚙',
+  'Plant Cross-Tomes':              '🌱',
 };
 
 export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick, onEntityFilter, onFix }) {

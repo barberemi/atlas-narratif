@@ -26,6 +26,46 @@ function parseJsonField(value, fallback) {
   return value; // PGlite peut renvoyer l'objet directement si le type est JSONB
 }
 
+// ── Volumes ───────────────────────────────────────────────────────────────────
+
+export async function getVolumes(db, projectId) {
+  const { rows } = await db.query(
+    `SELECT * FROM volumes WHERE project_id = $1 ORDER BY number`,
+    [projectId],
+  );
+  return rows.map(r => ({
+    id:          r.id,
+    number:      r.number,
+    title:       r.title,
+    description: r.description ?? null,
+  }));
+}
+
+export async function insertVolume(db, data, projectId) {
+  const id = makeId('vol', projectId);
+  await db.query(
+    `INSERT INTO volumes (id, project_id, number, title, description)
+     VALUES ($1,$2,$3,$4,$5)`,
+    [id, projectId, data.number, data.title, data.description ?? null],
+  );
+  return id;
+}
+
+export async function updateVolume(db, volumeId, data, projectId) {
+  await db.query(
+    `UPDATE volumes SET number=$1, title=$2, description=$3
+     WHERE id=$4 AND project_id=$5`,
+    [data.number, data.title, data.description ?? null, volumeId, projectId],
+  );
+}
+
+export async function deleteVolume(db, volumeId, projectId) {
+  await db.query(
+    `DELETE FROM volumes WHERE id=$1 AND project_id=$2`,
+    [volumeId, projectId],
+  );
+}
+
 // ── Personnages ───────────────────────────────────────────────────────────────
 
 export async function getCharacters(db, projectId = 'lotr') {
@@ -43,6 +83,10 @@ export async function getCharacters(db, projectId = 'lotr') {
       description:  r.description,
       color:        r.color,
       journeyKey:   r.journey_key,
+      race:         extra.race         ?? null,
+      role:         extra.role         ?? null,
+      affiliations: extra.affiliations ?? [],
+      traits:       extra.traits       ?? [],
       deathEventId: extra.deathEventId ?? null,
       source:       r.source ?? 'import',
     };
@@ -153,6 +197,7 @@ export async function getTimelineEvents(db, projectId = 'lotr') {
       entities:       entitiesByEvent[r.id] ?? [],
       threadIds:      parseJsonField(r.thread_ids ?? '[]', []),
       source:         r.source ?? 'import',
+      volumeId:       r.volume_id ?? null,
     };
   });
 }
@@ -298,9 +343,9 @@ export async function insertTimelineEvent(db, data, projectId) {
   const sceneOrder = data.sceneOrder ?? ((maxRows[0]?.max_order ?? 0) + 1);
   await db.query(
     `INSERT INTO timeline_events
-       (id, project_id, chapter_num, chapter_title, title, description, location_id, extra, pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome, thread_ids, source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'manual')`,
-    [id, projectId, data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, sceneOrder, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? [])],
+       (id, project_id, chapter_num, chapter_title, title, description, location_id, extra, pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome, thread_ids, volume_id, source)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'manual')`,
+    [id, projectId, data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, sceneOrder, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null],
   );
   for (const e of (data.entities ?? [])) {
     await db.query(
@@ -319,10 +364,10 @@ export async function updateTimelineEvent(db, eventId, data, projectId) {
        chapter_num=$1, chapter_title=$2, title=$3, description=$4, location_id=$5, extra=$6,
        pov_character_id=$7, scene_order=$8,
        scene_goal=$9, scene_conflict=$10, scene_outcome=$11,
-       thread_ids=$12,
+       thread_ids=$12, volume_id=$13,
        ${SOURCE_CASE}
-     WHERE id=$13 AND project_id=$14`,
-    [data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, data.sceneOrder ?? 0, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), eventId, projectId],
+     WHERE id=$14 AND project_id=$15`,
+    [data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, data.sceneOrder ?? 0, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null, eventId, projectId],
   );
   await db.query(`DELETE FROM event_entities WHERE event_id=$1 AND project_id=$2`, [eventId, projectId]);
   for (const e of (data.entities ?? [])) {
@@ -462,6 +507,7 @@ export async function getStcChapters(db, projectId = 'lotr') {
     summary:  r.summary,
     beats:    beatsByChapter[r.id]    ?? [],
     entities: entitiesByChapter[r.id] ?? [],
+    volumeId: r.volume_id ?? null,
   }));
 }
 
@@ -519,7 +565,7 @@ export async function getArcPoints(db, projectId) {
     `SELECT chapter_number, intensity, note FROM arc_points WHERE project_id = $1 ORDER BY chapter_number`,
     [projectId],
   );
-  return rows.map(r => ({ chapterNumber: r.chapter_number, intensity: r.intensity, note: r.note }));
+  return rows.map(r => ({ chapterNumber: r.chapter_number, intensity: r.intensity, note: r.note, volumeId: r.volume_id ?? null }));
 }
 
 export async function upsertArcPoint(db, projectId, chapterNumber, intensity) {
@@ -698,8 +744,10 @@ export async function getPlants(db, projectId) {
     type:             r.type ?? 'information',
     plantChapterNum:  r.plant_chapter_num  ?? null,
     plantEventId:     r.plant_event_id     ?? null,
+    plantVolumeId:    r.plant_volume_id    ?? null,
     payoffChapterNum: r.payoff_chapter_num ?? null,
     payoffEventId:    r.payoff_event_id    ?? null,
+    payoffVolumeId:   r.payoff_volume_id   ?? null,
     entityId:         r.entity_id          ?? null,
     entityType:       r.entity_type        ?? null,
     status:           r.status             ?? 'open',
@@ -712,14 +760,17 @@ export async function insertPlant(db, data, projectId) {
   await db.query(
     `INSERT INTO plant_payoffs
        (id, project_id, label, type, plant_chapter_num, plant_event_id,
-        payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        plant_volume_id, payoff_chapter_num, payoff_event_id, payoff_volume_id,
+        entity_id, entity_type, status, notes)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
     [
       id, projectId, data.label, data.type ?? 'information',
-      data.plantChapterNum  ?? null, data.plantEventId     ?? null,
-      data.payoffChapterNum ?? null, data.payoffEventId    ?? null,
-      data.entityId         ?? null, data.entityType       ?? null,
-      data.status           ?? 'open', data.notes          ?? null,
+      data.plantChapterNum  ?? null, data.plantEventId    ?? null,
+      data.plantVolumeId    ?? null,
+      data.payoffChapterNum ?? null, data.payoffEventId   ?? null,
+      data.payoffVolumeId   ?? null,
+      data.entityId         ?? null, data.entityType      ?? null,
+      data.status           ?? 'open', data.notes         ?? null,
     ],
   );
   return id;
@@ -729,15 +780,17 @@ export async function updatePlant(db, plantId, data, projectId) {
   await db.query(
     `UPDATE plant_payoffs SET
        label=$1, type=$2, plant_chapter_num=$3, plant_event_id=$4,
-       payoff_chapter_num=$5, payoff_event_id=$6,
-       entity_id=$7, entity_type=$8, status=$9, notes=$10
-     WHERE id=$11 AND project_id=$12`,
+       plant_volume_id=$5, payoff_chapter_num=$6, payoff_event_id=$7,
+       payoff_volume_id=$8, entity_id=$9, entity_type=$10, status=$11, notes=$12
+     WHERE id=$13 AND project_id=$14`,
     [
       data.label, data.type ?? 'information',
-      data.plantChapterNum  ?? null, data.plantEventId     ?? null,
-      data.payoffChapterNum ?? null, data.payoffEventId    ?? null,
-      data.entityId         ?? null, data.entityType       ?? null,
-      data.status           ?? 'open', data.notes          ?? null,
+      data.plantChapterNum  ?? null, data.plantEventId    ?? null,
+      data.plantVolumeId    ?? null,
+      data.payoffChapterNum ?? null, data.payoffEventId   ?? null,
+      data.payoffVolumeId   ?? null,
+      data.entityId         ?? null, data.entityType      ?? null,
+      data.status           ?? 'open', data.notes         ?? null,
       plantId, projectId,
     ],
   );
@@ -899,46 +952,48 @@ export async function deleteCharacterAxis(db, axisId, projectId) {
 }
 
 /** Insère ou met à jour un point de valeur sur un axe/chapitre. */
-export async function upsertCharacterArcPoint(db, projectId, axisId, chapterNum, value, note) {
+export async function upsertCharacterArcPoint(db, projectId, axisId, chapterNum, value, note, volumeId) {
   await db.query(
-    `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
-     VALUES ($1,$2,$3,$4,$5)
+    `INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note, volume_id)
+     VALUES ($1,$2,$3,$4,$5,$6)
      ON CONFLICT (project_id, axis_id, chapter_num)
-     DO UPDATE SET value=$4, note=$5`,
-    [projectId, axisId, chapterNum, value, note ?? null],
+     DO UPDATE SET value=$4, note=$5, volume_id=$6`,
+    [projectId, axisId, chapterNum, value, note ?? null, volumeId ?? null],
   );
 }
 
 /** Retourne tous les points d'un axe, triés par chapitre. */
 export async function getCharacterArcPoints(db, axisId, projectId) {
   const { rows } = await db.query(
-    `SELECT chapter_num, value, note FROM character_arc_points
+    `SELECT chapter_num, value, note, volume_id FROM character_arc_points
      WHERE project_id=$1 AND axis_id=$2
      ORDER BY chapter_num`,
     [projectId, axisId],
   );
-  return rows.map(r => ({ chapterNum: r.chapter_num, value: r.value, note: r.note }));
+  return rows.map(r => ({ chapterNum: r.chapter_num, value: r.value, note: r.note, volumeId: r.volume_id ?? null }));
 }
 
 /** Retourne tous les points de tous les axes du projet (pour la vue multi-personnages). */
 export async function getAllCharacterArcPoints(db, projectId) {
   const { rows } = await db.query(
-    `SELECT axis_id, chapter_num, value, note FROM character_arc_points
+    `SELECT axis_id, chapter_num, value, note, volume_id FROM character_arc_points
      WHERE project_id=$1
      ORDER BY axis_id, chapter_num`,
     [projectId],
   );
-  return rows.map(r => ({ axisId: r.axis_id, chapterNum: r.chapter_num, value: r.value, note: r.note }));
+  return rows.map(r => ({ axisId: r.axis_id, chapterNum: r.chapter_num, value: r.value, note: r.note, volumeId: r.volume_id ?? null }));
 }
 
 /**
- * Génère les alertes Save the Cat à partir d'une beatEventMap (Map<beatId, event>)
+ * Génère les alertes Save the Cat à partir d'une beatEventMap (Map<beatId, event> ou Map<beatId, event[]>)
  * et du nombre total de chapitres — pas de dépendance aux chapitres STC.
  */
 export function computeAlertsFromEvents(beatEventMap, totalChapters, beats) {
   const alerts = [];
   for (const beat of beats) {
-    const event = beatEventMap.get(beat.id);
+    const evtOrEvts = beatEventMap.get(beat.id);
+    // Supporte Map<beatId, event> (ancien) et Map<beatId, event[]> (multi-tome)
+    const event = Array.isArray(evtOrEvts) ? evtOrEvts[0] : evtOrEvts;
     if (!event) {
       if (beat.alertMessages.missing) {
         alerts.push({ type: 'missing', severity: 'warning', beat, message: beat.alertMessages.missing });

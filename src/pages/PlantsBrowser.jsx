@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { usePlantStore } from '../stores/usePlantStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useLoreStore } from '../stores/useLoreStore';
+import { useVolumeStore } from '../stores/useVolumeStore';
 import { getEntityMeta } from '../utils/entityUtils';
 import { extractChapters } from '../utils/reviewUtils';
 
@@ -25,7 +26,7 @@ const STATUS_CFG = {
 
 // ── Vue arc SVG ───────────────────────────────────────────────────────────────
 
-function ArcView({ plants, chapters }) {
+function ArcView({ plants, chapters, volumes }) {
   const [containerEl, setContainerEl] = useState(null);
   const [svgW, setSvgW] = useState(0);
 
@@ -90,8 +91,8 @@ function ArcView({ plants, chapters }) {
 
           {/* Arcs */}
           {plantsWithPos.map((plant, i) => {
-            const typeCfg = PLANT_TYPE_MAP[plant.type] ?? PLANT_TYPE_MAP.information;
-            const color   = plant.status === 'dropped' ? '#334155' : typeCfg.color;
+            const typeCfg  = PLANT_TYPE_MAP[plant.type] ?? PLANT_TYPE_MAP.information;
+            const color    = plant.status === 'dropped' ? '#334155' : typeCfg.color;
             const x1 = xOf(plant.plantChapterNum);
             const x2 = plant.payoffChapterNum != null ? xOf(plant.payoffChapterNum) : svgW - PAD.right;
             const y  = svgH - PAD.bottom;
@@ -99,29 +100,34 @@ function ArcView({ plants, chapters }) {
             const mx = (x1 + x2) / 2;
             const isOpen = plant.payoffChapterNum == null;
 
+            const plantVol  = plant.plantVolumeId  ? volumes?.find(v => v.id === plant.plantVolumeId)  : null;
+            const payoffVol = plant.payoffVolumeId ? volumes?.find(v => v.id === plant.payoffVolumeId) : null;
+            const isCross   = plantVol && payoffVol && plantVol.id !== payoffVol.id;
+            const crossLabel = isCross ? ` T${plantVol.number}→T${payoffVol.number}` : '';
+
             return (
               <g key={plant.id}>
                 {/* Arc quadratique */}
                 <path
                   d={`M ${x1},${y} Q ${mx},${y - arcH} ${x2},${y}`}
                   fill="none"
-                  stroke={color}
-                  strokeWidth={1.5}
+                  stroke={isCross ? '#fbbf24' : color}
+                  strokeWidth={isCross ? 2 : 1.5}
                   strokeOpacity={plant.status === 'dropped' ? 0.3 : 0.7}
                   strokeDasharray={isOpen ? '4,3' : undefined}
                 />
                 {/* Point plant */}
-                <circle cx={x1} cy={y} r={3.5} fill={color} fillOpacity={0.8} />
+                <circle cx={x1} cy={y} r={3.5} fill={isCross ? '#fbbf24' : color} fillOpacity={0.8} />
                 {/* Point payoff */}
                 {plant.payoffChapterNum != null && (
-                  <circle cx={x2} cy={y} r={3.5} fill={color} fillOpacity={0.8} />
+                  <circle cx={x2} cy={y} r={3.5} fill={isCross ? '#fbbf24' : color} fillOpacity={0.8} />
                 )}
                 {/* Label au sommet de l'arc */}
                 <text
                   x={mx} y={y - arcH - 4}
-                  textAnchor="middle" fontSize="9" fill={color} fillOpacity={0.85}
+                  textAnchor="middle" fontSize="9" fill={isCross ? '#fbbf24' : color} fillOpacity={0.85}
                 >
-                  {plant.label.slice(0, 24)}{plant.label.length > 24 ? '…' : ''}
+                  {plant.label.slice(0, 20)}{plant.label.length > 20 ? '…' : ''}{crossLabel}
                 </text>
               </g>
             );
@@ -134,7 +140,7 @@ function ArcView({ plants, chapters }) {
 
 // ── Formulaire create/edit ────────────────────────────────────────────────────
 
-function PlantForm({ initial, chapters, events, onSave, onCancel }) {
+function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defaultVolumeId }) {
   const characters = useLoreStore(s => s.characters) ?? [];
   const objects    = useLoreStore(s => s.objects)    ?? [];
 
@@ -143,8 +149,10 @@ function PlantForm({ initial, chapters, events, onSave, onCancel }) {
     type:             initial?.type             ?? 'information',
     plantChapterNum:  initial?.plantChapterNum  ?? '',
     plantEventId:     initial?.plantEventId     ?? '',
+    plantVolumeId:    initial?.plantVolumeId    ?? defaultVolumeId ?? '',
     payoffChapterNum: initial?.payoffChapterNum ?? '',
     payoffEventId:    initial?.payoffEventId    ?? '',
+    payoffVolumeId:   initial?.payoffVolumeId   ?? '',
     entityId:         initial?.entityId         ?? '',
     entityType:       initial?.entityType       ?? '',
     status:           initial?.status           ?? 'open',
@@ -161,6 +169,8 @@ function PlantForm({ initial, chapters, events, onSave, onCancel }) {
       payoffChapterNum: form.payoffChapterNum ? Number(form.payoffChapterNum) : null,
       plantEventId:     form.plantEventId     || null,
       payoffEventId:    form.payoffEventId    || null,
+      plantVolumeId:    form.plantVolumeId    || null,
+      payoffVolumeId:   form.payoffVolumeId   || null,
       entityId:         form.entityId         || null,
       entityType:       form.entityType       || null,
       notes:            form.notes            || null,
@@ -236,6 +246,13 @@ function PlantForm({ initial, chapters, events, onSave, onCancel }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] text-slate-500 uppercase tracking-widest">Chapitre amorce</label>
+          {volumes.length > 0 && (
+            <select value={form.plantVolumeId} onChange={e => set('plantVolumeId', e.target.value)}
+              className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+              <option value="">— Tome (optionnel)</option>
+              {volumes.map(v => <option key={v.id} value={v.id}>Tome {v.number} — {v.title}</option>)}
+            </select>
+          )}
           <select value={form.plantChapterNum} onChange={e => set('plantChapterNum', e.target.value)}
             className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
             <option value="">—</option>
@@ -251,6 +268,13 @@ function PlantForm({ initial, chapters, events, onSave, onCancel }) {
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] text-slate-500 uppercase tracking-widest">Chapitre payoff</label>
+          {volumes.length > 0 && (
+            <select value={form.payoffVolumeId} onChange={e => set('payoffVolumeId', e.target.value)}
+              className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+              <option value="">— Tome (optionnel)</option>
+              {volumes.map(v => <option key={v.id} value={v.id}>Tome {v.number} — {v.title}</option>)}
+            </select>
+          )}
           <select value={form.payoffChapterNum} onChange={e => set('payoffChapterNum', e.target.value)}
             className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
             <option value="">— non résolu</option>
@@ -312,10 +336,14 @@ function PlantForm({ initial, chapters, events, onSave, onCancel }) {
 
 // ── Carte amorce ──────────────────────────────────────────────────────────────
 
-function PlantCard({ plant, onEdit, onDelete }) {
+function PlantCard({ plant, onEdit, onDelete, volumes }) {
   const typeCfg   = PLANT_TYPE_MAP[plant.type] ?? PLANT_TYPE_MAP.information;
   const statusCfg = STATUS_CFG[plant.status]   ?? STATUS_CFG.open;
   const entity    = plant.entityId ? getEntityMeta(plant.entityId, plant.entityType) : null;
+
+  const plantVol  = plant.plantVolumeId  ? volumes?.find(v => v.id === plant.plantVolumeId)  : null;
+  const payoffVol = plant.payoffVolumeId ? volumes?.find(v => v.id === plant.payoffVolumeId) : null;
+  const isCross   = plantVol && payoffVol && plantVol.id !== payoffVol.id;
 
   return (
     <div className="flex items-start gap-3 px-4 py-3 rounded-xl"
@@ -360,15 +388,33 @@ function PlantCard({ plant, onEdit, onDelete }) {
         </div>
 
         {/* Flèche plant → payoff */}
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex items-center gap-1.5 text-xs flex-wrap">
           <span className="text-slate-400 font-mono">
             {plant.plantChapterNum != null ? `Ch.${plant.plantChapterNum}` : '?'}
           </span>
+          {plantVol && !isCross && (
+            <span className="text-[9px] px-1 py-0.5 rounded font-bold"
+              style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)' }}>
+              T{plantVol.number}
+            </span>
+          )}
           <span className="text-slate-600">→</span>
           <span style={{ color: plant.payoffChapterNum != null ? '#22c55e' : '#64748b' }}
             className="font-mono">
             {plant.payoffChapterNum != null ? `Ch.${plant.payoffChapterNum}` : 'non résolu'}
           </span>
+          {isCross && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
+              style={{ backgroundColor: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.35)' }}>
+              T{plantVol.number} → T{payoffVol.number}
+            </span>
+          )}
+          {payoffVol && !isCross && plant.payoffChapterNum != null && (
+            <span className="text-[9px] px-1 py.5 rounded font-bold"
+              style={{ backgroundColor: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)' }}>
+              T{payoffVol.number}
+            </span>
+          )}
         </div>
 
         {/* Notes */}
@@ -383,34 +429,46 @@ function PlantCard({ plant, onEdit, onDelete }) {
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function PlantsBrowser() {
-  const plants    = usePlantStore(s => s.plants)    ?? [];
-  const addPlant  = usePlantStore(s => s.addPlant);
-  const editPlant = usePlantStore(s => s.editPlant);
+  const plants      = usePlantStore(s => s.plants)    ?? [];
+  const addPlant    = usePlantStore(s => s.addPlant);
+  const editPlant   = usePlantStore(s => s.editPlant);
   const removePlant = usePlantStore(s => s.removePlant);
 
-  const events  = useTimelineStore(s => s.events) ?? [];
+  const volumes        = useVolumeStore(s => s.volumes) ?? [];
+  const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
+
+  const events   = useTimelineStore(s => s.events) ?? [];
   const chapters = useMemo(() => extractChapters(events), [events]);
 
-  const [view,       setView]       = useState('list');   // 'list' | 'arc'
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'open' | 'resolved' | 'dropped'
+  const [view,         setView]         = useState('list');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter,   setTypeFilter]   = useState('all');
-  const [showForm,   setShowForm]   = useState(false);
-  const [editingId,  setEditingId]  = useState(null);
+  const [showForm,     setShowForm]     = useState(false);
+  const [editingId,    setEditingId]    = useState(null);
 
-  // Stats
+  // Filtre cross-tome : visible si plant OU payoff appartient au tome actif
+  const visiblePlants = useMemo(() => {
+    if (!activeVolumeId) return plants;
+    return plants.filter(p =>
+      p.plantVolumeId  == null || p.plantVolumeId  === activeVolumeId ||
+      p.payoffVolumeId === activeVolumeId
+    );
+  }, [plants, activeVolumeId]);
+
+  // Stats sur les plants visibles
   const stats = useMemo(() => ({
-    total:    plants.length,
-    open:     plants.filter(p => p.status === 'open').length,
-    resolved: plants.filter(p => p.status === 'resolved').length,
-    dropped:  plants.filter(p => p.status === 'dropped').length,
-  }), [plants]);
+    total:    visiblePlants.length,
+    open:     visiblePlants.filter(p => p.status === 'open').length,
+    resolved: visiblePlants.filter(p => p.status === 'resolved').length,
+    dropped:  visiblePlants.filter(p => p.status === 'dropped').length,
+  }), [visiblePlants]);
 
-  // Filtrage
-  const filtered = useMemo(() => plants.filter(p => {
+  // Filtrage statut + type
+  const filtered = useMemo(() => visiblePlants.filter(p => {
     if (statusFilter !== 'all' && p.status !== statusFilter) return false;
     if (typeFilter   !== 'all' && p.type   !== typeFilter)   return false;
     return true;
-  }), [plants, statusFilter, typeFilter]);
+  }), [visiblePlants, statusFilter, typeFilter]);
 
   const editingPlant = editingId ? plants.find(p => p.id === editingId) : null;
 
@@ -471,6 +529,8 @@ export default function PlantsBrowser() {
             <PlantForm
               chapters={chapters}
               events={events}
+              volumes={volumes}
+              defaultVolumeId={activeVolumeId}
               onSave={handleSaveNew}
               onCancel={() => setShowForm(false)}
             />
@@ -527,7 +587,7 @@ export default function PlantsBrowser() {
 
           {/* Vue arc */}
           {view === 'arc' && (
-            <ArcView plants={filtered} chapters={chapters} />
+            <ArcView plants={filtered} chapters={chapters} volumes={volumes} />
           )}
 
           {/* Vue liste */}
@@ -549,6 +609,8 @@ export default function PlantsBrowser() {
                     initial={plant}
                     chapters={chapters}
                     events={events}
+                    volumes={volumes}
+                    defaultVolumeId={activeVolumeId}
                     onSave={handleSaveEdit}
                     onCancel={() => setEditingId(null)}
                   />
@@ -556,6 +618,7 @@ export default function PlantsBrowser() {
                   <PlantCard
                     key={plant.id}
                     plant={plant}
+                    volumes={volumes}
                     onEdit={() => { setEditingId(plant.id); setShowForm(false); }}
                     onDelete={() => removePlant(plant.id)}
                   />

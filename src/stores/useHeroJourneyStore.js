@@ -8,7 +8,7 @@ export const useHeroJourneyStore = create((set, get) => ({
   load: async (db, projectId) => {
     set({ _db: db, _projectId: projectId });
     const { rows } = await db.query(
-      `SELECT id, stage_key, character_id, chapter_num, summary
+      `SELECT id, stage_key, character_id, chapter_num, summary, volume_id
        FROM hero_journey_entries
        WHERE project_id = $1
        ORDER BY stage_key`,
@@ -20,17 +20,20 @@ export const useHeroJourneyStore = create((set, get) => ({
       characterId: r.character_id ?? null,
       chapterNum:  r.chapter_num  ?? null,
       summary:     r.summary      ?? null,
+      volumeId:    r.volume_id    ?? null,
     }));
     set({ entries });
   },
 
-  saveEntry: async ({ stageKey, characterId, chapterNum, summary }) => {
+  saveEntry: async ({ stageKey, characterId, chapterNum, summary, volumeId }) => {
     const { _db, _projectId, entries } = get();
     if (!_db || !_projectId) return;
 
-    // Chercher une entrée existante pour ce stageKey + characterId
+    // Chercher une entrée existante pour ce stageKey + characterId + volumeId
     const existing = (entries ?? []).find(
-      e => e.stageKey === stageKey && e.characterId === (characterId ?? null),
+      e => e.stageKey === stageKey
+        && e.characterId === (characterId ?? null)
+        && (e.volumeId ?? null) === (volumeId ?? null),
     );
 
     if (existing) {
@@ -52,9 +55,9 @@ export const useHeroJourneyStore = create((set, get) => ({
       // Insertion
       const id = crypto.randomUUID();
       await _db.query(
-        `INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [id, _projectId, stageKey, characterId ?? null, chapterNum ?? null, summary ?? null],
+        `INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [id, _projectId, stageKey, characterId ?? null, chapterNum ?? null, summary ?? null, volumeId ?? null],
       );
       const newEntry = {
         id,
@@ -62,6 +65,7 @@ export const useHeroJourneyStore = create((set, get) => ({
         characterId: characterId ?? null,
         chapterNum:  chapterNum  ?? null,
         summary:     summary     ?? null,
+        volumeId:    volumeId    ?? null,
       };
       set({ entries: [...(entries ?? []), newEntry] });
     }

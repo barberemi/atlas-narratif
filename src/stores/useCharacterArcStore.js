@@ -9,6 +9,7 @@ import {
   getCharacterArcPoints,
   getAllCharacterArcPoints,
 } from '../db/queries';
+import { useVolumeStore } from './useVolumeStore';
 
 export const useCharacterArcStore = create((set, get) => ({
   /** axes[characterId] = [{ id, characterId, label, color }] */
@@ -39,7 +40,7 @@ export const useCharacterArcStore = create((set, get) => ({
     const points = {};
     for (const pt of allPoints) {
       if (!points[pt.axisId]) points[pt.axisId] = [];
-      points[pt.axisId].push({ chapterNum: pt.chapterNum, value: pt.value, note: pt.note });
+      points[pt.axisId].push({ chapterNum: pt.chapterNum, value: pt.value, note: pt.note, volumeId: pt.volumeId });
     }
 
     set({ axes, points, axisLabels });
@@ -75,9 +76,10 @@ export const useCharacterArcStore = create((set, get) => ({
   setPoint: async (axisId, chapterNum, value, note) => {
     const { _db, _projectId, points } = get();
     if (!_db || !_projectId) return;
-    await upsertCharacterArcPoint(_db, _projectId, axisId, chapterNum, value, note);
+    const volumeId = useVolumeStore.getState().activeVolumeId ?? null;
+    await upsertCharacterArcPoint(_db, _projectId, axisId, chapterNum, value, note, volumeId);
     const axisPoints = (points[axisId] ?? []).filter(p => p.chapterNum !== chapterNum);
-    axisPoints.push({ chapterNum, value, note: note ?? null });
+    axisPoints.push({ chapterNum, value, note: note ?? null, volumeId });
     axisPoints.sort((a, b) => a.chapterNum - b.chapterNum);
     set({ points: { ...points, [axisId]: axisPoints } });
   },

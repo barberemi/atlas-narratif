@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
 import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
@@ -9,6 +9,7 @@ import { useStcStore }          from '../../stores/useStcStore';
 import { usePlantStore }        from '../../stores/usePlantStore';
 import { useArcStore }          from '../../stores/useArcStore';
 import { useHeroJourneyStore }  from '../../stores/useHeroJourneyStore';
+import { useVolumeStore }       from '../../stores/useVolumeStore';
 import { PLANT_TYPES }          from '../../pages/PlantsBrowser';
 import EntityEditor      from '../lore/EntityEditor';
 import CircularGauge     from './CircularGauge';
@@ -69,7 +70,7 @@ function FrameworkCard({ icon, title, filled, total, score, path, onNavigate, su
 }
 
 // ── Dashboard principal ───────────────────────────────────────────────────────
-export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
+function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
   const navigate = useNavigate();
   const [editorState, setEditorState] = useState(null);
 
@@ -83,6 +84,8 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
   const plants       = usePlantStore(s => s.plants) ?? [];
   const arcPoints    = useArcStore(s => s.points);
   const hjEntries    = useHeroJourneyStore(s => s.entries);
+  const volumes       = useVolumeStore(s => s.volumes);
+  const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
 
   // ── Calculs incohérences ───────────────────────────────────────────────────
   const { totalWeight, resolvedWeight, bySeverity, resolvedBySeverity, byType, topEntities } = useMemo(() => {
@@ -238,6 +241,96 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     return { chapters, maxEvents, maxChars };
   }, [events]);
 
+  // ── Plants cross-tomes ────────────────────────────────────────────────────
+  const crossTomePlants = useMemo(() => {
+    const vols = volumes ?? [];
+    if (vols.length < 2 || activeVolumeId !== null) return null;
+
+    const volMap = new Map(vols.map(v => [v.id, v]));
+    const plantList = plants ?? [];
+
+    // Fil confirmé : plant et payoff dans deux tomes différents (fermé ou ouvert)
+    const bridges = plantList
+      .filter(p => p.plantVolumeId && p.payoffVolumeId && p.plantVolumeId !== p.payoffVolumeId)
+      .map(p => ({
+        ...p,
+        fromVol: volMap.get(p.plantVolumeId),
+        toVol:   volMap.get(p.payoffVolumeId),
+      }))
+      .filter(p => p.fromVol && p.toVol)
+      .sort((a, b) => (a.fromVol.number - b.fromVol.number) || (a.toVol.number - b.toVol.number));
+
+    // En suspens : plant assigné à un tome, payoff non encore défini
+    const pending = plantList
+      .filter(p => p.status === 'open' && p.plantVolumeId && !p.payoffVolumeId)
+      .map(p => ({ ...p, fromVol: volMap.get(p.plantVolumeId) }))
+      .filter(p => p.fromVol)
+      .sort((a, b) => a.fromVol.number - b.fromVol.number);
+
+    if (bridges.length === 0 && pending.length === 0) return null;
+    return { bridges, pending };
+  }, [volumes, activeVolumeId, plants]);
+
+  // ── Vue Série ─────────────────────────────────────────────────────────────
+  const seriesStats = useMemo(() => {
+    const vols = volumes ?? [];
+    if (vols.length < 2 || activeVolumeId !== null) return null;
+
+    const evtList  = events ?? [];
+    const stcList  = stcChapters ?? [];
+    const arcList  = arcPoints ?? [];
+    const incList  = incoherences ?? [];
+
+    // entityId → Set<volumeId> — pour associer les incohérences aux tomes
+    const entityVolumes = new Map();
+    for (const evt of evtList) {
+      if (!evt.volumeId) continue;
+      for (const e of evt.entities ?? []) {
+        if (!entityVolumes.has(e.id)) entityVolumes.set(e.id, new Set());
+        entityVolumes.get(e.id).add(evt.volumeId);
+      }
+    }
+
+    const maxDensity = Math.max(
+      ...vols.map(vol => {
+        const volEvts = evtList.filter(e => e.volumeId === vol.id);
+        const chaps   = new Set(volEvts.map(e => e.chapter)).size;
+        return chaps === 0 ? 0 : volEvts.length / chaps;
+      }),
+      1,
+    );
+
+    return vols.map(vol => {
+      const volEvents   = evtList.filter(e => e.volumeId === vol.id);
+      const chapterSet  = new Set(volEvents.map(e => e.chapter));
+      const chapterCount = chapterSet.size;
+      const eventCount   = volEvents.length;
+      const density      = chapterCount === 0 ? 0 : eventCount / chapterCount;
+
+      // STC — beats de ce tome
+      const volBeats = new Set(
+        stcList.filter(ch => ch.volumeId === vol.id).flatMap(ch => ch.beats ?? [])
+      ).size;
+      const stcScore = Math.round((volBeats / TOTAL_BEATS) * 100);
+
+      // Arc — chapitres couverts de ce tome
+      const arcCovered = new Set(
+        arcList.filter(p => p.volumeId === vol.id).map(p => p.chapterNumber)
+      ).size;
+      const arcScore = chapterCount === 0 ? 0 : Math.round((arcCovered / chapterCount) * 100);
+
+      // Incohérences non résolues liées à ce tome (proxy via entités)
+      const unresolvedInc = incList.filter(inc => !inc.resolved);
+      const volInc = unresolvedInc.filter(inc =>
+        (inc.links ?? []).some(link => entityVolumes.get(link.entityId)?.has(vol.id))
+      );
+      const criticalInc = volInc.filter(i => i.severity === 'critical').length;
+      const highInc     = volInc.filter(i => i.severity === 'high').length;
+
+      return { vol, eventCount, chapterCount, density, maxDensity, stcScore, arcScore, criticalInc, highInc };
+    });
+  }, [volumes, activeVolumeId, events, stcChapters, arcPoints, incoherences]);
+
   // ── Scores de base ─────────────────────────────────────────────────────────
   const penaltyScore  = totalWeight === 0 ? 100 : Math.round(100 - ((totalWeight - resolvedWeight) / totalWeight) * 100);
   const coverageScore = inventory.characters === 0 ? 100
@@ -338,6 +431,7 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     </div>
   );
 
+
   const resolvedCount = (incoherences ?? []).filter(i => i.resolved).length;
   const total         = (incoherences ?? []).length;
   const resolvedPct   = total === 0 ? 100 : Math.round((resolvedCount / total) * 100);
@@ -390,6 +484,199 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
               sub={inventory.beats === TOTAL_BEATS ? 'Structure complète' : `${TOTAL_BEATS - inventory.beats} manquant${TOTAL_BEATS - inventory.beats > 1 ? 's' : ''}`}
             />
           </div>
+
+          {/* ── Vue Série ── */}
+          {seriesStats && (
+            <>
+              <SectionTitle>Vue Série</SectionTitle>
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                {/* En-tête colonnes */}
+                <div
+                  className="grid items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-600"
+                  style={{ gridTemplateColumns: '1fr 6fr 2rem 2rem 5rem', backgroundColor: 'rgba(255,255,255,0.02)', gap: '0.75rem' }}
+                >
+                  <span>Tome</span>
+                  <span>Densité narrative</span>
+                  <span className="text-center">STC</span>
+                  <span className="text-center">Arc</span>
+                  <span className="text-right">Incohérences</span>
+                </div>
+
+                {seriesStats.map(({ vol, eventCount, chapterCount, density, maxDensity, stcScore, arcScore, criticalInc, highInc }, idx) => {
+                  const stcColor  = stcScore  >= 80 ? '#10B981' : stcScore  >= 40 ? '#f59e0b' : '#ef4444';
+                  const arcColor  = arcScore  >= 80 ? '#10B981' : arcScore  >= 40 ? '#f59e0b' : '#ef4444';
+                  const hasAlerts = criticalInc > 0 || highInc > 0;
+                  return (
+                    <div
+                      key={vol.id}
+                      className="grid items-center px-4 py-3"
+                      style={{
+                        gridTemplateColumns: '1fr 6fr 2rem 2rem 5rem',
+                        gap: '0.75rem',
+                        backgroundColor: idx % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'transparent',
+                        borderTop: idx > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                      }}
+                    >
+                      {/* Badge tome + titre */}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0"
+                          style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8' }}
+                        >
+                          T{vol.number}
+                        </span>
+                        <span className="text-xs text-slate-300 truncate">{vol.title}</span>
+                      </div>
+
+                      {/* Barre de densité */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${maxDensity === 0 ? 0 : Math.round((density / maxDensity) * 100)}%`,
+                              backgroundColor: '#3F51B5',
+                              opacity: 0.8,
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-500 flex-shrink-0 w-16 text-right">
+                          {eventCount}ev · {chapterCount}ch
+                        </span>
+                      </div>
+
+                      {/* STC % */}
+                      <span className="text-xs font-black text-center" style={{ color: stcColor }}>{stcScore}%</span>
+
+                      {/* Arc % */}
+                      <span className="text-xs font-black text-center" style={{ color: arcColor }}>{arcScore}%</span>
+
+                      {/* Incohérences */}
+                      <div className="flex items-center justify-end gap-1">
+                        {criticalInc > 0 && (
+                          <span
+                            className="text-[10px] font-black px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}
+                          >
+                            {criticalInc} crit.
+                          </span>
+                        )}
+                        {highInc > 0 && (
+                          <span
+                            className="text-[10px] font-black px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: 'rgba(249,115,22,0.15)', color: '#f97316' }}
+                          >
+                            {highInc} high
+                          </span>
+                        )}
+                        {!hasAlerts && (
+                          <span className="text-[10px] text-slate-600">—</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* ── Plants cross-tomes ── */}
+          {crossTomePlants && (
+            <>
+              <SectionTitle>Continuité inter-tomes</SectionTitle>
+              <div
+                className="rounded-2xl p-5 flex flex-col gap-5"
+                style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">
+                    Amorces qui traversent plusieurs tomes
+                  </p>
+                  <button
+                    onClick={() => navigate('/plants')}
+                    className="text-[10px] font-bold transition-opacity opacity-50 hover:opacity-100"
+                    style={{ color: '#818cf8' }}
+                  >
+                    Voir tout →
+                  </button>
+                </div>
+
+                {/* Fils confirmés (bridge) */}
+                {crossTomePlants.bridges.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                      Confirmés — {crossTomePlants.bridges.length} fil{crossTomePlants.bridges.length > 1 ? 's' : ''}
+                    </p>
+                    {crossTomePlants.bridges.map(p => {
+                      const typeCfg = PLANT_TYPES.find(t => t.id === p.type) ?? PLANT_TYPES[2];
+                      const isClosed = p.status === 'closed';
+                      return (
+                        <div key={p.id} className="flex items-center gap-3">
+                          <span style={{ color: typeCfg.color }} className="flex-shrink-0 text-sm">{typeCfg.icon}</span>
+                          <span className="text-xs text-slate-300 flex-1 truncate">{p.label}</span>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span
+                              className="text-[10px] font-black px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8' }}
+                            >
+                              T{p.fromVol.number}
+                            </span>
+                            <span className="text-slate-600 text-[10px]">→</span>
+                            <span
+                              className="text-[10px] font-black px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8' }}
+                            >
+                              T{p.toVol.number}
+                            </span>
+                            <span
+                              className="text-[10px] font-bold px-1.5 py-0.5 rounded ml-1"
+                              style={isClosed
+                                ? { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10B981' }
+                                : { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }
+                              }
+                            >
+                              {isClosed ? 'résolu' : 'en cours'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* En suspens */}
+                {crossTomePlants.pending.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                      En suspens — {crossTomePlants.pending.length} sans payoff assigné
+                    </p>
+                    {crossTomePlants.pending.map(p => {
+                      const typeCfg = PLANT_TYPES.find(t => t.id === p.type) ?? PLANT_TYPES[2];
+                      return (
+                        <div key={p.id} className="flex items-center gap-3">
+                          <span style={{ color: typeCfg.color }} className="flex-shrink-0 text-sm">{typeCfg.icon}</span>
+                          <span className="text-xs text-slate-400 flex-1 truncate">{p.label}</span>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span
+                              className="text-[10px] font-black px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8' }}
+                            >
+                              T{p.fromVol.number}
+                            </span>
+                            <span className="text-slate-600 text-[10px]">→</span>
+                            <span className="text-[10px] font-mono text-slate-600">?</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           {/* ── Groupes ── */}
           {groups.length > 0 && (
@@ -938,3 +1225,5 @@ export default function NarrativeDashboard({ onEntityClick, onOpenIncoherences }
     </div>
   );
 }
+
+export default memo(NarrativeDashboard);

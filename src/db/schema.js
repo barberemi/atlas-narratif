@@ -17,6 +17,16 @@ CREATE TABLE IF NOT EXISTS projects (
 -- Migration additive pour les DBs existantes
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS map_image TEXT;
 
+-- ── Volumes (tomes d'une série) ──────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS volumes (
+  id          TEXT NOT NULL,
+  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  number      INTEGER NOT NULL,
+  title       TEXT NOT NULL,
+  description TEXT,
+  PRIMARY KEY (id, project_id)
+);
+
 -- ── Personnages ───────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS characters (
   id          TEXT NOT NULL,
@@ -96,6 +106,7 @@ ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_order      INTEGER DE
 ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_goal       TEXT;
 ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_conflict   TEXT;
 ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS scene_outcome    TEXT;
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS volume_id        TEXT;
 
 -- Jonction événements ↔ entités
 CREATE TABLE IF NOT EXISTS event_entities (
@@ -138,6 +149,7 @@ CREATE TABLE IF NOT EXISTS stc_chapters (
   summary    TEXT,
   PRIMARY KEY (id, project_id)
 );
+ALTER TABLE stc_chapters ADD COLUMN IF NOT EXISTS volume_id TEXT;
 
 CREATE TABLE IF NOT EXISTS stc_chapter_beats (
   chapter_id TEXT NOT NULL,
@@ -163,6 +175,7 @@ CREATE TABLE IF NOT EXISTS arc_points (
   note           TEXT,
   PRIMARY KEY (project_id, chapter_number)
 );
+ALTER TABLE arc_points ADD COLUMN IF NOT EXISTS volume_id TEXT;
 
 -- ── Notes libres par chapitre ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS chapter_notes (
@@ -197,6 +210,9 @@ CREATE TABLE IF NOT EXISTS plant_payoffs (
   notes              TEXT,
   PRIMARY KEY (id, project_id)
 );
+
+ALTER TABLE plant_payoffs ADD COLUMN IF NOT EXISTS plant_volume_id  TEXT;
+ALTER TABLE plant_payoffs ADD COLUMN IF NOT EXISTS payoff_volume_id TEXT;
 
 -- ── Groupes d'appartenance (races, clans, factions…) ────────────────────────
 CREATE TABLE IF NOT EXISTS groups (
@@ -249,6 +265,7 @@ CREATE TABLE IF NOT EXISTS character_arc_points (
   note        TEXT,
   PRIMARY KEY (project_id, axis_id, chapter_num)
 );
+ALTER TABLE character_arc_points ADD COLUMN IF NOT EXISTS volume_id TEXT;
 
 -- ── Voyage du Héros ───────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS hero_journey_entries (
@@ -262,10 +279,37 @@ CREATE TABLE IF NOT EXISTS hero_journey_entries (
 ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS character_id TEXT;
 ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS chapter_num INTEGER;
 ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS summary TEXT;
+ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS volume_id TEXT;
 
 `;
 
-/** Applique le schéma sur la connexion PGlite donnée (idempotent). */
+/**
+ * Version du schéma — à incrémenter à chaque modification de SQL_SCHEMA
+ * pour forcer la ré-application des migrations sur les DBs existantes.
+ */
+export const SCHEMA_VERSION = '2026-04-01.1';
+
+/** Applique le schéma sur la connexion PGlite donnée (idempotent).
+ *  Si la version stockée dans _meta correspond à SCHEMA_VERSION,
+ *  le schéma est ignoré pour accélérer le démarrage.
+ */
 export async function applySchema(db) {
+  // Vérifie si la table _meta existe et contient la bonne version
+  try {
+    const { rows } = await db.query(
+      `SELECT value FROM _meta WHERE key = 'schema_version'`
+    );
+    if (rows[0]?.value === SCHEMA_VERSION) return; // déjà à jour
+  } catch {
+    // _meta n'existe pas encore → première installation
+  }
+
   await db.exec(SQL_SCHEMA);
+
+  // Persiste la version pour les prochains démarrages
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS _meta (key TEXT PRIMARY KEY, value TEXT);
+    INSERT INTO _meta (key, value) VALUES ('schema_version', '${SCHEMA_VERSION}')
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+  `);
 }

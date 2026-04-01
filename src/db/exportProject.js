@@ -11,6 +11,12 @@ export async function exportProject(db, projectId) {
   if (!projRows.length) throw new Error(`Projet introuvable : ${projectId}`);
   const proj = projRows[0];
 
+  // ── Volumes (tomes) ──────────────────────────────────────────────────────
+  const { rows: volumes } = await db.query(
+    `SELECT * FROM volumes WHERE project_id = $1 ORDER BY number`,
+    [projectId],
+  );
+
   // ── Personnages ──────────────────────────────────────────────────────────
   const { rows: characters } = await db.query(
     `SELECT * FROM characters WHERE project_id = $1 ORDER BY name`,
@@ -124,6 +130,7 @@ export async function exportProject(db, projectId) {
       mapImage:    proj.map_image,
       createdAt:   proj.created_at,
     },
+    volumes,
     characters,
     locations,
     objects,

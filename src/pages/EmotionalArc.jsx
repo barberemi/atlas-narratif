@@ -4,6 +4,8 @@ import { useProject } from '../db/ProjectContext';
 import { useArcStore } from '../stores/useArcStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useStcStore } from '../stores/useStcStore';
+import { useVolumeFilter } from '../hooks/useVolumeFilter';
+import { useVolumeStore }  from '../stores/useVolumeStore';
 import { BEATS } from '../data/beats_config';
 import { CHART_H, PAD, yToSvg, xToSvg, smoothPath, arcColor } from '../utils/arcUtils';
 import { extractChapters } from '../utils/reviewUtils';
@@ -30,7 +32,11 @@ export default function EmotionalArc() {
   const db        = useDb();
   const { projectId } = useProject();
 
-  const points       = useArcStore(s => s.points);
+  const filterByVolume  = useVolumeFilter();
+  const volumes         = useVolumeStore(s => s.volumes)      ?? [];
+  const activeVolumeId  = useVolumeStore(s => s.activeVolumeId);
+
+  const pointsRaw    = useArcStore(s => s.points);
   const loadArc      = useArcStore(s => s.load);
   const setIntensity = useArcStore(s => s.setIntensity);
 
@@ -39,18 +45,66 @@ export default function EmotionalArc() {
   const stcChaptersRaw = useStcStore(s => s.chapters);
   const loadStc        = useStcStore(s => s.load);
 
-  const events      = eventsRaw      ?? [];
-  const stcChapters = stcChaptersRaw ?? [];
+  const points      = filterByVolume(pointsRaw    ?? []);
+  const events      = filterByVolume(eventsRaw    ?? []);
+  const stcChapters = filterByVolume(stcChaptersRaw ?? []);
 
   useEffect(() => {
     if (!db || !projectId) return;
     loadArc(db, projectId);
-    if (!eventsRaw)      loadTimeline(db, projectId);
-    if (!stcChaptersRaw) loadStc(db, projectId);
+    if (!eventsRaw)       loadTimeline(db, projectId);
+    if (!stcChaptersRaw)  loadStc(db, projectId);
   }, [db, projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Chapitres depuis la timeline ──────────────────────────────────────────
   const chapters = useMemo(() => extractChapters(events), [events]);
+
+  // ── Offsets de volumes pour l'arc personnages ─────────────────────────────
+  // chapter_num global = chapter_num local + offset_du_volume
+  const volumeOffsets = useMemo(() => {
+    if (!volumes.length) return new Map();
+    const sorted = [...volumes].sort((a, b) => a.number - b.number);
+    const maxByVolume = new Map();
+    (eventsRaw ?? []).forEach(e => {
+      if (!e.volumeId) return;
+      maxByVolume.set(e.volumeId, Math.max(maxByVolume.get(e.volumeId) ?? 0, e.chapter));
+    });
+    const offsets = new Map();
+    let cum = 0;
+    for (const v of sorted) {
+      offsets.set(v.id, cum);
+      cum += maxByVolume.get(v.id) ?? 0;
+    }
+    return offsets;
+  }, [volumes, eventsRaw]);
+
+  // Offset du tome actif (0 = série complète ou mono-tome)
+  const currentOffset = activeVolumeId ? (volumeOffsets.get(activeVolumeId) ?? 0) : 0;
+
+  // En vue série : chapitres avec numérotation globale (T2 ch.1 → ch.N+1)
+  const charArcChapters = useMemo(() => {
+    if (activeVolumeId || volumes.length < 2) return chapters;
+    const sorted = [...volumes].sort((a, b) => a.number - b.number);
+    const result = [];
+    for (const v of sorted) {
+      const offset   = volumeOffsets.get(v.id) ?? 0;
+      const vChapters = extractChapters((eventsRaw ?? []).filter(e => e.volumeId === v.id));
+      for (const ch of vChapters) {
+        result.push({ ...ch, number: ch.number + offset, volumeId: v.id, localNumber: ch.number });
+      }
+    }
+    return result;
+  }, [activeVolumeId, volumes, volumeOffsets, eventsRaw, chapters]);
+
+  // Séparateurs de tomes pour le graphe (positions globales du début de chaque tome)
+  const volumeSeparators = useMemo(() => {
+    if (activeVolumeId || volumes.length < 2) return [];
+    const sorted = [...volumes].sort((a, b) => a.number - b.number);
+    return sorted.slice(1).map(v => ({
+      chapterNum: volumeOffsets.get(v.id) ?? 0,
+      label:      `T${v.number}`,
+    })).filter(s => s.chapterNum > 0);
+  }, [activeVolumeId, volumes, volumeOffsets]);
 
   // ── Index des points arc ──────────────────────────────────────────────────
   const pointsMap = useMemo(() => {
@@ -182,7 +236,13 @@ export default function EmotionalArc() {
 
         {/* Tab : Arc personnages */}
         {tab === 'personnages' && (
-          <CharacterArcView chapters={chapters} />
+          <CharacterArcView
+            chapters={charArcChapters}
+            chapterOffset={currentOffset}
+            volumes={volumes}
+            activeVolumeId={activeVolumeId}
+            volumeSeparators={volumeSeparators}
+          />
         )}
 
         {/* Tab : Arc global */}

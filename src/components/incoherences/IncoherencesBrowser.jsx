@@ -5,6 +5,7 @@ import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { usePlantStore }    from '../../stores/usePlantStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
+import { useVolumeStore }   from '../../stores/useVolumeStore';
 import { DETECTOR_CATALOG } from '../../db/detectIncoherences';
 import EntityEditor      from '../lore/EntityEditor';
 import IncoherenceCard   from './IncoherenceCard';
@@ -37,6 +38,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
   const events        = useTimelineStore(s => s.events)    ?? [];
   const plants        = usePlantStore(s => s.plants)       ?? [];
   const threads       = useThreadStore(s => s.threads)     ?? [];
+  const volumes       = useVolumeStore(s => s.volumes)     ?? [];
 
   const [severityFilter, setSeverityFilter] = useState(initialFilter);
   const [typeFilter,     setTypeFilter]     = useState('all');
@@ -67,10 +69,10 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
     if (scanning) return;
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      rescan({ characters, locations, objects, events, plants, threads, groups });
+      rescan({ characters, locations, objects, events, plants, threads, groups, volumes });
     }, 1500);
     return () => clearTimeout(debounceRef.current);
-  }, [characters, locations, objects, events, plants, threads, groups]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [characters, locations, objects, events, plants, threads, groups, volumes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleFix = (link) => {

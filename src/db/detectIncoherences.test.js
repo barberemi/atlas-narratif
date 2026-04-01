@@ -20,7 +20,7 @@ function makeEvent(id, chapter, title, { locationId = null, entities = [], povCh
 }
 
 function makePlant(id, label, extra = {}) {
-  return { id, label, status: 'open', plantChapterNum: null, payoffChapterNum: null, payoffEventId: null, ...extra };
+  return { id, label, status: 'open', plantChapterNum: null, payoffChapterNum: null, payoffEventId: null, plantVolumeId: null, payoffVolumeId: null, ...extra };
 }
 
 function makeThread(id, name) {
@@ -362,3 +362,135 @@ describe('detectEmptyScenes', () => {
   });
 });
 
+// ── Cross-tomes ───────────────────────────────────────────────────────────────
+
+function makeVolume(id, number, title = `Tome ${number}`) {
+  return { id, number, title };
+}
+
+function makeEventV(id, chapter, title, volumeId, opts = {}) {
+  return { ...makeEvent(id, chapter, title, opts), volumeId };
+}
+
+describe('detectCrossVolumeDeadCharacter', () => {
+  it('signale un personnage mort au T1 réapparaissant au T2', () => {
+    const volumes    = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const characters = [makeChar('char_a', 'Alice', { deathEventId: 'evt1' })];
+    const events     = [
+      makeEventV('evt1', 5, 'Mort d\'Alice', 'v1', { entities: [withChar('char_a')] }),
+      makeEventV('evt2', 1, 'Retour d\'Alice', 'v2', { entities: [withChar('char_a')] }),
+    ];
+    const results = runDetection({ ...empty, characters, events, volumes });
+    const found = results.filter(r => r.type === 'Mort Cross-Tomes');
+    expect(found).toHaveLength(1);
+    expect(found[0].severity).toBe('critical');
+    expect(found[0].title).toContain('Alice');
+    expect(found[0].title).toContain('T1');
+  });
+
+  it('ne signale pas si le personnage mort n\'a pas de volumeId sur l\'événement de mort', () => {
+    const volumes    = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const characters = [makeChar('char_a', 'Alice', { deathEventId: 'evt1' })];
+    const events     = [
+      { ...makeEvent('evt1', 5, 'Mort'), volumeId: null, entities: [withChar('char_a')] },
+      makeEventV('evt2', 1, 'Retour', 'v2', { entities: [withChar('char_a')] }),
+    ];
+    const results = runDetection({ ...empty, characters, events, volumes });
+    expect(results.filter(r => r.type === 'Mort Cross-Tomes')).toHaveLength(0);
+  });
+
+  it('ne signale pas sans volumes', () => {
+    const characters = [makeChar('char_a', 'Alice', { deathEventId: 'evt1' })];
+    const events     = [
+      makeEventV('evt1', 5, 'Mort', 'v1', { entities: [withChar('char_a')] }),
+      makeEventV('evt2', 1, 'Retour', 'v2', { entities: [withChar('char_a')] }),
+    ];
+    const results = runDetection({ ...empty, characters, events, volumes: [] });
+    expect(results.filter(r => r.type === 'Mort Cross-Tomes')).toHaveLength(0);
+  });
+
+  it('ne signale pas si l\'événement postérieur est dans le même tome', () => {
+    const volumes    = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const characters = [makeChar('char_a', 'Alice', { deathEventId: 'evt1' })];
+    const events     = [
+      makeEventV('evt1', 5, 'Mort', 'v1', { entities: [withChar('char_a')] }),
+      makeEventV('evt2', 8, 'Flash-back', 'v1', { entities: [withChar('char_a')] }),
+    ];
+    // Même tome → déjà couvert par detectDeadCharacterReappearance, pas cross-tomes
+    const results = runDetection({ ...empty, characters, events, volumes });
+    expect(results.filter(r => r.type === 'Mort Cross-Tomes')).toHaveLength(0);
+  });
+});
+
+describe('detectCrossVolumeInactiveObject', () => {
+  it('signale un objet perdu au T1 utilisé au T2', () => {
+    const volumes = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const objects = [makeObj('obj_1', 'Épée', { status: 'lost', statusChangedAtChapter: 3 })];
+    const events  = [
+      makeEventV('evt1', 3, 'Perte', 'v1', { entities: [withObj('obj_1')] }),
+      makeEventV('evt2', 1, 'Usage', 'v2', { entities: [withObj('obj_1')] }),
+    ];
+    const results = runDetection({ ...empty, objects, events, volumes });
+    const found = results.filter(r => r.type === 'Objet Cross-Tomes');
+    expect(found).toHaveLength(1);
+    expect(found[0].severity).toBe('high');
+    expect(found[0].title).toContain('Épée');
+  });
+
+  it('ne signale pas sans volumes', () => {
+    const objects = [makeObj('obj_1', 'Épée', { status: 'lost', statusChangedAtChapter: 3 })];
+    const events  = [
+      makeEventV('evt1', 3, 'Perte', 'v1', { entities: [withObj('obj_1')] }),
+      makeEventV('evt2', 1, 'Usage', 'v2', { entities: [withObj('obj_1')] }),
+    ];
+    const results = runDetection({ ...empty, objects, events, volumes: [] });
+    expect(results.filter(r => r.type === 'Objet Cross-Tomes')).toHaveLength(0);
+  });
+
+  it('ne signale pas un objet actif', () => {
+    const volumes = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const objects = [makeObj('obj_1', 'Épée', { status: 'active', statusChangedAtChapter: null })];
+    const events  = [makeEventV('evt1', 1, 'Usage', 'v2', { entities: [withObj('obj_1')] })];
+    const results = runDetection({ ...empty, objects, events, volumes });
+    expect(results.filter(r => r.type === 'Objet Cross-Tomes')).toHaveLength(0);
+  });
+});
+
+describe('detectCrossVolumePlantWithoutPayoff', () => {
+  it('signale une amorce ouverte sans payoff dans toute la série', () => {
+    const volumes = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const plants  = [makePlant('p1', 'Le Médaillon', { status: 'open', plantVolumeId: 'v1' })];
+    const results = runDetection({ ...empty, plants, volumes });
+    const found = results.filter(r => r.type === 'Plant Cross-Tomes');
+    expect(found).toHaveLength(1);
+    expect(found[0].severity).toBe('medium');
+    expect(found[0].title).toContain('Médaillon');
+  });
+
+  it('ne signale pas une amorce avec payoffEventId défini', () => {
+    const volumes = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const plants  = [makePlant('p1', 'Le Médaillon', { status: 'open', plantVolumeId: 'v1', payoffEventId: 'evt9' })];
+    const results = runDetection({ ...empty, plants, volumes });
+    expect(results.filter(r => r.type === 'Plant Cross-Tomes')).toHaveLength(0);
+  });
+
+  it('ne signale pas une amorce avec payoffChapterNum défini', () => {
+    const volumes = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const plants  = [makePlant('p1', 'Le Médaillon', { status: 'open', plantVolumeId: 'v1', payoffChapterNum: 10 })];
+    const results = runDetection({ ...empty, plants, volumes });
+    expect(results.filter(r => r.type === 'Plant Cross-Tomes')).toHaveLength(0);
+  });
+
+  it('ne signale pas une amorce sans plantVolumeId (projet mono-tome ou non assigné)', () => {
+    const volumes = [makeVolume('v1', 1), makeVolume('v2', 2)];
+    const plants  = [makePlant('p1', 'Le Médaillon', { status: 'open', plantVolumeId: null })];
+    const results = runDetection({ ...empty, plants, volumes });
+    expect(results.filter(r => r.type === 'Plant Cross-Tomes')).toHaveLength(0);
+  });
+
+  it('ne signale pas sans volumes', () => {
+    const plants = [makePlant('p1', 'Le Médaillon', { status: 'open', plantVolumeId: 'v1' })];
+    const results = runDetection({ ...empty, plants, volumes: [] });
+    expect(results.filter(r => r.type === 'Plant Cross-Tomes')).toHaveLength(0);
+  });
+});

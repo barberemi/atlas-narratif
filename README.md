@@ -136,8 +136,8 @@ Les voyages des personnages incluent les coordonnées cartographiques, les réf�
 
 1- Notion de flashback ? multivers ?
 
-2- Revoir la homepage (claude code + )
+2- Aide nouveau utilisateur (tuto) avec possibilité de relancer l'aide si besoin
 
-3- Aide nouveau utilisateur (tuto) avec possibilité de relancer l'aide si besoin
+3. Mode communautaire
 
-7- Multi livre
+4. Changement de BDD ?

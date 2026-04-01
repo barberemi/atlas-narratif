@@ -155,6 +155,59 @@ describe('insertions', () => {
   });
 });
 
+// ── Volumes ───────────────────────────────────────────────────────────────────
+
+describe('volumes', () => {
+  it('insère les volumes quand ils sont présents dans le payload', async () => {
+    const payload = {
+      ...VALID_PAYLOAD,
+      volumes: [
+        { id: 'v1', number: 1, title: 'Tome 1', description: null },
+        { id: 'v2', number: 2, title: 'Tome 2', description: 'Le retour' },
+      ],
+    };
+    const db = makeDb();
+    await importFromBackup(db, makeFile(payload));
+    const volInserts = db.query.mock.calls.filter(c => c[0].includes('INSERT INTO volumes'));
+    expect(volInserts).toHaveLength(2);
+    expect(volInserts[0][1]).toContain('Tome 1');
+    expect(volInserts[1][1]).toContain('Tome 2');
+  });
+
+  it('ne crée aucune requête volumes si le tableau est vide', async () => {
+    const db = makeDb();
+    await importFromBackup(db, makeFile(VALID_PAYLOAD));
+    const volInserts = db.query.mock.calls.filter(c => c[0].includes('INSERT INTO volumes'));
+    expect(volInserts).toHaveLength(0);
+  });
+
+  it('restaure volume_id sur les timeline_events', async () => {
+    const payload = {
+      ...VALID_PAYLOAD,
+      volumes: [{ id: 'v1', number: 1, title: 'Tome 1', description: null }],
+      timelineEvents: [{ id: 'e1', chapter_num: 1, chapter_title: 'Ch1', title: 'Evt', extra: {}, volume_id: 'v1' }],
+    };
+    const db = makeDb();
+    const newId = await importFromBackup(db, makeFile(payload));
+    const evtInsert = db.query.mock.calls.find(c => c[0].includes('INSERT INTO timeline_events'));
+    expect(evtInsert[1]).toContain('v1');
+    expect(evtInsert[1]).toContain(newId);
+  });
+
+  it('restaure volume_id sur character_arc_points', async () => {
+    const payload = {
+      ...VALID_PAYLOAD,
+      volumes: [{ id: 'v1', number: 1, title: 'Tome 1', description: null }],
+      characterArcAxes:   [{ id: 'ax1', character_id: 'c1', label: 'Courage', color: '#818cf8' }],
+      characterArcPoints: [{ axis_id: 'ax1', chapter_num: 13, value: 7, note: null, volume_id: 'v1' }],
+    };
+    const db = makeDb();
+    await importFromBackup(db, makeFile(payload));
+    const ptInsert = db.query.mock.calls.find(c => c[0].includes('INSERT INTO character_arc_points'));
+    expect(ptInsert[1]).toContain('v1');
+  });
+});
+
 // ── Callbacks onProgress ──────────────────────────────────────────────────────
 
 describe('onProgress', () => {
