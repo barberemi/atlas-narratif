@@ -57,25 +57,41 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
 
         {characters.map(({ journey, currentStep, color, name }) => {
           // Filtrer les étapes sans coordonnées pour le rendu SVG
-          const visited          = journey.slice(0, currentStep + 1);
+          const visited           = journey.slice(0, currentStep + 1);
           const visitedWithCoords = visited.filter(s => s.x != null && s.y != null);
+
+          // Découper le trajet en segments : normal vs flashback
+          const segments = [];
+          for (let i = 1; i < visitedWithCoords.length; i++) {
+            const prev    = visitedWithCoords[i - 1];
+            const curr    = visitedWithCoords[i];
+            const isFlash = prev.isFlashback || curr.isFlashback;
+            const last    = segments[segments.length - 1];
+            if (!last || last.isFlash !== isFlash) {
+              segments.push({ isFlash, points: [prev, curr] });
+            } else {
+              if (last.points[last.points.length - 1] !== prev) last.points.push(prev);
+              last.points.push(curr);
+            }
+          }
 
           return (
             <g key={name}>
-              {/* Ligne du trajet (uniquement les points localisés) */}
-              {visitedWithCoords.length > 1 && (
+              {/* Segments du trajet : normal (couleur personnage) ou flashback (ambre) */}
+              {segments.map((seg, si) => seg.points.length > 1 && (
                 <polyline
-                  points={visitedWithCoords.map(s => `${s.x},${s.y}`).join(' ')}
+                  key={si}
+                  points={seg.points.map(s => `${s.x},${s.y}`).join(' ')}
                   fill="none"
-                  stroke={color}
-                  strokeWidth="0.3"
-                  strokeDasharray="0.9,0.5"
-                  strokeOpacity="0.85"
+                  stroke={seg.isFlash ? '#d97706' : color}
+                  strokeWidth={seg.isFlash ? '0.22' : '0.3'}
+                  strokeDasharray={seg.isFlash ? '1.5,1.0' : '0.9,0.5'}
+                  strokeOpacity={seg.isFlash ? '0.55' : '0.85'}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   filter={`url(#glow-${name})`}
                 />
-              )}
+              ))}
               {/* Points des étapes passées (localisées) */}
               {visitedWithCoords.slice(0, -1).map((step, i) => (
                 <circle
@@ -83,8 +99,8 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
                   cx={step.x}
                   cy={step.y}
                   r="0.6"
-                  fill={color}
-                  fillOpacity="0.55"
+                  fill={step.isFlashback ? '#d97706' : color}
+                  fillOpacity={step.isFlashback ? '0.35' : '0.55'}
                   filter={`url(#glow-${name})`}
                 />
               ))}
@@ -165,9 +181,12 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
         const b   = parseInt(hex.slice(4, 6), 16);
         const rgb = `${r},${g},${b}`;
 
-        const current    = journey[currentStep];
-        const isMissing  = current?.isMissing || current?.x == null;
-        const isDead     = deathStepIndex !== -1 && currentStep >= deathStepIndex;
+        const current       = journey[currentStep];
+        const isMissing     = current?.isMissing || current?.x == null;
+        const isDead        = deathStepIndex !== -1 && currentStep >= deathStepIndex;
+        const isFlashback   = current?.isFlashback ?? false;
+        const dotColor      = isFlashback ? '#d97706' : color;
+        const dotRgb        = isFlashback ? '217,119,6' : rgb;
 
         return (
           <div
@@ -192,15 +211,26 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
               <>
                 <span
                   className="absolute rounded-full animate-ping"
-                  style={{ width: 32, height: 32, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: color, opacity: 0.3 }}
+                  style={{ width: 32, height: 32, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: dotColor, opacity: isFlashback ? 0.2 : 0.3 }}
                 />
                 <span
                   className="absolute rounded-full"
-                  style={{ width: 28, height: 28, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', border: `1.5px solid rgba(${rgb},0.45)` }}
+                  style={{ width: 28, height: 28, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', border: `1.5px solid rgba(${dotRgb},0.45)` }}
                 />
+                {/* Second anneau ambre visible uniquement en flashback */}
+                {isFlashback && (
+                  <span
+                    className="absolute rounded-full"
+                    style={{ width: 20, height: 20, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', border: '1.5px dashed rgba(217,119,6,0.7)' }}
+                  />
+                )}
                 <span
-                  className="relative block w-4 h-4 rounded-full border-2 border-white z-10"
-                  style={{ backgroundColor: color, boxShadow: `0 0 8px rgba(${rgb},0.9), 0 0 22px rgba(${rgb},0.5), 0 2px 6px rgba(0,0,0,0.7)` }}
+                  className="relative block w-4 h-4 rounded-full border-2 z-10"
+                  style={{
+                    backgroundColor: isFlashback ? 'rgba(120,77,15,0.4)' : dotColor,
+                    borderColor: isFlashback ? '#d97706' : 'white',
+                    boxShadow: `0 0 8px rgba(${dotRgb},0.9), 0 0 22px rgba(${dotRgb},0.5), 0 2px 6px rgba(0,0,0,0.7)`,
+                  }}
                 />
               </>
             )}
@@ -209,13 +239,13 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
               style={{
                 top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)',
                 backgroundColor: 'rgba(8,14,30,0.92)',
-                border: `1px solid ${isDead ? 'rgba(100,100,100,0.4)' : `rgba(${rgb},0.55)`}`,
+                border: `1px solid ${isDead ? 'rgba(100,100,100,0.4)' : `rgba(${dotRgb},0.55)`}`,
                 backdropFilter: 'blur(4px)',
                 textShadow: '0 1px 3px rgba(0,0,0,0.9)',
-                color: isDead ? '#64748b' : '#fff',
+                color: isDead ? '#64748b' : isFlashback ? '#fbbf24' : '#fff',
               }}
             >
-              {name}{isMissing && ' ·?'}
+              {isFlashback && '↩ '}{name}{isMissing && ' ·?'}
             </span>
           </div>
         );

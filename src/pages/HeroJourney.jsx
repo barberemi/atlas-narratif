@@ -262,7 +262,7 @@ export default function HeroJourney() {
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
 
       {/* Header */}
-      <header className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4 flex-wrap">
+      <header data-tour="heros-stages" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4 flex-wrap">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Voyage du <span style={{ color: '#3F51B5' }}>Héros</span>
@@ -377,7 +377,7 @@ export default function HeroJourney() {
             <p className="text-slate-600 font-serif italic">Chargement…</p>
           </div>
         ) : (
-          <div className="max-w-6xl mx-auto">
+          <div data-tour="heros-grid" className="max-w-6xl mx-auto">
 
             {/* Légende des phases */}
             <div className="flex items-center gap-4 mb-6 flex-wrap">

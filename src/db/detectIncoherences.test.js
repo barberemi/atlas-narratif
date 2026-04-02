@@ -15,8 +15,8 @@ function makeObj(id, name, extra = {}) {
   return { id, name, currentHolder: null, status: 'active', statusChangedAtChapter: null, ...extra };
 }
 
-function makeEvent(id, chapter, title, { locationId = null, entities = [], povCharacterId = null, threadIds = [] } = {}) {
-  return { id, chapter, chapterTitle: `Chapitre ${chapter}`, title, locationId, entities, povCharacterId, threadIds };
+function makeEvent(id, chapter, title, { locationId = null, entities = [], povCharacterId = null, threadIds = [], isFlashback = false, storyChapterRef = null } = {}) {
+  return { id, chapter, chapterTitle: `Chapitre ${chapter}`, title, locationId, entities, povCharacterId, threadIds, isFlashback, storyChapterRef };
 }
 
 function makePlant(id, label, extra = {}) {
@@ -492,5 +492,177 @@ describe('detectCrossVolumePlantWithoutPayoff', () => {
     const plants = [makePlant('p1', 'Le Médaillon', { status: 'open', plantVolumeId: 'v1' })];
     const results = runDetection({ ...empty, plants, volumes: [] });
     expect(results.filter(r => r.type === 'Plant Cross-Tomes')).toHaveLength(0);
+  });
+});
+
+// ── Flashbacks ────────────────────────────────────────────────────────────────
+
+describe('detectDeadCharacterReappearance — flashback valide', () => {
+  it('ne signale pas un mort qui apparaît dans un flashback diégétiquement AVANT sa mort', () => {
+    const characters = [makeChar('char_a', 'Alice', { deathEventId: 'evt_death' })];
+    const events = [
+      makeEvent('evt_death', 5, 'Mort d\'Alice', { entities: [withChar('char_a')] }),
+      // Flashback au ch.8 mais diégétiquement ch.2 (avant la mort) → valide
+      makeEvent('evt_flash', 8, 'Souvenir d\'Alice', {
+        entities:       [withChar('char_a')],
+        isFlashback:    true,
+        storyChapterRef: 2,
+      }),
+    ];
+    const results = runDetection({ ...empty, characters, events });
+    expect(results.filter(r => r.severity === 'critical')).toHaveLength(0);
+  });
+
+  it('signale un mort qui apparaît dans un flashback diégétiquement APRÈS sa mort', () => {
+    const characters = [makeChar('char_a', 'Alice', { deathEventId: 'evt_death' })];
+    const events = [
+      makeEvent('evt_death', 5, 'Mort d\'Alice', { entities: [withChar('char_a')] }),
+      // Flashback au ch.8 mais diégétiquement ch.9 (après la mort) → incohérence
+      makeEvent('evt_flash', 8, 'Fantôme d\'Alice', {
+        entities:        [withChar('char_a')],
+        isFlashback:     true,
+        storyChapterRef: 9,
+      }),
+    ];
+    const results = runDetection({ ...empty, characters, events });
+    const found = results.filter(r => r.type === 'Flashback Temporel' && r.severity === 'critical');
+    expect(found).toHaveLength(1);
+    expect(found[0].title).toContain('Alice');
+  });
+});
+
+describe('detectUsedInactiveObject — flashback valide', () => {
+  it('ne signale pas un objet détruit utilisé dans un flashback diégétiquement AVANT sa destruction', () => {
+    const objects = [makeObj('obj_1', 'Anneau', { status: 'destroyed', statusChangedAtChapter: 5 })];
+    const events = [
+      // Flashback au ch.8, diégétiquement ch.2 (avant destruction) → valide
+      makeEvent('evt_flash', 8, 'L\'Anneau intact', {
+        entities:        [withObj('obj_1')],
+        isFlashback:     true,
+        storyChapterRef: 2,
+      }),
+    ];
+    const results = runDetection({ ...empty, objects, events });
+    expect(results.filter(r => r.severity === 'high')).toHaveLength(0);
+  });
+});
+
+describe('detectFlashbackAfterDeath', () => {
+  it('signale un personnage dans un flashback postérieur à sa mort', () => {
+    const characters = [makeChar('char_a', 'Bob', { deathEventId: 'evt_death' })];
+    const events = [
+      makeEvent('evt_death', 4, 'Mort de Bob', { entities: [withChar('char_a')] }),
+      makeEvent('evt_flash', 10, 'Vision future', {
+        entities:        [withChar('char_a')],
+        isFlashback:     true,
+        storyChapterRef: 7,
+      }),
+    ];
+    const results = runDetection({ ...empty, characters, events });
+    const found = results.filter(r => r.type === 'Flashback Temporel' && r.severity === 'critical');
+    expect(found).toHaveLength(1);
+    expect(found[0].title).toContain('Bob');
+    expect(found[0].title).toContain('ch.4');
+  });
+
+  it('ne signale pas si storyChapterRef est absent (non ancré)', () => {
+    const characters = [makeChar('char_a', 'Bob', { deathEventId: 'evt_death' })];
+    const events = [
+      makeEvent('evt_death', 4, 'Mort de Bob', { entities: [withChar('char_a')] }),
+      makeEvent('evt_flash', 10, 'Vision', {
+        entities:    [withChar('char_a')],
+        isFlashback: true,
+        // pas de storyChapterRef → géré par detectFlashbackWithoutStoryRef, pas ce détecteur
+      }),
+    ];
+    const results = runDetection({ ...empty, characters, events });
+    expect(results.filter(r => r.type === 'Flashback Temporel' && r.severity === 'critical')).toHaveLength(0);
+  });
+
+  it('ne déclenche pas si l\'événement de mort n\'existe pas', () => {
+    const characters = [makeChar('char_a', 'Bob', { deathEventId: 'evt_ghost' })];
+    const events = [
+      makeEvent('evt_flash', 10, 'Vision', {
+        entities:        [withChar('char_a')],
+        isFlashback:     true,
+        storyChapterRef: 9,
+      }),
+    ];
+    const results = runDetection({ ...empty, characters, events });
+    expect(results.filter(r => r.type === 'Flashback Temporel')).toHaveLength(0);
+  });
+});
+
+describe('detectFlashbackObjectDestroyed', () => {
+  it('signale un objet détruit dans un flashback diégétiquement postérieur', () => {
+    const objects = [makeObj('obj_1', 'Épée', { status: 'destroyed', statusChangedAtChapter: 3 })];
+    const events = [
+      makeEvent('evt_flash', 10, 'L\'Épée ressurgit', {
+        entities:        [withObj('obj_1')],
+        isFlashback:     true,
+        storyChapterRef: 5,
+      }),
+    ];
+    const results = runDetection({ ...empty, objects, events });
+    const found = results.filter(r => r.type === 'Flashback Temporel' && r.severity === 'high');
+    expect(found).toHaveLength(1);
+    expect(found[0].title).toContain('Épée');
+    expect(found[0].title).toContain('détruit');
+  });
+
+  it('ne signale pas un objet dans un flashback diégétiquement antérieur à sa destruction', () => {
+    const objects = [makeObj('obj_1', 'Épée', { status: 'destroyed', statusChangedAtChapter: 6 })];
+    const events = [
+      makeEvent('evt_flash', 10, 'L\'Épée intacte', {
+        entities:        [withObj('obj_1')],
+        isFlashback:     true,
+        storyChapterRef: 2,
+      }),
+    ];
+    const results = runDetection({ ...empty, objects, events });
+    expect(results.filter(r => r.type === 'Flashback Temporel')).toHaveLength(0);
+  });
+
+  it('ne signale pas un objet actif', () => {
+    const objects = [makeObj('obj_1', 'Bouclier', { status: 'active' })];
+    const events = [
+      makeEvent('evt_flash', 5, 'Bouclier en action', {
+        entities:        [withObj('obj_1')],
+        isFlashback:     true,
+        storyChapterRef: 8,
+      }),
+    ];
+    const results = runDetection({ ...empty, objects, events });
+    expect(results.filter(r => r.type === 'Flashback Temporel')).toHaveLength(0);
+  });
+});
+
+describe('detectFlashbackWithoutStoryRef', () => {
+  it('signale un flashback sans position diégétique', () => {
+    const events = [
+      makeEvent('evt_flash', 6, 'Souvenir flou', { isFlashback: true }),
+    ];
+    const results = runDetection({ ...empty, events });
+    const found = results.filter(r => r.type === 'Flashback Non Ancré');
+    expect(found).toHaveLength(1);
+    expect(found[0].severity).toBe('low');
+    expect(found[0].title).toContain('Souvenir flou');
+  });
+
+  it('ne signale pas un flashback avec storyChapterRef défini', () => {
+    const events = [
+      makeEvent('evt_flash', 6, 'Souvenir précis', {
+        isFlashback:     true,
+        storyChapterRef: 2,
+      }),
+    ];
+    const results = runDetection({ ...empty, events });
+    expect(results.filter(r => r.type === 'Flashback Non Ancré')).toHaveLength(0);
+  });
+
+  it('ne signale pas un événement non-flashback sans storyChapterRef', () => {
+    const events = [makeEvent('evt1', 3, 'Scène normale')];
+    const results = runDetection({ ...empty, events });
+    expect(results.filter(r => r.type === 'Flashback Non Ancré')).toHaveLength(0);
   });
 });

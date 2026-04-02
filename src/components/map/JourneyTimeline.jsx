@@ -73,20 +73,40 @@ export default function JourneyTimeline({ journey, currentStep, onStepChange, co
           />
           {/* Pastilles */}
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
-            {journey.map((step, i) => (
-              <span
-                key={i}
-                className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: i <= currentStep ? color : 'rgba(255,255,255,0.35)',
-                  boxShadow:       i === currentStep ? `0 0 8px rgba(${rgb},0.9)` : 'none',
-                  transform:       i === currentStep ? 'scale(1.5)' : 'scale(1)',
-                  opacity:         step.isMissing ? 0.4 : 1,
-                  outline:         step.isMissing ? `1.5px dashed rgba(${rgb},0.5)` : 'none',
-                  outlineOffset:   '2px',
-                }}
-              />
-            ))}
+            {journey.map((step, i) => {
+              const isPast    = i <= currentStep;
+              const isCurrent = i === currentStep;
+              if (step.isFlashback) {
+                return (
+                  <span
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      backgroundColor: isCurrent ? 'rgba(217,119,6,0.3)' : 'transparent',
+                      boxShadow:       isCurrent ? '0 0 8px rgba(217,119,6,0.9)' : 'none',
+                      transform:       isCurrent ? 'scale(1.5)' : 'scale(1)',
+                      outline:         `1.5px ${isCurrent ? 'solid' : 'dashed'} rgba(217,119,6,${isPast ? '0.8' : '0.35'})`,
+                      outlineOffset:   '1px',
+                      opacity:         step.isMissing ? 0.4 : 1,
+                    }}
+                  />
+                );
+              }
+              return (
+                <span
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor: isPast ? color : 'rgba(255,255,255,0.35)',
+                    boxShadow:       isCurrent ? `0 0 8px rgba(${rgb},0.9)` : 'none',
+                    transform:       isCurrent ? 'scale(1.5)' : 'scale(1)',
+                    opacity:         step.isMissing ? 0.4 : 1,
+                    outline:         step.isMissing ? `1.5px dashed rgba(${rgb},0.5)` : 'none',
+                    outlineOffset:   '2px',
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
 
@@ -132,14 +152,23 @@ export default function JourneyTimeline({ journey, currentStep, onStepChange, co
                       className="rounded-xl px-3 py-2.5 flex flex-col gap-1.5 text-left"
                       style={{
                         backgroundColor: 'rgba(8,14,30,0.97)',
-                        border: `1px solid rgba(${rgb},0.35)`,
+                        border: step.isFlashback ? '1px solid rgba(217,119,6,0.5)' : `1px solid rgba(${rgb},0.35)`,
                         backdropFilter: 'blur(8px)',
                         boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(${rgb},0.1)`,
                       }}
                     >
+                      {/* Badge flashback */}
+                      {step.isFlashback && (
+                        <p className="text-[10px] font-bold" style={{ color: '#fbbf24' }}>
+                          ↩ Flashback
+                          {step.storyChapterRef != null && (
+                            <span style={{ opacity: 0.7 }}> · position diég. ch.{step.storyChapterRef}</span>
+                          )}
+                        </p>
+                      )}
                       {/* Chapitre */}
                       {step.chapitre && (
-                        <p className="text-[10px] font-mono" style={{ color: `rgba(${rgb},0.8)` }}>
+                        <p className="text-[10px] font-mono" style={{ color: step.isFlashback ? 'rgba(217,119,6,0.8)' : `rgba(${rgb},0.8)` }}>
                           {step.chapitre}
                         </p>
                       )}
@@ -181,16 +210,21 @@ export default function JourneyTimeline({ journey, currentStep, onStepChange, co
                   onClick={() => onStepChange(i)}
                   onMouseEnter={() => setHoveredIdx(i)}
                   onMouseLeave={() => setHoveredIdx(null)}
-                  className="text-center transition-all duration-200 leading-tight"
+                  className="text-center transition-all duration-200 leading-tight flex flex-col items-center gap-0"
                   style={{
                     fontSize:   '9px',
                     maxWidth:   '60px',
-                    color:      i === currentStep ? color : i < currentStep ? '#cbd5e1' : '#94a3b8',
+                    color:      step.isFlashback
+                      ? (i === currentStep ? '#fbbf24' : i < currentStep ? 'rgba(251,191,36,0.6)' : 'rgba(251,191,36,0.3)')
+                      : (i === currentStep ? color : i < currentStep ? '#cbd5e1' : '#94a3b8'),
                     fontWeight: i === currentStep ? 700 : 400,
                     opacity:    step.isMissing ? 0.5 : 1,
                   }}
                 >
                   {step.isMissing ? '?' : shortName}
+                  {step.isFlashback && (
+                    <span style={{ fontSize: '8px', color: 'rgba(217,119,6,0.7)', lineHeight: 1 }}>↩</span>
+                  )}
                 </button>
               </div>
             );

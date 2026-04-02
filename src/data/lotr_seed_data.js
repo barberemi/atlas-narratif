@@ -481,6 +481,18 @@ export const loreDB = {
         { id: 'char_pippin',  name: 'Peregrin Touque',     color: '#78716C' },
       ],
     },
+    {
+      id: 'loc_mordor',
+      name: 'Mordor — Montagne du Destin',
+      type: 'Territoire ennemi',
+      regime: 'Domaine de Sauron',
+      description:
+        'Terres noires à l\'est des Monts de l\'Ombre. Au cœur de Mordor se dresse l\'Orodruin, la Montagne du Destin, dont les feux permirent à Sauron de forger l\'Anneau Unique au Second Âge. Destination finale de la Quête.',
+      coordinates: { x: 88, y: 82 },
+      inhabitants: ['Orques', 'Nazgûl', 'Trolls'],
+      keyPlaces: ['La Montagne du Destin (Orodruin)', 'Barad-dûr', 'Les Cracks of Doom'],
+      visitedBy: [],
+    },
   ],
 
   // ── Objets ──────────────────────────────────────────────────────────────────
@@ -691,6 +703,20 @@ export const timelineDB = [
     ],
   },
   {
+    id: 'evt_flash_001',
+    chapter: 2,
+    chapterTitle: "L'Ombre du Passé",
+    title: "Sauron forge l'Anneau Unique en Mordor",
+    description: "Gandalf narre à Frodo comment Sauron, au Second Âge, forgea l'Anneau Unique dans les feux de l'Orodruin pour soumettre les porteurs des Anneaux de Pouvoir. Ce récit est un flashback enchâssé dans la révélation de Gandalf.",
+    locationId: 'loc_mordor',
+    isFlashback: true,
+    storyChapterRef: -60,
+    entities: [
+      { id: 'char_gandalf', entityType: 'character' },
+      { id: 'obj_one_ring', entityType: 'object'    },
+    ],
+  },
+  {
     id: 'evt_005',
     chapter: 2,
     chapterTitle: "L'Ombre du Passé",
@@ -855,6 +881,20 @@ export const timelineDB = [
       { id: 'char_elrond',   entityType: 'character' },
       { id: 'loc_rivendell', entityType: 'location'  },
       { id: 'obj_one_ring',  entityType: 'object'    },
+    ],
+  },
+  {
+    id: 'evt_flash_002',
+    chapter: 5,
+    chapterTitle: "Le Conseil d'Elrond",
+    title: "La Dernière Alliance — Isildur coupe le doigt de Sauron",
+    description: "Elrond raconte au Conseil comment la Dernière Alliance des Elfes et des Hommes vainquit Sauron, et comment Isildur refusa de détruire l'Anneau après la victoire, cédant à sa corruption. Ce souvenir hante Elrond depuis trois mille ans.",
+    locationId: 'loc_mordor',
+    isFlashback: true,
+    storyChapterRef: -50,
+    entities: [
+      { id: 'char_elrond',  entityType: 'character' },
+      { id: 'obj_one_ring', entityType: 'object'    },
     ],
   },
   {
@@ -1704,6 +1744,13 @@ export const eventExtrasDB = {
     sceneOutcome:  'mixed',
   },
   // ── Chapitre 2 ──
+  evt_flash_001: {
+    sceneOrder: 2, beatId: 'theme_stated',
+    threadIds: ['thr_quest'], povCharacterId: 'char_gandalf',
+    sceneGoal:     "Faire comprendre à Frodo l'origine et la puissance absolue de l'Anneau",
+    sceneConflict: "L'Anneau est une entité avec une volonté propre — même ce récit du passé est une mise en garde",
+    sceneOutcome:  'revelation',
+  },
   evt_004: {
     sceneOrder: 1, beatId: 'catalyst',
     threadIds: ['thr_quest'], povCharacterId: 'char_frodo',
@@ -1791,8 +1838,15 @@ export const eventExtrasDB = {
     sceneConflict: "Personne ne veut porter le fardeau ; tensions entre peuples ; Boromir réclame l'Anneau comme arme",
     sceneOutcome:  'revelation',
   },
-  evt_016: {
+  evt_flash_002: {
     sceneOrder: 4, beatId: null,
+    threadIds: ['thr_quest'], povCharacterId: 'char_elrond',
+    sceneGoal:     "Elrond rappeler au Conseil l'échec d'Isildur pour mettre en garde contre la tentation",
+    sceneConflict: "Ce souvenir prouve que même un roi vertueux a cédé à l'Anneau — personne n'est à l'abri",
+    sceneOutcome:  'revelation',
+  },
+  evt_016: {
+    sceneOrder: 5, beatId: null,
     threadIds: ['thr_quest', 'thr_boromir'], povCharacterId: 'char_frodo',
     sceneGoal:     "Constituer une escorte capable de protéger Frodo jusqu'en Mordor",
     sceneConflict: "Boromir intègre la Communauté avec des intentions contraires à la mission",

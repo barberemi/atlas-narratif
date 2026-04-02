@@ -440,7 +440,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
 
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="dashboard-stats" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Santé <span style={{ color: '#3F51B5' }}>Narrative</span>
@@ -471,7 +471,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
 
           {/* ── Inventaire narratif ── */}
           <SectionTitle>Vue d'ensemble</SectionTitle>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+          <div data-tour="dashboard-inventory" className="grid grid-cols-3 md:grid-cols-6 gap-3">
             <StatCard icon="👤" value={inventory.characters} label="Personnages" />
             <StatCard icon="📍" value={inventory.locations}  label="Lieux" />
             <StatCard icon="⚔️" value={inventory.objects}    label="Objets" />
@@ -490,6 +490,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
             <>
               <SectionTitle>Vue Série</SectionTitle>
               <div
+                data-tour="dashboard-series"
                 className="rounded-2xl overflow-hidden"
                 style={{ border: '1px solid rgba(255,255,255,0.07)' }}
               >

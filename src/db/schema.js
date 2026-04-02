@@ -246,6 +246,8 @@ CREATE TABLE IF NOT EXISTS narrative_threads (
   PRIMARY KEY (id, project_id)
 );
 ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS thread_ids TEXT DEFAULT '[]';
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS is_flashback BOOLEAN DEFAULT false;
+ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS story_chapter_ref INTEGER;
 
 -- ── Arc des personnages ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS character_arc_axes (
@@ -287,7 +289,7 @@ ALTER TABLE hero_journey_entries ADD COLUMN IF NOT EXISTS volume_id TEXT;
  * Version du schéma — à incrémenter à chaque modification de SQL_SCHEMA
  * pour forcer la ré-application des migrations sur les DBs existantes.
  */
-export const SCHEMA_VERSION = '2026-04-01.1';
+export const SCHEMA_VERSION = '2026-04-02.1';
 
 /** Applique le schéma sur la connexion PGlite donnée (idempotent).
  *  Si la version stockée dans _meta correspond à SCHEMA_VERSION,

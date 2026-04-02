@@ -31,7 +31,12 @@ export default function EventCard({ event, isHighlighted, isDimmed, onEntityClic
   const accentColor = outcome ? outcome.color : beat ? beat.color : 'rgba(63,81,181,0.5)';
 
   return (
-    <DarkCard dimmed={isDimmed} onClick={() => setExpanded(p => !p)} className="group">
+    <DarkCard
+      dimmed={isDimmed}
+      onClick={() => setExpanded(p => !p)}
+      className="group"
+      style={event.isFlashback ? { borderColor: 'rgba(217,119,6,0.4)', backgroundColor: 'rgba(120,77,15,0.07)' } : undefined}
+    >
       <div className="h-0.5" style={{ backgroundColor: accentColor }} />
 
       <div className="p-4 space-y-3">
@@ -53,8 +58,24 @@ export default function EventCard({ event, isHighlighted, isDimmed, onEntityClic
         </div>
 
         {/* ── Tags groupés par type ── */}
-        {(beat || povMeta || linkedPlants.length > 0) && (
+        {(event.isFlashback || beat || povMeta || linkedPlants.length > 0) && (
           <div className="space-y-1">
+
+            {/* Flashback */}
+            {event.isFlashback && (
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-700 w-7 flex-shrink-0">↩</span>
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: 'rgba(217,119,6,0.12)', color: '#fbbf24', border: '1px solid rgba(217,119,6,0.3)' }}
+                >
+                  Flashback
+                  {event.storyChapterRef != null && (
+                    <span style={{ opacity: 0.7 }}>· ch.{event.storyChapterRef}</span>
+                  )}
+                </span>
+              </div>
+            )}
             {/* STC */}
             {beat && (
               <div className="flex items-center gap-2">

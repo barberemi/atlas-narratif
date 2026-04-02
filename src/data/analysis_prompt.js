@@ -146,12 +146,16 @@ Regroupe les personnages par appartenance : races, factions, ordres, familles, g
 \`\`\`
 {
   id: string,
-  chapter: number,               // numéro du chapitre (local au tome)
-  chapterTitle: string,                  // titre du chapitre réel (ne pas laisser vide)
+  chapter: number,               // numéro du chapitre NARRATIF (où la scène est racontée)
+  chapterTitle: string,          // titre du chapitre réel (ne pas laisser vide)
   title: string,
   description: string | null,    // résumé en 1-3 phrases
   locationId: string | null,
   volumeId: string | null,       // ID du tome (volumes[].id), null si mono-tome
+  isFlashback: boolean,          // true si la scène est un flashback (racontée hors ordre chronologique)
+  storyChapterRef: number | null, // position diégétique approximative : chapitre "réel" dans l'histoire
+                                 // (ex: -10 = très avant le début, 3 = entre ch.3 et ch.4 de l'histoire)
+                                 // null si isFlashback est false ou si la position est indéterminée
   entities: [
     { id: string, entityType: "character" | "location" | "object" }
   ]

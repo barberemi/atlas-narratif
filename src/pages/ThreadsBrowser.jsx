@@ -334,7 +334,7 @@ export default function ThreadsBrowser() {
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
 
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="threads-list" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Fils <span style={{ color: '#3F51B5' }}>Narratifs</span>
@@ -353,7 +353,7 @@ export default function ThreadsBrowser() {
       </header>
 
       {/* ── Contenu ── */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
+      <div data-tour="threads-cards" className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
         <div className="flex flex-col gap-4 max-w-3xl mx-auto">
 
           {/* Formulaire création */}
