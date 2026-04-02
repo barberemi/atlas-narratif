@@ -98,6 +98,18 @@ export const DETECTOR_CATALOG = [
     severity:    'medium',
     description: "Une amorce narrative posée dans un tome n'a aucun payoff dans toute la série.",
   },
+  {
+    type:        'Flashback Temporel',
+    icon:        '↩',
+    severity:    'critical',
+    description: "Un personnage ou un objet apparaît dans un flashback dont la position diégétique est postérieure à sa mort ou à sa destruction.",
+  },
+  {
+    type:        'Flashback Non Ancré',
+    icon:        '↩',
+    severity:    'low',
+    description: "Un flashback ne possède pas de position diégétique définie, rendant toute vérification de cohérence temporelle impossible.",
+  },
 ];
 
 // ── Détecteurs existants ──────────────────────────────────────────────────────
@@ -213,13 +225,15 @@ function detectDeadCharacterReappearance(characters, events) {
     const deathIdx = eventOrderMap.get(char.deathEventId);
     if (deathIdx === undefined) continue;
 
+    const deathEvent  = events[deathIdx];
+
     const afterDeath = events.filter((evt, idx) =>
       idx > deathIdx &&
-      evt.entities.some(e => e.entityType === 'character' && e.id === char.id)
+      evt.entities.some(e => e.entityType === 'character' && e.id === char.id) &&
+      // Un flashback diégétiquement antérieur à la mort est valide — ne pas le flaguer
+      !(evt.isFlashback && evt.storyChapterRef != null && evt.storyChapterRef < deathEvent.chapter)
     );
     if (!afterDeath.length) continue;
-
-    const deathEvent  = events[deathIdx];
     const eventTitles = afterDeath.map(e => `"${e.title}" (ch.${e.chapter})`).join(', ');
     results.push({
       id:          makeId('dead_reappear', char.id),
@@ -245,7 +259,9 @@ function detectUsedInactiveObject(objects, events) {
   for (const obj of inactive) {
     const afterChange = events.filter(evt =>
       evt.chapter > obj.statusChangedAtChapter &&
-      evt.entities.some(e => e.entityType === 'object' && e.id === obj.id)
+      evt.entities.some(e => e.entityType === 'object' && e.id === obj.id) &&
+      // Un flashback diégétiquement antérieur à la destruction est valide
+      !(evt.isFlashback && evt.storyChapterRef != null && evt.storyChapterRef < obj.statusChangedAtChapter)
     );
     if (!afterChange.length) continue;
     const label      = obj.status === 'lost' ? 'perdu' : 'détruit';
@@ -537,6 +553,93 @@ function detectCrossVolumePlantWithoutPayoff(plants, volumes) {
     });
 }
 
+// ── Détecteurs flashback ──────────────────────────────────────────────────────
+
+/**
+ * Personnage dans un flashback dont la position diégétique est après sa mort.
+ */
+function detectFlashbackAfterDeath(characters, events) {
+  const results = [];
+  const dead = characters.filter(c => c.deathEventId != null);
+  const eventChapterMap = new Map(events.map(e => [e.id, e.chapter]));
+
+  for (const char of dead) {
+    const deathChapter = eventChapterMap.get(char.deathEventId);
+    if (deathChapter == null) continue;
+
+    const bad = events.filter(evt =>
+      evt.isFlashback &&
+      evt.storyChapterRef != null &&
+      evt.storyChapterRef > deathChapter &&
+      evt.entities.some(e => e.entityType === 'character' && e.id === char.id)
+    );
+    if (!bad.length) continue;
+
+    const titles = bad.map(e => `"${e.title}" (narré ch.${e.chapter}, diég. ch.${e.storyChapterRef})`).join(', ');
+    results.push({
+      id:             makeId('flash_death', char.id),
+      type:           'Flashback Temporel',
+      severity:       'critical',
+      title:          `${char.name} dans un flashback après sa mort (ch.${deathChapter})`,
+      explanation:    `${char.name} meurt au chapitre ${deathChapter} mais apparaît dans des flashbacks dont la position diégétique est postérieure : ${titles}.`,
+      resolved:       false,
+      resolutionNote: null,
+      links:          [{ entityId: char.id, entityType: 'character', label: char.name }],
+    });
+  }
+  return results;
+}
+
+/**
+ * Objet perdu/détruit présent dans un flashback diégétiquement postérieur à sa destruction.
+ */
+function detectFlashbackObjectDestroyed(objects, events) {
+  const results = [];
+  const inactive = objects.filter(o => o.status !== 'active' && o.statusChangedAtChapter != null);
+
+  for (const obj of inactive) {
+    const bad = events.filter(evt =>
+      evt.isFlashback &&
+      evt.storyChapterRef != null &&
+      evt.storyChapterRef >= obj.statusChangedAtChapter &&
+      evt.entities.some(e => e.entityType === 'object' && e.id === obj.id)
+    );
+    if (!bad.length) continue;
+
+    const label = obj.status === 'lost' ? 'perdu' : 'détruit';
+    const titles = bad.map(e => `"${e.title}" (diég. ch.${e.storyChapterRef})`).join(', ');
+    results.push({
+      id:             makeId('flash_obj', obj.id),
+      type:           'Flashback Temporel',
+      severity:       'high',
+      title:          `"${obj.name}" dans un flashback après avoir été ${label} (ch.${obj.statusChangedAtChapter})`,
+      explanation:    `L'objet "${obj.name}" est ${label} depuis le chapitre ${obj.statusChangedAtChapter} mais apparaît dans des flashbacks diégétiquement postérieurs : ${titles}.`,
+      resolved:       false,
+      resolutionNote: null,
+      links:          [{ entityId: obj.id, entityType: 'object', label: obj.name }],
+    });
+  }
+  return results;
+}
+
+/**
+ * Flashback sans position diégétique (storyChapterRef null).
+ */
+function detectFlashbackWithoutStoryRef(events) {
+  return events
+    .filter(e => e.isFlashback && e.storyChapterRef == null)
+    .map(e => ({
+      id:             makeId('flash_noref', e.id),
+      type:           'Flashback Non Ancré',
+      severity:       'low',
+      title:          `Flashback sans position diégétique : "${e.title}"`,
+      explanation:    `L'événement "${e.title}" (ch.${e.chapter}) est marqué comme flashback mais n'a pas de position diégétique définie. Sans cette information, la cohérence temporelle ne peut pas être vérifiée.`,
+      resolved:       false,
+      resolutionNote: null,
+      links:          [],
+    }));
+}
+
 // ── Entrée principale ─────────────────────────────────────────────────────────
 
 /**
@@ -574,5 +677,9 @@ export function runDetection({
     ...detectCrossVolumeDeadCharacter(characters, events, volumes),
     ...detectCrossVolumeInactiveObject(objects, events, volumes),
     ...detectCrossVolumePlantWithoutPayoff(plants, volumes),
+    // flashbacks
+    ...detectFlashbackAfterDeath(characters, events),
+    ...detectFlashbackObjectDestroyed(objects, events),
+    ...detectFlashbackWithoutStoryRef(events),
   ];
 }

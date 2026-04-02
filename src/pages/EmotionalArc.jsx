@@ -201,7 +201,7 @@ export default function EmotionalArc() {
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
 
       {/* Header */}
-      <header className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-6">
+      <header data-tour="arc-chart" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-6">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Arc <span style={{ color }}>Émotionnel</span>
@@ -255,6 +255,7 @@ export default function EmotionalArc() {
 
             {/* ── Graphe SVG ── */}
             <div
+              data-tour="arc-graph"
               ref={setContainerEl}
               className="relative rounded-2xl overflow-hidden"
               style={{ height: svgH, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}

@@ -183,8 +183,9 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
     await db.query(
       `INSERT INTO timeline_events
          (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
-          pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome, volume_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+          pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome, volume_id,
+          is_flashback, story_chapter_ref)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
       [
         evt.id, projectId,
         evt.chapter, evt.chapterTitle ?? '',
@@ -198,6 +199,8 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
         ex.sceneConflict ?? null,
         ex.sceneOutcome  ?? null,
         evt.volumeId     ?? null,
+        evt.isFlashback  ?? false,
+        evt.storyChapterRef ?? null,
       ],
     );
     for (const entity of (evt.entities ?? [])) {

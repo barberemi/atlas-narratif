@@ -3,7 +3,11 @@ import { buildAnalysisPrompt } from './data/analysis_prompt';
 import { importFromAiOutput } from './db/importFromAiOutput';
 import { seedLotr } from './db/seed.lotr';
 import { createEmptyProject }       from './db/createEmptyProject';
-import { Routes, Route, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import GuidedTour   from './components/tour/GuidedTour';
+import WelcomeModal from './components/tour/WelcomeModal';
+import { shouldShowWelcome } from './components/tour/tourUtils';
+import TourPageButton from './components/tour/TourPageButton';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
 const LoreBrowser          = lazy(() => import('./components/lore/LoreBrowser'));
 const EntityGraph          = lazy(() => import('./components/graph/EntityGraph'));
@@ -128,8 +132,8 @@ function HomePage() {
   const navigate = useNavigate();
 
   // ── Flux d'onboarding ─────────────────────────────────────────────────────
-  const [flow,   setFlow]   = useState(null); // null | 'construire' | 'analyser'
-  const [method, setMethod] = useState(null); // 'savethecat' | null
+  const [flow,        setFlow]        = useState(null); // null | 'construire' | 'analyser'
+  const [method,      setMethod]      = useState(null); // 'savethecat' | null
 
   // ── Flux construire ───────────────────────────────────────────────────────
   const [buildName,   setBuildName]   = useState('');
@@ -264,6 +268,7 @@ function HomePage() {
   ];
 
   return (
+    <>
     <div className="h-full overflow-y-auto no-scrollbar">
       <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-10">
 
@@ -283,7 +288,7 @@ function HomePage() {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
               Par où commencer ?
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div data-tour="home-cards" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Carte construire */}
               <button
                 onClick={() => setFlow('construire')}
@@ -777,6 +782,8 @@ function HomePage() {
 
       </div>
     </div>
+
+    </>
   );
 }
 
@@ -790,9 +797,18 @@ function RequireProject({ children }) {
 
 // ── Layout principal ──────────────────────────────────────────────────────────
 function AppLayout() {
-  const { projects, loading } = useProject();
+  const { projects, loading, projectId } = useProject();
   const hasProjects = !loading && projects.length > 0;
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchOpen,   setSearchOpen]   = useState(false);
+  const [showWelcome,  setShowWelcome]  = useState(false);
+  const location = useLocation();
+
+  // Affiche le modal de bienvenue quand on arrive sur /dashboard avec le projet LOTR
+  useEffect(() => {
+    if (location.pathname === '/dashboard' && projectId === 'lotr' && shouldShowWelcome()) {
+      setShowWelcome(true);
+    }
+  }, [location.pathname, projectId]);
 
   // Listener ⌘K / Ctrl+K
   useEffect(() => {
@@ -829,6 +845,9 @@ function AppLayout() {
         </Suspense>
       </div>
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
+      <GuidedTour />
+      <TourPageButton />
+      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
     </div>
   );
 }

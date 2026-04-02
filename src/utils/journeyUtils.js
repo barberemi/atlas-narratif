@@ -31,17 +31,19 @@ export function computeAutoJourneys(events, locations, characters) {
         .filter(Boolean);
 
       return {
-        etape:      i + 1,
-        eventId:    evt.id,
-        chapterNum: evt.chapter,
-        chapitre:   `Ch.${evt.chapter} — ${evt.chapterTitle}`,
-        lieu:       loc?.name ?? (evt.locationId ? 'Lieu non localisé' : 'Aucun lieu précisé'),
-        sous_lieu:  evt.title,
-        action:     evt.description ?? '',
+        etape:           i + 1,
+        eventId:         evt.id,
+        chapterNum:      evt.chapter,
+        chapitre:        `Ch.${evt.chapter} — ${evt.chapterTitle}`,
+        lieu:            loc?.name ?? (evt.locationId ? 'Lieu non localisé' : 'Aucun lieu précisé'),
+        sous_lieu:       evt.title,
+        action:          evt.description ?? '',
         allies,
-        x:          hasCoords ? loc.coordinates.x : null,
-        y:          hasCoords ? loc.coordinates.y : null,
+        x:               hasCoords ? loc.coordinates.x : null,
+        y:               hasCoords ? loc.coordinates.y : null,
         isMissing,
+        isFlashback:     evt.isFlashback ?? false,
+        storyChapterRef: evt.storyChapterRef ?? null,
       };
     });
 

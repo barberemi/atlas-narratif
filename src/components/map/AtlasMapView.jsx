@@ -327,7 +327,7 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
     <div className="w-full bg-[#0B1621] text-slate-200">
 
       {/* ── Header sticky ── */}
-      <header className="sticky top-0 z-20 flex items-center px-6 py-3 border-b border-white/10 bg-[#0B1621]">
+      <header data-tour="map-canvas" className="sticky top-0 z-20 flex items-center px-6 py-3 border-b border-white/10 bg-[#0B1621]">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Carte <span style={{ color: '#3F51B5' }}>Interactive</span>
@@ -590,6 +590,7 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
       {/* ── Footer : timelines ── */}
       {timelineKeys.length > 0 && (
         <footer
+          data-tour="map-journeys"
           className="px-6 pt-8 pb-4 flex flex-col gap-4"
           style={{ backgroundColor: 'rgba(5,10,18,0.97)' }}
         >

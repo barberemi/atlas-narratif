@@ -130,7 +130,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
 
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="inc-list" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Détecteur d'<span style={{ color: '#EF4444' }}>Incohérences</span>
@@ -167,10 +167,10 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
           <button
             onClick={() => setShowCatalog(true)}
             className="text-xs px-2.5 py-1.5 rounded-lg font-bold transition-all duration-150"
-            style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#475569', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
             title="Voir tous les types d'incohérences détectables"
           >
-            ? Guide
+            Catalogue
           </button>
           <span className="text-xs font-mono text-slate-600">
             {resolvedCount} résolu{resolvedCount !== 1 ? 's' : ''} / {incoherences.length}
@@ -179,7 +179,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
       </header>
 
       {/* ── Filtres ── */}
-      <div className="px-6 pt-4 pb-3 flex flex-col gap-3 flex-shrink-0">
+      <div data-tour="inc-severity" className="px-6 pt-4 pb-3 flex flex-col gap-3 flex-shrink-0">
 
         {/* Sévérité */}
         <nav className="flex gap-1 border-b border-white/10">

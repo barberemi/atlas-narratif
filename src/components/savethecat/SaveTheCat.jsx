@@ -203,7 +203,7 @@ export default function SaveTheCat() {
     <div className="h-full w-full overflow-y-auto no-scrollbar flex flex-col bg-[#0B1621] text-slate-200">
 
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="stc-beats" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Save the <span style={{ color: '#f97316' }}>Cat</span>
@@ -266,10 +266,11 @@ export default function SaveTheCat() {
       </div>
 
       {/* ── Frise(s) ── */}
+      <div>
       {isSeriesMode && volumeData ? (
         <div className="px-10 pt-5 pb-2 flex-shrink-0 space-y-6">
-          {volumeData.map(vd => (
-            <div key={vd.volume.id}>
+          {volumeData.map((vd, idx) => (
+            <div key={vd.volume.id} data-tour={idx === 0 ? 'stc-frise' : undefined}>
               <p
                 className="text-[11px] font-bold uppercase tracking-widest mb-3"
                 style={{ color: 'rgba(129,140,248,0.6)' }}
@@ -287,7 +288,7 @@ export default function SaveTheCat() {
           ))}
         </div>
       ) : (
-        <div className="px-10 pt-6 pb-2 flex-shrink-0">
+        <div data-tour="stc-frise" className="px-10 pt-6 pb-2 flex-shrink-0">
           <Frise
             chapters={timelineChapters}
             beatEventMap={beatEventMap}
@@ -297,10 +298,11 @@ export default function SaveTheCat() {
           />
         </div>
       )}
+      </div>
 
 
       {/* ── Panels bas ── */}
-      <div className="flex flex-col md:flex-row border-t border-white/5">
+      <div data-tour="stc-panels" className="flex flex-col md:flex-row border-t border-white/5">
 
         {/* Alertes */}
         <div className="flex-1 p-5 md:border-r border-white/5">

@@ -49,6 +49,7 @@ export default function TimelineBrowser() {
   const [showStc,       setShowStc]       = useState(false);
   const [noteOpen,      setNoteOpen]      = useState(null); // chapter number
   const [viewMode,      setViewMode]      = useState('chapters'); // 'chapters' | 'series'
+  const [timeOrder,     setTimeOrder]     = useState('narrative'); // 'narrative' | 'chronological'
 
   // Revenir en vue chapitres si on sélectionne un tome
   const handleSelectVolume = (id) => {
@@ -102,6 +103,21 @@ export default function TimelineBrowser() {
     return chs.sort((a, b) => a.number - b.number);
   }, [events]);
 
+  // Chapitres en vue chronologique — flashbacks repositionnés à leur story_chapter_ref
+  const chronoChapters = useMemo(() => {
+    if (!events) return [];
+    const seen = new Map();
+    for (const e of events) {
+      const num = (e.isFlashback && e.storyChapterRef != null) ? e.storyChapterRef : e.chapter;
+      if (!seen.has(num)) {
+        seen.set(num, { number: num, title: num < 1 ? 'Ère ancienne' : e.chapterTitle, isPreStory: num < 1 });
+      }
+    }
+    return [...seen.values()].sort((a, b) => a.number - b.number);
+  }, [events]);
+
+  const displayChapters = timeOrder === 'chronological' ? chronoChapters : chapters;
+
   useEffect(() => { updateArrows(); }, [chapters, updateArrows]);
 
   useEffect(() => {
@@ -136,7 +152,7 @@ export default function TimelineBrowser() {
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
 
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="timeline-events" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Timeline <span style={{ color: '#3F51B5' }}>Narrative</span>
@@ -167,6 +183,18 @@ export default function TimelineBrowser() {
             </div>
           )}
           {viewMode === 'chapters' && (<>
+            <button
+              onClick={() => setTimeOrder(v => v === 'narrative' ? 'chronological' : 'narrative')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              style={{
+                backgroundColor: timeOrder === 'chronological' ? 'rgba(217,119,6,0.15)' : 'rgba(255,255,255,0.04)',
+                color:  timeOrder === 'chronological' ? '#fbbf24' : '#475569',
+                border: `1px solid ${timeOrder === 'chronological' ? 'rgba(217,119,6,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              }}
+              title={timeOrder === 'narrative' ? 'Passer en ordre chronologique (repositionne les flashbacks)' : 'Revenir à l\'ordre narratif'}
+            >
+              ↩ {timeOrder === 'chronological' ? 'Chrono' : 'Chrono'}
+            </button>
             <button
               onClick={() => setShowArc(v => !v)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
@@ -215,6 +243,7 @@ export default function TimelineBrowser() {
       {/* ── Vue chapitres : filtres + timeline horizontale ── */}
       {viewMode === 'chapters' && <>
       <div
+        data-tour="timeline-filters"
         className="flex flex-col border-b border-white/5 flex-shrink-0"
         style={{ background: 'rgba(0,0,0,0.2)' }}
       >
@@ -416,13 +445,18 @@ export default function TimelineBrowser() {
           onMouseUp={dragScroll.onMouseUp}
           onMouseLeave={dragScroll.onMouseLeave}
         >
-        <div style={{ minWidth: `${chapters.length * 290}px` }}>
+        <div style={{ minWidth: `${displayChapters.length * 290}px` }}>
           {showArc && (
             <ArcStrip chapters={chapters} arcPoints={arcPoints ?? []} />
           )}
         <div className="flex">
-          {chapters.map(({ number, title }) => {
-            const chEvts = events.filter(e => e.chapter === number);
+          {displayChapters.map(({ number, title, isPreStory }) => {
+            const chEvts = timeOrder === 'chronological'
+              ? events.filter(e => {
+                  const effNum = (e.isFlashback && e.storyChapterRef != null) ? e.storyChapterRef : e.chapter;
+                  return effNum === number;
+                })
+              : events.filter(e => e.chapter === number);
             return (
               <div
                 key={number}
@@ -432,18 +466,21 @@ export default function TimelineBrowser() {
                 {/* En-tête chapitre */}
                 <div
                   className="flex-shrink-0 px-4 py-3 border-b border-white/10"
-                  style={{ background: 'rgba(63,81,181,0.06)' }}
+                  style={{ background: isPreStory ? 'rgba(120,77,15,0.1)' : 'rgba(63,81,181,0.06)' }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">
-                        Chapitre {number}
+                      <p className="text-xs font-mono uppercase tracking-widest" style={{ color: isPreStory ? '#d97706' : '#64748b' }}>
+                        {isPreStory ? `Ère ancienne · ~${number}` : `Chapitre ${number}`}
                       </p>
                       <p className="text-sm font-bold text-slate-300 leading-snug mt-1">
                         {title}
                       </p>
                       <p className="text-xs text-slate-600 mt-1">
                         {chEvts.length} événement{chEvts.length > 1 ? 's' : ''}
+                        {timeOrder === 'chronological' && chEvts.some(e => e.isFlashback) && (
+                          <span style={{ color: '#d97706' }}> · ↩ flashback</span>
+                        )}
                       </p>
                     </div>
                     <button
@@ -498,6 +535,11 @@ export default function TimelineBrowser() {
                       : null;
                     return (
                       <div key={evt.id} className="relative">
+                        {timeOrder === 'chronological' && evt.isFlashback && (
+                          <p className="text-[9px] font-bold uppercase tracking-wider mb-1 px-1" style={{ color: '#d97706' }}>
+                            ↩ narré au ch. {evt.chapter}
+                          </p>
+                        )}
                         {!activeVolumeId && evtVolume && (
                           <span
                             className="absolute top-1 right-1 z-10 text-[9px] px-1.5 py-0.5 rounded font-bold pointer-events-none"

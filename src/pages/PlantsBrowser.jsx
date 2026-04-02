@@ -486,7 +486,7 @@ export default function PlantsBrowser() {
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
 
       {/* Header */}
-      <header className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4">
+      <header data-tour="plants-list" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Amorces <span style={{ color: '#3F51B5' }}>Narratives</span>
@@ -521,7 +521,7 @@ export default function PlantsBrowser() {
       </header>
 
       {/* Contenu */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6">
+      <div data-tour="plants-content" className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6">
         <div className="flex flex-col gap-5 max-w-4xl mx-auto">
 
           {/* Formulaire ajout */}

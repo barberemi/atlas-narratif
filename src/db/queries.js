@@ -195,9 +195,11 @@ export async function getTimelineEvents(db, projectId = 'lotr') {
       sceneConflict:  r.scene_conflict ?? null,
       sceneOutcome:   r.scene_outcome  ?? null,
       entities:       entitiesByEvent[r.id] ?? [],
-      threadIds:      parseJsonField(r.thread_ids ?? '[]', []),
-      source:         r.source ?? 'import',
-      volumeId:       r.volume_id ?? null,
+      threadIds:        parseJsonField(r.thread_ids ?? '[]', []),
+      source:           r.source ?? 'import',
+      volumeId:         r.volume_id ?? null,
+      isFlashback:      r.is_flashback ?? false,
+      storyChapterRef:  r.story_chapter_ref ?? null,
     };
   });
 }
@@ -343,9 +345,9 @@ export async function insertTimelineEvent(db, data, projectId) {
   const sceneOrder = data.sceneOrder ?? ((maxRows[0]?.max_order ?? 0) + 1);
   await db.query(
     `INSERT INTO timeline_events
-       (id, project_id, chapter_num, chapter_title, title, description, location_id, extra, pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome, thread_ids, volume_id, source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'manual')`,
-    [id, projectId, data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, sceneOrder, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null],
+       (id, project_id, chapter_num, chapter_title, title, description, location_id, extra, pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome, thread_ids, volume_id, is_flashback, story_chapter_ref, source)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'manual')`,
+    [id, projectId, data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, sceneOrder, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null, data.isFlashback ?? false, data.storyChapterRef ?? null],
   );
   for (const e of (data.entities ?? [])) {
     await db.query(
@@ -365,9 +367,10 @@ export async function updateTimelineEvent(db, eventId, data, projectId) {
        pov_character_id=$7, scene_order=$8,
        scene_goal=$9, scene_conflict=$10, scene_outcome=$11,
        thread_ids=$12, volume_id=$13,
+       is_flashback=$14, story_chapter_ref=$15,
        ${SOURCE_CASE}
-     WHERE id=$14 AND project_id=$15`,
-    [data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, data.sceneOrder ?? 0, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null, eventId, projectId],
+     WHERE id=$16 AND project_id=$17`,
+    [data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, data.sceneOrder ?? 0, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null, data.isFlashback ?? false, data.storyChapterRef ?? null, eventId, projectId],
   );
   await db.query(`DELETE FROM event_entities WHERE event_id=$1 AND project_id=$2`, [eventId, projectId]);
   for (const e of (data.entities ?? [])) {

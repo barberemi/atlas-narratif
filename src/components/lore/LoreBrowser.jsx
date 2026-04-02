@@ -85,7 +85,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
   return (
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="lore-tabs" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
             Lore <span style={{ color: '#3F51B5' }}>Browser</span>
@@ -159,7 +159,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
       </div>
 
       {/* ── Grille ── */}
-      <main className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
+      <main data-tour="lore-grid" className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-slate-600">
             <p className="text-4xl mb-4">◯</p>

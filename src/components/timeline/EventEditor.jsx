@@ -148,9 +148,11 @@ function initData(event, chapters, defaultBeatId) {
       sceneGoal:      event.sceneGoal     ?? '',
       sceneConflict:  event.sceneConflict ?? '',
       sceneOutcome:   event.sceneOutcome  ?? null,
-      characters:     (event.entities ?? []).filter(e => e.entityType === 'character'),
-      objects:        (event.entities ?? []).filter(e => e.entityType === 'object'),
-      threadIds:      event.threadIds ?? [],
+      characters:      (event.entities ?? []).filter(e => e.entityType === 'character'),
+      objects:         (event.entities ?? []).filter(e => e.entityType === 'object'),
+      threadIds:       event.threadIds ?? [],
+      isFlashback:     event.isFlashback ?? false,
+      storyChapterRef: event.storyChapterRef ?? null,
     };
   }
   const maxChapter = chapters.length > 0 ? Math.max(...chapters.map(c => c.number)) : 0;
@@ -166,9 +168,11 @@ function initData(event, chapters, defaultBeatId) {
     sceneGoal:      '',
     sceneConflict:  '',
     sceneOutcome:   null,
-    characters:     [],
-    objects:        [],
-    threadIds:      [],
+    characters:      [],
+    objects:         [],
+    threadIds:       [],
+    isFlashback:     false,
+    storyChapterRef: null,
   };
 }
 
@@ -248,9 +252,11 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
       sceneGoal:      data.sceneGoal?.trim()     || null,
       sceneConflict:  data.sceneConflict?.trim() || null,
       sceneOutcome:   data.sceneOutcome ?? null,
-      entities:       buildEntities(),
-      threadIds:      data.threadIds ?? [],
-      volumeId:       isEdit ? (event.volumeId ?? null) : (useVolumeStore.getState().activeVolumeId ?? null),
+      entities:        buildEntities(),
+      threadIds:       data.threadIds ?? [],
+      volumeId:        isEdit ? (event.volumeId ?? null) : (useVolumeStore.getState().activeVolumeId ?? null),
+      isFlashback:     data.isFlashback ?? false,
+      storyChapterRef: data.isFlashback ? (data.storyChapterRef ?? null) : null,
     });
     onClose();
   };
@@ -489,6 +495,58 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
             getName={getObjName}
             getId={o => o.id}
           />
+
+          {/* ── Flashback ── */}
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{
+              backgroundColor: data.isFlashback ? 'rgba(217,119,6,0.06)' : 'rgba(255,255,255,0.02)',
+              border: `1px solid ${data.isFlashback ? 'rgba(217,119,6,0.25)' : 'rgba(255,255,255,0.07)'}`,
+              transition: 'all 0.2s',
+            }}
+          >
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <span
+                className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                style={{
+                  backgroundColor: data.isFlashback ? 'rgba(217,119,6,0.8)' : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${data.isFlashback ? 'rgba(217,119,6,0.9)' : 'rgba(255,255,255,0.15)'}`,
+                }}
+              >
+                {data.isFlashback && <span className="text-white text-[9px] font-black">✓</span>}
+              </span>
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={data.isFlashback}
+                onChange={e => set('isFlashback', e.target.checked)}
+              />
+              <div>
+                <p className="text-xs font-bold" style={{ color: data.isFlashback ? '#fbbf24' : '#64748b' }}>
+                  ↩ Flashback
+                </p>
+                <p className="text-[10px] text-slate-600 font-serif italic">
+                  Cette scène est narrée hors de l'ordre chronologique
+                </p>
+              </div>
+            </label>
+
+            {data.isFlashback && (
+              <div style={{ width: 140 }}>
+                <Field label="Position diégétique (ch. ~)">
+                  <Input
+                    type="number"
+                    value={data.storyChapterRef ?? ''}
+                    onChange={e => set('storyChapterRef', e.target.value === '' ? null : parseInt(e.target.value, 10))}
+                    placeholder="ex : -5, 1, 3…"
+                  />
+                </Field>
+                <p className="text-[9px] text-slate-600 mt-1 font-serif italic">
+                  Quand ça se passe vraiment dans l'histoire. Négatif = avant le début.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Fils narratifs */}
           {allThreads.length > 0 && (
