@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { usePlantStore } from '../stores/usePlantStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useLoreStore } from '../stores/useLoreStore';
@@ -429,7 +429,8 @@ function PlantCard({ plant, onEdit, onDelete, volumes }) {
 // ── Page principale ───────────────────────────────────────────────────────────
 
 export default function PlantsBrowser() {
-  const plants      = usePlantStore(s => s.plants)    ?? [];
+  const _plants     = usePlantStore(s => s.plants);
+  const plants      = useMemo(() => _plants ?? [], [_plants]);
   const addPlant    = usePlantStore(s => s.addPlant);
   const editPlant   = usePlantStore(s => s.editPlant);
   const removePlant = usePlantStore(s => s.removePlant);
@@ -437,7 +438,8 @@ export default function PlantsBrowser() {
   const volumes        = useVolumeStore(s => s.volumes) ?? [];
   const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
 
-  const events   = useTimelineStore(s => s.events) ?? [];
+  const _events  = useTimelineStore(s => s.events);
+  const events   = useMemo(() => _events ?? [], [_events]);
   const chapters = useMemo(() => extractChapters(events), [events]);
 
   const [view,         setView]         = useState('list');
@@ -470,7 +472,6 @@ export default function PlantsBrowser() {
     return true;
   }), [visiblePlants, statusFilter, typeFilter]);
 
-  const editingPlant = editingId ? plants.find(p => p.id === editingId) : null;
 
   const handleSaveNew = async (data) => {
     await addPlant(data);

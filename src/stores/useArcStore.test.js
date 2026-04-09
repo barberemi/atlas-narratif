@@ -1,14 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('../db/queries', () => ({
+vi.mock('../api/client', () => ({
   getArcPoints:   vi.fn(),
   upsertArcPoint: vi.fn(),
 }));
 
 import { useArcStore } from './useArcStore';
-import { getArcPoints, upsertArcPoint } from '../db/queries';
+import { getArcPoints, upsertArcPoint } from '../api/client';
 
-const DB         = { __mock: 'db' };
 const PROJECT_ID = 'proj_test';
 
 beforeEach(() => {
@@ -23,16 +22,15 @@ describe('load()', () => {
     const pts = [{ chapterNumber: 1, intensity: 7, note: null }];
     vi.mocked(getArcPoints).mockResolvedValue(pts);
 
-    await useArcStore.getState().load(DB, PROJECT_ID);
+    await useArcStore.getState().load(PROJECT_ID);
 
-    expect(getArcPoints).toHaveBeenCalledWith(DB, PROJECT_ID);
+    expect(getArcPoints).toHaveBeenCalledWith(PROJECT_ID);
     expect(useArcStore.getState().points).toEqual(pts);
   });
 
-  it('stocke _db et _projectId', async () => {
+  it('stocke _projectId', async () => {
     vi.mocked(getArcPoints).mockResolvedValue([]);
-    await useArcStore.getState().load(DB, PROJECT_ID);
-    expect(useArcStore.getState()._db).toBe(DB);
+    await useArcStore.getState().load(PROJECT_ID);
     expect(useArcStore.getState()._projectId).toBe(PROJECT_ID);
   });
 });
@@ -46,17 +44,17 @@ describe('setIntensity()', () => {
       { chapterNumber: 2, intensity: 5, note: null },
     ]);
     vi.mocked(upsertArcPoint).mockResolvedValue();
-    await useArcStore.getState().load(DB, PROJECT_ID);
+    await useArcStore.getState().load(PROJECT_ID);
   });
 
   it('met à jour un point existant (optimiste)', async () => {
     await useArcStore.getState().setIntensity(1, 8);
     const pts = useArcStore.getState().points;
     expect(pts.find(p => p.chapterNumber === 1)?.intensity).toBe(8);
-    expect(pts.find(p => p.chapterNumber === 2)?.intensity).toBe(5); // inchangé
+    expect(pts.find(p => p.chapterNumber === 2)?.intensity).toBe(5);
   });
 
-  it('ajoute un nouveau point si le chapitre n\'existe pas encore', async () => {
+  it("ajoute un nouveau point si le chapitre n'existe pas encore", async () => {
     await useArcStore.getState().setIntensity(5, 6);
     const pts = useArcStore.getState().points;
     expect(pts).toHaveLength(3);
@@ -65,16 +63,16 @@ describe('setIntensity()', () => {
 
   it('persiste en DB via upsertArcPoint', async () => {
     await useArcStore.getState().setIntensity(1, 9);
-    expect(upsertArcPoint).toHaveBeenCalledWith(DB, PROJECT_ID, 1, 9);
+    expect(upsertArcPoint).toHaveBeenCalledWith(PROJECT_ID, 1, 9);
   });
 
-  it('ne fait rien si _db est null', async () => {
+  it('ne fait rien si _projectId est null', async () => {
     useArcStore.getState().reset();
     await useArcStore.getState().setIntensity(1, 7);
     expect(upsertArcPoint).not.toHaveBeenCalled();
   });
 
-  it('ne modifie pas les autres points lors d\'un update', async () => {
+  it("ne modifie pas les autres points lors d'un update", async () => {
     const before = useArcStore.getState().points.find(p => p.chapterNumber === 2);
     await useArcStore.getState().setIntensity(1, 10);
     const after = useArcStore.getState().points.find(p => p.chapterNumber === 2);
@@ -85,13 +83,12 @@ describe('setIntensity()', () => {
 // ── reset() ───────────────────────────────────────────────────────────────────
 
 describe('reset()', () => {
-  it('remet points, _db et _projectId à null', async () => {
+  it('remet points et _projectId à null', async () => {
     vi.mocked(getArcPoints).mockResolvedValue([{ chapterNumber: 1, intensity: 5 }]);
-    await useArcStore.getState().load(DB, PROJECT_ID);
+    await useArcStore.getState().load(PROJECT_ID);
     useArcStore.getState().reset();
     const s = useArcStore.getState();
     expect(s.points).toBeNull();
-    expect(s._db).toBeNull();
     expect(s._projectId).toBeNull();
   });
 });

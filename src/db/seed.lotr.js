@@ -90,3 +90,9 @@ export async function seedLotr(db, { onProgress } = {}) {
   const mapImage = await fetchMapImageBase64();
   await seedProject(db, { ...META, mapImage }, DATA, { onProgress });
 }
+
+/** Retourne le payload {meta, data} sans insérer en DB — pour l'API serveur. */
+export async function buildLotrSeedPayload() {
+  const mapImage = await fetchMapImageBase64();
+  return { meta: { ...META, mapImage }, data: DATA };
+}

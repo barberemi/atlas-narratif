@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useCharacterArcStore } from '../../stores/useCharacterArcStore';
 import { useLoreStore } from '../../stores/useLoreStore';
-import { CHART_H, PAD, yToSvg, xToSvg, smoothPath } from '../../utils/arcUtils';
+import { CHART_H, PAD, xToSvg, smoothPath } from '../../utils/arcUtils';
 
 // ── Composant chart multi-lignes ──────────────────────────────────────────────
 
@@ -29,7 +29,7 @@ function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick, 
         const step = Math.max(1, Math.ceil(chapters.length / 16));
         return chapters
           .filter((_, i) => i % step === 0 || i === chapters.length - 1)
-          .map((ch, _, arr) => {
+          .map((ch) => {
             const idx = chapters.indexOf(ch);
             const x = xToSvg(idx, chapters.length, chartW);
             return (

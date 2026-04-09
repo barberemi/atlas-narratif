@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import Button from '../ui/Button';
 import { useProject } from '../../db/ProjectContext';
 import ProjectPicker from './ProjectPicker';
 import VolumePicker  from './VolumePicker';
 import NavDropdown from './NavDropdown';
 import { NAV_GROUPS } from './navConfig';
+import { authClient } from '../../lib/authClient';
+import { useTourStore } from '../../stores/useTourStore';
+import { TOUR_STEPS } from '../../data/tour_steps';
 
 export default function TopNav({ onSearchOpen }) {
   const location  = useLocation();
   const navigate  = useNavigate();
-  const { projects, loading } = useProject();
+  const { projects, loading, projectId } = useProject();
   const hasProjects  = !loading && projects.length > 0;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  const startAtRoute = useTourStore(s => s.startAtRoute);
+  const tourActive   = useTourStore(s => s.active);
+  const hasPageTour  = !tourActive && !!projectId && TOUR_STEPS.some(s => s.route === location.pathname && s.dataKey !== null);
 
   const allMobileItems = NAV_GROUPS.flatMap(g => g.items.map(i => ({ ...i, group: g.label })));
 
@@ -47,7 +56,7 @@ export default function TopNav({ onSearchOpen }) {
         {hasProjects && (
           <button
             onClick={onSearchOpen}
-            className="hidden md:flex items-center gap-2 ml-auto text-xs px-3 py-1.5 rounded-lg transition-all duration-150 flex-shrink-0"
+            className="hidden md:flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg transition-all duration-150 flex-shrink-0"
             style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#475569', border: '1px solid rgba(255,255,255,0.08)' }}
             onMouseEnter={e => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
@@ -59,10 +68,41 @@ export default function TopNav({ onSearchOpen }) {
           </button>
         )}
 
+        {/* ── Bouton tour ── */}
+        {hasPageTour && (
+          <Button
+            onClick={() => startAtRoute(location.pathname)}
+            size="sm" variant="ghost" title="Revoir la présentation de cette page"
+            className="ml-auto flex-shrink-0"
+          >
+            ?
+          </Button>
+        )}
+
+        {/* ── Bouton utilisateur ── */}
+        {user ? (
+          <div className={`flex items-center gap-2 flex-shrink-0 ${!hasPageTour ? 'ml-auto' : ''}`}>
+            <span className="hidden md:block text-xs text-slate-500 truncate max-w-[140px]">{user.name || user.email}</span>
+            <Button
+              onClick={async () => { await authClient.signOut(); navigate('/'); }}
+              size="sm" variant="ghost" title="Se déconnecter"
+            >
+              Déconnexion
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => navigate('/login')}
+            size="sm" variant="secondary" className={`flex-shrink-0 ${!hasPageTour ? 'ml-auto' : ''}`}
+          >
+            Connexion
+          </Button>
+        )}
+
         {hasProjects && (
           <button
             onClick={() => setMobileOpen(v => !v)}
-            className="md:hidden ml-auto flex flex-col gap-1.5 p-2 rounded-lg transition-all"
+            className="md:hidden flex flex-col gap-1.5 p-2 rounded-lg transition-all"
             style={{ color: mobileOpen ? '#818cf8' : '#475569' }}
             aria-label="Menu"
           >

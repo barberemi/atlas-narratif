@@ -13,9 +13,9 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
   const groups = useLoreStore(s => s.groups) ?? [];
   const charGroups = groups.filter(g => (g.members ?? []).some(m => m.characterId === char.id));
 
-  const allEvents = useTimelineStore(s => s.events) ?? [];
+  const allEvents = useTimelineStore(s => s.events);
   const flashbacks = useMemo(() =>
-    allEvents
+    (allEvents ?? [])
       .filter(e => e.isFlashback && e.entities.some(en => en.entityType === 'character' && en.id === char.id))
       .sort((a, b) => {
         const ra = a.storyChapterRef ?? Infinity;

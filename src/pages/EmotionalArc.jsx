@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useDb } from '../db/DbContext';
 import { useProject } from '../db/ProjectContext';
 import { useArcStore } from '../stores/useArcStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
@@ -29,11 +28,11 @@ const TABS = [
 
 export default function EmotionalArc() {
   const [tab, setTab] = useState('global');
-  const db        = useDb();
   const { projectId } = useProject();
 
   const filterByVolume  = useVolumeFilter();
-  const volumes         = useVolumeStore(s => s.volumes)      ?? [];
+  const _volumes        = useVolumeStore(s => s.volumes);
+  const volumes         = useMemo(() => _volumes ?? [], [_volumes]);
   const activeVolumeId  = useVolumeStore(s => s.activeVolumeId);
 
   const pointsRaw    = useArcStore(s => s.points);
@@ -50,11 +49,11 @@ export default function EmotionalArc() {
   const stcChapters = filterByVolume(stcChaptersRaw ?? []);
 
   useEffect(() => {
-    if (!db || !projectId) return;
-    loadArc(db, projectId);
-    if (!eventsRaw)       loadTimeline(db, projectId);
-    if (!stcChaptersRaw)  loadStc(db, projectId);
-  }, [db, projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!projectId) return;
+    loadArc(projectId);
+    if (!eventsRaw)       loadTimeline(projectId);
+    if (!stcChaptersRaw)  loadStc(projectId);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Chapitres depuis la timeline ──────────────────────────────────────────
   const chapters = useMemo(() => extractChapters(events), [events]);

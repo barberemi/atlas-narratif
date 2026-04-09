@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /map
+Disallow: /lore
+Disallow: /relations
+Disallow: /timeline
+Disallow: /dashboard
+Disallow: /incoherences
+Disallow: /savethecat
+Disallow: /arc
+Disallow: /plants
+Disallow: /threads
+Disallow: /heros
+Disallow: /review
+
+Sitemap: https://DOMAIN_PLACEHOLDER/sitemap.xml

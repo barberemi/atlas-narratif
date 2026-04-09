@@ -6,10 +6,10 @@ import { importFromBackup } from './importFromBackup';
 const VALID_PAYLOAD = {
   version: '1.0',
   project: { id: 'proj_original', name: 'Mon Roman', description: 'Desc', mapImage: null },
-  characters:         [{ id: 'c1', name: 'Alice', aliases: [], affiliations: [], traits: [], extra: {} }],
-  locations:          [{ id: 'l1', name: 'Paris',  coordinates: null, extra: {} }],
-  objects:            [{ id: 'o1', name: 'Épée',   extra: {} }],
-  timelineEvents:     [{ id: 'e1', chapter_num: 1, chapter_title: 'Ch1', title: 'Evt', extra: {} }],
+  characters:         [{ id: 'c1', name: 'Alice', aliases: [], affiliations: [], traits: [], race: null, role: null, death_event_id: null }],
+  locations:          [{ id: 'l1', name: 'Paris',  coordinates: null, inhabitants: [], visited_by: [], key_places: [] }],
+  objects:            [{ id: 'o1', name: 'Épée',   powers: [], holders: [], status: 'active' }],
+  timelineEvents:     [{ id: 'e1', chapter_num: 1, chapter_title: 'Ch1', title: 'Evt', beat_id: null }],
   eventEntities:      [{ event_id: 'e1', entity_id: 'c1', entity_type: 'character' }],
   incoherences:       [],
   incoherenceLinks:   [],
@@ -185,7 +185,7 @@ describe('volumes', () => {
     const payload = {
       ...VALID_PAYLOAD,
       volumes: [{ id: 'v1', number: 1, title: 'Tome 1', description: null }],
-      timelineEvents: [{ id: 'e1', chapter_num: 1, chapter_title: 'Ch1', title: 'Evt', extra: {}, volume_id: 'v1' }],
+      timelineEvents: [{ id: 'e1', chapter_num: 1, chapter_title: 'Ch1', title: 'Evt', beat_id: null, volume_id: 'v1' }],
     };
     const db = makeDb();
     const newId = await importFromBackup(db, makeFile(payload));

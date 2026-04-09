@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('../db/queries', () => ({
+vi.mock('../api/client', () => ({
   getIncoherences:           vi.fn(),
   setIncoherenceResolved:    vi.fn(),
   setResolutionNote:         vi.fn(),
@@ -19,10 +19,9 @@ import {
   setResolutionNote,
   deleteScanIncoherences,
   insertScannedIncoherence,
-} from '../db/queries';
+} from '../api/client';
 import { runDetection } from '../db/detectIncoherences';
 
-const DB         = { __mock: 'db' };
 const PROJECT_ID = 'proj_test';
 
 const SAMPLE_INC = [
@@ -40,14 +39,13 @@ beforeEach(() => {
 describe('load()', () => {
   it('charge les incohérences depuis la DB', async () => {
     vi.mocked(getIncoherences).mockResolvedValue(SAMPLE_INC);
-    await useIncStore.getState().load(DB, PROJECT_ID);
+    await useIncStore.getState().load(PROJECT_ID);
     expect(useIncStore.getState().data).toEqual(SAMPLE_INC);
   });
 
-  it('stocke _db et _projectId', async () => {
+  it('stocke _projectId', async () => {
     vi.mocked(getIncoherences).mockResolvedValue([]);
-    await useIncStore.getState().load(DB, PROJECT_ID);
-    expect(useIncStore.getState()._db).toBe(DB);
+    await useIncStore.getState().load(PROJECT_ID);
     expect(useIncStore.getState()._projectId).toBe(PROJECT_ID);
   });
 });
@@ -58,7 +56,7 @@ describe('toggle()', () => {
   beforeEach(async () => {
     vi.mocked(getIncoherences).mockResolvedValue(SAMPLE_INC);
     vi.mocked(setIncoherenceResolved).mockResolvedValue();
-    await useIncStore.getState().load(DB, PROJECT_ID);
+    await useIncStore.getState().load(PROJECT_ID);
   });
 
   it('inverse resolved immédiatement (optimiste)', async () => {
@@ -73,7 +71,7 @@ describe('toggle()', () => {
 
   it('persiste via setIncoherenceResolved', async () => {
     await useIncStore.getState().toggle('inc_1');
-    expect(setIncoherenceResolved).toHaveBeenCalledWith(DB, 'inc_1', true, PROJECT_ID);
+    expect(setIncoherenceResolved).toHaveBeenCalledWith('inc_1', true, PROJECT_ID);
   });
 
   it('ne modifie pas les autres incohérences', async () => {
@@ -93,7 +91,7 @@ describe('setNote()', () => {
   beforeEach(async () => {
     vi.mocked(getIncoherences).mockResolvedValue(SAMPLE_INC);
     vi.mocked(setResolutionNote).mockResolvedValue();
-    await useIncStore.getState().load(DB, PROJECT_ID);
+    await useIncStore.getState().load(PROJECT_ID);
   });
 
   it('met à jour resolutionNote immédiatement (optimiste)', async () => {
@@ -104,7 +102,7 @@ describe('setNote()', () => {
 
   it('persiste via setResolutionNote', async () => {
     await useIncStore.getState().setNote('inc_1', 'Note');
-    expect(setResolutionNote).toHaveBeenCalledWith(DB, 'inc_1', 'Note', PROJECT_ID);
+    expect(setResolutionNote).toHaveBeenCalledWith('inc_1', 'Note', PROJECT_ID);
   });
 
   it('ne modifie pas les autres incohérences', async () => {
@@ -125,12 +123,12 @@ describe('rescan()', () => {
 
   beforeEach(async () => {
     vi.mocked(getIncoherences)
-      .mockResolvedValueOnce(SAMPLE_INC)  // load initial
-      .mockResolvedValueOnce(REFRESHED);   // reload après rescan
+      .mockResolvedValueOnce(SAMPLE_INC)
+      .mockResolvedValueOnce(REFRESHED);
     vi.mocked(runDetection).mockReturnValue(DETECTED);
     vi.mocked(deleteScanIncoherences).mockResolvedValue();
     vi.mocked(insertScannedIncoherence).mockResolvedValue();
-    await useIncStore.getState().load(DB, PROJECT_ID);
+    await useIncStore.getState().load(PROJECT_ID);
   });
 
   it('appelle runDetection avec les données lore', async () => {
@@ -140,14 +138,14 @@ describe('rescan()', () => {
 
   it('supprime les anciennes incohérences scannées', async () => {
     await useIncStore.getState().rescan(LORE);
-    expect(deleteScanIncoherences).toHaveBeenCalledWith(DB, PROJECT_ID);
+    expect(deleteScanIncoherences).toHaveBeenCalledWith(PROJECT_ID);
   });
 
   it('insère chaque nouvelle incohérence détectée', async () => {
     await useIncStore.getState().rescan(LORE);
     expect(insertScannedIncoherence).toHaveBeenCalledTimes(DETECTED.length);
-    expect(insertScannedIncoherence).toHaveBeenCalledWith(DB, DETECTED[0], PROJECT_ID);
-    expect(insertScannedIncoherence).toHaveBeenCalledWith(DB, DETECTED[1], PROJECT_ID);
+    expect(insertScannedIncoherence).toHaveBeenCalledWith(DETECTED[0], PROJECT_ID);
+    expect(insertScannedIncoherence).toHaveBeenCalledWith(DETECTED[1], PROJECT_ID);
   });
 
   it('recharge les données après insertion', async () => {
@@ -166,12 +164,12 @@ describe('rescan()', () => {
   });
 
   it('remet scanning à false même en cas d\'erreur', async () => {
-    vi.mocked(deleteScanIncoherences).mockRejectedValue(new Error('DB error'));
+    vi.mocked(deleteScanIncoherences).mockRejectedValue(new Error('API error'));
     await expect(useIncStore.getState().rescan(LORE)).rejects.toThrow();
     expect(useIncStore.getState().scanning).toBe(false);
   });
 
-  it('ne fait rien si _db est null', async () => {
+  it('ne fait rien si _projectId est null', async () => {
     useIncStore.getState().reset();
     await useIncStore.getState().rescan(LORE);
     expect(runDetection).not.toHaveBeenCalled();
@@ -183,13 +181,12 @@ describe('rescan()', () => {
 describe('reset()', () => {
   it('restaure l\'état initial complet', async () => {
     vi.mocked(getIncoherences).mockResolvedValue(SAMPLE_INC);
-    await useIncStore.getState().load(DB, PROJECT_ID);
+    await useIncStore.getState().load(PROJECT_ID);
     useIncStore.getState().reset();
     const s = useIncStore.getState();
     expect(s.data).toBeNull();
     expect(s.scanning).toBe(false);
     expect(s.lastScanCount).toBeNull();
-    expect(s._db).toBeNull();
     expect(s._projectId).toBeNull();
   });
 });

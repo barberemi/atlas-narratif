@@ -1,18 +1,17 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useDb } from './DbContext';
-import { getProjects } from './queries';
-import { useLoreStore }     from '../stores/useLoreStore';
-import { useIncStore }      from '../stores/useIncStore';
-import { useTimelineStore } from '../stores/useTimelineStore';
-import { useStcStore }      from '../stores/useStcStore';
-import { useMapStore }          from '../stores/useMapStore';
-import { useNotesStore }       from '../stores/useNotesStore';
-import { useCharacterArcStore } from '../stores/useCharacterArcStore';
-import { usePlantStore }        from '../stores/usePlantStore';
-import { useThreadStore }      from '../stores/useThreadStore';
-import { useArcStore }         from '../stores/useArcStore';
-import { useHeroJourneyStore } from '../stores/useHeroJourneyStore';
-import { useVolumeStore }      from '../stores/useVolumeStore';
+import { getProjects } from '../api/client';
+import { useLoreStore }          from '../stores/useLoreStore';
+import { useIncStore }           from '../stores/useIncStore';
+import { useTimelineStore }      from '../stores/useTimelineStore';
+import { useStcStore }           from '../stores/useStcStore';
+import { useMapStore }           from '../stores/useMapStore';
+import { useNotesStore }         from '../stores/useNotesStore';
+import { useCharacterArcStore }  from '../stores/useCharacterArcStore';
+import { usePlantStore }         from '../stores/usePlantStore';
+import { useThreadStore }        from '../stores/useThreadStore';
+import { useArcStore }           from '../stores/useArcStore';
+import { useHeroJourneyStore }   from '../stores/useHeroJourneyStore';
+import { useVolumeStore }        from '../stores/useVolumeStore';
 
 const LS_KEY = 'atlas_active_project';
 
@@ -20,29 +19,27 @@ const ProjectCtx = createContext(null);
 
 /** Charge toutes les données pour un projet donné.
  *  - Critique : lore, volumes, timeline, stc, incoherences → bloquant
- *  - Secondaire : map, arc, plants, threads, heroJourney, characterArc → différé (arrière-plan)
+ *  - Secondaire : map, arc, plants, threads, heroJourney, characterArc → différé
  */
-async function loadAll(db, projectId) {
+async function loadAll(projectId) {
   await Promise.all([
-    useLoreStore.getState().load(db, projectId),
-    useVolumeStore.getState().load(db, projectId),
-    useTimelineStore.getState().load(db, projectId),
-    useStcStore.getState().load(db, projectId),
-    useIncStore.getState().load(db, projectId),
+    useLoreStore.getState().load(projectId),
+    useVolumeStore.getState().load(projectId),
+    useTimelineStore.getState().load(projectId),
+    useStcStore.getState().load(projectId),
+    useIncStore.getState().load(projectId),
   ]);
 
-  // Stores secondaires : démarrés en arrière-plan sans bloquer l'affichage
   Promise.all([
-    useMapStore.getState().load(db, projectId),
-    useArcStore.getState().load(db, projectId),
-    usePlantStore.getState().load(db, projectId),
-    useThreadStore.getState().load(db, projectId),
-    useHeroJourneyStore.getState().load(db, projectId),
-    useCharacterArcStore.getState().load(db, projectId),
+    useMapStore.getState().load(projectId),
+    useArcStore.getState().load(projectId),
+    usePlantStore.getState().load(projectId),
+    useThreadStore.getState().load(projectId),
+    useHeroJourneyStore.getState().load(projectId),
+    useCharacterArcStore.getState().load(projectId),
   ]);
 }
 
-/** Vide tous les stores avant de charger un autre projet. */
 function resetAll() {
   useLoreStore.getState().reset();
   useIncStore.getState().reset();
@@ -59,21 +56,18 @@ function resetAll() {
 }
 
 export function ProjectProvider({ children }) {
-  const db = useDb();
-  const [projects,      setProjects]     = useState([]);
-  const [projectId,     setProjectIdRaw] = useState(null);
-  const [loading,       setLoading]      = useState(true);
+  const [projects,  setProjects]    = useState([]);
+  const [projectId, setProjectIdRaw] = useState(null);
+  const [loading,   setLoading]     = useState(true);
 
   const reloadProjects = useCallback(async () => {
-    if (!db) return;
-    const list = await getProjects(db);
+    const list = await getProjects();
     setProjects(list);
+    setProjectIdRaw(prev => list.find(p => p.id === prev) ? prev : (list[0]?.id ?? null));
     return list;
-  }, [db]);
+  }, []);
 
-  // Premier chargement : récupère les projets et choisit le projet actif
   useEffect(() => {
-    if (!db) return;
     reloadProjects().then(list => {
       if (list?.length) {
         const saved  = localStorage.getItem(LS_KEY);
@@ -82,14 +76,13 @@ export function ProjectProvider({ children }) {
       }
       setLoading(false);
     });
-  }, [db, reloadProjects]);
+  }, [reloadProjects]);
 
-  // Quand le projet actif change → vide les stores et recharge tout
   useEffect(() => {
-    if (!db || !projectId) return;
+    if (!projectId) return;
     resetAll();
-    loadAll(db, projectId);
-  }, [db, projectId]);
+    loadAll(projectId);
+  }, [projectId]);
 
   const setProjectId = (id) => {
     localStorage.setItem(LS_KEY, id);

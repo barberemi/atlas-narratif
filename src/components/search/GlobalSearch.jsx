@@ -76,8 +76,8 @@ export default function GlobalSearch({ onClose }) {
   const characters = useLoreStore(s => s.characters);
   const locations  = useLoreStore(s => s.locations);
   const objects    = useLoreStore(s => s.objects);
-  const events     = useTimelineStore(s => s.events) ?? [];
-  const incos      = useIncStore(s => s.data) ?? [];
+  const events     = useTimelineStore(s => s.events);
+  const incos      = useIncStore(s => s.data);
 
   const [query,       setQuery]       = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -135,7 +135,7 @@ export default function GlobalSearch({ onClose }) {
       }
     });
 
-    events.forEach(e => {
+    (events ?? []).forEach(e => {
       if (match(e.title) || match(e.description) || match(e.chapterTitle)) {
         out.push({
           id:    e.id,
@@ -148,7 +148,7 @@ export default function GlobalSearch({ onClose }) {
       }
     });
 
-    incos.forEach(i => {
+    (incos ?? []).forEach(i => {
       if (match(i.title) || match(i.explanation) || match(i.type)) {
         out.push({
           id:         i.id,

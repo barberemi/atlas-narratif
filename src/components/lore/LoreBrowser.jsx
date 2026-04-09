@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLoreStore } from '../../stores/useLoreStore';
 import EntityEditor    from './EntityEditor';
 import GroupEditor     from './GroupEditor';
@@ -23,7 +23,7 @@ const TAB_DEFS = [
  *   initialSearch   — texte de recherche pré-rempli (ex: "Aragorn")
  *   onEntityClick   — (id) => void — ouvre le graphe de l'entité
  */
-export default function LoreBrowser({ initialTab = 'characters', initialSearch = '', onEntityClick, onCharacterClick }) {
+export default function LoreBrowser({ initialTab = 'characters', initialSearch = '', onEntityClick }) {
   const { characters, locations, objects, groups, ready } = useLoreStore();
   const [activeTab,    setActiveTab]    = useState(initialTab);
   const [search,       setSearch]       = useState(initialSearch);

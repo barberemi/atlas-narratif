@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#0B1621"/>
+  <text x="600" y="270" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="72" fill="#FFFFFF">Atlas<tspan fill="#3F51B5">Narratif</tspan></text>
+  <text x="600" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="32" fill="#94A3B8">Architecte de cohérence narrative</text>
+  <line x1="450" y1="380" x2="750" y2="380" stroke="#3F51B5" stroke-width="2" stroke-opacity="0.6"/>
+  <text x="600" y="430" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="300" font-size="22" fill="#64748B">Timeline · Carte · Personnages · Arcs · Incohérences</text>
+</svg>

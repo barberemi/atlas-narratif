@@ -73,24 +73,21 @@ export async function getCharacters(db, projectId = 'lotr') {
     `SELECT * FROM characters WHERE project_id = $1 ORDER BY name`,
     [projectId],
   );
-  return rows.map(r => {
-    const extra = parseJsonField(r.extra, {});
-    return {
-      id:           r.id,
-      name:         r.name,
-      aliases:      parseJsonField(r.aliases, []),
-      origin:       r.origin,
-      description:  r.description,
-      color:        r.color,
-      journeyKey:   r.journey_key,
-      race:         extra.race         ?? null,
-      role:         extra.role         ?? null,
-      affiliations: extra.affiliations ?? [],
-      traits:       extra.traits       ?? [],
-      deathEventId: extra.deathEventId ?? null,
-      source:       r.source ?? 'import',
-    };
-  });
+  return rows.map(r => ({
+    id:           r.id,
+    name:         r.name,
+    aliases:      parseJsonField(r.aliases, []),
+    origin:       r.origin,
+    description:  r.description,
+    color:        r.color,
+    journeyKey:   r.journey_key,
+    race:         r.race         ?? null,
+    role:         r.role         ?? null,
+    affiliations: parseJsonField(r.affiliations, []),
+    traits:       parseJsonField(r.traits, []),
+    deathEventId: r.death_event_id ?? null,
+    source:       r.source ?? 'import',
+  }));
 }
 
 export async function findCharacterByName(db, search, projectId = 'lotr') {
@@ -116,21 +113,18 @@ export async function getLocations(db, projectId = 'lotr') {
     `SELECT * FROM locations WHERE project_id = $1 ORDER BY name`,
     [projectId],
   );
-  return rows.map(r => {
-    const extra = parseJsonField(r.extra, {});
-    return {
-      id:          r.id,
-      name:        r.name,
-      type:        r.type,
-      regime:      r.regime,
-      description: r.description,
-      coordinates: parseJsonField(r.coordinates, null),
-      inhabitants: extra.inhabitants ?? [],
-      visitedBy:   extra.visitedBy   ?? [],
-      keyPlaces:   extra.keyPlaces   ?? [],
-      source:      r.source ?? 'import',
-    };
-  });
+  return rows.map(r => ({
+    id:          r.id,
+    name:        r.name,
+    type:        r.type,
+    regime:      r.regime,
+    description: r.description,
+    coordinates: parseJsonField(r.coordinates, null),
+    inhabitants: parseJsonField(r.inhabitants, []),
+    visitedBy:   parseJsonField(r.visited_by, []),
+    keyPlaces:   parseJsonField(r.key_places, []),
+    source:      r.source ?? 'import',
+  }));
 }
 
 // ── Objets ────────────────────────────────────────────────────────────────────
@@ -140,24 +134,21 @@ export async function getObjects(db, projectId = 'lotr') {
     `SELECT * FROM objects WHERE project_id = $1 ORDER BY name`,
     [projectId],
   );
-  return rows.map(r => {
-    const extra = parseJsonField(r.extra, {});
-    return {
-      id:            r.id,
-      name:          r.name,
-      type:          r.type,
-      description:   r.description,
-      creator:       r.creator,
-      currentHolder: r.current_holder,
-      powers:                extra.powers               ?? [],
-      holders:               extra.holders              ?? [],
-      createdIn:             extra.createdIn            ?? null,
-      inscription:           extra.inscription          ?? null,
-      status:                extra.status               ?? 'active',
-      statusChangedAtChapter: extra.statusChangedAtChapter ?? null,
-      source:                r.source ?? 'import',
-    };
-  });
+  return rows.map(r => ({
+    id:                     r.id,
+    name:                   r.name,
+    type:                   r.type,
+    description:            r.description,
+    creator:                r.creator,
+    currentHolder:          r.current_holder,
+    powers:                 parseJsonField(r.powers, []),
+    holders:                parseJsonField(r.holders, []),
+    createdIn:              r.created_in ?? null,
+    inscription:            r.inscription ?? null,
+    status:                 r.status ?? 'active',
+    statusChangedAtChapter: r.status_changed_at_chapter ?? null,
+    source:                 r.source ?? 'import',
+  }));
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
@@ -179,29 +170,26 @@ export async function getTimelineEvents(db, projectId = 'lotr') {
     entitiesByEvent[e.event_id].push({ id: e.entity_id, entityType: e.entity_type });
   }
 
-  return evtRows.map(r => {
-    const extra = parseJsonField(r.extra, {});
-    return {
+  return evtRows.map(r => ({
       id:             r.id,
       chapter:        r.chapter_num,
       chapterTitle:   r.chapter_title,
       title:          r.title,
       description:    r.description,
       locationId:     r.location_id,
-      beatId:         extra.beatId ?? null,
+      beatId:         r.beat_id ?? null,
       povCharacterId: r.pov_character_id ?? null,
       sceneOrder:     r.scene_order ?? 0,
       sceneGoal:      r.scene_goal     ?? null,
       sceneConflict:  r.scene_conflict ?? null,
       sceneOutcome:   r.scene_outcome  ?? null,
       entities:       entitiesByEvent[r.id] ?? [],
-      threadIds:        parseJsonField(r.thread_ids ?? '[]', []),
+      threadIds:        parseJsonField(r.thread_ids, []),
       source:           r.source ?? 'import',
       volumeId:         r.volume_id ?? null,
       isFlashback:      r.is_flashback ?? false,
       storyChapterRef:  r.story_chapter_ref ?? null,
-    };
-  });
+  }));
 }
 
 export async function getChapters(db, projectId = 'lotr') {
@@ -222,38 +210,45 @@ export async function getChapterEvents(db, chapterNum, projectId = 'lotr') {
 // ── CRUD Personnages ──────────────────────────────────────────────────────────
 
 export async function insertCharacter(db, data, projectId) {
-  const id    = makeId('char', projectId);
-  const extra = JSON.stringify({ deathEventId: data.deathEventId ?? null });
+  const id = makeId('char', projectId);
   await db.query(
     `INSERT INTO characters
-       (id, project_id, name, aliases, origin, description, color, extra, source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'manual')`,
+       (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, death_event_id, source)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'manual')`,
     [
       id, projectId, data.name,
       JSON.stringify(data.aliases ?? []),
+      data.race        ?? null,
+      data.role        ?? null,
+      JSON.stringify(data.affiliations ?? []),
+      JSON.stringify(data.traits       ?? []),
       data.origin      ?? null,
       data.description ?? null,
       data.color       ?? '#64748b',
-      extra,
+      data.deathEventId ?? null,
     ],
   );
   return id;
 }
 
 export async function updateCharacter(db, charId, data, projectId) {
-  const extra = JSON.stringify({ deathEventId: data.deathEventId ?? null });
   await db.query(
     `UPDATE characters SET
-       name=$1, aliases=$2, origin=$3, description=$4, color=$5, extra=$6,
+       name=$1, aliases=$2, race=$3, role=$4, affiliations=$5, traits=$6,
+       origin=$7, description=$8, color=$9, death_event_id=$10,
        ${SOURCE_CASE}
-     WHERE id=$7 AND project_id=$8`,
+     WHERE id=$11 AND project_id=$12`,
     [
       data.name,
-      JSON.stringify(data.aliases ?? []),
+      JSON.stringify(data.aliases      ?? []),
+      data.race        ?? null,
+      data.role        ?? null,
+      JSON.stringify(data.affiliations ?? []),
+      JSON.stringify(data.traits       ?? []),
       data.origin      ?? null,
       data.description ?? null,
       data.color       ?? '#64748b',
-      extra,
+      data.deathEventId ?? null,
       charId, projectId,
     ],
   );
@@ -266,32 +261,40 @@ export async function deleteCharacter(db, charId, projectId) {
 // ── CRUD Lieux ────────────────────────────────────────────────────────────────
 
 export async function insertLocation(db, data, projectId) {
-  const id    = makeId('loc', projectId);
-  const extra = JSON.stringify({
-    inhabitants: data.inhabitants ?? [],
-    visitedBy:   data.visitedBy   ?? [],
-    keyPlaces:   data.keyPlaces   ?? [],
-  });
+  const id = makeId('loc', projectId);
   await db.query(
-    `INSERT INTO locations (id, project_id, name, type, regime, description, extra, source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,'manual')`,
-    [id, projectId, data.name, data.type ?? null, data.regime ?? null, data.description ?? null, extra],
+    `INSERT INTO locations (id, project_id, name, type, regime, description, inhabitants, visited_by, key_places, source)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'manual')`,
+    [
+      id, projectId, data.name,
+      data.type        ?? null,
+      data.regime      ?? null,
+      data.description ?? null,
+      JSON.stringify(data.inhabitants ?? []),
+      JSON.stringify(data.visitedBy   ?? []),
+      JSON.stringify(data.keyPlaces   ?? []),
+    ],
   );
   return id;
 }
 
 export async function updateLocation(db, locId, data, projectId) {
-  const extra = JSON.stringify({
-    inhabitants: data.inhabitants ?? [],
-    visitedBy:   data.visitedBy   ?? [],
-    keyPlaces:   data.keyPlaces   ?? [],
-  });
   await db.query(
     `UPDATE locations SET
-       name=$1, type=$2, regime=$3, description=$4, extra=$5,
+       name=$1, type=$2, regime=$3, description=$4,
+       inhabitants=$5, visited_by=$6, key_places=$7,
        ${SOURCE_CASE}
-     WHERE id=$6 AND project_id=$7`,
-    [data.name, data.type ?? null, data.regime ?? null, data.description ?? null, extra, locId, projectId],
+     WHERE id=$8 AND project_id=$9`,
+    [
+      data.name,
+      data.type        ?? null,
+      data.regime      ?? null,
+      data.description ?? null,
+      JSON.stringify(data.inhabitants ?? []),
+      JSON.stringify(data.visitedBy   ?? []),
+      JSON.stringify(data.keyPlaces   ?? []),
+      locId, projectId,
+    ],
   );
 }
 
@@ -303,29 +306,50 @@ export async function deleteLocation(db, locId, projectId) {
 
 export async function insertObject(db, data, projectId) {
   const id = makeId('obj', projectId);
-  const extra = JSON.stringify({
-    status:                data.status                ?? 'active',
-    statusChangedAtChapter: data.statusChangedAtChapter ?? null,
-  });
   await db.query(
-    `INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, extra, source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'manual')`,
-    [id, projectId, data.name, data.type ?? null, data.description ?? null, data.creator ?? null, data.currentHolder ?? null, extra],
+    `INSERT INTO objects
+       (id, project_id, name, type, description, creator, current_holder,
+        powers, holders, created_in, inscription, status, status_changed_at_chapter, source)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'manual')`,
+    [
+      id, projectId, data.name,
+      data.type           ?? null,
+      data.description    ?? null,
+      data.creator        ?? null,
+      data.currentHolder  ?? null,
+      JSON.stringify(data.powers  ?? []),
+      JSON.stringify(data.holders ?? []),
+      data.createdIn      ?? null,
+      data.inscription    ?? null,
+      data.status         ?? 'active',
+      data.statusChangedAtChapter ?? null,
+    ],
   );
   return id;
 }
 
 export async function updateObject(db, objId, data, projectId) {
-  const extra = JSON.stringify({
-    status:                data.status                ?? 'active',
-    statusChangedAtChapter: data.statusChangedAtChapter ?? null,
-  });
   await db.query(
     `UPDATE objects SET
-       name=$1, type=$2, description=$3, creator=$4, current_holder=$5, extra=$6,
+       name=$1, type=$2, description=$3, creator=$4, current_holder=$5,
+       powers=$6, holders=$7, created_in=$8, inscription=$9,
+       status=$10, status_changed_at_chapter=$11,
        ${SOURCE_CASE}
-     WHERE id=$7 AND project_id=$8`,
-    [data.name, data.type ?? null, data.description ?? null, data.creator ?? null, data.currentHolder ?? null, extra, objId, projectId],
+     WHERE id=$12 AND project_id=$13`,
+    [
+      data.name,
+      data.type          ?? null,
+      data.description   ?? null,
+      data.creator       ?? null,
+      data.currentHolder ?? null,
+      JSON.stringify(data.powers  ?? []),
+      JSON.stringify(data.holders ?? []),
+      data.createdIn     ?? null,
+      data.inscription   ?? null,
+      data.status        ?? 'active',
+      data.statusChangedAtChapter ?? null,
+      objId, projectId,
+    ],
   );
 }
 
@@ -336,8 +360,7 @@ export async function deleteObject(db, objId, projectId) {
 // ── CRUD Événements Timeline ──────────────────────────────────────────────────
 
 export async function insertTimelineEvent(db, data, projectId) {
-  const id    = makeId('evt', projectId);
-  const extra = JSON.stringify({ beatId: data.beatId ?? null });
+  const id = makeId('evt', projectId);
   const { rows: maxRows } = await db.query(
     `SELECT COALESCE(MAX(scene_order), 0) AS max_order FROM timeline_events WHERE project_id = $1 AND chapter_num = $2`,
     [projectId, data.chapter],
@@ -345,9 +368,18 @@ export async function insertTimelineEvent(db, data, projectId) {
   const sceneOrder = data.sceneOrder ?? ((maxRows[0]?.max_order ?? 0) + 1);
   await db.query(
     `INSERT INTO timeline_events
-       (id, project_id, chapter_num, chapter_title, title, description, location_id, extra, pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome, thread_ids, volume_id, is_flashback, story_chapter_ref, source)
+       (id, project_id, chapter_num, chapter_title, title, description, location_id, beat_id,
+        pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome,
+        thread_ids, volume_id, is_flashback, story_chapter_ref, source)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'manual')`,
-    [id, projectId, data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, sceneOrder, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null, data.isFlashback ?? false, data.storyChapterRef ?? null],
+    [
+      id, projectId, data.chapter, data.chapterTitle, data.title,
+      data.description ?? null, data.locationId ?? null, data.beatId ?? null,
+      data.povCharacterId ?? null, sceneOrder,
+      data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null,
+      JSON.stringify(data.threadIds ?? []), data.volumeId ?? null,
+      data.isFlashback ?? false, data.storyChapterRef ?? null,
+    ],
   );
   for (const e of (data.entities ?? [])) {
     await db.query(
@@ -360,17 +392,24 @@ export async function insertTimelineEvent(db, data, projectId) {
 }
 
 export async function updateTimelineEvent(db, eventId, data, projectId) {
-  const extra = JSON.stringify({ beatId: data.beatId ?? null });
   await db.query(
     `UPDATE timeline_events SET
-       chapter_num=$1, chapter_title=$2, title=$3, description=$4, location_id=$5, extra=$6,
+       chapter_num=$1, chapter_title=$2, title=$3, description=$4, location_id=$5, beat_id=$6,
        pov_character_id=$7, scene_order=$8,
        scene_goal=$9, scene_conflict=$10, scene_outcome=$11,
        thread_ids=$12, volume_id=$13,
        is_flashback=$14, story_chapter_ref=$15,
        ${SOURCE_CASE}
      WHERE id=$16 AND project_id=$17`,
-    [data.chapter, data.chapterTitle, data.title, data.description ?? null, data.locationId ?? null, extra, data.povCharacterId ?? null, data.sceneOrder ?? 0, data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null, JSON.stringify(data.threadIds ?? []), data.volumeId ?? null, data.isFlashback ?? false, data.storyChapterRef ?? null, eventId, projectId],
+    [
+      data.chapter, data.chapterTitle, data.title,
+      data.description ?? null, data.locationId ?? null, data.beatId ?? null,
+      data.povCharacterId ?? null, data.sceneOrder ?? 0,
+      data.sceneGoal ?? null, data.sceneConflict ?? null, data.sceneOutcome ?? null,
+      JSON.stringify(data.threadIds ?? []), data.volumeId ?? null,
+      data.isFlashback ?? false, data.storyChapterRef ?? null,
+      eventId, projectId,
+    ],
   );
   await db.query(`DELETE FROM event_entities WHERE event_id=$1 AND project_id=$2`, [eventId, projectId]);
   for (const e of (data.entities ?? [])) {

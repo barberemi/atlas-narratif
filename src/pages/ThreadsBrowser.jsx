@@ -284,20 +284,20 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
 // ── ThreadsBrowser ─────────────────────────────────────────────────────────────
 
 export default function ThreadsBrowser() {
-  const threads      = useThreadStore(s => s.threads) ?? [];
+  const threads      = useThreadStore(s => s.threads);
   const addThread    = useThreadStore(s => s.addThread);
   const editThread   = useThreadStore(s => s.editThread);
   const removeThread = useThreadStore(s => s.removeThread);
 
-  const events = useTimelineStore(s => s.events) ?? [];
+  const events = useTimelineStore(s => s.events);
 
   const [showForm,   setShowForm]   = useState(false);
   const [editingId,  setEditingId]  = useState(null);
 
   // Stats
   const taggedEventCount = useMemo(() => {
-    const ids = new Set(threads.map(t => t.id));
-    return events.filter(e => (e.threadIds ?? []).some(id => ids.has(id))).length;
+    const ids = new Set((threads ?? []).map(t => t.id));
+    return (events ?? []).filter(e => (e.threadIds ?? []).some(id => ids.has(id))).length;
   }, [events, threads]);
 
   const handleSave = async (data) => {

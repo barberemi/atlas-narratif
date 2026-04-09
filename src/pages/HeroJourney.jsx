@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useDb } from '../db/DbContext';
 import { useProject } from '../db/ProjectContext';
 import { useHeroJourneyStore } from '../stores/useHeroJourneyStore';
 import { useLoreStore } from '../stores/useLoreStore';
@@ -180,7 +179,6 @@ function StageCard({ stage, entry, onSave, onRemove }) {
 // ── Composant principal ───────────────────────────────────────────────────────
 
 export default function HeroJourney() {
-  const db            = useDb();
   const { projectId } = useProject();
 
   const allEntries     = useHeroJourneyStore(s => s.entries);
@@ -195,10 +193,10 @@ export default function HeroJourney() {
   const loadLore      = useLoreStore(s => s.load);
 
   useEffect(() => {
-    if (!db || !projectId) return;
-    loadEntries(db, projectId);
-    if (!characters) loadLore(db, projectId);
-  }, [db, projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!projectId) return;
+    loadEntries(projectId);
+    if (!characters) loadLore(projectId);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Personnage héros sélectionné ──────────────────────────────────────────
   const [heroCharId,    setHeroCharId]    = useState('');

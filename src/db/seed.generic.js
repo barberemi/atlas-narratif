@@ -108,21 +108,20 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
   for (const c of characters) {
     await db.query(
       `INSERT INTO characters
-         (id, project_id, name, aliases, origin, description, color, journey_key, extra)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+         (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [
         c.id, projectId, c.name,
-        JSON.stringify(c.aliases  ?? []),
-        c.origin      ?? null,
-        c.description ?? null,
-        c.color       ?? '#64748b',
-        c.journeyKey  ?? null,
-        JSON.stringify({
-          race:         c.race                       ?? null,
-          role:         c.role                       ?? null,
-          affiliations: c.affiliation ?? c.affiliations ?? [],
-          traits:       c.traits                     ?? [],
-        }),
+        JSON.stringify(c.aliases                    ?? []),
+        c.race                                      ?? null,
+        c.role                                      ?? null,
+        JSON.stringify(c.affiliation ?? c.affiliations ?? []),
+        JSON.stringify(c.traits                     ?? []),
+        c.origin                                    ?? null,
+        c.description                               ?? null,
+        c.color                                     ?? '#64748b',
+        c.journeyKey                                ?? null,
+        c.deathEventId                              ?? null,
       ],
     );
     done++;
@@ -133,19 +132,17 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
   for (const l of locations) {
     await db.query(
       `INSERT INTO locations
-         (id, project_id, name, type, regime, description, coordinates, extra)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+         (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [
         l.id, projectId, l.name,
         l.type        ?? null,
         l.regime      ?? null,
         l.description ?? null,
         l.coordinates ? JSON.stringify(l.coordinates) : 'null',
-        JSON.stringify({
-          inhabitants: l.inhabitants ?? [],
-          visitedBy:   l.visitedBy   ?? [],
-          keyPlaces:   l.keyPlaces   ?? [],
-        }),
+        JSON.stringify(l.inhabitants ?? []),
+        JSON.stringify(l.visitedBy   ?? []),
+        JSON.stringify(l.keyPlaces   ?? []),
       ],
     );
     done++;
@@ -156,20 +153,21 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
   for (const o of objects) {
     await db.query(
       `INSERT INTO objects
-         (id, project_id, name, type, description, creator, current_holder, extra)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+         (id, project_id, name, type, description, creator, current_holder,
+          powers, holders, created_in, inscription, status, status_changed_at_chapter)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [
         o.id, projectId, o.name,
         o.type          ?? null,
         o.description   ?? null,
         o.creator       ?? null,
         o.currentHolder ?? null,
-        JSON.stringify({
-          powers:      o.powers      ?? [],
-          holders:     o.holders     ?? [],
-          createdIn:   o.createdIn   ?? null,
-          inscription: o.inscription ?? null,
-        }),
+        JSON.stringify(o.powers  ?? []),
+        JSON.stringify(o.holders ?? []),
+        o.createdIn     ?? null,
+        o.inscription   ?? null,
+        o.status        ?? 'active',
+        o.statusChangedAtChapter ?? null,
       ],
     );
     done++;
@@ -179,10 +177,9 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
   report('Événements…');
   for (const evt of timelineDB) {
     const ex = eventExtrasDB[evt.id] ?? {};
-    const extra = JSON.stringify({ beatId: ex.beatId ?? null });
     await db.query(
       `INSERT INTO timeline_events
-         (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
+         (id, project_id, chapter_num, chapter_title, title, description, location_id, beat_id,
           pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome, volume_id,
           is_flashback, story_chapter_ref)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
@@ -190,16 +187,16 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
         evt.id, projectId,
         evt.chapter, evt.chapterTitle ?? '',
         evt.title,   evt.description ?? null,
-        evt.locationId ?? null,
-        extra,
-        ex.povCharacterId ?? null,
+        evt.locationId      ?? null,
+        ex.beatId           ?? null,
+        ex.povCharacterId   ?? null,
         JSON.stringify(ex.threadIds ?? []),
-        ex.sceneOrder    ?? 0,
-        ex.sceneGoal     ?? null,
-        ex.sceneConflict ?? null,
-        ex.sceneOutcome  ?? null,
-        evt.volumeId     ?? null,
-        evt.isFlashback  ?? false,
+        ex.sceneOrder       ?? 0,
+        ex.sceneGoal        ?? null,
+        ex.sceneConflict    ?? null,
+        ex.sceneOutcome     ?? null,
+        evt.volumeId        ?? null,
+        evt.isFlashback     ?? false,
         evt.storyChapterRef ?? null,
       ],
     );

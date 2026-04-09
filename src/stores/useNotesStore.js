@@ -1,24 +1,22 @@
 import { create } from 'zustand';
-import { getChapterNotes, setChapterNote } from '../db/queries';
+import { getChapterNotes, setChapterNote } from '../api/client';
 
 export const useNotesStore = create((set, get) => ({
   notes:      null, // { [chapterNum]: content } — null = pas encore chargé
-  _db:        null,
   _projectId: null,
 
-  load: async (db, projectId) => {
-    set({ _db: db, _projectId: projectId });
-    const notes = await getChapterNotes(db, projectId);
+  load: async (projectId) => {
+    set({ _projectId: projectId });
+    const notes = await getChapterNotes(projectId);
     set({ notes });
   },
 
   setNote: async (chapterNum, content) => {
-    const { _db, _projectId } = get();
-    if (!_db || !_projectId) return;
-    // Mise à jour optimiste
+    const { _projectId } = get();
+    if (!_projectId) return;
     set(s => ({ notes: { ...s.notes, [chapterNum]: content } }));
-    await setChapterNote(_db, _projectId, chapterNum, content);
+    await setChapterNote(_projectId, chapterNum, content);
   },
 
-  reset: () => set({ notes: null, _db: null, _projectId: null }),
+  reset: () => set({ notes: null, _projectId: null }),
 }));

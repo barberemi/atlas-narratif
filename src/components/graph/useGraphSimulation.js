@@ -80,7 +80,6 @@ function runSimulation(init, edges, centralId, setPositions, posRef) {
 }
 
 export function useGraphSimulation({ graph, setPositions, posRef }) {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!graph) return;
     const N    = graph.satellites.length;

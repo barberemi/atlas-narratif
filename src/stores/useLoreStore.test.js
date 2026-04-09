@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('../db/queries', () => ({
+vi.mock('../api/client', () => ({
   getLoreData:            vi.fn(),
   insertCharacter:        vi.fn(),
   updateCharacter:        vi.fn(),
@@ -12,6 +12,10 @@ vi.mock('../db/queries', () => ({
   updateObject:           vi.fn(),
   deleteObject:           vi.fn(),
   setLocationCoordinates: vi.fn(),
+  insertGroup:            vi.fn(),
+  updateGroup:            vi.fn(),
+  deleteGroup:            vi.fn(),
+  setCharacterGroups:     vi.fn(),
 }));
 
 vi.mock('../utils/entityUtils', () => ({
@@ -23,18 +27,18 @@ import {
   getLoreData,
   insertCharacter, updateCharacter, deleteCharacter,
   insertLocation,  updateLocation,  deleteLocation,
-  insertObject,    updateObject,    deleteObject,
+  insertObject,    updateObject,
   setLocationCoordinates,
-} from '../db/queries';
+} from '../api/client';
 import { initEntityCache } from '../utils/entityUtils';
 
-const DB         = { __mock: 'db' };
 const PROJECT_ID = 'proj_test';
 
 const LORE_DATA = {
   characters: [{ id: 'char_1', name: 'Alice', coordinates: null }],
   locations:  [{ id: 'loc_1',  name: 'Paris', coordinates: { x: 10, y: 20 } }],
   objects:    [{ id: 'obj_1',  name: 'Épée' }],
+  groups:     [],
 };
 
 beforeEach(() => {
@@ -47,7 +51,7 @@ beforeEach(() => {
 describe('load()', () => {
   it('charge characters, locations et objects', async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
     const s = useLoreStore.getState();
     expect(s.characters).toEqual(LORE_DATA.characters);
     expect(s.locations).toEqual(LORE_DATA.locations);
@@ -56,13 +60,13 @@ describe('load()', () => {
 
   it('passe ready à true', async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
     expect(useLoreStore.getState().ready).toBe(true);
   });
 
-  it('initialise le cache d\'entités', async () => {
+  it("initialise le cache d'entités", async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
     expect(initEntityCache).toHaveBeenCalledWith(LORE_DATA);
   });
 });
@@ -72,33 +76,33 @@ describe('load()', () => {
 describe('saveCharacter()', () => {
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    vi.mocked(insertCharacter).mockResolvedValue();
+    vi.mocked(insertCharacter).mockResolvedValue('new_char_id');
     vi.mocked(updateCharacter).mockResolvedValue();
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
   });
 
-  it('appelle insertCharacter si pas d\'id', async () => {
+  it("appelle insertCharacter si pas d'id", async () => {
     await useLoreStore.getState().saveCharacter(null, { name: 'Bob' });
-    expect(insertCharacter).toHaveBeenCalledWith(DB, { name: 'Bob' }, PROJECT_ID);
+    expect(insertCharacter).toHaveBeenCalledWith({ name: 'Bob' }, PROJECT_ID);
   });
 
   it('appelle updateCharacter si id fourni', async () => {
     await useLoreStore.getState().saveCharacter('char_1', { name: 'Alice 2' });
-    expect(updateCharacter).toHaveBeenCalledWith(DB, 'char_1', { name: 'Alice 2' }, PROJECT_ID);
+    expect(updateCharacter).toHaveBeenCalledWith('char_1', { name: 'Alice 2' }, PROJECT_ID);
   });
 
   it('recharge les données et re-initialise le cache après save', async () => {
-    vi.mocked(getLoreData).mockResolvedValue(LORE_DATA); // reload
+    vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
     await useLoreStore.getState().saveCharacter(null, { name: 'Bob' });
     expect(initEntityCache).toHaveBeenCalledTimes(2); // load + reload
   });
 
-  it('remet saving à false après l\'opération', async () => {
+  it("remet saving à false après l'opération", async () => {
     await useLoreStore.getState().saveCharacter(null, { name: 'Bob' });
     expect(useLoreStore.getState().saving).toBe(false);
   });
 
-  it('ne fait rien si _db est null', async () => {
+  it('ne fait rien si _projectId est null', async () => {
     useLoreStore.getState().reset();
     await useLoreStore.getState().saveCharacter(null, { name: 'Bob' });
     expect(insertCharacter).not.toHaveBeenCalled();
@@ -111,12 +115,12 @@ describe('removeCharacter()', () => {
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
     vi.mocked(deleteCharacter).mockResolvedValue();
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
   });
 
   it('appelle deleteCharacter', async () => {
     await useLoreStore.getState().removeCharacter('char_1');
-    expect(deleteCharacter).toHaveBeenCalledWith(DB, 'char_1', PROJECT_ID);
+    expect(deleteCharacter).toHaveBeenCalledWith('char_1', PROJECT_ID);
   });
 
   it('recharge les données après suppression', async () => {
@@ -127,13 +131,13 @@ describe('removeCharacter()', () => {
   });
 });
 
-// ── setCoordinates() — optimiste ──────────────────────────────────────────────
+// ── setCoordinates() ──────────────────────────────────────────────────────────
 
 describe('setCoordinates()', () => {
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
     vi.mocked(setLocationCoordinates).mockResolvedValue();
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
   });
 
   it('met à jour les coordonnées immédiatement (optimiste)', async () => {
@@ -144,11 +148,11 @@ describe('setCoordinates()', () => {
 
   it('ne modifie pas les autres lieux', async () => {
     const extra = { ...LORE_DATA, locations: [
-      { id: 'loc_1', name: 'Paris',  coordinates: { x: 10, y: 20 } },
+      { id: 'loc_1', name: 'Paris',   coordinates: { x: 10, y: 20 } },
       { id: 'loc_2', name: 'Londres', coordinates: { x: 30, y: 40 } },
     ]};
     vi.mocked(getLoreData).mockResolvedValue(extra);
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
 
     await useLoreStore.getState().setCoordinates('loc_1', { x: 99, y: 99 });
     const loc2 = useLoreStore.getState().locations.find(l => l.id === 'loc_2');
@@ -158,34 +162,34 @@ describe('setCoordinates()', () => {
   it('persiste via setLocationCoordinates', async () => {
     const coords = { x: 50, y: 60 };
     await useLoreStore.getState().setCoordinates('loc_1', coords);
-    expect(setLocationCoordinates).toHaveBeenCalledWith(DB, 'loc_1', PROJECT_ID, coords);
+    expect(setLocationCoordinates).toHaveBeenCalledWith('loc_1', PROJECT_ID, coords);
   });
 
-  it('ne fait rien si _db est null', async () => {
+  it('ne fait rien si _projectId est null', async () => {
     useLoreStore.getState().reset();
     await useLoreStore.getState().setCoordinates('loc_1', { x: 1, y: 2 });
     expect(setLocationCoordinates).not.toHaveBeenCalled();
   });
 });
 
-// ── saveLocation() / removeLocation() / saveObject() / removeObject() ─────────
+// ── saveLocation() / removeLocation() / saveObject() ─────────────────────────
 
 describe('saveLocation()', () => {
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
     vi.mocked(insertLocation).mockResolvedValue();
     vi.mocked(updateLocation).mockResolvedValue();
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
   });
 
-  it('insert si pas d\'id', async () => {
+  it("insert si pas d'id", async () => {
     await useLoreStore.getState().saveLocation(null, { name: 'Lyon' });
-    expect(insertLocation).toHaveBeenCalledWith(DB, { name: 'Lyon' }, PROJECT_ID);
+    expect(insertLocation).toHaveBeenCalledWith({ name: 'Lyon' }, PROJECT_ID);
   });
 
   it('update si id fourni', async () => {
     await useLoreStore.getState().saveLocation('loc_1', { name: 'Paris updated' });
-    expect(updateLocation).toHaveBeenCalledWith(DB, 'loc_1', { name: 'Paris updated' }, PROJECT_ID);
+    expect(updateLocation).toHaveBeenCalledWith('loc_1', { name: 'Paris updated' }, PROJECT_ID);
   });
 });
 
@@ -193,12 +197,12 @@ describe('removeLocation()', () => {
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
     vi.mocked(deleteLocation).mockResolvedValue();
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
   });
 
   it('appelle deleteLocation', async () => {
     await useLoreStore.getState().removeLocation('loc_1');
-    expect(deleteLocation).toHaveBeenCalledWith(DB, 'loc_1', PROJECT_ID);
+    expect(deleteLocation).toHaveBeenCalledWith('loc_1', PROJECT_ID);
   });
 });
 
@@ -207,26 +211,26 @@ describe('saveObject()', () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
     vi.mocked(insertObject).mockResolvedValue();
     vi.mocked(updateObject).mockResolvedValue();
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
   });
 
-  it('insert si pas d\'id', async () => {
+  it("insert si pas d'id", async () => {
     await useLoreStore.getState().saveObject(null, { name: 'Bouclier' });
-    expect(insertObject).toHaveBeenCalledWith(DB, { name: 'Bouclier' }, PROJECT_ID);
+    expect(insertObject).toHaveBeenCalledWith({ name: 'Bouclier' }, PROJECT_ID);
   });
 
   it('update si id fourni', async () => {
     await useLoreStore.getState().saveObject('obj_1', { name: 'Épée +1' });
-    expect(updateObject).toHaveBeenCalledWith(DB, 'obj_1', { name: 'Épée +1' }, PROJECT_ID);
+    expect(updateObject).toHaveBeenCalledWith('obj_1', { name: 'Épée +1' }, PROJECT_ID);
   });
 });
 
 // ── reset() ───────────────────────────────────────────────────────────────────
 
 describe('reset()', () => {
-  it('restaure l\'état initial', async () => {
+  it("restaure l'état initial", async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    await useLoreStore.getState().load(DB, PROJECT_ID);
+    await useLoreStore.getState().load(PROJECT_ID);
     useLoreStore.getState().reset();
     const s = useLoreStore.getState();
     expect(s.characters).toEqual([]);
@@ -234,7 +238,6 @@ describe('reset()', () => {
     expect(s.objects).toEqual([]);
     expect(s.ready).toBe(false);
     expect(s.saving).toBe(false);
-    expect(s._db).toBeNull();
     expect(s._projectId).toBeNull();
   });
 });

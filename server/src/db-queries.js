@@ -1,0 +1,1113 @@
+/**
+ * Couche d'accès aux données — serveur Atlas Narratif
+ *
+ * Équivalent serveur de src/db/queries.js (frontend PGlite).
+ * Utilise postgres.js tagged templates. Pas de paramètre `db` — toutes les
+ * fonctions utilisent l'import global `sql`.
+ */
+
+import { randomUUID } from 'crypto';
+import sql from './db.js';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const SOURCE_CASE = `source = CASE WHEN source='import' THEN 'modified' ELSE source END`;
+
+function makeId(prefix, projectId) {
+  return `${prefix}_${projectId}_${Date.now()}`;
+}
+
+/**
+ * postgres.js retourne le JSONB déjà parsé, mais on protège contre les cas
+ * où la valeur serait encore une chaîne (migration, colonnes TEXT, etc.).
+ */
+function parseJ(value, fallback) {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return fallback; }
+  }
+  return value;
+}
+
+// ── Volumes ───────────────────────────────────────────────────────────────────
+
+export async function getVolumes(projectId) {
+  const rows = await sql`
+    SELECT * FROM volumes WHERE project_id = ${projectId} ORDER BY number
+  `;
+  return rows.map(r => ({
+    id:          r.id,
+    number:      r.number,
+    title:       r.title,
+    description: r.description ?? null,
+  }));
+}
+
+export async function insertVolume(data, projectId) {
+  const id = makeId('vol', projectId);
+  await sql`
+    INSERT INTO volumes (id, project_id, number, title, description)
+    VALUES (${id}, ${projectId}, ${data.number}, ${data.title}, ${data.description ?? null})
+  `;
+  return id;
+}
+
+export async function updateVolume(volumeId, data, projectId) {
+  await sql`
+    UPDATE volumes
+    SET number = ${data.number}, title = ${data.title}, description = ${data.description ?? null}
+    WHERE id = ${volumeId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteVolume(volumeId, projectId) {
+  await sql`DELETE FROM volumes WHERE id = ${volumeId} AND project_id = ${projectId}`;
+}
+
+// ── Personnages ───────────────────────────────────────────────────────────────
+
+export async function getCharacters(projectId) {
+  const rows = await sql`
+    SELECT * FROM characters WHERE project_id = ${projectId} ORDER BY name
+  `;
+  return rows.map(r => ({
+    id:           r.id,
+    name:         r.name,
+    aliases:      parseJ(r.aliases, []),
+    origin:       r.origin,
+    description:  r.description,
+    color:        r.color,
+    journeyKey:   r.journey_key,
+    race:         r.race         ?? null,
+    role:         r.role         ?? null,
+    affiliations: parseJ(r.affiliations, []),
+    traits:       parseJ(r.traits, []),
+    deathEventId: r.death_event_id ?? null,
+    source:       r.source ?? 'import',
+  }));
+}
+
+export async function findCharacterByName(search, projectId) {
+  const rows = await sql`
+    SELECT * FROM characters
+    WHERE project_id = ${projectId}
+      AND (name ILIKE ${'%' + search + '%'} OR aliases::text ILIKE ${'%' + search + '%'})
+    LIMIT 1
+  `;
+  if (!rows.length) return null;
+  const r = rows[0];
+  return {
+    id:      r.id,
+    name:    r.name,
+    aliases: parseJ(r.aliases, []),
+  };
+}
+
+export async function insertCharacter(data, projectId) {
+  const id = makeId('char', projectId);
+  await sql`
+    INSERT INTO characters
+      (id, project_id, name, aliases, race, role, affiliations, traits,
+       origin, description, color, death_event_id, source)
+    VALUES (
+      ${id}, ${projectId}, ${data.name},
+      ${data.aliases ?? []},
+      ${data.race        ?? null},
+      ${data.role        ?? null},
+      ${data.affiliations ?? []},
+      ${data.traits       ?? []},
+      ${data.origin      ?? null},
+      ${data.description ?? null},
+      ${data.color       ?? '#64748b'},
+      ${data.deathEventId ?? null},
+      'manual'
+    )
+  `;
+  return id;
+}
+
+export async function updateCharacter(charId, data, projectId) {
+  await sql`
+    UPDATE characters SET
+      name         = ${data.name},
+      aliases      = ${data.aliases ?? []},
+      race         = ${data.race        ?? null},
+      role         = ${data.role        ?? null},
+      affiliations = ${data.affiliations ?? []},
+      traits       = ${data.traits       ?? []},
+      origin       = ${data.origin      ?? null},
+      description  = ${data.description ?? null},
+      color        = ${data.color       ?? '#64748b'},
+      death_event_id = ${data.deathEventId ?? null},
+      ${sql.unsafe(SOURCE_CASE)}
+    WHERE id = ${charId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteCharacter(charId, projectId) {
+  await sql`DELETE FROM characters WHERE id = ${charId} AND project_id = ${projectId}`;
+}
+
+// ── Lieux ─────────────────────────────────────────────────────────────────────
+
+export async function getLocations(projectId) {
+  const rows = await sql`
+    SELECT * FROM locations WHERE project_id = ${projectId} ORDER BY name
+  `;
+  return rows.map(r => ({
+    id:          r.id,
+    name:        r.name,
+    type:        r.type,
+    regime:      r.regime,
+    description: r.description,
+    coordinates: parseJ(r.coordinates, null),
+    inhabitants: parseJ(r.inhabitants, []),
+    visitedBy:   parseJ(r.visited_by, []),
+    keyPlaces:   parseJ(r.key_places, []),
+    source:      r.source ?? 'import',
+  }));
+}
+
+export async function insertLocation(data, projectId) {
+  const id = makeId('loc', projectId);
+  await sql`
+    INSERT INTO locations
+      (id, project_id, name, type, regime, description, inhabitants, visited_by, key_places, source)
+    VALUES (
+      ${id}, ${projectId}, ${data.name},
+      ${data.type        ?? null},
+      ${data.regime      ?? null},
+      ${data.description ?? null},
+      ${data.inhabitants ?? []},
+      ${data.visitedBy   ?? []},
+      ${data.keyPlaces   ?? []},
+      'manual'
+    )
+  `;
+  return id;
+}
+
+export async function updateLocation(locId, data, projectId) {
+  await sql`
+    UPDATE locations SET
+      name        = ${data.name},
+      type        = ${data.type        ?? null},
+      regime      = ${data.regime      ?? null},
+      description = ${data.description ?? null},
+      inhabitants = ${data.inhabitants ?? []},
+      visited_by  = ${data.visitedBy   ?? []},
+      key_places  = ${data.keyPlaces   ?? []},
+      ${sql.unsafe(SOURCE_CASE)}
+    WHERE id = ${locId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteLocation(locId, projectId) {
+  await sql`DELETE FROM locations WHERE id = ${locId} AND project_id = ${projectId}`;
+}
+
+// ── Objets ────────────────────────────────────────────────────────────────────
+
+export async function getObjects(projectId) {
+  const rows = await sql`
+    SELECT * FROM objects WHERE project_id = ${projectId} ORDER BY name
+  `;
+  return rows.map(r => ({
+    id:                     r.id,
+    name:                   r.name,
+    type:                   r.type,
+    description:            r.description,
+    creator:                r.creator,
+    currentHolder:          r.current_holder,
+    powers:                 parseJ(r.powers, []),
+    holders:                parseJ(r.holders, []),
+    createdIn:              r.created_in ?? null,
+    inscription:            r.inscription ?? null,
+    status:                 r.status ?? 'active',
+    statusChangedAtChapter: r.status_changed_at_chapter ?? null,
+    source:                 r.source ?? 'import',
+  }));
+}
+
+export async function insertObject(data, projectId) {
+  const id = makeId('obj', projectId);
+  await sql`
+    INSERT INTO objects
+      (id, project_id, name, type, description, creator, current_holder,
+       powers, holders, created_in, inscription, status, status_changed_at_chapter, source)
+    VALUES (
+      ${id}, ${projectId}, ${data.name},
+      ${data.type           ?? null},
+      ${data.description    ?? null},
+      ${data.creator        ?? null},
+      ${data.currentHolder  ?? null},
+      ${data.powers   ?? []},
+      ${data.holders  ?? []},
+      ${data.createdIn      ?? null},
+      ${data.inscription    ?? null},
+      ${data.status         ?? 'active'},
+      ${data.statusChangedAtChapter ?? null},
+      'manual'
+    )
+  `;
+  return id;
+}
+
+export async function updateObject(objId, data, projectId) {
+  await sql`
+    UPDATE objects SET
+      name                    = ${data.name},
+      type                    = ${data.type          ?? null},
+      description             = ${data.description   ?? null},
+      creator                 = ${data.creator        ?? null},
+      current_holder          = ${data.currentHolder ?? null},
+      powers                  = ${data.powers   ?? []},
+      holders                 = ${data.holders  ?? []},
+      created_in              = ${data.createdIn     ?? null},
+      inscription             = ${data.inscription   ?? null},
+      status                  = ${data.status        ?? 'active'},
+      status_changed_at_chapter = ${data.statusChangedAtChapter ?? null},
+      ${sql.unsafe(SOURCE_CASE)}
+    WHERE id = ${objId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteObject(objId, projectId) {
+  await sql`DELETE FROM objects WHERE id = ${objId} AND project_id = ${projectId}`;
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+
+export async function getTimelineEvents(projectId) {
+  const evtRows = await sql`
+    SELECT * FROM timeline_events WHERE project_id = ${projectId}
+    ORDER BY chapter_num, scene_order, id
+  `;
+  const entRows = await sql`
+    SELECT * FROM event_entities WHERE project_id = ${projectId}
+  `;
+
+  const entitiesByEvent = {};
+  for (const e of entRows) {
+    if (!entitiesByEvent[e.event_id]) entitiesByEvent[e.event_id] = [];
+    entitiesByEvent[e.event_id].push({ id: e.entity_id, entityType: e.entity_type });
+  }
+
+  return evtRows.map(r => ({
+    id:             r.id,
+    chapter:        r.chapter_num,
+    chapterTitle:   r.chapter_title,
+    title:          r.title,
+    description:    r.description,
+    locationId:     r.location_id,
+    beatId:         r.beat_id         ?? null,
+    povCharacterId: r.pov_character_id ?? null,
+    sceneOrder:     r.scene_order     ?? 0,
+    sceneGoal:      r.scene_goal      ?? null,
+    sceneConflict:  r.scene_conflict  ?? null,
+    sceneOutcome:   r.scene_outcome   ?? null,
+    entities:       entitiesByEvent[r.id] ?? [],
+    threadIds:      parseJ(r.thread_ids, []),
+    source:         r.source ?? 'import',
+    volumeId:       r.volume_id ?? null,
+    isFlashback:    r.is_flashback ?? false,
+    storyChapterRef: r.story_chapter_ref ?? null,
+  }));
+}
+
+export async function getChapters(projectId) {
+  const rows = await sql`
+    SELECT DISTINCT chapter_num AS number, chapter_title AS title
+    FROM timeline_events WHERE project_id = ${projectId}
+    ORDER BY chapter_num
+  `;
+  return rows;
+}
+
+export async function insertTimelineEvent(data, projectId) {
+  const id = makeId('evt', projectId);
+  const [{ max_order }] = await sql`
+    SELECT COALESCE(MAX(scene_order), 0) AS max_order
+    FROM timeline_events WHERE project_id = ${projectId} AND chapter_num = ${data.chapter}
+  `;
+  const sceneOrder = data.sceneOrder ?? (Number(max_order) + 1);
+
+  await sql`
+    INSERT INTO timeline_events
+      (id, project_id, chapter_num, chapter_title, title, description, location_id, beat_id,
+       pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome,
+       thread_ids, volume_id, is_flashback, story_chapter_ref, source)
+    VALUES (
+      ${id}, ${projectId}, ${data.chapter}, ${data.chapterTitle}, ${data.title},
+      ${data.description    ?? null},
+      ${data.locationId     ?? null},
+      ${data.beatId         ?? null},
+      ${data.povCharacterId ?? null},
+      ${sceneOrder},
+      ${data.sceneGoal      ?? null},
+      ${data.sceneConflict  ?? null},
+      ${data.sceneOutcome   ?? null},
+      ${data.threadIds      ?? []},
+      ${data.volumeId       ?? null},
+      ${data.isFlashback    ?? false},
+      ${data.storyChapterRef ?? null},
+      'manual'
+    )
+  `;
+
+  for (const e of (data.entities ?? [])) {
+    await sql`
+      INSERT INTO event_entities (event_id, project_id, entity_id, entity_type)
+      VALUES (${id}, ${projectId}, ${e.id}, ${e.entityType})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+
+  return id;
+}
+
+export async function updateTimelineEvent(eventId, data, projectId) {
+  await sql`
+    UPDATE timeline_events SET
+      chapter_num      = ${data.chapter},
+      chapter_title    = ${data.chapterTitle},
+      title            = ${data.title},
+      description      = ${data.description    ?? null},
+      location_id      = ${data.locationId     ?? null},
+      beat_id          = ${data.beatId         ?? null},
+      pov_character_id = ${data.povCharacterId ?? null},
+      scene_order      = ${data.sceneOrder     ?? 0},
+      scene_goal       = ${data.sceneGoal      ?? null},
+      scene_conflict   = ${data.sceneConflict  ?? null},
+      scene_outcome    = ${data.sceneOutcome   ?? null},
+      thread_ids       = ${data.threadIds      ?? []},
+      volume_id        = ${data.volumeId       ?? null},
+      is_flashback     = ${data.isFlashback    ?? false},
+      story_chapter_ref = ${data.storyChapterRef ?? null},
+      ${sql.unsafe(SOURCE_CASE)}
+    WHERE id = ${eventId} AND project_id = ${projectId}
+  `;
+
+  await sql`DELETE FROM event_entities WHERE event_id = ${eventId} AND project_id = ${projectId}`;
+  for (const e of (data.entities ?? [])) {
+    await sql`
+      INSERT INTO event_entities (event_id, project_id, entity_id, entity_type)
+      VALUES (${eventId}, ${projectId}, ${e.id}, ${e.entityType})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+}
+
+export async function deleteTimelineEvent(eventId, projectId) {
+  await sql`DELETE FROM event_entities WHERE event_id = ${eventId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM timeline_events WHERE id = ${eventId} AND project_id = ${projectId}`;
+}
+
+// ── Incohérences ──────────────────────────────────────────────────────────────
+
+export async function getIncoherences(projectId) {
+  const incRows = await sql`
+    SELECT * FROM incoherences WHERE project_id = ${projectId}
+    ORDER BY
+      CASE severity WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END
+  `;
+  const linkRows = await sql`
+    SELECT * FROM incoherence_links WHERE project_id = ${projectId}
+  `;
+
+  const linksByInc = {};
+  for (const l of linkRows) {
+    if (!linksByInc[l.incoherence_id]) linksByInc[l.incoherence_id] = [];
+    linksByInc[l.incoherence_id].push({
+      label:      l.label,
+      entityId:   l.entity_id,
+      entityType: l.entity_type,
+    });
+  }
+
+  return incRows.map(r => ({
+    id:             r.id,
+    type:           r.type,
+    severity:       r.severity,
+    title:          r.title,
+    explanation:    r.explanation,
+    resolved:       r.resolved,
+    resolutionNote: r.resolution_note ?? null,
+    links:          linksByInc[r.id] ?? [],
+  }));
+}
+
+export async function getEntityIncoherences(entityId, projectId) {
+  const rows = await sql`
+    SELECT i.* FROM incoherences i
+    JOIN incoherence_links l
+      ON l.incoherence_id = i.id AND l.project_id = i.project_id
+    WHERE i.project_id = ${projectId} AND l.entity_id = ${entityId}
+  `;
+  return rows;
+}
+
+export async function deleteScanIncoherences(projectId) {
+  const rows = await sql`
+    SELECT id FROM incoherences WHERE project_id = ${projectId} AND id LIKE 'scan_%'
+  `;
+  for (const r of rows) {
+    await sql`
+      DELETE FROM incoherence_links WHERE incoherence_id = ${r.id} AND project_id = ${projectId}
+    `;
+  }
+  await sql`DELETE FROM incoherences WHERE project_id = ${projectId} AND id LIKE 'scan_%'`;
+}
+
+export async function insertScannedIncoherence(inc, projectId) {
+  await sql`
+    INSERT INTO incoherences (id, project_id, type, severity, title, explanation, resolved)
+    VALUES (${inc.id}, ${projectId}, ${inc.type}, ${inc.severity}, ${inc.title}, ${inc.explanation}, false)
+    ON CONFLICT (id, project_id) DO NOTHING
+  `;
+  for (const link of (inc.links ?? [])) {
+    await sql`
+      INSERT INTO incoherence_links (incoherence_id, project_id, entity_id, entity_type, label)
+      VALUES (${inc.id}, ${projectId}, ${link.entityId}, ${link.entityType}, ${link.label})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+}
+
+export async function setIncoherenceResolved(incId, resolved, projectId) {
+  await sql`
+    UPDATE incoherences SET resolved = ${resolved} WHERE id = ${incId} AND project_id = ${projectId}
+  `;
+}
+
+export async function setResolutionNote(incId, note, projectId) {
+  await sql`
+    UPDATE incoherences SET resolution_note = ${note || null} WHERE id = ${incId} AND project_id = ${projectId}
+  `;
+}
+
+// ── Save the Cat ──────────────────────────────────────────────────────────────
+
+export async function getStcChapters(projectId) {
+  const chRows = await sql`
+    SELECT * FROM stc_chapters WHERE project_id = ${projectId} ORDER BY number
+  `;
+  const beatRows = await sql`
+    SELECT * FROM stc_chapter_beats WHERE project_id = ${projectId}
+  `;
+  const entityRows = await sql`
+    SELECT * FROM stc_chapter_entities WHERE project_id = ${projectId}
+  `;
+
+  const beatsByChapter = {};
+  for (const b of beatRows) {
+    if (!beatsByChapter[b.chapter_id]) beatsByChapter[b.chapter_id] = [];
+    beatsByChapter[b.chapter_id].push(b.beat_id);
+  }
+
+  const entitiesByChapter = {};
+  for (const e of entityRows) {
+    if (!entitiesByChapter[e.chapter_id]) entitiesByChapter[e.chapter_id] = [];
+    entitiesByChapter[e.chapter_id].push({ id: e.entity_id, entityType: e.entity_type });
+  }
+
+  return chRows.map(r => ({
+    id:       r.id,
+    number:   r.number,
+    title:    r.title,
+    summary:  r.summary,
+    beats:    beatsByChapter[r.id]    ?? [],
+    entities: entitiesByChapter[r.id] ?? [],
+    volumeId: r.volume_id ?? null,
+  }));
+}
+
+export async function insertStcChapter({ number, title, summary, beats, entities, volumeId }, projectId) {
+  const id = makeId('ch', projectId);
+  await sql`
+    INSERT INTO stc_chapters (id, project_id, number, title, summary, volume_id)
+    VALUES (${id}, ${projectId}, ${number}, ${title}, ${summary ?? null}, ${volumeId ?? null})
+  `;
+  for (const beatId of (beats ?? [])) {
+    await sql`
+      INSERT INTO stc_chapter_beats (chapter_id, project_id, beat_id)
+      VALUES (${id}, ${projectId}, ${beatId})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+  for (const e of (entities ?? [])) {
+    await sql`
+      INSERT INTO stc_chapter_entities (chapter_id, project_id, entity_id, entity_type)
+      VALUES (${id}, ${projectId}, ${e.id}, ${e.entityType})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+  return id;
+}
+
+export async function updateStcChapter(chapterId, { number, title, summary, beats, entities }, projectId) {
+  await sql`
+    UPDATE stc_chapters SET number = ${number}, title = ${title}, summary = ${summary ?? null}
+    WHERE id = ${chapterId} AND project_id = ${projectId}
+  `;
+  await sql`DELETE FROM stc_chapter_beats WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
+  for (const beatId of (beats ?? [])) {
+    await sql`
+      INSERT INTO stc_chapter_beats (chapter_id, project_id, beat_id)
+      VALUES (${chapterId}, ${projectId}, ${beatId})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+  await sql`DELETE FROM stc_chapter_entities WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
+  for (const e of (entities ?? [])) {
+    await sql`
+      INSERT INTO stc_chapter_entities (chapter_id, project_id, entity_id, entity_type)
+      VALUES (${chapterId}, ${projectId}, ${e.id}, ${e.entityType})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+}
+
+export async function deleteStcChapter(chapterId, projectId) {
+  await sql`DELETE FROM stc_chapter_entities WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM stc_chapter_beats WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM stc_chapters WHERE id = ${chapterId} AND project_id = ${projectId}`;
+}
+
+// ── Arc émotionnel ────────────────────────────────────────────────────────────
+
+export async function getArcPoints(projectId) {
+  const rows = await sql`
+    SELECT chapter_number, intensity, note, volume_id
+    FROM arc_points WHERE project_id = ${projectId}
+    ORDER BY chapter_number
+  `;
+  return rows.map(r => ({
+    chapterNumber: r.chapter_number,
+    intensity:     r.intensity,
+    note:          r.note,
+    volumeId:      r.volume_id ?? null,
+  }));
+}
+
+export async function upsertArcPoint(projectId, chapterNumber, intensity) {
+  await sql`
+    INSERT INTO arc_points (project_id, chapter_number, intensity)
+    VALUES (${projectId}, ${chapterNumber}, ${intensity})
+    ON CONFLICT (project_id, chapter_number) DO UPDATE SET intensity = ${intensity}
+  `;
+}
+
+// ── Notes libres par chapitre ─────────────────────────────────────────────────
+
+export async function getChapterNotes(projectId) {
+  const rows = await sql`
+    SELECT chapter_num, content FROM chapter_notes WHERE project_id = ${projectId}
+  `;
+  return Object.fromEntries(rows.map(r => [r.chapter_num, r.content]));
+}
+
+export async function setChapterNote(projectId, chapterNum, content) {
+  await sql`
+    INSERT INTO chapter_notes (project_id, chapter_num, content)
+    VALUES (${projectId}, ${chapterNum}, ${content})
+    ON CONFLICT (project_id, chapter_num) DO UPDATE SET content = ${content}
+  `;
+}
+
+// ── Projets ───────────────────────────────────────────────────────────────────
+
+export async function getProjects({ userId, deviceId } = {}) {
+  let rows;
+  if (userId) {
+    rows = await sql`
+      SELECT id, name, description, created_at FROM projects
+      WHERE user_id = ${userId} ORDER BY created_at
+    `;
+  } else if (deviceId) {
+    rows = await sql`
+      SELECT id, name, description, created_at FROM projects
+      WHERE device_id = ${deviceId} AND user_id IS NULL ORDER BY created_at
+    `;
+  } else {
+    rows = await sql`SELECT id, name, description, created_at FROM projects ORDER BY created_at`;
+  }
+  return rows.map(r => ({
+    id:          r.id,
+    name:        r.name,
+    description: r.description,
+    createdAt:   r.created_at,
+  }));
+}
+
+export async function createProject({ name, description }, { userId, deviceId } = {}) {
+  const slug = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .slice(0, 20);
+  const id = `${slug}_${Date.now()}`;
+  await sql`
+    INSERT INTO projects (id, name, description, user_id, device_id)
+    VALUES (${id}, ${name.trim()}, ${description?.trim() ?? null}, ${userId ?? null}, ${deviceId ?? null})
+  `;
+  return id;
+}
+
+export async function deleteProject(projectId) {
+  await sql`DELETE FROM projects WHERE id = ${projectId}`;
+}
+
+export async function claimProjectsForUser(userId, deviceId) {
+  await sql`
+    UPDATE projects SET user_id = ${userId}, device_id = NULL
+    WHERE device_id = ${deviceId} AND user_id IS NULL
+  `;
+}
+
+export async function getProjectMapImage(projectId) {
+  const rows = await sql`SELECT map_image FROM projects WHERE id = ${projectId}`;
+  return rows[0]?.map_image ?? null;
+}
+
+export async function setProjectMapImage(projectId, base64) {
+  await sql`UPDATE projects SET map_image = ${base64} WHERE id = ${projectId}`;
+}
+
+// ── Coordonnées de lieux ───────────────────────────────────────────────────────
+
+export async function setLocationCoordinates(locId, projectId, coords) {
+  await sql`
+    UPDATE locations SET coordinates = ${coords ?? null}
+    WHERE id = ${locId} AND project_id = ${projectId}
+  `;
+}
+
+// ── Trajets personnages ────────────────────────────────────────────────────────
+
+export async function saveJourney(projectId, charKey, steps) {
+  await sql`
+    DELETE FROM character_journeys WHERE project_id = ${projectId} AND char_key = ${charKey}
+  `;
+  for (let i = 0; i < steps.length; i++) {
+    await sql`
+      INSERT INTO character_journeys (project_id, char_key, step_index, data)
+      VALUES (${projectId}, ${charKey}, ${i}, ${steps[i]})
+    `;
+  }
+}
+
+export async function getJourney(charKey, projectId) {
+  const rows = await sql`
+    SELECT data FROM character_journeys
+    WHERE project_id = ${projectId} AND char_key = ${charKey}
+    ORDER BY step_index
+  `;
+  return rows.map(r => parseJ(r.data, r.data));
+}
+
+export async function getAllJourneys(projectId) {
+  const rows = await sql`
+    SELECT char_key, data FROM character_journeys
+    WHERE project_id = ${projectId}
+    ORDER BY char_key, step_index
+  `;
+  const result = {};
+  for (const r of rows) {
+    if (!result[r.char_key]) result[r.char_key] = [];
+    result[r.char_key].push(parseJ(r.data, r.data));
+  }
+  return result;
+}
+
+// ── Lore agrégé ───────────────────────────────────────────────────────────────
+
+export async function getLoreData(projectId) {
+  const [characters, locations, objects, groups] = await Promise.all([
+    getCharacters(projectId),
+    getLocations(projectId),
+    getObjects(projectId),
+    getGroups(projectId),
+  ]);
+  return { characters, locations, objects, groups };
+}
+
+// ── Plant / Payoff ────────────────────────────────────────────────────────────
+
+export async function getPlants(projectId) {
+  const rows = await sql`
+    SELECT * FROM plant_payoffs WHERE project_id = ${projectId}
+    ORDER BY plant_chapter_num NULLS LAST, id
+  `;
+  return rows.map(r => ({
+    id:               r.id,
+    label:            r.label,
+    type:             r.type             ?? 'information',
+    plantChapterNum:  r.plant_chapter_num  ?? null,
+    plantEventId:     r.plant_event_id     ?? null,
+    plantVolumeId:    r.plant_volume_id    ?? null,
+    payoffChapterNum: r.payoff_chapter_num ?? null,
+    payoffEventId:    r.payoff_event_id    ?? null,
+    payoffVolumeId:   r.payoff_volume_id   ?? null,
+    entityId:         r.entity_id          ?? null,
+    entityType:       r.entity_type        ?? null,
+    status:           r.status             ?? 'open',
+    notes:            r.notes              ?? null,
+  }));
+}
+
+export async function insertPlant(data, projectId) {
+  const id = makeId('plant', projectId);
+  await sql`
+    INSERT INTO plant_payoffs
+      (id, project_id, label, type, plant_chapter_num, plant_event_id,
+       plant_volume_id, payoff_chapter_num, payoff_event_id, payoff_volume_id,
+       entity_id, entity_type, status, notes)
+    VALUES (
+      ${id}, ${projectId}, ${data.label}, ${data.type ?? 'information'},
+      ${data.plantChapterNum  ?? null}, ${data.plantEventId    ?? null},
+      ${data.plantVolumeId    ?? null},
+      ${data.payoffChapterNum ?? null}, ${data.payoffEventId   ?? null},
+      ${data.payoffVolumeId   ?? null},
+      ${data.entityId         ?? null}, ${data.entityType      ?? null},
+      ${data.status           ?? 'open'}, ${data.notes         ?? null}
+    )
+  `;
+  return id;
+}
+
+export async function updatePlant(plantId, data, projectId) {
+  await sql`
+    UPDATE plant_payoffs SET
+      label             = ${data.label},
+      type              = ${data.type             ?? 'information'},
+      plant_chapter_num = ${data.plantChapterNum  ?? null},
+      plant_event_id    = ${data.plantEventId     ?? null},
+      plant_volume_id   = ${data.plantVolumeId    ?? null},
+      payoff_chapter_num = ${data.payoffChapterNum ?? null},
+      payoff_event_id   = ${data.payoffEventId    ?? null},
+      payoff_volume_id  = ${data.payoffVolumeId   ?? null},
+      entity_id         = ${data.entityId         ?? null},
+      entity_type       = ${data.entityType       ?? null},
+      status            = ${data.status           ?? 'open'},
+      notes             = ${data.notes            ?? null}
+    WHERE id = ${plantId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deletePlant(plantId, projectId) {
+  await sql`DELETE FROM plant_payoffs WHERE id = ${plantId} AND project_id = ${projectId}`;
+}
+
+// ── Groupes d'appartenance ─────────────────────────────────────────────────────
+
+export async function getGroups(projectId) {
+  const groupRows = await sql`
+    SELECT * FROM groups WHERE project_id = ${projectId} ORDER BY name
+  `;
+  const memberRows = await sql`
+    SELECT * FROM character_groups WHERE project_id = ${projectId}
+  `;
+
+  const membersByGroup = {};
+  for (const m of memberRows) {
+    if (!membersByGroup[m.group_id]) membersByGroup[m.group_id] = [];
+    membersByGroup[m.group_id].push({ characterId: m.character_id, roleInGroup: m.role_in_group ?? null });
+  }
+
+  return groupRows.map(r => ({
+    id:          r.id,
+    name:        r.name,
+    type:        r.type        ?? 'autre',
+    color:       r.color       ?? '#64748B',
+    description: r.description ?? null,
+    homelandId:  r.homeland_id ?? null,
+    members:     membersByGroup[r.id] ?? [],
+  }));
+}
+
+export async function insertGroup(data, projectId) {
+  const id = makeId('grp', projectId);
+  await sql`
+    INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
+    VALUES (
+      ${id}, ${projectId}, ${data.name},
+      ${data.type        ?? 'autre'},
+      ${data.color       ?? '#64748B'},
+      ${data.description ?? null},
+      ${data.homelandId  ?? null}
+    )
+  `;
+  return id;
+}
+
+export async function updateGroup(groupId, data, projectId) {
+  await sql`
+    UPDATE groups SET
+      name        = ${data.name},
+      type        = ${data.type        ?? 'autre'},
+      color       = ${data.color       ?? '#64748B'},
+      description = ${data.description ?? null},
+      homeland_id = ${data.homelandId  ?? null}
+    WHERE id = ${groupId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteGroup(groupId, projectId) {
+  await sql`DELETE FROM character_groups WHERE group_id = ${groupId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM groups WHERE id = ${groupId} AND project_id = ${projectId}`;
+}
+
+export async function setCharacterGroups(characterId, groupIds, projectId) {
+  await sql`DELETE FROM character_groups WHERE character_id = ${characterId} AND project_id = ${projectId}`;
+  for (const groupId of groupIds) {
+    await sql`
+      INSERT INTO character_groups (character_id, group_id, project_id)
+      VALUES (${characterId}, ${groupId}, ${projectId})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+}
+
+// ── Fils narratifs ─────────────────────────────────────────────────────────────
+
+export async function getThreads(projectId) {
+  const rows = await sql`
+    SELECT * FROM narrative_threads WHERE project_id = ${projectId}
+    ORDER BY sort_order, id
+  `;
+  return rows.map(r => ({
+    id:          r.id,
+    name:        r.name,
+    color:       r.color       ?? '#3F51B5',
+    role:        r.role        ?? 'subplot',
+    description: r.description ?? null,
+    sortOrder:   r.sort_order  ?? 0,
+  }));
+}
+
+export async function insertThread(data, projectId) {
+  const id = makeId('thread', projectId);
+  await sql`
+    INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
+    VALUES (
+      ${id}, ${projectId}, ${data.name},
+      ${data.color       ?? '#3F51B5'},
+      ${data.role        ?? 'subplot'},
+      ${data.description ?? null},
+      ${data.sortOrder   ?? 0}
+    )
+  `;
+  return id;
+}
+
+export async function updateThread(threadId, data, projectId) {
+  await sql`
+    UPDATE narrative_threads SET
+      name        = ${data.name},
+      color       = ${data.color       ?? '#3F51B5'},
+      role        = ${data.role        ?? 'subplot'},
+      description = ${data.description ?? null},
+      sort_order  = ${data.sortOrder   ?? 0}
+    WHERE id = ${threadId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteThread(threadId, projectId) {
+  await sql`DELETE FROM narrative_threads WHERE id = ${threadId} AND project_id = ${projectId}`;
+}
+
+// ── Arc des personnages ────────────────────────────────────────────────────────
+
+export async function getCharacterAxes(characterId, projectId) {
+  const rows = await sql`
+    SELECT * FROM character_arc_axes
+    WHERE project_id = ${projectId} AND character_id = ${characterId}
+    ORDER BY label
+  `;
+  return rows.map(r => ({ id: r.id, characterId: r.character_id, label: r.label, color: r.color }));
+}
+
+export async function getAllProjectAxisLabels(projectId) {
+  const rows = await sql`
+    SELECT DISTINCT label FROM character_arc_axes
+    WHERE project_id = ${projectId}
+    ORDER BY label
+  `;
+  return rows.map(r => r.label);
+}
+
+export async function getAllCharacterAxes(projectId) {
+  const rows = await sql`
+    SELECT * FROM character_arc_axes
+    WHERE project_id = ${projectId}
+    ORDER BY character_id, label
+  `;
+  return rows.map(r => ({ id: r.id, characterId: r.character_id, label: r.label, color: r.color }));
+}
+
+export async function insertCharacterAxis(data, projectId) {
+  const id = makeId('cax', projectId);
+  await sql`
+    INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
+    VALUES (${id}, ${projectId}, ${data.characterId}, ${data.label}, ${data.color ?? '#64748b'})
+  `;
+  return id;
+}
+
+export async function deleteCharacterAxis(axisId, projectId) {
+  await sql`DELETE FROM character_arc_points WHERE axis_id = ${axisId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM character_arc_axes WHERE id = ${axisId} AND project_id = ${projectId}`;
+}
+
+export async function upsertCharacterArcPoint(projectId, axisId, chapterNum, value, note, volumeId) {
+  await sql`
+    INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note, volume_id)
+    VALUES (${projectId}, ${axisId}, ${chapterNum}, ${value}, ${note ?? null}, ${volumeId ?? null})
+    ON CONFLICT (project_id, axis_id, chapter_num)
+    DO UPDATE SET value = ${value}, note = ${note ?? null}, volume_id = ${volumeId ?? null}
+  `;
+}
+
+export async function getCharacterArcPoints(axisId, projectId) {
+  const rows = await sql`
+    SELECT chapter_num, value, note, volume_id FROM character_arc_points
+    WHERE project_id = ${projectId} AND axis_id = ${axisId}
+    ORDER BY chapter_num
+  `;
+  return rows.map(r => ({
+    chapterNum: r.chapter_num,
+    value:      r.value,
+    note:       r.note,
+    volumeId:   r.volume_id ?? null,
+  }));
+}
+
+export async function getAllCharacterArcPoints(projectId) {
+  const rows = await sql`
+    SELECT axis_id, chapter_num, value, note, volume_id FROM character_arc_points
+    WHERE project_id = ${projectId}
+    ORDER BY axis_id, chapter_num
+  `;
+  return rows.map(r => ({
+    axisId:     r.axis_id,
+    chapterNum: r.chapter_num,
+    value:      r.value,
+    note:       r.note,
+    volumeId:   r.volume_id ?? null,
+  }));
+}
+
+// ── Voyage du Héros ───────────────────────────────────────────────────────────
+
+export async function getHeroJourneyEntries(projectId) {
+  const rows = await sql`
+    SELECT id, stage_key, character_id, chapter_num, summary, volume_id
+    FROM hero_journey_entries
+    WHERE project_id = ${projectId}
+    ORDER BY stage_key
+  `;
+  return rows.map(r => ({
+    id:          r.id,
+    stageKey:    r.stage_key,
+    characterId: r.character_id ?? null,
+    chapterNum:  r.chapter_num  ?? null,
+    summary:     r.summary      ?? null,
+    volumeId:    r.volume_id    ?? null,
+  }));
+}
+
+/**
+ * Upsert : cherche une entrée existante par (stageKey + characterId + volumeId).
+ * Si elle existe, met à jour chapterNum + summary. Sinon, insère.
+ * Retourne l'id de l'entrée.
+ */
+export async function saveHeroJourneyEntry({ stageKey, characterId, chapterNum, summary, volumeId }, projectId) {
+  const existing = await sql`
+    SELECT id FROM hero_journey_entries
+    WHERE project_id  = ${projectId}
+      AND stage_key   = ${stageKey}
+      AND character_id IS NOT DISTINCT FROM ${characterId ?? null}
+      AND volume_id    IS NOT DISTINCT FROM ${volumeId    ?? null}
+    LIMIT 1
+  `;
+
+  if (existing.length > 0) {
+    const id = existing[0].id;
+    await sql`
+      UPDATE hero_journey_entries
+      SET chapter_num = ${chapterNum ?? null}, summary = ${summary ?? null}
+      WHERE id = ${id} AND project_id = ${projectId}
+    `;
+    return id;
+  }
+
+  const id = randomUUID();
+  await sql`
+    INSERT INTO hero_journey_entries
+      (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
+    VALUES (
+      ${id}, ${projectId}, ${stageKey},
+      ${characterId ?? null}, ${chapterNum ?? null}, ${summary ?? null}, ${volumeId ?? null}
+    )
+  `;
+  return id;
+}
+
+export async function removeHeroJourneyEntry(entryId, projectId) {
+  await sql`DELETE FROM hero_journey_entries WHERE id = ${entryId} AND project_id = ${projectId}`;
+}
+
+export async function exportProject(projectId) {
+  const [proj] = await sql`SELECT id, name, description, map_image, created_at FROM projects WHERE id = ${projectId}`;
+  if (!proj) throw new Error(`Projet introuvable : ${projectId}`);
+
+  const [
+    volumes, characters, locations, objects,
+    timelineEvents, eventEntities,
+    incoherences, incoherenceLinks,
+    stcChapters, stcChapterBeats, stcChapterEntities,
+    characterJourneys,
+    groups, characterGroups,
+    plantPayoffs, arcPoints, narrativeThreads,
+    characterArcAxes, characterArcPoints,
+    heroJourneyEntries,
+  ] = await Promise.all([
+    sql`SELECT * FROM volumes                WHERE project_id = ${projectId} ORDER BY number`,
+    sql`SELECT * FROM characters             WHERE project_id = ${projectId} ORDER BY name`,
+    sql`SELECT * FROM locations              WHERE project_id = ${projectId} ORDER BY name`,
+    sql`SELECT * FROM objects                WHERE project_id = ${projectId} ORDER BY name`,
+    sql`SELECT * FROM timeline_events        WHERE project_id = ${projectId} ORDER BY chapter_num, id`,
+    sql`SELECT * FROM event_entities         WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM incoherences           WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM incoherence_links      WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM stc_chapters           WHERE project_id = ${projectId} ORDER BY number`,
+    sql`SELECT * FROM stc_chapter_beats      WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM stc_chapter_entities   WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM character_journeys     WHERE project_id = ${projectId} ORDER BY char_key, step_index`,
+    sql`SELECT * FROM groups                 WHERE project_id = ${projectId} ORDER BY name`,
+    sql`SELECT * FROM character_groups       WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM plant_payoffs          WHERE project_id = ${projectId}`,
+    sql`SELECT * FROM arc_points             WHERE project_id = ${projectId} ORDER BY chapter_number`,
+    sql`SELECT * FROM narrative_threads      WHERE project_id = ${projectId} ORDER BY sort_order`,
+    sql`SELECT * FROM character_arc_axes     WHERE project_id = ${projectId} ORDER BY character_id, label`,
+    sql`SELECT * FROM character_arc_points   WHERE project_id = ${projectId} ORDER BY axis_id, chapter_num`,
+    sql`SELECT * FROM hero_journey_entries   WHERE project_id = ${projectId} ORDER BY stage_key`,
+  ]);
+
+  return {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    project: { id: proj.id, name: proj.name, description: proj.description, mapImage: proj.map_image, createdAt: proj.created_at },
+    volumes, characters, locations, objects,
+    timelineEvents, eventEntities,
+    incoherences, incoherenceLinks,
+    stcChapters, stcChapterBeats, stcChapterEntities,
+    characterJourneys,
+    groups, characterGroups,
+    plantPayoffs, arcPoints, narrativeThreads,
+    characterArcAxes, characterArcPoints,
+    heroJourneyEntries,
+  };
+}
