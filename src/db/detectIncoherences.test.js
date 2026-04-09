@@ -34,7 +34,7 @@ function makeGroup(id, name, members = []) {
 function withChar(charId) {
   return { entityType: 'character', id: charId };
 }
-function withLoc(locId) {
+function _withLoc(locId) {
   return { entityType: 'location', id: locId };
 }
 function withObj(objId) {

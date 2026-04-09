@@ -135,7 +135,7 @@ describe('buildGraph — réification des relations', () => {
     // char_frodo et char_aragorn partagent la même communauté → 2 arêtes 'fellowship'
     // → un nœud rel doit être créé
     const graph = buildGraph('char_frodo');
-    const relNode = graph.relNodes.find(n => n.relType === 'fellowship');
+    void graph.relNodes.find(n => n.relType === 'fellowship');
     // Si un seul allié il n'y a pas de relNode, si >= 2 il y en a un
     // Ici on a exactement 1 allié (aragorn) → pas de relNode
     // On vérifie que la structure est cohérente (pas d'erreur)

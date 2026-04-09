@@ -4,11 +4,11 @@ import {
   insertTimelineEvent,
   updateTimelineEvent,
   deleteTimelineEvent,
-} from '../db/queries';
+} from '../api/client';
 
 export const useTimelineStore = createEntityStore({
   initialState: { events: null },
-  fetchFn:  async (db, projectId) => ({ events: await getTimelineEvents(db, projectId) }),
+  fetchFn:  async (projectId) => ({ events: await getTimelineEvents(projectId) }),
   insertFn: insertTimelineEvent,
   updateFn: updateTimelineEvent,
   deleteFn: deleteTimelineEvent,

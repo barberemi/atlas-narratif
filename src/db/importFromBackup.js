@@ -62,6 +62,12 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     const json  = (v)   => v === null || v === undefined ? null
                          : typeof v === 'string' ? v
                          : JSON.stringify(v);
+    // Lit un champ depuis la colonne directe (nouveau backup) ou depuis extra (ancien backup)
+    const fromExtra = (r, directKey, extraKey, fallback) => {
+      if (r[directKey] !== undefined && r[directKey] !== null) return r[directKey];
+      const ex = typeof r.extra === 'string' ? JSON.parse(r.extra || '{}') : (r.extra ?? {});
+      return ex[extraKey] ?? fallback;
+    };
 
     // Volumes
     onProgress?.('Import des volumes…');
@@ -78,15 +84,22 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of characters) {
       await db.query(
         `INSERT INTO characters
-           (id, project_id, name, aliases, origin, description, color, journey_key, extra)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+           (id, project_id, name, aliases, race, role, affiliations, traits,
+            origin, description, color, journey_key, death_event_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(), r.name,
-          json(r.aliases), r.origin, r.description,
+          json(r.aliases),
+          fromExtra(r, 'race',           'race',         null),
+          fromExtra(r, 'role',           'role',         null),
+          json(fromExtra(r, 'affiliations', 'affiliations', [])),
+          json(fromExtra(r, 'traits',       'traits',       [])),
+          r.origin ?? null,
+          r.description ?? null,
           r.color ?? '#64748b',
           r.journey_key ?? null,
-          json(r.extra ?? {}),
+          fromExtra(r, 'death_event_id', 'deathEventId', null),
         ],
       );
     }
@@ -96,13 +109,17 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of locations) {
       await db.query(
         `INSERT INTO locations
-           (id, project_id, name, type, regime, description, coordinates, extra)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+           (id, project_id, name, type, regime, description, coordinates,
+            inhabitants, visited_by, key_places)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(), r.name,
-          r.type, r.regime, r.description,
-          json(r.coordinates), json(r.extra ?? {}),
+          r.type ?? null, r.regime ?? null, r.description ?? null,
+          json(r.coordinates),
+          json(fromExtra(r, 'inhabitants', 'inhabitants', [])),
+          json(fromExtra(r, 'visited_by',  'visitedBy',  [])),
+          json(fromExtra(r, 'key_places',  'keyPlaces',  [])),
         ],
       );
     }
@@ -112,13 +129,20 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of objects) {
       await db.query(
         `INSERT INTO objects
-           (id, project_id, name, type, description, creator, current_holder, extra)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+           (id, project_id, name, type, description, creator, current_holder,
+            powers, holders, created_in, inscription, status, status_changed_at_chapter)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(), r.name,
-          r.type, r.description, r.creator,
-          r.current_holder ?? null, json(r.extra ?? {}),
+          r.type ?? null, r.description ?? null, r.creator ?? null,
+          r.current_holder ?? null,
+          json(fromExtra(r, 'powers',      'powers',      [])),
+          json(fromExtra(r, 'holders',     'holders',     [])),
+          fromExtra(r, 'created_in',   'createdIn',   null),
+          fromExtra(r, 'inscription',  'inscription', null),
+          fromExtra(r, 'status',       'status',      'active'),
+          fromExtra(r, 'status_changed_at_chapter', 'statusChangedAtChapter', null),
         ],
       );
     }
@@ -128,15 +152,17 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
     for (const r of timelineEvents) {
       await db.query(
         `INSERT INTO timeline_events
-           (id, project_id, chapter_num, chapter_title, title, description, location_id, extra,
-            pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome, volume_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+           (id, project_id, chapter_num, chapter_title, title, description, location_id, beat_id,
+            pov_character_id, thread_ids, scene_order, scene_goal, scene_conflict, scene_outcome,
+            volume_id, is_flashback, story_chapter_ref)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
          ON CONFLICT DO NOTHING`,
         [
           r.id, pid(),
           r.chapter_num, r.chapter_title,
           r.title, r.description ?? null,
-          r.location_id ?? null, json(r.extra ?? {}),
+          r.location_id ?? null,
+          fromExtra(r, 'beat_id', 'beatId', null),
           r.pov_character_id ?? null,
           json(r.thread_ids ?? []),
           r.scene_order    ?? 0,
@@ -144,6 +170,8 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
           r.scene_conflict ?? null,
           r.scene_outcome  ?? null,
           r.volume_id      ?? null,
+          r.is_flashback   ?? false,
+          r.story_chapter_ref ?? null,
         ],
       );
     }

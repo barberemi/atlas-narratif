@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getVolumes, insertVolume, updateVolume, deleteVolume } from '../db/queries';
+import { getVolumes, insertVolume, updateVolume, deleteVolume } from '../api/client';
 
 /**
  * Store gérant les volumes (tomes) d'une série.
@@ -8,23 +8,22 @@ import { getVolumes, insertVolume, updateVolume, deleteVolume } from '../db/quer
  * activeVolumeId = <id>  → filtrage par tome dans toutes les vues
  */
 export const useVolumeStore = create((set, get) => ({
-  volumes:       null,
+  volumes:        null,
   activeVolumeId: null,
-  _db:           null,
-  _projectId:    null,
+  _projectId:     null,
 
-  load: async (db, projectId) => {
-    set({ _db: db, _projectId: projectId });
-    const volumes = await getVolumes(db, projectId);
+  load: async (projectId) => {
+    set({ _projectId: projectId });
+    const volumes = await getVolumes(projectId);
     set({ volumes });
   },
 
   setActiveVolume: (id) => set({ activeVolumeId: id }),
 
   addVolume: async (data) => {
-    const { _db, _projectId, volumes } = get();
-    if (!_db || !_projectId) return null;
-    const id = await insertVolume(_db, data, _projectId);
+    const { _projectId, volumes } = get();
+    if (!_projectId) return null;
+    const id = await insertVolume(data, _projectId);
     const newVolume = {
       id,
       number:      data.number,
@@ -36,9 +35,9 @@ export const useVolumeStore = create((set, get) => ({
   },
 
   editVolume: async (volumeId, data) => {
-    const { _db, _projectId, volumes } = get();
-    if (!_db || !_projectId) return;
-    await updateVolume(_db, volumeId, data, _projectId);
+    const { _projectId, volumes } = get();
+    if (!_projectId) return;
+    await updateVolume(volumeId, data, _projectId);
     set({
       volumes: (volumes ?? [])
         .map(v => v.id === volumeId ? { ...v, ...data } : v)
@@ -47,9 +46,9 @@ export const useVolumeStore = create((set, get) => ({
   },
 
   removeVolume: async (volumeId) => {
-    const { _db, _projectId, volumes, activeVolumeId } = get();
-    if (!_db || !_projectId) return;
-    await deleteVolume(_db, volumeId, _projectId);
+    const { _projectId, volumes, activeVolumeId } = get();
+    if (!_projectId) return;
+    await deleteVolume(volumeId, _projectId);
     const next = (volumes ?? []).filter(v => v.id !== volumeId);
     set({
       volumes: next,
@@ -57,5 +56,5 @@ export const useVolumeStore = create((set, get) => ({
     });
   },
 
-  reset: () => set({ volumes: null, activeVolumeId: null, _db: null, _projectId: null }),
+  reset: () => set({ volumes: null, activeVolumeId: null, _projectId: null }),
 }));

@@ -6,8 +6,6 @@ import { hexToRgb } from '../../utils/color';
 import { useMapStore }      from '../../stores/useMapStore';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
-import { useDb }            from '../../db/DbContext';
-import { useProject }       from '../../db/ProjectContext';
 
 function ControlButton({ active, onClick, children, title }) {
   return (
@@ -26,9 +24,7 @@ function ControlButton({ active, onClick, children, title }) {
   );
 }
 
-export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
-  const db           = useDb();
-  const { projectId } = useProject();
+export default function AtlasMapView({ onLocationClick }) {
 
   const journeys       = useMapStore(s => s.journeys);
   const autoJourneys   = useMapStore(s => s.autoJourneys);
@@ -43,7 +39,7 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
   const setCoordinates  = useLoreStore(s => s.setCoordinates);
   const allChars        = useLoreStore(s => s.characters);
   const allLocations    = useLoreStore(s => s.locations);
-  const events          = useTimelineStore(s => s.events) ?? [];
+  const events          = useTimelineStore(s => s.events);
 
   // ── Mode édition carte ────────────────────────────────────────────────────
   const [editMode,   setEditMode]   = useState(false);
@@ -73,16 +69,17 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => saveMapImage(db, projectId, ev.target.result);
+    reader.onload = (ev) => saveMapImage(ev.target.result);
     reader.readAsDataURL(file);
-  }, [db, projectId, saveMapImage]);
+  }, [saveMapImage]);
 
   const locations = useMemo(() => allLocations.filter(l => l.coordinates), [allLocations]);
 
   // Calcul auto-journeys quand les données sont disponibles
   useEffect(() => {
-    if (events.length && allLocations.length && allChars.length) {
-      loadAuto(events, allLocations, allChars);
+    const evts = events ?? [];
+    if (evts.length && allLocations.length && allChars.length) {
+      loadAuto(evts, allLocations, allChars);
     }
   }, [events, allLocations, allChars, loadAuto]);
 
@@ -221,7 +218,7 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
             </label>
             {mapImage && (
               <button
-                onClick={() => saveMapImage(db, projectId, null)}
+                onClick={() => saveMapImage(null)}
                 className="text-[10px] text-slate-700 hover:text-red-400 transition-colors text-left"
               >
                 Supprimer la carte
@@ -539,7 +536,7 @@ export default function AtlasMapView({ onCharacterClick, onLocationClick }) {
           characters={allChars}
           locations={allLocations}
           journeys={journeys}
-          onSave={(charKey, steps) => persistJourney(db, projectId, charKey, steps)}
+          onSave={(charKey, steps) => persistJourney(charKey, steps)}
         />
       )}
 

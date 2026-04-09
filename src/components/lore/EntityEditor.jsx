@@ -17,7 +17,7 @@ const PRESET_COLORS = [
 ];
 
 // ── Saisie de tags (Enter / virgule pour ajouter) ──────────────────────────────
-function TagInput({ value, onChange, placeholder, accent }) {
+function TagInput({ value, onChange, placeholder }) {
   const [input, setInput] = useState('');
 
   const add = () => {
@@ -59,7 +59,7 @@ function TagInput({ value, onChange, placeholder, accent }) {
 }
 
 // ── Champs spécifiques au type ─────────────────────────────────────────────────
-function CharacterFields({ data, set, accent, characterId }) {
+function CharacterFields({ data, set, accent }) {
   const events = useTimelineStore(s => s.events) ?? [];
   const groups = useLoreStore(s => s.groups) ?? [];
 

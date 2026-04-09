@@ -1,21 +1,20 @@
 import { create } from 'zustand';
-import { getPlants, insertPlant, updatePlant, deletePlant } from '../db/queries';
+import { getPlants, insertPlant, updatePlant, deletePlant } from '../api/client';
 
 export const usePlantStore = create((set, get) => ({
   plants:     null,
-  _db:        null,
   _projectId: null,
 
-  load: async (db, projectId) => {
-    set({ _db: db, _projectId: projectId });
-    const plants = await getPlants(db, projectId);
+  load: async (projectId) => {
+    set({ _projectId: projectId });
+    const plants = await getPlants(projectId);
     set({ plants });
   },
 
   addPlant: async (data) => {
-    const { _db, _projectId, plants } = get();
-    if (!_db || !_projectId) return null;
-    const id = await insertPlant(_db, data, _projectId);
+    const { _projectId, plants } = get();
+    if (!_projectId) return null;
+    const id = await insertPlant(data, _projectId);
     const newPlant = {
       id,
       label:            data.label,
@@ -36,22 +35,18 @@ export const usePlantStore = create((set, get) => ({
   },
 
   editPlant: async (plantId, data) => {
-    const { _db, _projectId, plants } = get();
-    if (!_db || !_projectId) return;
-    await updatePlant(_db, plantId, data, _projectId);
-    set({
-      plants: (plants ?? []).map(p =>
-        p.id === plantId ? { ...p, ...data } : p
-      ),
-    });
+    const { _projectId, plants } = get();
+    if (!_projectId) return;
+    await updatePlant(plantId, data, _projectId);
+    set({ plants: (plants ?? []).map(p => p.id === plantId ? { ...p, ...data } : p) });
   },
 
   removePlant: async (plantId) => {
-    const { _db, _projectId, plants } = get();
-    if (!_db || !_projectId) return;
-    await deletePlant(_db, plantId, _projectId);
+    const { _projectId, plants } = get();
+    if (!_projectId) return;
+    await deletePlant(plantId, _projectId);
     set({ plants: (plants ?? []).filter(p => p.id !== plantId) });
   },
 
-  reset: () => set({ plants: null, _db: null, _projectId: null }),
+  reset: () => set({ plants: null, _projectId: null }),
 }));

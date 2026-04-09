@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useDb } from '../../db/DbContext';
 import { useProject } from '../../db/ProjectContext';
-import { deleteProject } from '../../db/queries';
+import { deleteProject } from '../../api/client';
 import { exportProject } from '../../db/exportProject';
 
 export default function ProjectPicker() {
-  const db = useDb();
   const { projectId, setProjectId, projects, reloadProjects } = useProject();
   const [open,       setOpen]       = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
@@ -22,15 +20,14 @@ export default function ProjectPicker() {
   const active = projects.find(p => p.id === projectId);
 
   const handleExport = async () => {
-    if (!db || exporting) return;
+    if (exporting) return;
     setExporting(true);
-    try { await exportProject(db, projectId); }
+    try { await exportProject(null, projectId); }
     finally { setExporting(false); }
   };
 
   const handleDelete = async (id) => {
-    if (!db) return;
-    await deleteProject(db, id);
+    await deleteProject(id);
     await reloadProjects();
     if (id === projectId) {
       const remaining = projects.filter(p => p.id !== id);

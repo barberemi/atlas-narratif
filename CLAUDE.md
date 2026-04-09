@@ -27,8 +27,15 @@ Outil d'analyse et de construction narrative pour auteurs. SPA React, 100% in-br
 | `/threads` | `ThreadsBrowser` | Gestion des fils narratifs (subplots) |
 | `/heros` | `HeroJourney` | Voyage du Héros — 12 étapes de Joseph Campbell |
 | `/incoherences` | `IncoherencesBrowser` | Détection et résolution d'incohérences |
+| `/login` | `LoginPage` | Connexion email + mot de passe |
+| `/register` | `RegisterPage` | Création de compte (envoie email de vérification) |
+| `/verify-email` | `VerifyEmailPage` | Écran "vérifiez votre boîte mail" |
+| `/forgot-password` | `ForgotPasswordPage` | Demande de réinitialisation mot de passe |
+| `/reset-password` | `ResetPasswordPage` | Saisie du nouveau mot de passe (token en query param) |
 
 Routes protégées par `<RequireProject>` → redirige vers `/` si aucun projet chargé.
+
+Auth client : `src/lib/authClient.js` (better-auth/react, baseURL = `VITE_API_URL`)
 
 → Détails : `ai/docs/routes.md`
 
@@ -158,7 +165,7 @@ Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gem
 
 ## Maintenance de la documentation IA
 
-**Règle : toute modification de code doit être suivie d'une mise à jour de la doc concernée.**
+**Règle : toute modification de code doit être suivie d'une mise à jour de la doc concernée — sans attendre que l'utilisateur le demande.**
 
 | Si tu modifies… | Mets à jour… |
 |-----------------|-------------|

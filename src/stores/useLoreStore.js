@@ -7,23 +7,23 @@ import {
   setLocationCoordinates,
   insertGroup,     updateGroup,     deleteGroup,
   setCharacterGroups,
-} from '../db/queries';
+} from '../api/client';
 import { initEntityCache } from '../utils/entityUtils';
 
 export const useLoreStore = create((set, get) => {
   async function _reload() {
-    const { _db, _projectId } = get();
-    const data = await getLoreData(_db, _projectId);
+    const { _projectId } = get();
+    const data = await getLoreData(_projectId);
     initEntityCache(data);
     set(data);
   }
 
   async function _withSaving(fn) {
-    const { _db, _projectId } = get();
-    if (!_db || !_projectId) return;
+    const { _projectId } = get();
+    if (!_projectId) return;
     set({ saving: true });
     try {
-      await fn(_db, _projectId);
+      await fn(_projectId);
       await _reload();
     } finally {
       set({ saving: false });
@@ -37,12 +37,11 @@ export const useLoreStore = create((set, get) => {
     groups:     [],
     ready:      false,
     saving:     false,
-    _db:        null,
     _projectId: null,
 
-    load: async (db, projectId) => {
-      set({ _db: db, _projectId: projectId });
-      const data = await getLoreData(db, projectId);
+    load: async (projectId) => {
+      set({ _projectId: projectId });
+      const data = await getLoreData(projectId);
       initEntityCache(data);
       set({ ...data, ready: true });
     },
@@ -51,57 +50,56 @@ export const useLoreStore = create((set, get) => {
 
     // ── Personnages ───────────────────────────────────────────────────────────
 
-    saveCharacter: (charId, data) => _withSaving(async (db, pid) => {
+    saveCharacter: (charId, data) => _withSaving(async (pid) => {
       const id = charId
-        ? (await updateCharacter(db, charId, data, pid), charId)
-        : await insertCharacter(db, data, pid);
+        ? (await updateCharacter(charId, data, pid), charId)
+        : await insertCharacter(data, pid);
       if (data.groupIds !== undefined) {
-        await setCharacterGroups(db, id, data.groupIds, pid);
+        await setCharacterGroups(id, data.groupIds, pid);
       }
     }),
 
-    removeCharacter: (charId) => _withSaving((db, pid) =>
-      deleteCharacter(db, charId, pid)
+    removeCharacter: (charId) => _withSaving((pid) =>
+      deleteCharacter(charId, pid)
     ),
 
     // ── Lieux ─────────────────────────────────────────────────────────────────
 
-    saveLocation: (locId, data) => _withSaving((db, pid) =>
-      locId ? updateLocation(db, locId, data, pid) : insertLocation(db, data, pid)
+    saveLocation: (locId, data) => _withSaving((pid) =>
+      locId ? updateLocation(locId, data, pid) : insertLocation(data, pid)
     ),
 
-    removeLocation: (locId) => _withSaving((db, pid) =>
-      deleteLocation(db, locId, pid)
+    removeLocation: (locId) => _withSaving((pid) =>
+      deleteLocation(locId, pid)
     ),
 
-    // Met à jour les coordonnées d'un lieu (optimiste) + persiste en DB
     setCoordinates: async (locId, coords) => {
-      const { _db, _projectId } = get();
-      if (!_db || !_projectId) return;
+      const { _projectId } = get();
+      if (!_projectId) return;
       set(s => ({ locations: s.locations.map(l => l.id === locId ? { ...l, coordinates: coords } : l) }));
-      await setLocationCoordinates(_db, locId, _projectId, coords);
+      await setLocationCoordinates(locId, _projectId, coords);
     },
 
     // ── Objets ────────────────────────────────────────────────────────────────
 
-    saveObject: (objId, data) => _withSaving((db, pid) =>
-      objId ? updateObject(db, objId, data, pid) : insertObject(db, data, pid)
+    saveObject: (objId, data) => _withSaving((pid) =>
+      objId ? updateObject(objId, data, pid) : insertObject(data, pid)
     ),
 
-    removeObject: (objId) => _withSaving((db, pid) =>
-      deleteObject(db, objId, pid)
+    removeObject: (objId) => _withSaving((pid) =>
+      deleteObject(objId, pid)
     ),
 
     // ── Groupes ───────────────────────────────────────────────────────────────
 
-    saveGroup: (groupId, data) => _withSaving((db, pid) =>
-      groupId ? updateGroup(db, groupId, data, pid) : insertGroup(db, data, pid)
+    saveGroup: (groupId, data) => _withSaving((pid) =>
+      groupId ? updateGroup(groupId, data, pid) : insertGroup(data, pid)
     ),
 
-    removeGroup: (groupId) => _withSaving((db, pid) =>
-      deleteGroup(db, groupId, pid)
+    removeGroup: (groupId) => _withSaving((pid) =>
+      deleteGroup(groupId, pid)
     ),
 
-    reset: () => set({ characters: [], locations: [], objects: [], groups: [], ready: false, saving: false, _db: null, _projectId: null }),
+    reset: () => set({ characters: [], locations: [], objects: [], groups: [], ready: false, saving: false, _projectId: null }),
   };
 });

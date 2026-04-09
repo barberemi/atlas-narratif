@@ -106,7 +106,8 @@ export default function ReviewPage() {
   const characters = useLoreStore(s => s.characters);
   const locations  = useLoreStore(s => s.locations);
   const objects    = useLoreStore(s => s.objects);
-  const events     = useTimelineStore(s => s.events) ?? [];
+  const _events    = useTimelineStore(s => s.events);
+  const events     = useMemo(() => _events ?? [], [_events]);
 
   const [sourceFilter, setSourceFilter] = useState('all');
   const [editorState,  setEditorState]  = useState(null);

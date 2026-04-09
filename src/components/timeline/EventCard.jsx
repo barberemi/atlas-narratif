@@ -7,7 +7,7 @@ import { PLANT_TYPES } from '../../pages/PlantsBrowser';
 import EntityChip from './EntityChip';
 import DarkCard from '../ui/DarkCard';
 
-export default function EventCard({ event, isHighlighted, isDimmed, onEntityClick, onEdit, allIncoherences, beat }) {
+export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allIncoherences, beat, volumeLabel }) {
   const [expanded, setExpanded] = useState(false);
 
   const linkedIncs = useMemo(() =>
@@ -22,9 +22,9 @@ export default function EventCard({ event, isHighlighted, isDimmed, onEntityClic
 
   const outcome = event.sceneOutcome ? OUTCOME_MAP[event.sceneOutcome] : null;
 
-  const plants = usePlantStore(s => s.plants) ?? [];
+  const plants = usePlantStore(s => s.plants);
   const linkedPlants = useMemo(() =>
-    plants.filter(p => p.plantEventId === event.id || p.payoffEventId === event.id),
+    (plants ?? []).filter(p => p.plantEventId === event.id || p.payoffEventId === event.id),
     [plants, event.id],
   );
 
@@ -43,7 +43,17 @@ export default function EventCard({ event, isHighlighted, isDimmed, onEntityClic
 
         {/* ── Titre + bouton édition ── */}
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-bold text-slate-200 leading-snug flex-1">{event.title}</p>
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            {volumeLabel && (
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0"
+                style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
+              >
+                {volumeLabel}
+              </span>
+            )}
+            <p className="text-sm font-bold text-slate-200 leading-snug">{event.title}</p>
+          </div>
           <button
             onClick={e => { e.stopPropagation(); onEdit(event); }}
             className="w-6 h-6 flex items-center justify-center rounded-md flex-shrink-0 transition-all duration-200"

@@ -1,83 +1,98 @@
 # Atlas Narratif
 
-**Architecte de cohérence narrative** — Un outil interactif pour explorer et visualiser des univers fictionnels : bases de données de lore, voyages de personnages, et graphes de relations entre entités.
-
-> Projet actuellement développé avec le Seigneur des Anneaux (*La Communauté de l'Anneau*) comme jeu de données de test.
+**Outil d'analyse et de construction narrative pour auteurs.** Lore, timeline, carte interactive, arc émotionnel, détection d'incohérences, Voyage du Héros, Save the Cat.
 
 ---
 
-## Stack technique
+## Architecture
 
-| Catégorie | Technologie |
-|---|---|
-| Framework UI | React 19 |
-| Build tool | Vite 7 |
-| Styling | Tailwind CSS 4 |
-| CSS processing | PostCSS + Autoprefixer |
-| Linting | ESLint 9 |
-| Conteneurisation | Docker + Docker Compose |
-| Runtime | Node 20 (Alpine) |
-
----
-
-## Fonctionnalités
-
-### Carte interactive
-- Affichage de la carte de la Terre du Milieu
-- Visualisation des voyages de Frodon, Aragorn et Gandalf sous forme de trajets colorés
-- Marqueurs animés sur les positions actuelles
-- Slider de timeline par personnage pour naviguer dans le voyage
-- Bascule d'affichage par personnage
-
-### Base de données de lore
-- Recherche textuelle dans les personnages, lieux et objets
-- Fiches détaillées : race, rôle, affiliations, traits, descriptions narratives
-- Lien vers le graphe d'entités depuis chaque fiche
-
-### Graphe d'entités
-- Visualisation en nœud central + satellites des relations entre entités
-- Types de relations colorés : Communauté, Allié, Porteur, Origine, Création
-- Navigation entre entités au clic
-
-### Dépôt de manuscrit
-- Upload par glisser-déposer de fichiers `.txt`, `.md`, `.doc`, `.docx`
-- Interface d'analyse simulée (progression) — prêt pour intégration IA
+| Couche | Technologie |
+|--------|-------------|
+| Frontend | React 19 + React Router v7 + Vite 7 |
+| Styling | Tailwind CSS 4 (dark theme, indigo `#3F51B5`) |
+| State | Zustand 5 (un store par domaine) |
+| API serveur | Hono (Node 20) |
+| Base de données | PostgreSQL 16 |
+| Auth | Better Auth (email/password, Google OAuth, email de vérification) |
+| Email | Resend (fallback console en dev) |
+| Conteneurisation | Docker + Docker Compose + Traefik (prod) |
 
 ---
 
-## Lancer le projet
+## Lancer en développement
+
+### Option A — Tout en Docker (recommandé)
+
+```bash
+docker compose -f docker-compose.dev-full.yml up
+```
+
+Lance PostgreSQL + l'API (hot reload) + le frontend en une seule commande.
+Les emails sans `RESEND_API_KEY` s'affichent dans les logs du conteneur `api`.
+
+### Option B — Natif (Node local)
+
+**Prérequis :** Node.js 20+, Docker (pour PostgreSQL)
+
+```bash
+# 1. Base de données
+docker compose -f docker-compose.dev-full.yml up postgres -d
+
+# 2. Serveur API
+cp server/.env.example server/.env   # valeurs par défaut suffisantes
+cd server && npm install
+node --watch --env-file=.env src/index.js
+
+# 3. Frontend (depuis la racine)
+npm install
+npm run dev      # http://localhost:5173
+```
+
+> **Google OAuth en dev** : ajouter `http://localhost:3001/auth/callback/google` comme URI de redirection autorisée dans la Google Cloud Console.
+
+---
+
+## Déploiement en production (VPS)
 
 ### Prérequis
 
-- Node.js 20+
-- npm
+- Docker + Docker Compose installés sur le VPS
+- Un domaine pointant vers le VPS
 
-### Sans Docker
-
-```bash
-npm install        # Installer les dépendances
-npm run dev        # Démarrer le serveur de développement (port 5173)
-npm run build      # Build de production
-npm run preview    # Prévisualiser le build de production
-npm run lint       # Lancer le linter
-```
-
-### Avec Docker (recommandé)
+### Déployer
 
 ```bash
-make up            # Lancer les conteneurs (build auto si nécessaire)
-make start         # Démarrer le serveur Vite dans le conteneur
-make build         # Build de production
-make lint          # Lancer le linter
-make preview       # Prévisualiser le build de production
-make shell         # Ouvrir un shell dans le conteneur
-make logs          # Afficher les logs en temps réel
-make stop          # Arrêter les conteneurs
-make restart       # Redémarrer les conteneurs
-make down          # Supprimer les conteneurs
+git clone <repo> && cd atlas-narratif
+
+# Remplir les variables (domaine, mot de passe DB, secrets…)
+cp .env.prod.example .env.prod
+nano .env.prod
+
+# Build et démarrage (Traefik gère le TLS automatiquement)
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-L'application est accessible sur [http://localhost:5173](http://localhost:5173).
+Variables obligatoires dans `.env.prod` :
+
+| Variable | Description |
+|----------|-------------|
+| `DOMAIN` | Nom de domaine (ex: `atlas.monsite.com`) |
+| `ACME_EMAIL` | Email pour Let's Encrypt |
+| `POSTGRES_PASSWORD` | Mot de passe PostgreSQL |
+| `BETTER_AUTH_SECRET` | Secret JWT (min 32 chars, `openssl rand -base64 32`) |
+
+Variables optionnelles : `GOOGLE_CLIENT_ID/SECRET` (OAuth Google), `RESEND_API_KEY` + `EMAIL_FROM` (emails transactionnels).
+
+---
+
+## Commandes utiles
+
+```bash
+npm run dev      # Frontend dev (port 5173)
+npm run build    # Build production
+npm run lint     # ESLint
+npm run test:run # Tests unitaires
+```
 
 ---
 
@@ -85,55 +100,42 @@ L'application est accessible sur [http://localhost:5173](http://localhost:5173).
 
 ```
 atlas-narratif/
-├── src/
-│   ├── App.jsx                        # Routage principal et état global
-│   ├── main.jsx                       # Point d'entrée React
-│   ├── assets/
-│   │   └── ouest_terre_du_milieu.jpg  # Carte de la Terre du Milieu
-│   ├── components/
-│   │   ├── map/                       # Vue carte interactive
-│   │   │   ├── AtlasMapView.jsx
-│   │   │   ├── MapCanvas.jsx
-│   │   │   ├── JourneySidebar.jsx
-│   │   │   └── JourneyTimeline.jsx
-│   │   ├── lore/                      # Navigateur de base de données
-│   │   │   └── LoreBrowser.jsx
-│   │   ├── graph/                     # Graphe d'entités
-│   │   │   └── EntityGraph.jsx
-│   │   ├── upload/                    # Interface de dépôt de fichiers
-│   │   │   └── FilePicker.jsx
-│   │   └── ui/                        # Composants UI réutilisables
-│   │       ├── Button.jsx
-│   │       └── LoreCard.jsx
-│   ├── data/
-│   │   ├── lore_database.js           # Base de données lore (personnages, lieux, objets)
-│   │   ├── frodo_journey.js           # Données de voyage de Frodon
-│   │   ├── aragorn_journey.js         # Données de voyage d'Aragorn
-│   │   └── gandalf_journey.js         # Données de voyage de Gandalf
-│   └── utils/
-│       └── buildGraph.js              # Construction des graphes de relations
-├── Dockerfile
-├── docker-compose.yml
-├── Makefile
-├── vite.config.js
-└── package.json
+├── src/                        # Frontend React
+│   ├── App.jsx                 # Routing, layout, guards
+│   ├── api/                    # Client fetch (remplace les appels PGlite directs)
+│   │   ├── client.js           # Toutes les fonctions d'accès à l'API
+│   │   └── importFromAiOutputViaApi.js
+│   ├── components/             # Composants UI par domaine
+│   ├── pages/                  # Pages auth (login, register…)
+│   ├── stores/                 # Zustand stores (1 par domaine)
+│   ├── db/                     # Utilitaires client : seed, export, import, détection incohérences
+│   ├── lib/
+│   │   └── authClient.js       # Client Better Auth (useSession, signIn…)
+│   └── data/                   # Données seed LOTR, prompt d'analyse IA
+├── server/                     # API Hono
+│   ├── src/
+│   │   ├── index.js            # Point d'entrée, montage Traefik/auth/api
+│   │   ├── auth.js             # Config Better Auth
+│   │   ├── db.js               # Connexion postgres.js
+│   │   ├── db-queries.js       # Fonctions SQL serveur
+│   │   ├── seed.js             # Seeder générique serveur
+│   │   ├── middleware/
+│   │   │   └── requireAuth.js
+│   │   └── routes/
+│   │       └── api.js          # Toutes les routes REST
+│   ├── db/
+│   │   └── init.sql            # Schéma SQL (Better Auth + tables app)
+│   └── .env.example
+├── docker-compose.dev-full.yml # PostgreSQL local pour le dev
+├── docker-compose.prod.yml     # Stack prod complète (Traefik + nginx + api + postgres)
+├── Dockerfile.prod             # Build frontend (nginx)
+├── server/Dockerfile           # Build API (Node)
+├── nginx.prod.conf             # nginx prod (proxy /api/ /auth/ → api)
+└── .env.prod.example           # Template variables de prod
 ```
 
 ---
 
-## Données
+## Données de démonstration
 
-Toutes les données sont côté client, sans backend. La base de données (`lore_database.js`) contient :
-
-- **Personnages** : Frodon, Aragorn, Gandalf, Sam, Merry, Pippin, Legolas, Boromir, Elrond, etc.
-- **Lieux** : La Comté, Fondcombe, La Moria, Bree, Rivendell, etc.
-- **Objets** : L'Anneau Unique, Narya, etc.
-
-Les voyages des personnages incluent les coordonnées cartographiques, les références aux chapitres, les descriptions narratives et les alliés présents à chaque étape.
-
-
-# A faire
-
-3. Mode communautaire
-
-4. Changement de BDD ?
+Le projet "Le Seigneur des Anneaux" (Tomes 1 & 2) est intégré comme jeu de données de test. Depuis la page d'accueil, cliquer **"Charger la démo"** pour le seed automatiquement via l'API.

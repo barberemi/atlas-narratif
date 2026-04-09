@@ -4,11 +4,11 @@ import {
   insertStcChapter,
   updateStcChapter,
   deleteStcChapter,
-} from '../db/queries';
+} from '../api/client';
 
 export const useStcStore = createEntityStore({
   initialState: { chapters: null },
-  fetchFn:  async (db, projectId) => ({ chapters: await getStcChapters(db, projectId) }),
+  fetchFn:  async (projectId) => ({ chapters: await getStcChapters(projectId) }),
   insertFn: insertStcChapter,
   updateFn: updateStcChapter,
   deleteFn: deleteStcChapter,

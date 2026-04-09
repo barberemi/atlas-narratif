@@ -1,14 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-vi.mock('../db/queries', () => ({
+vi.mock('../api/client', () => ({
   getChapterNotes: vi.fn(),
   setChapterNote:  vi.fn(),
 }));
 
 import { useNotesStore } from './useNotesStore';
-import { getChapterNotes, setChapterNote } from '../db/queries';
+import { getChapterNotes, setChapterNote } from '../api/client';
 
-const DB         = { __mock: 'db' };
 const PROJECT_ID = 'proj_test';
 
 beforeEach(() => {
@@ -23,16 +22,15 @@ describe('load()', () => {
     const notes = { 1: 'Note ch1', 3: 'Note ch3' };
     vi.mocked(getChapterNotes).mockResolvedValue(notes);
 
-    await useNotesStore.getState().load(DB, PROJECT_ID);
+    await useNotesStore.getState().load(PROJECT_ID);
 
-    expect(getChapterNotes).toHaveBeenCalledWith(DB, PROJECT_ID);
+    expect(getChapterNotes).toHaveBeenCalledWith(PROJECT_ID);
     expect(useNotesStore.getState().notes).toEqual(notes);
   });
 
-  it('stocke _db et _projectId', async () => {
+  it('stocke _projectId', async () => {
     vi.mocked(getChapterNotes).mockResolvedValue({});
-    await useNotesStore.getState().load(DB, PROJECT_ID);
-    expect(useNotesStore.getState()._db).toBe(DB);
+    await useNotesStore.getState().load(PROJECT_ID);
     expect(useNotesStore.getState()._projectId).toBe(PROJECT_ID);
   });
 });
@@ -43,7 +41,7 @@ describe('setNote()', () => {
   beforeEach(async () => {
     vi.mocked(getChapterNotes).mockResolvedValue({ 1: 'Ancien texte' });
     vi.mocked(setChapterNote).mockResolvedValue();
-    await useNotesStore.getState().load(DB, PROJECT_ID);
+    await useNotesStore.getState().load(PROJECT_ID);
   });
 
   it('met à jour la note immédiatement (optimiste)', async () => {
@@ -63,10 +61,10 @@ describe('setNote()', () => {
 
   it('persiste en DB via setChapterNote', async () => {
     await useNotesStore.getState().setNote(1, 'Texte persisté');
-    expect(setChapterNote).toHaveBeenCalledWith(DB, PROJECT_ID, 1, 'Texte persisté');
+    expect(setChapterNote).toHaveBeenCalledWith(PROJECT_ID, 1, 'Texte persisté');
   });
 
-  it('ne fait rien si _db est null', async () => {
+  it('ne fait rien si _projectId est null', async () => {
     useNotesStore.getState().reset();
     await useNotesStore.getState().setNote(1, 'Orphan');
     expect(setChapterNote).not.toHaveBeenCalled();
@@ -76,13 +74,12 @@ describe('setNote()', () => {
 // ── reset() ───────────────────────────────────────────────────────────────────
 
 describe('reset()', () => {
-  it('remet notes, _db et _projectId à null', async () => {
+  it('remet notes et _projectId à null', async () => {
     vi.mocked(getChapterNotes).mockResolvedValue({ 1: 'texte' });
-    await useNotesStore.getState().load(DB, PROJECT_ID);
+    await useNotesStore.getState().load(PROJECT_ID);
     useNotesStore.getState().reset();
     const s = useNotesStore.getState();
     expect(s.notes).toBeNull();
-    expect(s._db).toBeNull();
     expect(s._projectId).toBeNull();
   });
 });

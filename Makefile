@@ -1,63 +1,62 @@
-CONTAINER=atlas-narratif-app-1
+## ─────────────────────────────────────────────────────────────
+##  Atlas Narratif — Makefile
+##  Raccourcis pour le développement local
+## ─────────────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────
-#  Docker
-# ─────────────────────────────────────────
+# ── Dev ───────────────────────────────────────────────────────
 
-## Lance les containers en arrière-plan
-up:
-	docker compose up -d --build
+## Lance toute la stack dev en arrière-plan (PostgreSQL + API + Frontend)
+dev:
+	docker compose -f docker-compose.dev-full.yml up -d
 
-## Arrête et supprime les containers
-down:
-	docker compose down
-
-## Arrête les containers sans les supprimer
+## Arrête la stack dev
 stop:
-	docker compose stop
+	docker compose -f docker-compose.dev-full.yml down
 
-## Redémarre les containers
-restart:
-	docker compose restart
-
-## Affiche les logs en temps réel
+## Logs de tous les services dev
 logs:
-	docker compose logs -f
+	docker compose -f docker-compose.dev-full.yml logs -f
 
-## Affiche le statut des containers
-ps:
-	docker compose ps
+## Logs d'un service précis  (ex: make logs-s s=frontend)
+logs-s:
+	docker compose -f docker-compose.dev-full.yml logs -f $(s)
 
-# ─────────────────────────────────────────
-#  Application (dans le container)
-# ─────────────────────────────────────────
+## Rebuild et relance la stack dev (utile après un changement de dépendances)
+dev-rebuild:
+	docker compose -f docker-compose.dev-full.yml up -d --build
 
-## Lance le serveur de développement Vite
-start:
-	docker compose exec app npm run dev -- --host
+# ── Qualité ───────────────────────────────────────────────────
 
-## Build l'application
-build:
-	docker compose exec app npm run build
-
-## Lint du code
+## Lance le linter
 lint:
-	docker compose exec app npm run lint
+	npm run lint
 
-## Prévisualise le build de production
-preview:
-	docker compose exec app npm run preview -- --host
-
-## Lance Vitest en mode watch (interactif)
+## Lance les tests
 test:
-	docker compose exec app npm run test:run
+	npm run test:run
 
-## Ouvre un shell dans le container
-shell:
-	docker compose exec app sh
+## Build de production (frontend uniquement)
+build:
+	npm run build
 
-## Installe les dépendances npm
-install:
-	docker compose exec app npm install
+# ── Prod (VPS) ────────────────────────────────────────────────
 
-.PHONY: up down stop restart logs ps start build lint preview test shell install
+## Build et démarre la stack prod complète
+prod-up:
+	docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+## Arrête la stack prod
+prod-down:
+	docker compose -f docker-compose.prod.yml --env-file .env.prod down
+
+## Logs de la stack prod
+prod-logs:
+	docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f
+
+## Backup de la base prod
+prod-backup:
+	docker exec $$(docker compose -f docker-compose.prod.yml --env-file .env.prod ps -q postgres) \
+		pg_dump -U atlas atlas | gzip > backups/atlas_$$(date +%Y%m%d_%H%M%S).sql.gz
+	@echo "Backup sauvegardé dans backups/"
+
+.PHONY: dev stop logs logs-s dev-rebuild lint test build prod-up prod-down prod-logs prod-backup

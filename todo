@@ -1,0 +1,48 @@
+- mode collaboratif
+
+- nom de domaine
+
+- cloudflare
+
+## Pré-production (audit 2026-04-10)
+
+### Phase 1 — Bloquant
+- [ ] **IDOR** : middleware ownership projet sur toutes les routes API (api.js)
+- [ ] **Auth** : appliquer requireAuth sur toutes les routes data
+- [ ] **getProjects()** : retourner [] si pas userId/deviceId (db-queries.js)
+- [ ] **Device ID** : signer ou verrouiller (claim forgeable)
+- [ ] Rotation credentials server/.env + purge historique git
+- [ ] Fail hard si BETTER_AUTH_SECRET absent en prod
+- [ ] Error Boundary React (App.jsx)
+- [ ] Headers sécurité nginx (CSP, HSTS, X-Frame-Options…)
+- [ ] Rate limiting API (auth surtout)
+- [ ] Validation inputs API (Zod)
+- [ ] Limite taille upload image + import JSON
+- [ ] Await promises ProjectContext (chargement stores)
+- [ ] RGPD : privacy, CGU, suppression/export compte
+
+### Phase 2 — Important (1re semaine)
+- [ ] Système de toasts/notifications
+- [ ] Bouton "renvoyer email de vérification"
+- [ ] Sentry + logging structuré
+- [ ] Limites Docker CPU/RAM
+- [ ] Nginx : gzip, timeouts, client_max_body_size
+- [ ] CI : deploy needs ci
+- [ ] Validation env vars au démarrage API
+- [ ] Automatiser remplacement DOMAIN_PLACEHOLDER
+
+### Phase 2 — Important (1re semaine) — suite
+- [ ] USER node dans Dockerfiles (pas de root)
+- [ ] Pinning versions images Docker
+- [ ] Masquer DATABASE_URL dans les logs (server/src/index.js:71)
+
+### Phase 3 — Amélioration (1er mois)
+- [ ] Accessibilité (aria, focus management)
+- [ ] Empty states guidés (timeline, map, STC)
+- [ ] Skeleton loaders
+- [ ] Raccourcis clavier (Cmd+S, Escape, ?)
+- [ ] Graceful shutdown API
+- [ ] Migrations DB serveur
+- [ ] Scan vulnérabilités CI (npm audit / Snyk)
+- [ ] Vérifier cookies Better Auth (HttpOnly, Secure, SameSite)
+- [ ] server_tokens off dans nginx

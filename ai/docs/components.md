@@ -10,11 +10,11 @@
 
 ## src/components/nav/
 ### `TopNav`
-Barre de navigation principale en haut. Contient le `ProjectPicker` et le bouton de recherche (Ctrl+K).
+Barre de navigation principale en haut. Contient le `ProjectPicker`, le bouton de recherche (Ctrl+K), et le bouton `?` (tour guidé — visible uniquement si la page courante a des étapes de tour et qu'un projet est actif). Affiche le nom de l'utilisateur connecté + bouton Déconnexion via `authClient.useSession()`. Recharge les projets automatiquement au changement de session (login/logout).
 ### `NavDropdown`
 Menu déroulant de la nav.
 ### `ProjectPicker`
-Sélecteur de projet actif — liste les projets depuis `useProject()`.
+Sélecteur de projet actif — liste les projets depuis `useProject()`. Contient aussi le bouton "Exporter ce projet" (`exportProject`).
 
 ---
 
@@ -115,3 +115,21 @@ Composants réutilisables sans logique métier :
 Page de validation post-import. Affiche un résumé de ce que l'IA a extrait avant de confirmer.
 ### `EmotionalArc`
 Page pleine dédiée à l'édition de l'arc émotionnel chapitre par chapitre. Lit/écrit `useArcStore`.
+### `PlantsBrowser`
+Tracker des amorces narratives (plant / payoff). Lit/écrit `usePlantStore`.
+### `ThreadsBrowser`
+Gestion des fils narratifs (subplots). Lit/écrit `useThreadStore`.
+### `HeroJourney`
+Voyage du Héros — 12 étapes de Joseph Campbell. Lit/écrit `useHeroJourneyStore`.
+
+## src/pages/auth/
+### `LoginPage`
+Connexion email + mot de passe. Bouton "Continuer avec Google" (`authClient.signIn.social`).
+### `RegisterPage`
+Création de compte. Même bouton Google. Redirige vers `/verify-email` après inscription.
+### `VerifyEmailPage`
+Écran d'attente de vérification email.
+### `ForgotPasswordPage`
+Formulaire de demande de reset password.
+### `ResetPasswordPage`
+Saisie du nouveau mot de passe (token en query param `?token=`).

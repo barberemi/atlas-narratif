@@ -1,15 +1,22 @@
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { buildAnalysisPrompt } from './data/analysis_prompt';
-import { importFromAiOutput } from './db/importFromAiOutput';
-import { seedLotr } from './db/seed.lotr';
-import { createEmptyProject }       from './db/createEmptyProject';
+import { createProject, seedProjectViaApi, claimProjects } from './api/client';
+import { authClient } from './lib/authClient';
+import { buildLotrSeedPayload } from './db/seed.lotr';
+import { importFromAiOutputViaApi } from './api/importFromAiOutputViaApi';
 import { Routes, Route, Navigate, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import Button from './components/ui/Button';
 import GuidedTour   from './components/tour/GuidedTour';
 import WelcomeModal from './components/tour/WelcomeModal';
 import { shouldShowWelcome } from './components/tour/tourUtils';
 import TourPageButton from './components/tour/TourPageButton';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
 const LoreBrowser          = lazy(() => import('./components/lore/LoreBrowser'));
+const LoginPage            = lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage         = lazy(() => import('./pages/auth/RegisterPage'));
+const VerifyEmailPage      = lazy(() => import('./pages/auth/VerifyEmailPage'));
+const ForgotPasswordPage   = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage    = lazy(() => import('./pages/auth/ResetPasswordPage'));
 const EntityGraph          = lazy(() => import('./components/graph/EntityGraph'));
 const IncoherencesBrowser  = lazy(() => import('./components/incoherences/IncoherencesBrowser'));
 const NarrativeDashboard   = lazy(() => import('./components/dashboard/NarrativeDashboard'));
@@ -20,11 +27,8 @@ const EmotionalArc         = lazy(() => import('./pages/EmotionalArc'));
 const HeroJourney          = lazy(() => import('./pages/HeroJourney'));
 const PlantsBrowser        = lazy(() => import('./pages/PlantsBrowser'));
 const ThreadsBrowser       = lazy(() => import('./pages/ThreadsBrowser'));
-import { findCharacterByAllyName, getEntityMeta } from './utils/entityUtils';
-import { DbProvider } from './db/DbContext';
+import { getEntityMeta } from './utils/entityUtils';
 import { ProjectProvider, useProject } from './db/ProjectContext';
-import { useDb } from './db/DbContext';
-import { importFromBackup } from './db/importFromBackup';
 import GlobalSearch  from './components/search/GlobalSearch';
 import TopNav        from './components/nav/TopNav';
 
@@ -34,11 +38,6 @@ function MapRoute() {
   const navigate = useNavigate();
   return (
     <AtlasMapView
-      onCharacterClick={(allyName) => {
-        const found = findCharacterByAllyName(allyName);
-        const search = found ? found.name : allyName.split('(')[0].trim();
-        navigate(`/lore?tab=characters&search=${encodeURIComponent(search)}`);
-      }}
       onLocationClick={(locationName) => {
         navigate(`/lore?tab=locations&search=${encodeURIComponent(locationName)}`);
       }}
@@ -57,11 +56,6 @@ function LoreRoute() {
       initialTab={tab}
       initialSearch={search}
       onEntityClick={(id) => navigate(`/relations?entity=${id}`)}
-      onCharacterClick={(allyName) => {
-        const found = findCharacterByAllyName(allyName);
-        const s = found ? found.name : allyName.split('(')[0].trim();
-        navigate(`/lore?tab=characters&search=${encodeURIComponent(s)}`);
-      }}
     />
   );
 }
@@ -127,9 +121,17 @@ function IncoherencesRoute() {
 
 // ── Page d'accueil / Import ───────────────────────────────────────────────────
 function HomePage() {
-  const db = useDb();
-  const { reloadProjects, setProjectId } = useProject();
+  const { reloadProjects, setProjectId, projects } = useProject();
   const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+
+  // Après un redirect OAuth, claimProjects n'a pas été appelé — on le fait ici
+  useEffect(() => {
+    if (session?.user) {
+      claimProjects().catch(() => {}).then(() => reloadProjects());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   // ── Flux d'onboarding ─────────────────────────────────────────────────────
   const [flow,        setFlow]        = useState(null); // null | 'construire' | 'analyser'
@@ -149,7 +151,6 @@ function HomePage() {
   const [progress,      setProgress]      = useState('');
   const [seedPercent,   setSeedPercent]   = useState(null);
   const [error,         setError]         = useState(null);
-  const [backupFile,    setBackupFile]    = useState(null);
   const [copied,        setCopied]        = useState(false);
 
   const analyzing = status === 'analyzing';
@@ -183,7 +184,7 @@ function HomePage() {
     setStatus('analyzing');
     setError(null);
     try {
-      const projectId = await importFromAiOutput(db, aiJsonFile, {
+      const projectId = await importFromAiOutputViaApi(aiJsonFile, {
         projectName: projectName.trim(),
         projectDesc: projectDesc.trim(),
         onProgress:  setProgress,
@@ -202,7 +203,7 @@ function HomePage() {
     setBuildStatus('creating');
     setBuildError(null);
     try {
-      const projectId = await createEmptyProject(db, { name: buildName.trim() });
+      const projectId = await createProject({ name: buildName.trim() });
       await reloadProjects();
       setProjectId(projectId);
       navigate('/savethecat');
@@ -212,36 +213,27 @@ function HomePage() {
     }
   };
 
-  const handleRestoreBackup = async () => {
-    if (!backupFile || analyzing) return;
-    setStatus('analyzing');
-    setError(null);
-    try {
-      const projectId = await importFromBackup(db, backupFile, { onProgress: setProgress });
-      await reloadProjects();
-      setProjectId(projectId);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
-      setStatus('error');
-    }
-  };
 
   const handleLoadDemo = async () => {
+    // Si l'utilisateur a déjà un projet LOTR (id commence par 'lotr'), naviguer directement
+    const existingLotr = projects.find(p => p.id.startsWith('lotr'));
+    if (existingLotr) {
+      setProjectId(existingLotr.id);
+      navigate('/dashboard');
+      return;
+    }
     setStatus('analyzing');
-    setProgress('Chargement de la démo Le Seigneur des Anneaux…');
+    setProgress('Préparation de la démo Le Seigneur des Anneaux…');
     setSeedPercent(0);
     setError(null);
     try {
-      await seedLotr(db, {
-        onProgress: ({ message, percent }) => {
-          setProgress(message);
-          setSeedPercent(percent);
-        },
-      });
+      const payload = await buildLotrSeedPayload();
+      setProgress('Envoi au serveur…');
+      setSeedPercent(30);
+      const lotrId = await seedProjectViaApi(payload.meta, payload.data);
       setSeedPercent(100);
       await reloadProjects();
-      setProjectId('lotr');
+      setProjectId(lotrId);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -322,16 +314,6 @@ function HomePage() {
               </button>
             </div>
 
-            {/* Lien sauvegarde discret */}
-            <p className="text-center">
-              <button
-                onClick={() => setFlow('restaurer')}
-                className="text-xs text-slate-700 hover:text-slate-500 transition-colors"
-              >
-                Restaurer une sauvegarde →
-              </button>
-            </p>
-
             {/* Démo LOTR */}
             <div
               className="rounded-2xl p-5 flex items-center gap-4 transition-all duration-300"
@@ -379,19 +361,17 @@ function HomePage() {
 
               {/* Bouton */}
               {status !== 'analyzing' && (
-                <button
-                  onClick={handleLoadDemo}
-                  className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-black transition-all duration-200"
-                  style={{
-                    backgroundColor: 'rgba(63,81,181,0.2)',
-                    color: '#818cf8',
-                    border: '1px solid rgba(99,102,241,0.3)',
-                  }}
-                >
-                  Charger →
-                </button>
+                <Button onClick={handleLoadDemo} size="sm" className="flex-shrink-0">
+                  {projects.find(p => p.id.startsWith('lotr')) ? 'Ouvrir →' : 'Charger →'}
+                </Button>
               )}
             </div>
+            {status === 'error' && error && (
+              <div className="rounded-xl px-4 py-3 text-xs whitespace-pre-wrap"
+                style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+                {error}
+              </div>
+            )}
           </div>
         )}
 
@@ -449,17 +429,7 @@ function HomePage() {
             </div>
 
             {/* Bouton retour */}
-            <button
-              onClick={() => setFlow(null)}
-              className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-              style={{
-                backgroundColor: 'rgba(63,81,181,0.15)',
-                color: '#818cf8',
-                border: '1px solid rgba(99,102,241,0.3)',
-              }}
-            >
-              ← Retour
-            </button>
+            <Button onClick={() => setFlow(null)} fullWidth variant="secondary">← Retour</Button>
 
             {/* Nom du projet */}
             {method && (
@@ -480,24 +450,14 @@ function HomePage() {
 
             {/* Bouton démarrer */}
             {method && (
-              <button
+              <Button
                 onClick={handleBuild}
+                fullWidth
+                loading={buildStatus === 'creating'}
                 disabled={!buildName.trim() || buildStatus === 'creating'}
-                className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: buildName.trim() && buildStatus !== 'creating' ? 'rgba(63,81,181,0.25)' : 'rgba(255,255,255,0.03)',
-                  color:            buildName.trim() && buildStatus !== 'creating' ? '#818cf8'              : '#334155',
-                  border:           buildName.trim() && buildStatus !== 'creating' ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.05)',
-                  cursor:           buildName.trim() && buildStatus !== 'creating' ? 'pointer' : 'default',
-                }}
               >
-                {buildStatus === 'creating' ? (
-                  <>
-                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full" />
-                    Création en cours…
-                  </>
-                ) : 'Créer le projet →'}
-              </button>
+                {buildStatus === 'creating' ? 'Création en cours…' : 'Créer le projet →'}
+              </Button>
             )}
 
             {buildStatus === 'error' && buildError && (
@@ -665,24 +625,14 @@ function HomePage() {
                 </div>
 
                 {/* Bouton importer */}
-                <button
+                <Button
                   onClick={handleImportJson}
+                  fullWidth
+                  loading={analyzing}
                   disabled={!canImportJson || analyzing}
-                  className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: canImportJson && !analyzing ? 'rgba(63,81,181,0.25)' : 'rgba(255,255,255,0.03)',
-                    color:            canImportJson && !analyzing ? '#818cf8'              : '#334155',
-                    border:           canImportJson && !analyzing ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.05)',
-                    cursor:           canImportJson && !analyzing ? 'pointer'             : 'default',
-                  }}
                 >
-                  {analyzing ? (
-                    <>
-                      <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full" />
-                      {progress || 'Import en cours…'}
-                    </>
-                  ) : 'Importer le projet →'}
-                </button>
+                  {analyzing ? (progress || 'Import en cours…') : 'Importer le projet →'}
+                </Button>
 
                 {status === 'error' && error && (
                   <div className="rounded-xl px-4 py-3 text-xs whitespace-pre-wrap"
@@ -694,91 +644,12 @@ function HomePage() {
             )}
 
             {/* Bouton retour */}
-            <button
-              onClick={() => setFlow(null)}
-              className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-              style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
-            >
+            <Button onClick={() => setFlow(null)} fullWidth variant="secondary">
               ← Retour
-            </button>
+            </Button>
           </div>
         )}
 
-        {/* ── Étape 1c : flux restaurer ── */}
-        {flow === 'restaurer' && (
-          <div className="flex flex-col gap-6">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Restaurer une sauvegarde</p>
-
-            <div className="flex flex-col gap-5" style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 24 }}>
-              <div className="flex flex-col gap-3">
-                <label className="text-xs text-slate-500">
-                  Sélectionne un fichier <code className="text-indigo-400">atlas_*.json</code> exporté depuis AtlasNarratif
-                </label>
-                <label
-                  className="flex items-center gap-3 px-4 py-4 rounded-xl cursor-pointer transition-all duration-150"
-                  style={{
-                    border: backupFile ? '1px solid rgba(99,102,241,0.4)' : '1px dashed rgba(255,255,255,0.1)',
-                    backgroundColor: backupFile ? 'rgba(63,81,181,0.08)' : 'rgba(0,0,0,0.15)',
-                  }}
-                >
-                  <span className="text-xl">{backupFile ? '✓' : '↑'}</span>
-                  <div className="flex flex-col gap-0.5">
-                    {backupFile ? (
-                      <>
-                        <span className="text-xs font-bold text-indigo-300">{backupFile.name}</span>
-                        <span className="text-[10px] text-slate-600">{(backupFile.size / 1024).toFixed(1)} Ko</span>
-                      </>
-                    ) : (
-                      <span className="text-xs text-slate-600">Choisir un fichier JSON…</span>
-                    )}
-                  </div>
-                  <input type="file" accept=".json,application/json" className="hidden"
-                    onChange={e => setBackupFile(e.target.files?.[0] ?? null)} />
-                </label>
-                {backupFile && (
-                  <button onClick={() => setBackupFile(null)}
-                    className="text-[10px] text-slate-600 hover:text-red-400 transition-colors text-left">
-                    Supprimer
-                  </button>
-                )}
-              </div>
-
-              <button
-                onClick={handleRestoreBackup}
-                disabled={!backupFile || analyzing}
-                className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: backupFile && !analyzing ? 'rgba(63,81,181,0.25)' : 'rgba(255,255,255,0.03)',
-                  color:            backupFile && !analyzing ? '#818cf8'              : '#334155',
-                  border:           backupFile && !analyzing ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.05)',
-                  cursor:           backupFile && !analyzing ? 'pointer'             : 'default',
-                }}
-              >
-                {analyzing ? (
-                  <>
-                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full" />
-                    {progress || 'Import en cours…'}
-                  </>
-                ) : 'Restaurer la sauvegarde →'}
-              </button>
-
-              {status === 'error' && error && (
-                <div className="rounded-xl px-4 py-3 text-xs"
-                  style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
-                  {error}
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setFlow(null)}
-              className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-              style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
-            >
-              ← Retour
-            </button>
-          </div>
-        )}
 
       </div>
     </div>
@@ -789,23 +660,31 @@ function HomePage() {
 
 // ── Guard : redirige vers / si aucun projet ───────────────────────────────────
 function RequireProject({ children }) {
-  const { projects, loading } = useProject();
+  const { projectId, loading } = useProject();
   if (loading) return null;
-  if (projects.length === 0) return <Navigate to="/" replace />;
+  if (!projectId) return <Navigate to="/" replace />;
   return children;
 }
 
 // ── Layout principal ──────────────────────────────────────────────────────────
 function AppLayout() {
-  const { projects, loading, projectId } = useProject();
+  const { projects, loading, projectId, reloadProjects } = useProject();
   const hasProjects = !loading && projects.length > 0;
+  const { data: session } = authClient.useSession();
+  const navigate = useNavigate();
+
+  // Recharge les projets à chaque changement de session (login / logout)
+  useEffect(() => {
+    reloadProjects();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [showWelcome,  setShowWelcome]  = useState(false);
   const location = useLocation();
 
   // Affiche le modal de bienvenue quand on arrive sur /dashboard avec le projet LOTR
   useEffect(() => {
-    if (location.pathname === '/dashboard' && projectId === 'lotr' && shouldShowWelcome()) {
+    if (location.pathname === '/dashboard' && projectId?.startsWith('lotr') && shouldShowWelcome()) {
       setShowWelcome(true);
     }
   }, [location.pathname, projectId]);
@@ -825,10 +704,10 @@ function AppLayout() {
   return (
     <div className="h-screen w-full flex flex-col bg-[#0B1621] text-slate-200 selection:bg-[#3F51B5]/30 overflow-hidden">
       <TopNav onSearchOpen={() => setSearchOpen(true)} />
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className={`flex-1 min-h-0 overflow-y-auto${!session?.user && !loading && projects.length > 0 ? ' pb-12' : ''}`}>
         <Suspense fallback={<div className="flex items-center justify-center h-full text-slate-400 text-sm">Chargement…</div>}>
         <Routes>
-          <Route path="/"             element={<HomePage />} />
+          <Route path="/"                 element={<HomePage />} />
           <Route path="/map"          element={<RequireProject><MapRoute /></RequireProject>} />
           <Route path="/lore"         element={<RequireProject><LoreRoute /></RequireProject>} />
           <Route path="/relations"    element={<RequireProject><GraphRoute /></RequireProject>} />
@@ -848,16 +727,38 @@ function AppLayout() {
       <GuidedTour />
       <TourPageButton />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
+      {!session?.user && !loading && projects.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 px-6 py-3"
+          style={{ backgroundColor: 'rgba(17,24,39,0.97)', borderTop: '1px solid rgba(234,179,8,0.25)' }}>
+          <span className="text-xs" style={{ color: '#fbbf24' }}>
+            Vos projets sont liés à ce navigateur — ils seront perdus si vous videz vos cookies.
+          </span>
+          <button
+            onClick={() => navigate('/login')}
+            className="flex-shrink-0 inline-flex items-center justify-center font-black tracking-wide transition-all duration-200 cursor-pointer text-xs px-3 py-1.5 rounded-lg"
+            style={{ backgroundColor: 'rgba(234,179,8,0.15)', color: '#fbbf24', border: '1px solid rgba(234,179,8,0.3)' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(234,179,8,0.28)'; e.currentTarget.style.borderColor = 'rgba(234,179,8,0.5)'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(234,179,8,0.15)'; e.currentTarget.style.borderColor = 'rgba(234,179,8,0.3)'; }}
+          >
+            Se connecter →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function App() {
   return (
-    <DbProvider>
-      <ProjectProvider>
-        <AppLayout />
-      </ProjectProvider>
-    </DbProvider>
+    <ProjectProvider>
+      <Routes>
+        <Route path="/login"           element={<LoginPage />} />
+        <Route path="/register"        element={<RegisterPage />} />
+        <Route path="/verify-email"    element={<VerifyEmailPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password"  element={<ResetPasswordPage />} />
+        <Route path="*"                element={<AppLayout />} />
+      </Routes>
+    </ProjectProvider>
   );
 }

@@ -10,7 +10,6 @@ import { useArcStore }      from '../../stores/useArcStore';
 import { useNotesStore }    from '../../stores/useNotesStore';
 import { useVolumeStore }   from '../../stores/useVolumeStore';
 import { useVolumeFilter }  from '../../hooks/useVolumeFilter';
-import { useDb }            from '../../db/DbContext';
 import { useProject }       from '../../db/ProjectContext';
 import { BEATS }            from '../../data/beats_config';
 import { OUTCOMES }         from '../../data/outcome_config';
@@ -22,7 +21,6 @@ import SeriesTimeline from './SeriesTimeline';
 // ── TimelineBrowser ───────────────────────────────────────────────────────────
 export default function TimelineBrowser() {
   const navigate = useNavigate();
-  const db            = useDb();
   const { projectId } = useProject();
 
   const allEvents    = useTimelineStore(s => s.events);
@@ -64,9 +62,9 @@ export default function TimelineBrowser() {
 
   // Chargement conditionnel de l'arc si pas encore en mémoire
   useEffect(() => {
-    if (!db || !projectId || arcPoints !== null) return;
-    loadArc(db, projectId);
-  }, [db, projectId, arcPoints, loadArc]);
+    if (!projectId || arcPoints !== null) return;
+    loadArc(projectId);
+  }, [projectId, arcPoints, loadArc]);
 
   const notesRaw  = useNotesStore(s => s.notes);
   const notes     = notesRaw ?? {};
@@ -74,9 +72,9 @@ export default function TimelineBrowser() {
   const loadNotes = useNotesStore(s => s.load);
 
   useEffect(() => {
-    if (!db || !projectId || notesRaw !== null) return;
-    loadNotes(db, projectId);
-  }, [db, projectId, notesRaw, loadNotes]);
+    if (!projectId || notesRaw !== null) return;
+    loadNotes(projectId);
+  }, [projectId, notesRaw, loadNotes]);
 
   const scrollRef   = useRef(null);
   const [canLeft,  setCanLeft]  = useState(false);
@@ -139,7 +137,10 @@ export default function TimelineBrowser() {
   }, [events]);
 
   const handleEntityClick = (entity) => {
-    navigate(`/relations?entity=${entity.id}`);
+    const tabMap = { character: 'characters', location: 'locations', object: 'objects', group: 'groups' };
+    const tab = tabMap[entity.entityType] ?? 'characters';
+    const meta = getEntityMeta(entity.id, entity.entityType);
+    navigate(`/lore?tab=${tab}&search=${encodeURIComponent(meta?.name ?? '')}`);
   };
 
   if (!events) return (
@@ -436,7 +437,7 @@ export default function TimelineBrowser() {
         )}
 
         <div
-          ref={(el) => { dragScroll.ref.current = el; scrollRef.current = el; }}
+          ref={(el) => { dragScroll.ref.current = el; scrollRef.current = el; }} // eslint-disable-line react-hooks/immutability
           className="h-full overflow-x-auto overflow-y-auto no-scrollbar"
           style={{ cursor: 'grab' }}
           onScroll={updateArrows}
@@ -540,14 +541,6 @@ export default function TimelineBrowser() {
                             ↩ narré au ch. {evt.chapter}
                           </p>
                         )}
-                        {!activeVolumeId && evtVolume && (
-                          <span
-                            className="absolute top-1 right-1 z-10 text-[9px] px-1.5 py-0.5 rounded font-bold pointer-events-none"
-                            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
-                          >
-                            T{evtVolume.number}
-                          </span>
-                        )}
                         <EventCard
                           event={evt}
                           isHighlighted={isHighlighted}
@@ -556,6 +549,7 @@ export default function TimelineBrowser() {
                           onEdit={setEditorEvent}
                           allIncoherences={incoherences}
                           beat={showStc && evt.beatId ? beatMap.get(evt.beatId) : null}
+                          volumeLabel={!activeVolumeId && evtVolume ? `T${evtVolume.number}` : null}
                         />
                       </div>
                     );

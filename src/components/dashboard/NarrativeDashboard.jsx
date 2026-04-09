@@ -81,7 +81,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
   const groups       = useLoreStore(s => s.groups) ?? [];
   const events       = useTimelineStore(s => s.events);
   const stcChapters  = useStcStore(s => s.chapters);
-  const plants       = usePlantStore(s => s.plants) ?? [];
+  const plants       = usePlantStore(s => s.plants);
   const arcPoints    = useArcStore(s => s.points);
   const hjEntries    = useHeroJourneyStore(s => s.entries);
   const volumes       = useVolumeStore(s => s.volumes);
@@ -410,7 +410,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
     });
 
     return list.slice(0, 6);
-  }, [incoherences, inventory, coverage, frameworkCoverage, characters, locations, objects, navigate, onOpenIncoherences, hjEntries]);
+  }, [incoherences, inventory, coverage, frameworkCoverage, characters, locations, objects, navigate, onOpenIncoherences]);
 
   // ── Entités modifiées ──────────────────────────────────────────────────────
   const modifiedEntities = useMemo(() => {
@@ -799,7 +799,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
           )}
 
           {/* ── Amorces narratives ── */}
-          {plants.length > 0 && (() => {
+          {(plants?.length ?? 0) > 0 && (() => {
             const openPlants = plants.filter(p => p.status === 'open');
             return (
               <div

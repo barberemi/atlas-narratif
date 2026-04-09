@@ -237,7 +237,7 @@ export function buildGraph(entityId) {
   return { central: { ...central, entityType: centralType }, satellites, edges: finalEdges, relNodes };
 }
 
-function buildFullGraph() {
+export function buildFullGraph() {
   const { characters, locations, objects, groups = [] } = getLoreCache();
 
   const nodes   = new Map();

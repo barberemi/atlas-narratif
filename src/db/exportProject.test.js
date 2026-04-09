@@ -1,118 +1,126 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { exportProject } from './exportProject';
 
-// ── Mock APIs browser (jsdom ne fournit pas createObjectURL) ──────────────────
+vi.mock('../api/client', () => ({
+  getDeviceId: vi.fn().mockReturnValue('device-test-id'),
+}));
+
+// ── Mock APIs browser ──────────────────────────────────────────────────────────
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  global.URL.createObjectURL  = vi.fn().mockReturnValue('blob:fake-url');
-  global.URL.revokeObjectURL  = vi.fn();
+  global.URL.createObjectURL = vi.fn().mockReturnValue('blob:fake-url');
+  global.URL.revokeObjectURL = vi.fn();
 });
 
-// ── Mock DB ───────────────────────────────────────────────────────────────────
+// ── Payload de base retourné par l'API ────────────────────────────────────────
 
-function makeDb(projectName = 'Mon Roman') {
-  const project = { id: 'proj_1', name: projectName, description: 'Desc', map_image: null, created_at: '2024-01-01' };
-
+function makePayload(projectName = 'Mon Roman') {
   return {
-    query: vi.fn().mockImplementation((sql) => {
-      if (sql.includes('FROM projects'))          return { rows: [project] };
-      if (sql.includes('FROM volumes'))           return { rows: [{ id: 'v1', project_id: 'proj_1', number: 1, title: 'Tome 1', description: null }] };
-      if (sql.includes('FROM characters'))        return { rows: [{ id: 'c1', name: 'Alice' }] };
-      if (sql.includes('FROM locations'))         return { rows: [] };
-      if (sql.includes('FROM objects'))           return { rows: [] };
-      if (sql.includes('FROM timeline_events'))   return { rows: [] };
-      if (sql.includes('FROM event_entities'))    return { rows: [] };
-      if (sql.includes('FROM incoherences') && !sql.includes('_links')) return { rows: [] };
-      if (sql.includes('FROM incoherence_links')) return { rows: [] };
-      if (sql.includes('FROM stc_chapters'))      return { rows: [] };
-      if (sql.includes('FROM stc_chapter_beats')) return { rows: [] };
-      if (sql.includes('FROM stc_chapter_entities')) return { rows: [] };
-      if (sql.includes('FROM character_journeys')) return { rows: [] };
-      if (sql.includes('FROM groups') && !sql.includes('character_groups')) return { rows: [] };
-      if (sql.includes('FROM character_groups')) return { rows: [] };
-      if (sql.includes('FROM plant_payoffs'))   return { rows: [] };
-      if (sql.includes('FROM arc_points'))      return { rows: [] };
-      if (sql.includes('FROM hero_journey_entries')) return { rows: [] };
-      return { rows: [] };
-    }),
+    version:  '1.0',
+    project:  { id: 'proj_1', name: projectName, description: 'Desc', mapImage: null, created_at: '2024-01-01' },
+    volumes:  [{ id: 'v1', project_id: 'proj_1', number: 1, title: 'Tome 1', description: null }],
+    characters:        [],
+    locations:         [],
+    objects:           [],
+    timelineEvents:    [],
+    eventEntities:     [],
+    incoherences:      [],
+    incoherenceLinks:  [],
+    stcChapters:       [],
+    stcChapterBeats:   [],
+    stcChapterEntities:[],
+    characterJourneys: [],
+    groups:            [],
+    characterGroups:   [],
+    plantPayoffs:      [],
+    arcPoints:         [],
+    heroJourneyEntries:[],
   };
+}
+
+function mockFetch(payload, status = 200) {
+  global.fetch = vi.fn().mockResolvedValue({
+    ok:   status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(payload),
+  });
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('exportProject', () => {
   it('lance le téléchargement et retourne le nom de fichier', async () => {
+    mockFetch(makePayload());
     const fakeA = { href: '', download: '', click: vi.fn() };
     vi.spyOn(document, 'createElement').mockReturnValue(fakeA);
 
-    const filename = await exportProject(makeDb(), 'proj_1');
+    const filename = await exportProject(null, 'proj_1');
 
     expect(fakeA.click).toHaveBeenCalledOnce();
     expect(typeof filename).toBe('string');
     expect(filename).toMatch(/^atlas_.*\.json$/);
   });
 
-  it('libère l\'URL blob après le clic', async () => {
+  it("libère l'URL blob après le clic", async () => {
+    mockFetch(makePayload());
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
-    await exportProject(makeDb(), 'proj_1');
+
+    await exportProject(null, 'proj_1');
+
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake-url');
   });
 
-  it('lance 21 requêtes SQL (1 projet + 20 tables)', async () => {
-    vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
-    const db = makeDb();
-    await exportProject(db, 'proj_1');
-    expect(db.query).toHaveBeenCalledTimes(21);
+  it('lève une erreur si le serveur répond en erreur', async () => {
+    mockFetch({}, 404);
+    await expect(exportProject(null, 'proj_inexistant')).rejects.toThrow('Export échoué');
   });
-
-  it('lève une erreur si le projet est introuvable', async () => {
-    const db = { query: vi.fn().mockResolvedValue({ rows: [] }) };
-    await expect(exportProject(db, 'proj_inexistant')).rejects.toThrow('introuvable');
-  });
-
-  // ── Génération du slug / filename ────────────────────────────────────────────
 
   it('génère un slug en minuscules sans accents', async () => {
+    mockFetch(makePayload('Héros & Légendes'));
     const fakeA = { href: '', download: '', click: vi.fn() };
     vi.spyOn(document, 'createElement').mockReturnValue(fakeA);
-    const filename = await exportProject(makeDb('Héros & Légendes'), 'proj_1');
+
+    const filename = await exportProject(null, 'proj_1');
     expect(filename).toMatch(/^atlas_heros_legendes/);
   });
 
   it('remplace les caractères spéciaux par des underscores', async () => {
+    mockFetch(makePayload('Mon Roman: Tome 1'));
     const fakeA = { href: '', download: '', click: vi.fn() };
     vi.spyOn(document, 'createElement').mockReturnValue(fakeA);
-    const filename = await exportProject(makeDb('Mon Roman: Tome 1'), 'proj_1');
-    expect(filename).not.toMatch(/[:]/); // pas de deux-points
+
+    const filename = await exportProject(null, 'proj_1');
+    expect(filename).not.toMatch(/[:]/);
     expect(filename).toMatch(/^atlas_/);
   });
 
   it('tronque le slug à 30 caractères', async () => {
+    mockFetch(makePayload('Un Roman Extraordinairement Long Avec Plein De Mots'));
     const fakeA = { href: '', download: '', click: vi.fn() };
     vi.spyOn(document, 'createElement').mockReturnValue(fakeA);
-    const longName = 'Un Roman Extraordinairement Long Avec Plein De Mots';
-    const filename = await exportProject(makeDb(longName), 'proj_1');
-    // Format: atlas_<slug>_YYYY-MM-DD.json
+
+    const filename = await exportProject(null, 'proj_1');
     const slug = filename.replace(/^atlas_/, '').replace(/_\d{4}-\d{2}-\d{2}\.json$/, '');
     expect(slug.length).toBeLessThanOrEqual(30);
   });
 
   it('inclut la date au format YYYY-MM-DD dans le nom de fichier', async () => {
+    mockFetch(makePayload());
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
-    const filename = await exportProject(makeDb(), 'proj_1');
+
+    const filename = await exportProject(null, 'proj_1');
     expect(filename).toMatch(/_\d{4}-\d{2}-\d{2}\.json$/);
   });
 
-  // ── Assemblage du payload ─────────────────────────────────────────────────────
-
   it('le payload contient version, project et toutes les tables', async () => {
+    mockFetch(makePayload());
     let capturedBlob;
     const OrigBlob = global.Blob;
     global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
 
-    await exportProject(makeDb(), 'proj_1');
+    await exportProject(null, 'proj_1');
     global.Blob = OrigBlob;
 
     expect(capturedBlob.version).toBe('1.0');
@@ -126,12 +134,13 @@ describe('exportProject', () => {
   });
 
   it('le payload inclut les volumes avec leur contenu', async () => {
+    mockFetch(makePayload());
     let capturedBlob;
     const OrigBlob = global.Blob;
     global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
 
-    await exportProject(makeDb(), 'proj_1');
+    await exportProject(null, 'proj_1');
     global.Blob = OrigBlob;
 
     expect(Array.isArray(capturedBlob.volumes)).toBe(true);
@@ -140,12 +149,13 @@ describe('exportProject', () => {
   });
 
   it('mappe map_image → mapImage dans project', async () => {
+    mockFetch(makePayload());
     let capturedBlob;
     const OrigBlob = global.Blob;
     global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
 
-    await exportProject(makeDb(), 'proj_1');
+    await exportProject(null, 'proj_1');
     global.Blob = OrigBlob;
 
     expect('mapImage' in capturedBlob.project).toBe(true);
