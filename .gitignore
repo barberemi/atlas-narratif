@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.kronn/tmp/
+.claude/
+.agents/
+.gemini/
+.codex/
+.copilot/
+.env.mcp
+.mcp.json
+ai/var/
+.kronn/
+
+# Playwright
+test-results/
+playwright-report/
+e2e/.auth/
+
+# Secrets
+.env
+server/.env
+*.env.local

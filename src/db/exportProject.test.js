@@ -3,6 +3,11 @@ import { exportProject } from './exportProject';
 
 vi.mock('../api/client', () => ({
   getDeviceId: vi.fn().mockReturnValue('device-test-id'),
+  ensureDeviceRegistered: vi.fn().mockResolvedValue(),
+}));
+
+vi.mock('../utils/exportMarkdown', () => ({
+  buildMarkdown: vi.fn().mockReturnValue('# Mon Roman\n\nContenu markdown'),
 }));
 
 // ── Mock APIs browser ──────────────────────────────────────────────────────────
@@ -50,7 +55,7 @@ function mockFetch(payload, status = 200) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('exportProject', () => {
-  it('lance le téléchargement et retourne le nom de fichier', async () => {
+  it('lance le téléchargement et retourne le nom de fichier .md', async () => {
     mockFetch(makePayload());
     const fakeA = { href: '', download: '', click: vi.fn() };
     vi.spyOn(document, 'createElement').mockReturnValue(fakeA);
@@ -59,7 +64,7 @@ describe('exportProject', () => {
 
     expect(fakeA.click).toHaveBeenCalledOnce();
     expect(typeof filename).toBe('string');
-    expect(filename).toMatch(/^atlas_.*\.json$/);
+    expect(filename).toMatch(/^atlas_.*\.md$/);
   });
 
   it("libère l'URL blob après le clic", async () => {
@@ -101,7 +106,7 @@ describe('exportProject', () => {
     vi.spyOn(document, 'createElement').mockReturnValue(fakeA);
 
     const filename = await exportProject(null, 'proj_1');
-    const slug = filename.replace(/^atlas_/, '').replace(/_\d{4}-\d{2}-\d{2}\.json$/, '');
+    const slug = filename.replace(/^atlas_/, '').replace(/_\d{4}-\d{2}-\d{2}\.md$/, '');
     expect(slug.length).toBeLessThanOrEqual(30);
   });
 
@@ -110,54 +115,31 @@ describe('exportProject', () => {
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
 
     const filename = await exportProject(null, 'proj_1');
-    expect(filename).toMatch(/_\d{4}-\d{2}-\d{2}\.json$/);
+    expect(filename).toMatch(/_\d{4}-\d{2}-\d{2}\.md$/);
   });
 
-  it('le payload contient version, project et toutes les tables', async () => {
+  it('le Blob contient du Markdown (pas du JSON)', async () => {
     mockFetch(makePayload());
-    let capturedBlob;
+    let capturedContent;
     const OrigBlob = global.Blob;
-    global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
+    global.Blob = class { constructor(parts) { capturedContent = parts[0]; } };
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
 
     await exportProject(null, 'proj_1');
     global.Blob = OrigBlob;
 
-    expect(capturedBlob.version).toBe('1.0');
-    expect(capturedBlob.project.name).toBe('Mon Roman');
-    expect(capturedBlob.volumes).toBeDefined();
-    expect(capturedBlob.characters).toBeDefined();
-    expect(capturedBlob.locations).toBeDefined();
-    expect(capturedBlob.timelineEvents).toBeDefined();
-    expect(capturedBlob.stcChapters).toBeDefined();
-    expect(capturedBlob.characterJourneys).toBeDefined();
+    expect(capturedContent).toContain('# Mon Roman');
   });
 
-  it('le payload inclut les volumes avec leur contenu', async () => {
+  it('appelle buildMarkdown avec le payload API', async () => {
+    const { buildMarkdown } = await import('../utils/exportMarkdown');
     mockFetch(makePayload());
-    let capturedBlob;
-    const OrigBlob = global.Blob;
-    global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
     vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
 
     await exportProject(null, 'proj_1');
-    global.Blob = OrigBlob;
 
-    expect(Array.isArray(capturedBlob.volumes)).toBe(true);
-    expect(capturedBlob.volumes[0].id).toBe('v1');
-    expect(capturedBlob.volumes[0].number).toBe(1);
-  });
-
-  it('mappe map_image → mapImage dans project', async () => {
-    mockFetch(makePayload());
-    let capturedBlob;
-    const OrigBlob = global.Blob;
-    global.Blob = class { constructor(parts) { capturedBlob = JSON.parse(parts[0]); } };
-    vi.spyOn(document, 'createElement').mockReturnValue({ href: '', download: '', click: vi.fn() });
-
-    await exportProject(null, 'proj_1');
-    global.Blob = OrigBlob;
-
-    expect('mapImage' in capturedBlob.project).toBe(true);
+    expect(buildMarkdown).toHaveBeenCalledWith(expect.objectContaining({
+      project: expect.objectContaining({ name: 'Mon Roman' }),
+    }));
   });
 });

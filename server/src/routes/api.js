@@ -2,17 +2,68 @@
  * Routes API — Atlas Narratif
  *
  * Monté sous /api dans src/index.js.
- * Toutes les routes supposent que l'authentification a déjà été vérifiée
- * par le middleware requireAuth si nécessaire.
+ * Middlewares : requireIdentity (auth/deviceId) + requireProjectOwner (IDOR).
+ * Validation : Zod sur tous les body POST/PUT.
  */
 
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import * as q from '../db-queries.js';
 import { seedProject } from '../seed.js';
 import sql from '../db.js';
-import { auth } from '../auth.js';
+import { requireIdentity, signDeviceId } from '../middleware/requireIdentity.js';
+import { requireProjectOwner } from '../middleware/requireProjectOwner.js';
+import * as v from '../validators.js';
 
 const api = new Hono();
+
+// ── Rate limiter simple pour /device/register (10 req/min par IP) ───────────
+const deviceRL = new Map();
+const DEVICE_RL_WINDOW = 60_000;
+const DEVICE_RL_MAX    = 10;
+
+function deviceRateLimit(c) {
+  const ip = c.req.header('x-real-ip') || c.req.header('x-forwarded-for')?.split(',')[0] || 'unknown';
+  const now = Date.now();
+  const entry = deviceRL.get(ip);
+  if (entry && now - entry.start < DEVICE_RL_WINDOW) {
+    if (entry.count >= DEVICE_RL_MAX) return c.json({ error: 'Trop de requêtes' }, 429);
+    entry.count++;
+  } else {
+    deviceRL.set(ip, { start: now, count: 1 });
+  }
+  return null;
+}
+// Nettoyage périodique (toutes les 5 min)
+setInterval(() => {
+  const cutoff = Date.now() - DEVICE_RL_WINDOW;
+  for (const [ip, entry] of deviceRL) if (entry.start < cutoff) deviceRL.delete(ip);
+}, 300_000).unref();
+
+// ── Enregistrement device (avant requireIdentity) ───────────────────────────
+// Retourne un token HMAC pour signer un deviceId. Pas besoin d'être authentifié.
+api.post('/device/register', async (c) => {
+  const blocked = deviceRateLimit(c);
+  if (blocked) return blocked;
+  try {
+    const { deviceId } = await c.req.json();
+    if (!deviceId || typeof deviceId !== 'string' || deviceId.length > 200) {
+      return c.json({ error: 'deviceId invalide' }, 400);
+    }
+    const token = signDeviceId(deviceId);
+    return c.json({ deviceId, token });
+  } catch {
+    return c.json({ error: 'Requête invalide' }, 400);
+  }
+});
+
+// ── Middlewares globaux ──────────────────────────────────────────────────────
+api.use('*', requireIdentity);
+api.use('/projects/:projectId/*', requireProjectOwner);
+api.use('/projects/:projectId', requireProjectOwner);
+
+// ── Limite de taille par défaut (10 Mo) ──────────────────────────────────────
+api.use('*', bodyLimit({ maxSize: 10 * 1024 * 1024 }));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -22,47 +73,74 @@ function wrap(handler) {
       return await handler(c);
     } catch (err) {
       console.error(err);
-      return c.json({ error: err.message }, 500);
+      return c.json({ error: 'Erreur interne' }, 500);
     }
   };
 }
 
-/** Retourne { userId, deviceId } depuis la session (optionnelle) et le header X-Device-Id. */
-async function getContext(c) {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers }).catch(() => null);
-  const userId   = session?.user?.id ?? null;
-  const deviceId = c.req.header('x-device-id') ?? null;
-  return { userId, deviceId };
+function getContext(c) {
+  return { userId: c.get('userId'), deviceId: c.get('deviceId') };
+}
+
+/** Parse + valide le body JSON avec un schéma Zod. Retourne le body parsé ou une réponse 400. */
+async function parseBody(c, schema) {
+  const raw = await c.req.json();
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    console.warn('[parseBody] Validation échouée :', JSON.stringify(result.error.issues, null, 2));
+    return { error: c.json({ error: 'Validation échouée', details: result.error.issues }, 400) };
+  }
+  return { data: result.data };
 }
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 
 api.get('/projects', wrap(async (c) => {
-  const ctx  = await getContext(c);
+  const ctx  = getContext(c);
   const list = await q.getProjects(ctx);
   return c.json(list);
 }));
 
 api.post('/projects', wrap(async (c) => {
-  const ctx  = await getContext(c);
-  const body = await c.req.json();
-  const id   = await q.createProject(body, ctx);
+  const ctx = getContext(c);
+  const { data: body, error } = await parseBody(c, v.createProject);
+  if (error) return error;
+  const id = await q.createProject(body, ctx);
   return c.json({ id }, 201);
 }));
 
 // ── Claim : transfère les projets anonymes vers le compte connecté ─────────────
 
 api.post('/auth/claim-projects', wrap(async (c) => {
-  const session  = await auth.api.getSession({ headers: c.req.raw.headers });
-  if (!session) return c.json({ error: 'Non authentifié' }, 401);
-  const deviceId = c.req.header('x-device-id');
-  if (deviceId) await q.claimProjectsForUser(session.user.id, deviceId);
+  const userId = c.get('userId');
+  if (!userId) return c.json({ error: 'Authentification requise pour claim' }, 401);
+  const deviceId = c.get('deviceId');
+  if (deviceId) await q.claimProjectsForUser(userId, deviceId);
   return c.json({ ok: true });
 }));
 
+// ── Compte utilisateur (RGPD) ────────────────────────────────────────────────
+
+api.get('/account/export', wrap(async (c) => {
+  const userId = c.get('userId');
+  if (!userId) return c.json({ error: 'Authentification requise' }, 401);
+  const data = await q.exportUserData(userId);
+  return c.json(data);
+}));
+
+api.delete('/account', wrap(async (c) => {
+  const userId = c.get('userId');
+  if (!userId) return c.json({ error: 'Authentification requise' }, 401);
+  await q.deleteUser(userId);
+  return c.json({ ok: true });
+}));
+
+// ── Projects (suite) ─────────────────────────────────────────────────────────
+
 api.delete('/projects/:projectId', wrap(async (c) => {
   const { projectId } = c.req.param();
-  await q.deleteProject(projectId);
+  const ctx = getContext(c);
+  await q.deleteProject(projectId, ctx);
   return c.json({ ok: true });
 }));
 
@@ -78,10 +156,11 @@ api.get('/projects/:projectId/map-image', wrap(async (c) => {
   return c.json({ image });
 }));
 
-api.put('/projects/:projectId/map-image', wrap(async (c) => {
+api.put('/projects/:projectId/map-image', bodyLimit({ maxSize: 10 * 1024 * 1024 }), wrap(async (c) => {
   const { projectId } = c.req.param();
-  const { image } = await c.req.json();
-  await q.setProjectMapImage(projectId, image);
+  const { data: body, error } = await parseBody(c, v.mapImage);
+  if (error) return error;
+  await q.setProjectMapImage(projectId, body.image);
   return c.json({ ok: true });
 }));
 
@@ -95,21 +174,31 @@ api.get('/projects/:projectId/volumes', wrap(async (c) => {
 
 api.post('/projects/:projectId/volumes', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.volume);
+  if (error) return error;
   const id = await q.insertVolume(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/volumes/:volumeId', wrap(async (c) => {
   const { projectId, volumeId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.volume);
+  if (error) return error;
   await q.updateVolume(volumeId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/volumes/:volumeId', wrap(async (c) => {
   const { projectId, volumeId } = c.req.param();
-  await q.deleteVolume(volumeId, projectId);
+  const snapshot = await q.deleteVolume(volumeId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/volumes/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreVolume);
+  if (error) return error;
+  await q.restoreVolume(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
@@ -124,109 +213,155 @@ api.get('/projects/:projectId/lore', wrap(async (c) => {
 // Characters
 api.get('/projects/:projectId/characters/search', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const search = c.req.query('q') ?? '';
+  const search = (c.req.query('q') ?? '').slice(0, 200);
   const result = await q.findCharacterByName(search, projectId);
   return c.json(result);
 }));
 
 api.post('/projects/:projectId/characters', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.character);
+  if (error) return error;
   const id = await q.insertCharacter(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/characters/:charId', wrap(async (c) => {
   const { projectId, charId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.character);
+  if (error) return error;
   await q.updateCharacter(charId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/characters/:charId', wrap(async (c) => {
   const { projectId, charId } = c.req.param();
-  await q.deleteCharacter(charId, projectId);
+  const snapshot = await q.deleteCharacter(charId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/characters/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreCharacter);
+  if (error) return error;
+  await q.restoreCharacter(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
 api.put('/projects/:projectId/characters/:charId/groups', wrap(async (c) => {
   const { projectId, charId } = c.req.param();
-  const { groupIds } = await c.req.json();
-  await q.setCharacterGroups(charId, groupIds ?? [], projectId);
+  const { data: body, error } = await parseBody(c, v.characterGroups);
+  if (error) return error;
+  await q.setCharacterGroups(charId, body.groupIds ?? [], projectId);
   return c.json({ ok: true });
 }));
 
 // Locations
 api.post('/projects/:projectId/locations', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.location);
+  if (error) return error;
   const id = await q.insertLocation(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/locations/:locId', wrap(async (c) => {
   const { projectId, locId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.location);
+  if (error) return error;
   await q.updateLocation(locId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/locations/:locId', wrap(async (c) => {
   const { projectId, locId } = c.req.param();
-  await q.deleteLocation(locId, projectId);
+  const snapshot = await q.deleteLocation(locId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/locations/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreLocation);
+  if (error) return error;
+  await q.restoreLocation(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
 api.put('/projects/:projectId/locations/:locId/coordinates', wrap(async (c) => {
   const { projectId, locId } = c.req.param();
-  const { coordinates } = await c.req.json();
-  await q.setLocationCoordinates(locId, projectId, coordinates);
+  const { data: body, error } = await parseBody(c, v.locationCoordinates);
+  if (error) return error;
+  await q.setLocationCoordinates(locId, projectId, body.coordinates);
   return c.json({ ok: true });
 }));
 
 // Objects
 api.post('/projects/:projectId/objects', wrap(async (c) => {
   const { projectId } = c.req.param();
-  if (!projectId || projectId === '[object Object]') {
-    console.error('[insertObject] invalid projectId received:', projectId, new Error().stack);
-    return c.json({ error: `Invalid projectId: "${projectId}"` }, 400);
-  }
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.object);
+  if (error) return error;
   const id = await q.insertObject(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/objects/:objId', wrap(async (c) => {
   const { projectId, objId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.object);
+  if (error) return error;
   await q.updateObject(objId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/objects/:objId', wrap(async (c) => {
   const { projectId, objId } = c.req.param();
-  await q.deleteObject(objId, projectId);
+  const snapshot = await q.deleteObject(objId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/objects/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreObject);
+  if (error) return error;
+  await q.restoreObject(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
 // Groups
 api.post('/projects/:projectId/groups', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.group);
+  if (error) return error;
   const id = await q.insertGroup(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/groups/:groupId', wrap(async (c) => {
   const { projectId, groupId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.group);
+  if (error) return error;
   await q.updateGroup(groupId, body, projectId);
+  return c.json({ ok: true });
+}));
+
+api.put('/projects/:projectId/groups/:groupId/members/:charId/role', wrap(async (c) => {
+  const { projectId, groupId, charId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.groupMemberRole);
+  if (error) return error;
+  await q.setGroupMemberRole(groupId, charId, body.roleInGroup ?? null, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/groups/:groupId', wrap(async (c) => {
   const { projectId, groupId } = c.req.param();
-  await q.deleteGroup(groupId, projectId);
+  const snapshot = await q.deleteGroup(groupId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/groups/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreGroup);
+  if (error) return error;
+  await q.restoreGroup(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
@@ -246,23 +381,42 @@ api.get('/projects/:projectId/chapters', wrap(async (c) => {
 
 api.post('/projects/:projectId/events', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.timelineEvent);
+  if (error) return error;
   const id = await q.insertTimelineEvent(body, projectId);
   return c.json({ id }, 201);
 }));
 
+api.put('/projects/:projectId/events/reorder', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.reorderEvents);
+  if (error) return error;
+  await q.reorderEvents(projectId, body.updates);
+  return c.json({ ok: true });
+}));
+
 api.put('/projects/:projectId/events/:eventId', wrap(async (c) => {
   const { projectId, eventId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.timelineEvent);
+  if (error) return error;
   await q.updateTimelineEvent(eventId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/events/:eventId', wrap(async (c) => {
   const { projectId, eventId } = c.req.param();
-  await q.deleteTimelineEvent(eventId, projectId);
+  const snapshot = await q.deleteTimelineEvent(eventId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/events/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreTimelineEvent);
+  if (error) return error;
+  await q.restoreTimelineEvent(snapshot, projectId);
   return c.json({ ok: true });
 }));
+
 
 // ── Save the Cat ──────────────────────────────────────────────────────────────
 
@@ -274,23 +428,42 @@ api.get('/projects/:projectId/stc', wrap(async (c) => {
 
 api.post('/projects/:projectId/stc', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.stcChapter);
+  if (error) return error;
   const id = await q.insertStcChapter(body, projectId);
   return c.json({ id }, 201);
 }));
 
+api.put('/projects/:projectId/stc/reorder', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.reorderStcChapters);
+  if (error) return error;
+  await q.reorderStcChapters(projectId, body.updates);
+  return c.json({ ok: true });
+}));
+
 api.put('/projects/:projectId/stc/:chapterId', wrap(async (c) => {
   const { projectId, chapterId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.stcChapter);
+  if (error) return error;
   await q.updateStcChapter(chapterId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/stc/:chapterId', wrap(async (c) => {
   const { projectId, chapterId } = c.req.param();
-  await q.deleteStcChapter(chapterId, projectId);
+  const snapshot = await q.deleteStcChapter(chapterId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/stc/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreStcChapter);
+  if (error) return error;
+  await q.restoreStcChapter(snapshot, projectId);
   return c.json({ ok: true });
 }));
+
 
 // ── Incoherences ──────────────────────────────────────────────────────────────
 
@@ -300,7 +473,6 @@ api.get('/projects/:projectId/incoherences', wrap(async (c) => {
   return c.json(list);
 }));
 
-// DELETE scan results first, then POST new ones — kept as two separate routes
 api.delete('/projects/:projectId/incoherences/scan', wrap(async (c) => {
   const { projectId } = c.req.param();
   await q.deleteScanIncoherences(projectId);
@@ -309,8 +481,9 @@ api.delete('/projects/:projectId/incoherences/scan', wrap(async (c) => {
 
 api.post('/projects/:projectId/incoherences/scan', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const { incoherences } = await c.req.json();
-  for (const inc of (incoherences ?? [])) {
+  const { data: body, error } = await parseBody(c, v.scanIncoherences);
+  if (error) return error;
+  for (const inc of body.incoherences) {
     await q.insertScannedIncoherence(inc, projectId);
   }
   return c.json({ ok: true }, 201);
@@ -318,15 +491,17 @@ api.post('/projects/:projectId/incoherences/scan', wrap(async (c) => {
 
 api.put('/projects/:projectId/incoherences/:incId/resolved', wrap(async (c) => {
   const { projectId, incId } = c.req.param();
-  const { resolved } = await c.req.json();
-  await q.setIncoherenceResolved(incId, resolved, projectId);
+  const { data: body, error } = await parseBody(c, v.resolved);
+  if (error) return error;
+  await q.setIncoherenceResolved(incId, body.resolved, projectId);
   return c.json({ ok: true });
 }));
 
 api.put('/projects/:projectId/incoherences/:incId/note', wrap(async (c) => {
   const { projectId, incId } = c.req.param();
-  const { note } = await c.req.json();
-  await q.setResolutionNote(incId, note, projectId);
+  const { data: body, error } = await parseBody(c, v.resolutionNote);
+  if (error) return error;
+  await q.setResolutionNote(incId, body.note, projectId);
   return c.json({ ok: true });
 }));
 
@@ -340,8 +515,9 @@ api.get('/projects/:projectId/arc', wrap(async (c) => {
 
 api.put('/projects/:projectId/arc/:chapter', wrap(async (c) => {
   const { projectId, chapter } = c.req.param();
-  const { intensity } = await c.req.json();
-  await q.upsertArcPoint(projectId, +chapter, intensity);
+  const { data: body, error } = await parseBody(c, v.arcPoint);
+  if (error) return error;
+  await q.upsertArcPoint(projectId, +chapter, body.intensity);
   return c.json({ ok: true });
 }));
 
@@ -355,8 +531,9 @@ api.get('/projects/:projectId/notes', wrap(async (c) => {
 
 api.put('/projects/:projectId/notes/:chapter', wrap(async (c) => {
   const { projectId, chapter } = c.req.param();
-  const { content } = await c.req.json();
-  await q.setChapterNote(projectId, +chapter, content);
+  const { data: body, error } = await parseBody(c, v.chapterNote);
+  if (error) return error;
+  await q.setChapterNote(projectId, +chapter, body.content);
   return c.json({ ok: true });
 }));
 
@@ -370,21 +547,31 @@ api.get('/projects/:projectId/plants', wrap(async (c) => {
 
 api.post('/projects/:projectId/plants', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.plant);
+  if (error) return error;
   const id = await q.insertPlant(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/plants/:plantId', wrap(async (c) => {
   const { projectId, plantId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.plant);
+  if (error) return error;
   await q.updatePlant(plantId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/plants/:plantId', wrap(async (c) => {
   const { projectId, plantId } = c.req.param();
-  await q.deletePlant(plantId, projectId);
+  const snapshot = await q.deletePlant(plantId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/plants/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restorePlant);
+  if (error) return error;
+  await q.restorePlant(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
@@ -398,21 +585,31 @@ api.get('/projects/:projectId/threads', wrap(async (c) => {
 
 api.post('/projects/:projectId/threads', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.thread);
+  if (error) return error;
   const id = await q.insertThread(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.put('/projects/:projectId/threads/:threadId', wrap(async (c) => {
   const { projectId, threadId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.thread);
+  if (error) return error;
   await q.updateThread(threadId, body, projectId);
   return c.json({ ok: true });
 }));
 
 api.delete('/projects/:projectId/threads/:threadId', wrap(async (c) => {
   const { projectId, threadId } = c.req.param();
-  await q.deleteThread(threadId, projectId);
+  const snapshot = await q.deleteThread(threadId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/threads/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreThread);
+  if (error) return error;
+  await q.restoreThread(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
@@ -432,8 +629,9 @@ api.get('/projects/:projectId/journeys/:charKey', wrap(async (c) => {
 
 api.put('/projects/:projectId/journeys/:charKey', wrap(async (c) => {
   const { projectId, charKey } = c.req.param();
-  const { steps } = await c.req.json();
-  await q.saveJourney(projectId, charKey, steps ?? []);
+  const { data: body, error } = await parseBody(c, v.journey);
+  if (error) return error;
+  await q.saveJourney(projectId, charKey, body.steps ?? []);
   return c.json({ ok: true });
 }));
 
@@ -463,21 +661,31 @@ api.get('/projects/:projectId/characters/:charId/arcs', wrap(async (c) => {
 
 api.post('/projects/:projectId/character-arcs', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.characterAxis);
+  if (error) return error;
   const id = await q.insertCharacterAxis(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.delete('/projects/:projectId/character-arcs/:axisId', wrap(async (c) => {
   const { projectId, axisId } = c.req.param();
-  await q.deleteCharacterAxis(axisId, projectId);
+  const snapshot = await q.deleteCharacterAxis(axisId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/character-arcs/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreCharacterAxis);
+  if (error) return error;
+  await q.restoreCharacterAxis(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
 api.put('/projects/:projectId/character-arcs/:axisId/points/:chapter', wrap(async (c) => {
   const { projectId, axisId, chapter } = c.req.param();
-  const { value, note, volumeId } = await c.req.json();
-  await q.upsertCharacterArcPoint(projectId, axisId, +chapter, value, note, volumeId);
+  const { data: body, error } = await parseBody(c, v.characterArcPoint);
+  if (error) return error;
+  await q.upsertCharacterArcPoint(projectId, axisId, +chapter, body.value, body.note, body.volumeId);
   return c.json({ ok: true });
 }));
 
@@ -497,40 +705,43 @@ api.get('/projects/:projectId/hero-journey', wrap(async (c) => {
 
 api.post('/projects/:projectId/hero-journey', wrap(async (c) => {
   const { projectId } = c.req.param();
-  const body = await c.req.json();
+  const { data: body, error } = await parseBody(c, v.heroJourneyEntry);
+  if (error) return error;
   const id = await q.saveHeroJourneyEntry(body, projectId);
   return c.json({ id }, 201);
 }));
 
 api.delete('/projects/:projectId/hero-journey/:entryId', wrap(async (c) => {
   const { projectId, entryId } = c.req.param();
-  await q.removeHeroJourneyEntry(entryId, projectId);
+  const snapshot = await q.removeHeroJourneyEntry(entryId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/hero-journey/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreHeroJourneyEntry);
+  if (error) return error;
+  await q.restoreHeroJourneyEntry(snapshot, projectId);
   return c.json({ ok: true });
 }));
 
 // ── Seed générique ─────────────────────────────────────────────────────────────
 // POST /api/seed  body: { meta, data }
-api.post('/seed', wrap(async (c) => {
-  const { meta, data } = await c.req.json();
-  const ctx = await getContext(c);
-  const id = await seedProject(meta, data, ctx);
-  return c.json({ id: id ?? meta.id }, 201);
+api.post('/seed', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async (c) => {
+  const { data: body, error } = await parseBody(c, v.seed);
+  if (error) return error;
+  const ctx = getContext(c);
+  const id = await seedProject(body.meta, body.data, ctx);
+  return c.json({ id: id ?? body.meta.id }, 201);
 }));
 
 // ── Import backup ─────────────────────────────────────────────────────────────
 // POST /api/import/backup  body: AtlasNarratif backup JSON (version "1.0")
 
-api.post('/import/backup', wrap(async (c) => {
-  const body = await c.req.json();
-  const { userId, deviceId } = await getContext(c);
-
-  // Validate
-  if (body.version !== '1.0') {
-    return c.json({ error: 'Unsupported backup version. Expected "1.0".' }, 400);
-  }
-  if (!body.project?.name) {
-    return c.json({ error: 'Missing required field: project.name' }, 400);
-  }
+api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async (c) => {
+  const { data: body, error } = await parseBody(c, v.importBackup);
+  if (error) return error;
+  const { userId, deviceId } = getContext(c);
 
   // Generate new project ID
   const slug = body.project.name

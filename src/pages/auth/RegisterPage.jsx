@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authClient } from '../../lib/authClient';
 import { claimProjects } from '../../api/client';
 import Button from '../../components/ui/Button';
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [name,     setName]     = useState('');
   const [email,    setEmail]    = useState('');
@@ -18,11 +20,11 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { error: err } = await authClient.signUp.email({ name, email, password, callbackURL: window.location.origin + '/login' });
-      if (err) { setError(err.message ?? 'Erreur lors de la création du compte'); return; }
+      if (err) { setError(err.message ?? t('authPages.createAccountError')); return; }
       await claimProjects().catch(() => {});
       navigate('/verify-email', { state: { email } });
     } catch {
-      setError('Erreur réseau, réessaie.');
+      setError(t('authPages.networkError'));
     } finally {
       setLoading(false);
     }
@@ -44,19 +46,19 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm flex flex-col gap-8">
 
-          <h1 className="text-2xl font-black text-white tracking-tight">Créer un compte</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">{t('authPages.createAccount')}</h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">Nom</label>
+              <label className="text-xs text-slate-500 font-semibold">{t('authPages.name')}</label>
               <input type="text" required autoComplete="name" value={name}
-                onChange={e => setName(e.target.value)} placeholder="Jean Dupont"
+                onChange={e => setName(e.target.value)} placeholder={t('authPages.namePlaceholder')}
                 className="px-3 py-2.5 rounded-lg text-sm text-white outline-none transition-all"
                 style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">Email</label>
+              <label className="text-xs text-slate-500 font-semibold">{t('authPages.email')}</label>
               <input type="email" required autoComplete="email" value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="px-3 py-2.5 rounded-lg text-sm text-white outline-none transition-all"
@@ -64,10 +66,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">Mot de passe</label>
+              <label className="text-xs text-slate-500 font-semibold">{t('authPages.password')}</label>
               <input type="password" required autoComplete="new-password" minLength={8}
                 value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="8 caractères minimum"
+                placeholder={t('authPages.passwordPlaceholder')}
                 className="px-3 py-2.5 rounded-lg text-sm text-white outline-none transition-all"
                 style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
             </div>
@@ -80,14 +82,14 @@ export default function RegisterPage() {
             )}
 
             <Button type="submit" fullWidth loading={loading} disabled={loading}>
-              {loading ? 'Création…' : 'Créer mon compte →'}
+              {loading ? t('authPages.creatingAccount') : t('authPages.createAccountSubmit')}
             </Button>
           </form>
 
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-slate-600">ou</span>
+              <span className="text-xs text-slate-600">{t('authPages.or')}</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
             <button
@@ -103,14 +105,14 @@ export default function RegisterPage() {
                 <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                 <path fill="none" d="M0 0h48v48H0z"/>
               </svg>
-              Continuer avec Google
+              {t('authPages.continueWithGoogle')}
             </button>
           </div>
 
           <p className="text-center text-xs text-slate-600">
-            Déjà un compte ?{' '}
+            {t('authPages.alreadyHaveAccount')}{' '}
             <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
-              Se connecter
+              {t('authPages.signInLink')}
             </Link>
           </p>
 

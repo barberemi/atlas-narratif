@@ -1,0 +1,1959 @@
+{
+  "meta": {
+    "name": "The Lord of the Rings",
+    "description": "The Fellowship of the Ring, The Two Towers & The Return of the King -- J.R.R. Tolkien"
+  },
+  "volumes": {
+    "vol_communaute": {
+      "title": "The Fellowship of the Ring",
+      "description": "First volume -- from the Shire to the breaking at Parth Galen."
+    },
+    "vol_deux_tours": {
+      "title": "The Two Towers",
+      "description": "Second volume -- three narrative threads between Fangorn, Rohan and Mordor."
+    },
+    "vol_retour_roi": {
+      "title": "The Return of the King",
+      "description": "Third volume -- siege of Gondor, destruction of the Ring, coronation and the Grey Havens."
+    }
+  },
+  "characters": {
+    "char_frodo": {
+      "name": "Frodo Baggins",
+      "aliases": [
+        "The Ring-bearer",
+        "Mr. Frodo"
+      ],
+      "description": "Adopted nephew of Bilbo Baggins and heir to Bag End. Frodo inherits the One Ring without knowing its nature. His resistance to the Ring's corruption -- partial but real -- sets him apart from every other creature in Middle-earth.",
+      "role": "Ring-bearer",
+      "origin": "The Shire -- Bag End",
+      "race": "Hobbit",
+      "affiliation": [
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Brave",
+        "Humble",
+        "Determined",
+        "Partially resistant to the Ring"
+      ]
+    },
+    "char_aragorn": {
+      "name": "Aragorn",
+      "aliases": [
+        "Strider",
+        "Aragorn II Elessar",
+        "Dúnadan",
+        "Thorongil"
+      ],
+      "description": "Direct heir of Isildur and thus rightful claimant to the thrones of Gondor and Arnor. He lives under the secret identity of 'Strider', a Ranger of the wild, until the Quest of the Ring reveals his destiny.",
+      "role": "Ranger of the North, Heir of Isildur",
+      "origin": "Rivendell (raised by Elrond)",
+      "race": "Man (Dunedain)",
+      "affiliation": [
+        "The Rangers of the North",
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Accomplished warrior",
+        "Wilderness guide",
+        "Discreet nobleman",
+        "Healer"
+      ]
+    },
+    "char_gandalf": {
+      "name": "Gandalf the Grey",
+      "aliases": [
+        "Mithrandir",
+        "Olórin",
+        "Incánus",
+        "Gandalf Greyhame"
+      ],
+      "description": "One of the five Istari sent by the Valar to aid the Free Peoples against Sauron. Unlike Saruman, he refuses the pursuit of power. Bearer of Narya, the Ring of Fire. His fall at Khazad-dum marks the end of Gandalf the Grey -- and the beginning of Gandalf the White.",
+      "role": "Wizard of the Order, Guide of the Fellowship",
+      "origin": "Valinor (sent to Middle-earth)",
+      "race": "Maia (Istari)",
+      "affiliation": [
+        "The Order of the Istari",
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Wise",
+        "Cunning",
+        "Powerful",
+        "Bearer of Narya"
+      ]
+    },
+    "char_sam": {
+      "name": "Samwise Gamgee",
+      "aliases": [
+        "Sam",
+        "Sam the Brave"
+      ],
+      "description": "Devoted gardener of Bilbo, then steadfast companion of Frodo. His unwavering loyalty and deep love for Frodo will drive him to deeds of bravery that will surprise even himself. He is the true anchor of the Quest.",
+      "role": "Bilbo's Gardener, Frodo's Companion",
+      "origin": "The Shire -- Bagshot Row",
+      "race": "Hobbit",
+      "affiliation": [
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Loyal",
+        "Brave",
+        "Practical",
+        "Exceptional gardener"
+      ]
+    },
+    "char_merry": {
+      "name": "Meriadoc Brandybuck",
+      "aliases": [
+        "Merry",
+        "Master Merry"
+      ],
+      "description": "The most intellectual and organized of the young hobbits. Merry knows the Shire like the back of his hand and can navigate the wild. His curiosity and practicality make him invaluable to the Fellowship.",
+      "role": "Hobbit of the Shire, Companion",
+      "origin": "The Shire -- Buckland",
+      "race": "Hobbit",
+      "affiliation": [
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Organized",
+        "Curious",
+        "Brave",
+        "Intelligent"
+      ]
+    },
+    "char_pippin": {
+      "name": "Peregrin Took",
+      "aliases": [
+        "Pippin",
+        "Fool of a Took"
+      ],
+      "description": "The youngest and most impulsive of the hobbits. His recklessness will get him into trouble (notably with the Palantir), but his pure heart and loyalty make him a precious companion. He represents innocence confronted with the world.",
+      "role": "Hobbit of the Shire, Companion",
+      "origin": "The Shire -- Great Smials",
+      "race": "Hobbit",
+      "affiliation": [
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Impulsive",
+        "Loyal",
+        "Cheerful",
+        "Curious"
+      ]
+    },
+    "char_legolas": {
+      "name": "Legolas",
+      "aliases": [
+        "Legolas Greenleaf",
+        "Prince of the Elves"
+      ],
+      "description": "Son of King Thranduil, representative of the Elves at the Council of Elrond. An archer of superhuman precision, he sees and hears things invisible to mortals. His budding friendship with Gimli will break a millennia-old taboo between Elves and Dwarves.",
+      "role": "Archer, Prince of Mirkwood",
+      "origin": "Mirkwood -- Kingdom of Thranduil",
+      "race": "Elf (Silvan)",
+      "affiliation": [
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Extreme precision",
+        "Piercing vision",
+        "Agility",
+        "Connection to nature"
+      ]
+    },
+    "char_gimli": {
+      "name": "Gimli",
+      "aliases": [
+        "Son of Glóin",
+        "Elf-friend"
+      ],
+      "description": "Son of Gloin (companion of Bilbo during the journey to Erebor). Representative of the Dwarves at the Council of Elrond. His legendary endurance and courage in close combat make him a pillar of the Fellowship. His friendship with Legolas will become legendary.",
+      "role": "Mountain Warrior",
+      "origin": "Erebor -- The Lonely Mountain",
+      "race": "Dwarf",
+      "affiliation": [
+        "The Fellowship of the Ring"
+      ],
+      "traits": [
+        "Fearless",
+        "Enduring",
+        "Loyal",
+        "Proud of his people"
+      ]
+    },
+    "char_boromir": {
+      "name": "Boromir",
+      "aliases": [
+        "Son of the Steward",
+        "Captain of Gondor"
+      ],
+      "description": "Eldest son of Denethor II, Steward of Gondor. He comes to Rivendell to interpret a prophetic dream. A noble and patriotic warrior, he gradually succumbs to the allure of the Ring, which he sees as the weapon that could save his people. His final redemption remains one of the most powerful moments of the tale.",
+      "role": "Captain, Representative of Gondor",
+      "origin": "Minas Tirith -- Gondor",
+      "race": "Man (Gondorian)",
+      "affiliation": [
+        "The Fellowship of the Ring",
+        "Gondor"
+      ],
+      "traits": [
+        "Valiant",
+        "Patriotic",
+        "Corruptible (by the Ring)",
+        "Noble in the end"
+      ]
+    },
+    "char_galadriel": {
+      "name": "Galadriel",
+      "aliases": [
+        "Lady of Lothlórien",
+        "Alatáriel",
+        "The Golden Lady"
+      ],
+      "description": "One of the oldest and most powerful Elves of Middle-earth. Bearer of Nenya, the Ring of Adamant. She has protected Lothlorien for centuries. Her refusal of the One Ring, offered by Frodo, is an act of renunciation of immense moral grandeur.",
+      "role": "Lady of Lothlorien, Bearer of Nenya",
+      "origin": "Valinor (exiled to Middle-earth)",
+      "race": "Elf (Noldor)",
+      "affiliation": [
+        "Lothlórien",
+        "The Keepers of the Rings"
+      ],
+      "traits": [
+        "Millennial wisdom",
+        "Telepathic power",
+        "Prophetic vision",
+        "Absolute self-mastery"
+      ]
+    },
+    "char_elrond": {
+      "name": "Elrond",
+      "aliases": [
+        "Master Elrond",
+        "Half-elven"
+      ],
+      "description": "Son of Earendil and Elwing, one of the oldest beings in Middle-earth. He founded Rivendell after the war of the Age of Glory. Bearer of Vilya, the Ring of Air. He presides over the Council that decides the fate of the One Ring.",
+      "role": "Lord of Rivendell, Bearer of Vilya",
+      "origin": "Rivendell -- Imladris",
+      "race": "Half-elf",
+      "affiliation": [
+        "Rivendell",
+        "The Keepers of the Rings"
+      ],
+      "traits": [
+        "Wisdom",
+        "Healing",
+        "Prudence",
+        "Impartiality"
+      ]
+    },
+    "char_saruman": {
+      "name": "Saruman the White",
+      "aliases": [
+        "Saruman",
+        "Curunír",
+        "Saruman of Many Colours"
+      ],
+      "description": "The head of the Order of the Istari, formerly the wisest and most powerful of the five wizards. His pursuit of knowledge about the One Ring corrupted him. He now seeks to seize the Ring for himself, betraying the Order and the Free Peoples.",
+      "role": "Head of the Istari Order, Traitor",
+      "origin": "Valinor (sent to Middle-earth)",
+      "race": "Maia (Istari)",
+      "affiliation": [
+        "Isengard (Orthanc)",
+        "Sauron (betrayed)"
+      ],
+      "traits": [
+        "Brilliant",
+        "Manipulative",
+        "Ambitious",
+        "Corrupted by the pursuit of power"
+      ]
+    },
+    "char_bilbo": {
+      "name": "Bilbo Baggins",
+      "aliases": [
+        "Old Bilbo",
+        "The Burglar (Dwarf nickname)"
+      ],
+      "description": "Frodo's uncle and the first 'accidental' bearer of the One Ring since Gollum's disappearance. He lived extraordinarily long thanks to the Ring. At Rivendell, he works on his book 'There and Back Again' and eventually passes his memories on to Frodo.",
+      "role": "Former Ring-bearer, Author",
+      "origin": "The Shire -- Bag End",
+      "race": "Hobbit",
+      "affiliation": [
+        "Rivendell (retirement)"
+      ],
+      "traits": [
+        "Curious",
+        "Adventurous",
+        "Literate",
+        "Passively obsessed by the Ring"
+      ]
+    },
+    "char_glorfindel": {
+      "name": "Glorfindel",
+      "aliases": [
+        "Lord Glorfindel",
+        "Elf-lord"
+      ],
+      "description": "One of the Elf-lords of Rivendell. Sent by Elrond to meet the Fellowship, he saves Frodo by offering his own Elven mount, Asfaloth, to flee the Nazgul. His inner light is so powerful it can repel the Nine.",
+      "role": "Elf-lord of Rivendell",
+      "origin": "Rivendell -- Imladris",
+      "race": "Elf (Noldor)",
+      "affiliation": [
+        "Rivendell"
+      ],
+      "traits": [
+        "Powerful",
+        "Radiant",
+        "Generous",
+        "Experienced in combat"
+      ]
+    },
+    "char_celeborn": {
+      "name": "Celeborn",
+      "aliases": [
+        "Lord of Lothlórien"
+      ],
+      "description": "Husband of Galadriel and co-lord of Lothlorien. An accomplished warrior and strategist, less versed in mystical arts than his wife but of equal wisdom in the affairs of the world. He welcomes the Fellowship with justified wariness, tempered by love for his wife.",
+      "role": "Co-lord of Lothlorien",
+      "origin": "Doriath (formerly)",
+      "race": "Elf (Sindarin)",
+      "affiliation": [
+        "Lothlórien"
+      ],
+      "traits": [
+        "Strategist",
+        "Prudent",
+        "Dignified",
+        "Wise"
+      ]
+    },
+    "char_tom_bombadil": {
+      "name": "Tom Bombadil",
+      "aliases": [
+        "Iarwain Ben-adar",
+        "The Old One",
+        "Master of Water"
+      ],
+      "description": "A mysterious being whose true nature is not explained, not even by Tolkien. He is the 'Master' of the Old Forest and the Barrow-downs. The One Ring has no power over him -- he can make it disappear and reappear as though it were a common pebble.",
+      "role": "Master of the Old Forest",
+      "origin": "Old Forest",
+      "race": "Unknown (primordial being)",
+      "affiliation": [
+        "Old Forest (independent)"
+      ],
+      "traits": [
+        "Joyful",
+        "Mysteriously powerful",
+        "Immune to the Ring",
+        "Outside the world"
+      ]
+    },
+    "char_gwaihir": {
+      "name": "Gwaihir",
+      "aliases": [
+        "Lord of the Winds",
+        "The Great Eagle"
+      ],
+      "description": "The greatest and wisest of the Eagles, descendant of Thorondor. He answers Gandalf's call and rescues him from Isengard. His aid will prove decisive at several critical moments of the War of the Ring. Swift as the wind, he can cover enormous distances.",
+      "role": "Lord of the Eagles, Ally of Gandalf",
+      "origin": "Peaks of the Misty Mountains",
+      "race": "Great Eagle",
+      "affiliation": [
+        "The Eagles of the Mountains"
+      ],
+      "traits": [
+        "Swift",
+        "Powerful",
+        "Faithful to Gandalf",
+        "Majestic"
+      ]
+    },
+    "char_gollum": {
+      "name": "Gollum",
+      "aliases": [
+        "Sméagol",
+        "My Precious",
+        "The Guide"
+      ],
+      "description": "Once Smeagol, a Stoor-hobbit of the Gladden Fields. The Ring corrupted him over five hundred years, transforming him into a tortured creature divided between his remaining humanity (Smeagol) and the voice of obsession (Gollum). He knows the road to Mordor better than anyone.",
+      "role": "Ambiguous guide, former Ring-bearer",
+      "origin": "The Gladden Fields (Anduin river-lands)",
+      "race": "Degenerate Hobbit (Stoor)",
+      "affiliation": [
+        "The One Ring (obsession)"
+      ],
+      "traits": [
+        "Stealthy",
+        "Dependent on the Ring",
+        "Inwardly divided",
+        "Knower of secret paths"
+      ]
+    },
+    "char_theoden": {
+      "name": "Theoden",
+      "aliases": [
+        "King Théoden",
+        "Théoden Ednew (the Renewed)"
+      ],
+      "description": "King of Rohan, paralyzed by the sorcery of Grima Wormtongue -- Saruman's agent. Freed by Gandalf the White, he is reborn as a war leader and leads his people to the Battle of Helm's Deep. His death on the Pelennor Fields will be one of the most celebrated heroic acts of the War.",
+      "role": "King of Rohan",
+      "origin": "Edoras -- Meduseld",
+      "race": "Man (Rohirrim)",
+      "affiliation": [
+        "Rohan",
+        "Western Alliance"
+      ],
+      "traits": [
+        "Aged beyond his years (under thrall)",
+        "Valiant once freed",
+        "Proud of his people",
+        "Grieving father"
+      ]
+    },
+    "char_eomer": {
+      "name": "Eomer",
+      "aliases": [
+        "Marshal of the Mark",
+        "Third Marshal"
+      ],
+      "description": "Nephew of Theoden and future king of Rohan. An impetuous and loyal warrior, he makes independent decisions when honor demands it -- which earns him temporary banishment by Theoden under Grima's influence. His light cavalry will be decisive in several battles.",
+      "role": "Third Marshal of the Riddermark",
+      "origin": "Rohan -- Edoras",
+      "race": "Man (Rohirrim)",
+      "affiliation": [
+        "Rohan",
+        "Western Alliance"
+      ],
+      "traits": [
+        "Impetuous",
+        "Loyal",
+        "Formidable warrior",
+        "Keen sense of honor"
+      ]
+    },
+    "char_eowyn": {
+      "name": "Eowyn",
+      "aliases": [
+        "The Lady of Rohan",
+        "Dernhelm (disguise)"
+      ],
+      "description": "Niece of Theoden and sister of Eomer. Trapped in the role assigned to her, she yearns to fight for her people. Her answer to the Witch-king -- 'I am no man' -- is one of the most famous moments in the history of Middle-earth.",
+      "role": "Niece of King Theoden, Hidden Warrior",
+      "origin": "Rohan -- Edoras",
+      "race": "Woman (Rohirrim)",
+      "affiliation": [
+        "Rohan"
+      ],
+      "traits": [
+        "Brave",
+        "Defiant of constraints",
+        "Melancholic",
+        "Determined"
+      ]
+    },
+    "char_faramir": {
+      "name": "Faramir",
+      "aliases": [
+        "Captain of Gondor",
+        "Son of the Steward"
+      ],
+      "description": "Younger son of Denethor II and brother of Boromir. Where Boromir sought power to save Gondor, Faramir seeks wisdom. His meeting with Frodo in Ithilien is a test of his virtue: the Ring is within reach, and he chooses not to take it.",
+      "role": "Captain of the Rangers of Ithilien",
+      "origin": "Minas Tirith -- Gondor",
+      "race": "Man (Gondorian)",
+      "affiliation": [
+        "Gondor",
+        "The Rangers of Ithilien"
+      ],
+      "traits": [
+        "Wise",
+        "Just",
+        "Discreet",
+        "Lover of letters and nature"
+      ]
+    },
+    "char_treebeard": {
+      "name": "Treebeard",
+      "aliases": [
+        "Fangorn",
+        "Treebeard",
+        "The Oldest of the Living"
+      ],
+      "description": "The oldest Ent of Middle-earth, shepherd of the trees of Fangorn since the First Ages. Ents are creatures of deliberate slowness -- they never speak of anything hastily. But when Treebeard understands the scale of the devastation wrought by Isengard, he summons the Entmoot and leads the Ents to war.",
+      "role": "Shepherd of Trees, Eldest of the Ents",
+      "origin": "Fangorn Forest",
+      "race": "Ent",
+      "affiliation": [
+        "The Ents",
+        "Fangorn Forest"
+      ],
+      "traits": [
+        "Slow and deliberate",
+        "Immense memory",
+        "Terrible anger once roused",
+        "Guardian of nature"
+      ]
+    },
+    "char_denethor": {
+      "name": "Denethor II",
+      "aliases": [
+        "The Steward",
+        "The Lord of Minas Tirith"
+      ],
+      "description": "Twenty-sixth Steward of Gondor, father of Boromir and Faramir. Once a man of great will and piercing intelligence. But his secret use of the Palantir of Minas Tirith exposed him to Sauron's influence, who showed him visions of inescapable defeat. Consumed by grief over Boromir and growing despair, he refuses to recognize Aragorn as king and chooses to burn alive with his wounded son Faramir rather than see Gondor fall.",
+      "role": "Ruling Steward of Gondor",
+      "origin": "Minas Tirith -- White Tower",
+      "race": "Man (Gondorian)",
+      "affiliation": [
+        "Gondor"
+      ],
+      "traits": [
+        "Proud",
+        "Brilliant but broken",
+        "Grieving father",
+        "Paranoid (Palantír)",
+        "Will corrupted by despair"
+      ]
+    },
+    "char_witch_king": {
+      "name": "The Witch-king of Angmar",
+      "aliases": [
+        "The Lord of the Nazgûl",
+        "The Black Captain",
+        "Lord of Minas Morgul"
+      ],
+      "description": "The most powerful of the Nine Nazgul -- former human kings corrupted by Sauron's Rings of Power. He commands the armies of Mordor at the siege of Minas Tirith. The prophecy of Earnur declares that no man can kill him. Eowyn and Merry defy this prophecy on the Pelennor.",
+      "role": "Lord of the Nazgul, Lieutenant of Sauron",
+      "origin": "Unknown (Second Age)",
+      "race": "Ring-wraith (former Man)",
+      "affiliation": [
+        "Mordor",
+        "Sauron"
+      ],
+      "traits": [
+        "Terror incarnate",
+        "Immortal (bound to Sauron)",
+        "Ruthless strategist",
+        "Voice that shatters will"
+      ]
+    },
+    "char_shelob": {
+      "name": "Shelob",
+      "aliases": [
+        "Shelob",
+        "Her",
+        "The Guardian of Cirith Ungol"
+      ],
+      "description": "A colossal and ancient spider, last descendant of Ungoliant who devoured the Trees of Valinor. She has lived in the tunnels of Cirith Ungol for millennia, devouring all who pass -- Orcs, Elves, Men. Gollum knows her and guides Frodo to her as an offering, hoping to recover the Ring from the corpse.",
+      "role": "Predator of Cirith Ungol",
+      "origin": "Ephel Duath -- Cirith Ungol",
+      "race": "Giant Spider (descendant of Ungoliant)",
+      "affiliation": [
+        "None (solitary predator)"
+      ],
+      "traits": [
+        "Insatiable hunger",
+        "Venomous",
+        "Ancient",
+        "Fears the light (Phial)"
+      ]
+    },
+    "char_grima": {
+      "name": "Grima Wormtongue",
+      "aliases": [
+        "Wormtongue",
+        "Wormtongue",
+        "Saruman's Agent"
+      ],
+      "description": "Former counselor to King Theoden, turned by Saruman. He dripped poison and doubt into the king's mind, weakening him so that Rohan could not resist Isengard. Banished by Gandalf at Edoras, he joins Saruman at Orthanc. It is he who throws the Palantir from the window. At the Scouring of the Shire, he kills Saruman before being struck down himself.",
+      "role": "Corrupted counselor of Theoden, Agent of Saruman",
+      "origin": "Rohan -- Edoras",
+      "race": "Man (Rohirrim -- traitor)",
+      "affiliation": [
+        "Saruman (vassal)",
+        "Rohan (traitor)"
+      ],
+      "traits": [
+        "Treacherous",
+        "Craven",
+        "Jealous of Eowyn",
+        "Consumed by servitude"
+      ]
+    },
+    "char_mouth_sauron": {
+      "name": "The Mouth of Sauron",
+      "aliases": [
+        "The Herald of Sauron",
+        "The Lieutenant of Barad-dûr"
+      ],
+      "description": "An ancient Man, corrupted by Sauron's service since the end of the Second Age. He has forgotten his own name. He is sent to parley with Aragorn and Gandalf before the Black Gate, brandishing Frodo's mithril coat and Sting -- suggesting the Ring-bearer has been captured. An attempt to break the morale of the armies of the West.",
+      "role": "Ambassador of Sauron at the Black Gate",
+      "origin": "Unknown (has forgotten his own name)",
+      "race": "Man (Black Numenorean)",
+      "affiliation": [
+        "Mordor",
+        "Sauron"
+      ],
+      "traits": [
+        "Cold cruelty",
+        "Eloquent",
+        "Manipulative",
+        "Fanatical servant"
+      ]
+    }
+  },
+  "locations": {
+    "loc_shire": {
+      "name": "The Shire",
+      "description": "A verdant agricultural territory in Eriador, inhabited exclusively by Hobbits. The Shire deliberately ignores the rest of the world -- both its strength (preservation of innocence) and its weakness. Frodo's departure marks the end of this golden age.",
+      "type": "Region",
+      "regime": "Semi-autonomous Hobbit society",
+      "inhabitants": [
+        "Hobbits (Baggins, Gamgee, Brandybuck, Took)"
+      ],
+      "keyPlaces": [
+        "Bag End",
+        "Great Smials",
+        "Buckland",
+        "Michel Delving"
+      ]
+    },
+    "loc_bree": {
+      "name": "Bree",
+      "description": "One of the last inhabited towns of Eriador, at the crossroads of two important roads. Bree is rare: it hosts both Men and Hobbits. The Prancing Pony inn is its social heart -- and an information relay for the Rangers.",
+      "type": "Town",
+      "regime": "Independent town",
+      "inhabitants": [
+        "Men",
+        "Hobbits"
+      ],
+      "keyPlaces": [
+        "The Prancing Pony Inn",
+        "The West Gate"
+      ]
+    },
+    "loc_barrowdowns": {
+      "name": "The Barrow-downs",
+      "description": "Hills dotted with ancient barrows, former burial sites of the kings of Arnor. Evil spirits -- Barrow-wights -- were sent there by the Witch-king to haunt the tombs. A place of extreme danger for lost travelers.",
+      "type": "Moors",
+      "regime": "Cursed lands",
+      "inhabitants": [
+        "Barrow-wights"
+      ],
+      "keyPlaces": [
+        "The Barrows",
+        "The King's Hill"
+      ]
+    },
+    "loc_weathertop": {
+      "name": "Weathertop",
+      "description": "An isolated summit bearing the ruins of an ancient watchtower of the Kingdom of Arnor. It once housed one of the Palantiri. A strategic location overlooking the surrounding plains -- and thus a gathering point for the Nazgul who watch the roads.",
+      "type": "Fortified ruin",
+      "regime": "Abandoned ruin",
+      "keyPlaces": [
+        "The Ruined Tower",
+        "The Open Summit"
+      ]
+    },
+    "loc_ford": {
+      "name": "Ford of Bruinen",
+      "description": "The ford on the river Bruinen (Loudwater) that marks the border of Rivendell's protected lands. Elrond can command the waters of the Bruinen. This power was used to create the flood that swept away the Nazgul during Frodo's flight.",
+      "type": "Geographical crossing",
+      "regime": "Border of Rivendell",
+      "keyPlaces": [
+        "The Ford",
+        "The East Bank (Rivendell)"
+      ]
+    },
+    "loc_rivendell": {
+      "name": "Rivendell",
+      "description": "Founded by Elrond at the end of the Second Age. Nestled in a secret valley of Eriador, protected by the waters of the Bruinen and the power of Vilya. Rivendell is a haven of peace, knowledge and healing. It is here that the Council that decides the fate of the Ring is held.",
+      "type": "Elven city",
+      "regime": "Elven Lordship (Elrond)",
+      "inhabitants": [
+        "Noldor Elves",
+        "Half-elves",
+        "Rangers (occasionally)"
+      ],
+      "keyPlaces": [
+        "The Great Hall",
+        "The Halls of Healing",
+        "Elrond's Library"
+      ]
+    },
+    "loc_isengard": {
+      "name": "Isengard",
+      "description": "An ancient fortress of the kings of Gondor, entrusted to Saruman's care. He turned it into an industrial and military center, felling forests to fuel his forges. The tower of Orthanc is its heart -- an indestructible black monolith where Gandalf was imprisoned.",
+      "type": "Fortress",
+      "regime": "Saruman's dominion",
+      "inhabitants": [
+        "Saruman",
+        "Orcs of Isengard",
+        "Uruk-hai"
+      ],
+      "keyPlaces": [
+        "The Tower of Orthanc",
+        "The Forges",
+        "The Ring of Isengard"
+      ]
+    },
+    "loc_caradhras": {
+      "name": "Caradhras Pass",
+      "description": "One of the three passes of the Misty Mountains allowing passage to the East. Caradhras -- the Red Mountain -- is reputed for its malevolent character. During the Fellowship's attempt to cross, an extraordinary snowstorm blocked the path.",
+      "type": "Mountain pass",
+      "regime": "Hostile nature (Saruman's influence)",
+      "keyPlaces": [
+        "The Frozen Summit",
+        "The Rocky Slopes"
+      ]
+    },
+    "loc_moria": {
+      "name": "Mines of Moria",
+      "description": "Khazad-dum -- the greatest and oldest of the Dwarven cities, carved into the Misty Mountains. Abandoned after the Dwarves accidentally released the Balrog (Durin's Bane) by digging too deep. The mines remain overwhelmingly grand, even overrun by darkness.",
+      "type": "Underground ruined city",
+      "regime": "Orc and Balrog dominion",
+      "inhabitants": [
+        "Orcs",
+        "Cave Trolls",
+        "The Balrog (Durin's Bane)"
+      ],
+      "keyPlaces": [
+        "Durin's Door",
+        "The Chamber of Mazarbul",
+        "The Bridge of Khazad-dum"
+      ]
+    },
+    "loc_lothlorien": {
+      "name": "Lothlorien",
+      "description": "The Golden Forest, last great Elven domain of Middle-earth. Its Mallorn trees with golden leaves and flets (platforms) high in the canopy create a world outside of time. The power of Nenya protects it from Sauron. Frodo sees in Galadriel's Mirror the possible futures.",
+      "type": "Sacred Elven forest",
+      "regime": "Lordship of Galadriel and Celeborn",
+      "inhabitants": [
+        "Elves of Lothlorien (Galadhrim)",
+        "Galadriel",
+        "Celeborn"
+      ],
+      "keyPlaces": [
+        "Caras Galadhon",
+        "The Mirror of Galadriel",
+        "The Fields of Cerin Amroth"
+      ]
+    },
+    "loc_parthgalen": {
+      "name": "Parth Galen -- Amon Hen",
+      "description": "A lawn on the western shore of the Great River (Anduin), at the foot of the Falls of Rauros. Amon Hen (Hill of Sight) overlooks the site. It is here that the Fellowship breaks: Boromir succumbs to the Ring, Frodo flees alone, Merry and Pippin are captured by the Uruk-hai.",
+      "type": "Lawn / Watchtower hill",
+      "regime": "Wilderness (bank of the Great River)",
+      "keyPlaces": [
+        "The Falls of Rauros",
+        "The Seat of Seeing",
+        "The Departure Shore"
+      ]
+    },
+    "loc_mordor": {
+      "name": "Mordor -- Mount Doom",
+      "description": "Black lands to the east of the Mountains of Shadow. At the heart of Mordor stands Orodruin, Mount Doom, whose fires allowed Sauron to forge the One Ring in the Second Age. Final destination of the Quest.",
+      "type": "Enemy territory",
+      "regime": "Domain of Sauron",
+      "inhabitants": [
+        "Orcs",
+        "Nazgul",
+        "Trolls"
+      ],
+      "keyPlaces": [
+        "Mount Doom (Orodruin)",
+        "Barad-dur",
+        "The Cracks of Doom"
+      ]
+    },
+    "loc_emyn_muil": {
+      "name": "Emyn Muil",
+      "description": "A labyrinth of rocky hills and cliffs on the eastern bank of the Anduin, south of the Falls of Rauros. Terrain of extreme hostility -- slippery rocks, hidden precipices, impossible orientations. It is here that Frodo and Sam capture Gollum, who has been following them since Lothlorien.",
+      "type": "Rocky hills",
+      "regime": "Wilderness",
+      "keyPlaces": [
+        "The Walls of Emyn Muil",
+        "The Bank of the Anduin"
+      ]
+    },
+    "loc_dead_marshes": {
+      "name": "The Dead Marshes",
+      "description": "A vast marshy area east of the Emyn Muil, formerly the battlefield of Dagorlad where the armies of the Free Peoples fought Sauron. The faces of the dead from both sides still float beneath the black waters -- illusions or real souls, none can say. To look is mortally dangerous.",
+      "type": "Cursed marshes",
+      "regime": "Sauron's lands (influence)",
+      "inhabitants": [
+        "Spirits of the dead of Dagorlad"
+      ],
+      "keyPlaces": [
+        "The Dead Lights",
+        "The Black Reeds"
+      ]
+    },
+    "loc_fangorn": {
+      "name": "Fangorn Forest",
+      "description": "The oldest forest of Middle-earth, remnant of the age when trees covered the entire world. Home to trees that see and sometimes act. It is here that Merry and Pippin, fleeing the Uruk-hai, meet Treebeard. It is also here that Aragorn, Legolas and Gimli find Gandalf, returned as the White.",
+      "type": "Ancient forest",
+      "regime": "Domain of the Ents",
+      "inhabitants": [
+        "Ents",
+        "Huorns (tree-phantoms)"
+      ],
+      "keyPlaces": [
+        "Treebeard's Lair",
+        "The Entmoot Clearing"
+      ]
+    },
+    "loc_edoras": {
+      "name": "Edoras",
+      "description": "Capital of Rohan, built on an isolated hill in the heart of the plains. The great hall of Meduseld (the Golden Hall) is its heart. When Gandalf, Aragorn, Legolas and Gimli arrive, Theoden is a broken old man under the influence of Grima Wormtongue. The liberation of Theoden marks the awakening of all Rohan.",
+      "type": "Royal capital",
+      "regime": "Kingdom of Rohan",
+      "inhabitants": [
+        "Rohirrim",
+        "Theoden",
+        "Eowyn",
+        "Grima Wormtongue"
+      ],
+      "keyPlaces": [
+        "Meduseld (The Golden Hall)",
+        "The Royal Stables",
+        "Theodred's Barrow"
+      ]
+    },
+    "loc_helms_deep": {
+      "name": "Helm's Deep",
+      "description": "Fortress of Rohan set into a rocky gorge -- reputed impregnable for centuries. On the night of the Battle of Helm's Deep, ten thousand Uruk-hai of Saruman besiege it. Gandalf arrives at dawn with Eomer and his riders to turn the tide of battle.",
+      "type": "Military fortress",
+      "regime": "Defense of Rohan",
+      "inhabitants": [
+        "Rohirrim",
+        "Refugees of Rohan"
+      ],
+      "keyPlaces": [
+        "The Deeping Wall",
+        "The Glittering Caves",
+        "The Main Gate"
+      ]
+    },
+    "loc_ithilien": {
+      "name": "Ithilien",
+      "description": "Eastern region of Gondor, long abandoned under pressure from Mordor but patrolled by Faramir's Rangers. Despite the war, it is a land of wild beauty -- clear springs, fragrant herbs, ruins of a thousand-year civilization. It is here that Faramir captures Frodo and Sam.",
+      "type": "Region of Gondor",
+      "regime": "Disputed territory (Gondor vs Mordor)",
+      "inhabitants": [
+        "Rangers of Ithilien (Faramir)",
+        "Nazgul (passing through)"
+      ],
+      "keyPlaces": [
+        "The Window on the West (Henneth Annun)",
+        "The Woods of Ithilien"
+      ]
+    },
+    "loc_minas_tirith": {
+      "name": "Minas Tirith -- the White City",
+      "description": "Capital of Gondor, built in seven circles of white stone against the flank of Mindolluin. The White Tower of Ecthelion dominates the seventh circle. Last bulwark against Mordor. The siege of Minas Tirith is one of the most critical moments of the War of the Ring -- the city holds thanks to Gandalf and the riders of Rohan.",
+      "type": "Fortress-city",
+      "regime": "Stewardship of Gondor (Denethor II)",
+      "inhabitants": [
+        "Gondorians",
+        "Denethor",
+        "Faramir",
+        "Gandalf (temporary)",
+        "Pippin (temporary)"
+      ],
+      "keyPlaces": [
+        "White Tower of Ecthelion",
+        "Houses of Healing",
+        "Rath Dinen (Tombs)",
+        "The Pelennor before the walls"
+      ]
+    },
+    "loc_pelennor": {
+      "name": "Pelennor Fields",
+      "description": "A vast grassy plain between Minas Tirith and the Anduin. This is where the greatest battle of the War of the Ring takes place. The charge of the Rohirrim at dawn, the death of Theoden, Eowyn's combat against the Witch-king, and Aragorn's arrival with the black ships turn the tide of war.",
+      "type": "Plain / Battlefield",
+      "regime": "Gondor (outer defenses)",
+      "keyPlaces": [
+        "Rammas Echor Wall",
+        "The Harlond (harbour)"
+      ]
+    },
+    "loc_cirith_ungol": {
+      "name": "Cirith Ungol",
+      "description": "Pass in the Ephel Duath (Mountains of Shadow), a secret way into Mordor. Shelob's lair overlooks the stairway. An Orc tower guards the pass. This is the path Gollum suggests to Frodo -- knowing Shelob awaits. Sam must infiltrate the tower alone to rescue the captured Frodo.",
+      "type": "Fortified pass / Lair",
+      "regime": "Mordor (held by Orcs)",
+      "inhabitants": [
+        "Shelob",
+        "Orcs of the tower"
+      ],
+      "keyPlaces": [
+        "Winding Stair",
+        "Shelob's Lair",
+        "Tower of Cirith Ungol"
+      ]
+    },
+    "loc_mount_doom": {
+      "name": "Orodruin -- Mount Doom",
+      "description": "Active volcano at the heart of Mordor, where Sauron forged the One Ring in the Second Age. The Cracks of Doom (Sammath Naur), on the mountainside, are the only place where the Ring can be destroyed. Final destination of the entire Quest.",
+      "type": "Volcano",
+      "regime": "Mordor (Domain of Sauron)",
+      "keyPlaces": [
+        "Sammath Naur (Cracks of Doom)",
+        "Sauron's Road"
+      ]
+    },
+    "loc_paths_dead": {
+      "name": "The Paths of the Dead",
+      "description": "An underground passage beneath the White Mountains, haunted by the spectres of the Men of the Mountains who had sworn allegiance to Isildur and then betrayed him. Cursed to find no rest until their oath was honored. Aragorn, heir of Isildur, summons them and offers them a chance to redeem their betrayal.",
+      "type": "Cursed underground",
+      "regime": "None (cursed land)",
+      "inhabitants": [
+        "Army of the Dead (spectres)"
+      ],
+      "keyPlaces": [
+        "The Stone of Erech",
+        "The Dwimorberg"
+      ]
+    },
+    "loc_minas_morgul": {
+      "name": "Minas Morgul",
+      "description": "Formerly Minas Ithil, Tower of the Moon, an outpost of Gondor. Captured by the Nazgul, it became a place of terror -- greenish light, poisoned air, dead bridge. It is from here that the Witch-king's army marches to besiege Minas Tirith. Frodo and Sam bypass it to reach the stairs of Cirith Ungol.",
+      "type": "Corrupted fortress-city",
+      "regime": "Mordor (Witch-king's headquarters)",
+      "inhabitants": [
+        "Witch-king",
+        "Nazgul",
+        "Armies of Morgul"
+      ],
+      "keyPlaces": [
+        "The Bridge of Morgul",
+        "The Stairs (Straight Stair, Winding Stair)"
+      ]
+    },
+    "loc_grey_havens": {
+      "name": "The Grey Havens",
+      "description": "Last Elven ports of Middle-earth, in the Gulf of Lhun west of Eriador. From here the Elves -- and the Ring-bearers invited by the Valar -- take ship to Valinor, the Undying Lands. Frodo, Gandalf, Bilbo, Galadriel and Elrond embark here. The last farewell.",
+      "type": "Elven port",
+      "regime": "Domain of Cirdan the Shipwright",
+      "inhabitants": [
+        "Elves of Cirdan"
+      ],
+      "keyPlaces": [
+        "The White Quay",
+        "The White Ship"
+      ]
+    }
+  },
+  "objects": {
+    "obj_one_ring": {
+      "name": "The One Ring",
+      "description": "Forged by Sauron in the Second Age to dominate the bearers of the other Rings of Power. It contains the greater part of Sauron's life-force. The Ring corrupts every bearer by awakening their deepest desires and amplifying their will to dominate.",
+      "type": "Malevolent artifact",
+      "inscription": "'One Ring to rule them all, One Ring to find them, One Ring to bring them all, and in the darkness bind them.'",
+      "creator": "Sauron",
+      "powers": [
+        "Invisibility",
+        "Life prolongation (not eternal)",
+        "Progressive corruption",
+        "Signal to the Eye of Sauron"
+      ],
+      "currentHolder": "Frodo Baggins"
+    },
+    "obj_anduril": {
+      "name": "Anduril",
+      "description": "Reforged from the shards of Narsil, the sword that cut the Ring from Sauron's hand at the end of the Second Age. Anduril -- 'Flame of the West' -- is the symbol of Aragorn's royal legitimacy. It cannot be broken.",
+      "type": "Legendary sword",
+      "inscription": "'I am Anduril who was Narsil, the sword of Elendil. Let the servants of Sauron fear my edge.'",
+      "creator": "Elves of Rivendell (reforged from Narsil)",
+      "powers": [
+        "Symbol of royalty",
+        "Supernatural resistance",
+        "Visible inner flame"
+      ],
+      "currentHolder": "Aragorn"
+    },
+    "obj_sting": {
+      "name": "Sting",
+      "description": "A short Elven sword from the First Age, found by Bilbo in the trolls' cave. Its blade glows electric blue in the presence of Orcs. Bilbo gives it to Frodo before his departure. It will become the symbol of Frodo's resistance.",
+      "type": "Short Elven sword",
+      "inscription": "",
+      "creator": "Elves of Gondolin (First Age)",
+      "powers": [
+        "Orc detection (blue glow)",
+        "Extremely sharp blade",
+        "Lightness"
+      ],
+      "currentHolder": "Frodo Baggins (inherited from Bilbo)"
+    },
+    "obj_mithril": {
+      "name": "Mithril coat",
+      "description": "Given to Bilbo by Thorin Oakenshield, then passed to Frodo. The coat is made of mithril -- a metal stronger than steel, lighter than leather. It saves Frodo's life in Moria when a Cave-troll's spear would have pierced him.",
+      "type": "Armor",
+      "inscription": "",
+      "creator": "Durin's Dwarves",
+      "powers": [
+        "Resistance to ordinary weapons",
+        "Extraordinary lightness",
+        "Priceless"
+      ],
+      "currentHolder": "Frodo Baggins"
+    },
+    "obj_narya": {
+      "name": "Narya -- the Ring of Fire",
+      "description": "One of the three Elven Rings, bearing a red ruby. Secretly entrusted to Gandalf by Cirdan the Shipwright upon his arrival in Middle-earth. Narya inspires courage and resistance in those who need it -- a power perfectly suited to Gandalf's mission.",
+      "type": "Ring of Power",
+      "inscription": "",
+      "creator": "Celebrimbor (forged in Eregion)",
+      "powers": [
+        "Inspiration of courage",
+        "Resistance to weariness",
+        "Symbolic fire"
+      ],
+      "currentHolder": "Gandalf the Grey (Mithrandir)"
+    },
+    "obj_phial": {
+      "name": "Phial of Galadriel",
+      "description": "A glass vial containing the light of the Star of Earendil, reflected in Galadriel's Mirror. Given to Frodo before the departure from Lothlorien. Its light is 'a light to you in dark places, when all other lights go out.'",
+      "type": "Elven artifact",
+      "inscription": "",
+      "creator": "Galadriel",
+      "powers": [
+        "Light in absolute darkness",
+        "Power against creatures of darkness"
+      ],
+      "currentHolder": "Frodo Baggins (gift from Galadriel)"
+    },
+    "obj_palantir": {
+      "name": "The Palantir",
+      "description": "Seeing Stones capable of communicating across great distances. Several existed in Middle-earth. Saruman possessed one at Orthanc -- it is through it that Sauron corrupted him. Gazing into a Palantir without sufficient mental strength is extremely dangerous.",
+      "type": "Seeing Stone",
+      "inscription": "",
+      "creator": "Noldor of Valinor",
+      "powers": [
+        "Far sight",
+        "Communication between stones",
+        "Possible mental manipulation"
+      ],
+      "currentHolder": "Saruman (the one of Orthanc)"
+    },
+    "obj_lembas": {
+      "name": "Lembas",
+      "description": "Elven waybread of extraordinary nutritive value. A single bite suffices to sustain a grown Man for an entire day's march. Light, compact, it keeps for a long time. Given to each member of the Fellowship before departure from Lothlorien. For Frodo and Sam, it will be the only food on the journey through Mordor.",
+      "type": "Elven food",
+      "inscription": "",
+      "creator": "Elves of Lothlórien (Vanyar recipe)",
+      "powers": [
+        "Long-lasting sustenance",
+        "Lightness",
+        "Symbolic moral support"
+      ],
+      "currentHolder": "The Fellowship of the Ring (gift from Galadriel)"
+    },
+    "obj_staves": {
+      "name": "Gandalf's Staff",
+      "description": "Instrument and symbol of Gandalf's Istari power. It can project a blinding light, ignite fire at a distance, or release a blast of magical force. Its destruction by Saruman during the imprisonment at Orthanc is a powerful act of symbolic domination.",
+      "type": "Wizard's staff",
+      "inscription": "",
+      "creator": "Unknown (brought from Valinor?)",
+      "powers": [
+        "Light",
+        "Fire",
+        "Force blast",
+        "Support (walking staff)"
+      ],
+      "currentHolder": "Gandalf the Grey"
+    },
+    "obj_horn_helm": {
+      "name": "Horn of Helm Hammerhand",
+      "description": "Great war horn of Helm's Deep, named after Helm Hammerhand, legendary king of Rohan. Its sound resonates throughout the gorge and terrorizes enemies. Theoden and Aragorn sound the horn at dawn during the final charge -- a moment of absolute bravery.",
+      "type": "Military artifact",
+      "inscription": "",
+      "creator": "Rohirrim (forged for Helm Hammerhand)",
+      "powers": [
+        "Terror to enemies",
+        "Rallying of defenders"
+      ],
+      "currentHolder": "Theoden"
+    },
+    "obj_ent_draught": {
+      "name": "Ent-draught",
+      "description": "Mysterious draught that Treebeard gives to Merry and Pippin in Fangorn. Drawn from deep springs of the forest, it makes the hobbits grow several inches -- making them the tallest hobbits in the history of the Shire. A symbol of nature's power against Saruman's industry.",
+      "type": "Natural substance",
+      "inscription": "",
+      "creator": "Ents of Fangorn",
+      "powers": [
+        "Physical growth",
+        "Enhanced vitality"
+      ],
+      "currentHolder": null
+    },
+    "obj_palantir_mt": {
+      "name": "Palantir of Minas Tirith",
+      "description": "One of the seven Seeing Stones, secretly kept by the Stewards of Gondor in the White Tower. Denethor II used it to watch the enemy, but Sauron exploited the connection to show him visions of inescapable defeat, driving him to despair and madness.",
+      "type": "Magical artifact",
+      "inscription": "",
+      "creator": "Fëanor (Elves of Valinor)",
+      "powers": [
+        "Long-distance communication",
+        "Vision of past and present",
+        "Mental domination (if Sauron watches)"
+      ],
+      "currentHolder": "Aragorn (after Denethor's fall)"
+    },
+    "obj_horn_gondor": {
+      "name": "Horn of Gondor",
+      "description": "Great war horn of the Stewards of Gondor, carried by Boromir. Split in two at his death at Parth Galen. The pieces are found and brought back to Denethor -- proof of his eldest son's death, which accelerates his descent into despair.",
+      "type": "Dynastic artifact",
+      "inscription": "",
+      "creator": "Gondor (ancestral)",
+      "powers": [],
+      "currentHolder": "Denethor (broken)"
+    }
+  },
+  "groups": {
+    "grp_fellowship": {
+      "name": "The Fellowship of the Ring",
+      "description": "Nine companions chosen at Rivendell to bear the Ring to Mount Doom.",
+      "type": "Faction"
+    },
+    "grp_hobbits": {
+      "name": "The Hobbits",
+      "description": "A peaceful people of small stature living in the Shire. Discreet, fond of good living, and surprisingly resilient.",
+      "type": "Race"
+    },
+    "grp_istari": {
+      "name": "The Istari",
+      "description": "An order of five wizards sent by the Valar to help the Free Peoples against Sauron.",
+      "type": "Order"
+    },
+    "grp_elves": {
+      "name": "The Elves",
+      "description": "Immortal people, firstborn of Iluvatar, whose power wanes with the passing Ages.",
+      "type": "Race"
+    },
+    "grp_dwarves": {
+      "name": "The Dwarves",
+      "description": "A sturdy people forged by Aule, bound to stone and mine. Proud and tenacious.",
+      "type": "Race"
+    },
+    "grp_ringbearers": {
+      "name": "The Keepers of the Rings",
+      "description": "Bearers of the Three Elven Rings: Narya (Gandalf), Nenya (Galadriel), Vilya (Elrond).",
+      "type": "Order"
+    },
+    "grp_rohirrim": {
+      "name": "The Rohirrim",
+      "description": "Riders of Rohan, people of the Mark, descendants of Eorl the Young. Lords of the horses of Middle-earth. Their cavalry is the most feared in the West. Faithful allies of Gondor by the Oath of Eorl.",
+      "type": "Faction",
+      "members": {
+        "char_theoden": {
+          "roleInGroup": "King"
+        },
+        "char_eomer": {
+          "roleInGroup": "Third Marshal"
+        },
+        "char_eowyn": {
+          "roleInGroup": "Lady of Rohan"
+        }
+      }
+    },
+    "grp_ents": {
+      "name": "The Ents of Fangorn",
+      "description": "Shepherds of the trees, the most ancient creatures of Middle-earth. The Ents have watched over the forests since the earliest days. Slow to anger but terrifying once roused -- their march on Isengard is one of the decisive turning points of the war.",
+      "type": "Race",
+      "members": {
+        "char_treebeard": {
+          "roleInGroup": "Elder"
+        }
+      }
+    },
+    "grp_rangers_ithilien": {
+      "name": "The Rangers of Ithilien",
+      "description": "A secret company of Gondorian warriors patrolling Ithilien, the last line of defense before Mordor. Commanded by Faramir, they conduct ambushes against Sauron's armies crossing their lands.",
+      "type": "Faction",
+      "members": {
+        "char_faramir": {
+          "roleInGroup": "Captain"
+        }
+      }
+    },
+    "grp_gondor": {
+      "name": "Gondor",
+      "description": "Last great kingdom of the Men of the West, founded by the exiles of Numenor. Ruled by Stewards in the absence of Kings for nearly a thousand years. Minas Tirith is its capital. Gondor bears the principal weight of the war against Mordor.",
+      "type": "Faction",
+      "members": {
+        "char_denethor": {
+          "roleInGroup": "Ruling Steward"
+        },
+        "char_faramir": {
+          "roleInGroup": "Captain of the Rangers"
+        },
+        "char_boromir": {
+          "roleInGroup": "Captain of the White Tower (\u2020)"
+        }
+      }
+    },
+    "grp_army_dead": {
+      "name": "The Army of the Dead",
+      "description": "Spectres of the Men of the Mountains who had sworn allegiance to Isildur and betrayed him. Cursed to find no rest until their oath was honored. Aragorn, heir of Isildur, summons them and offers redemption for their betrayal by fighting at the Pelennor.",
+      "type": "Faction"
+    }
+  },
+  "events": {
+    "evt_001": {
+      "title": "Bilbo's birthday party",
+      "description": "Bilbo Baggins celebrates his one hundred and eleventh birthday in the Shire. Gandalf prepares the fireworks.",
+      "chapterTitle": "A Long-Expected Party"
+    },
+    "evt_002": {
+      "title": "Bilbo vanishes and bequeaths the Ring",
+      "description": "Bilbo uses the Ring to disappear, then leaves it to Frodo on Gandalf's counsel.",
+      "chapterTitle": "A Long-Expected Party"
+    },
+    "evt_003": {
+      "title": "Bilbo departs for Rivendell",
+      "description": "Bilbo leaves the Shire to go to Rivendell, where he will spend his remaining years.",
+      "chapterTitle": "A Long-Expected Party"
+    },
+    "evt_004": {
+      "title": "Gandalf reveals the truth about the Ring",
+      "description": "Gandalf returns to the Shire and explains to Frodo the true nature of the One Ring.",
+      "chapterTitle": "The Shadow of the Past"
+    },
+    "evt_flash_001": {
+      "title": "Sauron forges the One Ring in Mordor",
+      "description": "Gandalf tells Frodo how Sauron, in the Second Age, forged the One Ring in the fires of Orodruin to subjugate the bearers of the Rings of Power. This tale is a flashback embedded within Gandalf's revelation.",
+      "chapterTitle": "The Shadow of the Past"
+    },
+    "evt_005": {
+      "title": "Gandalf leaves to seek information",
+      "description": "Gandalf leaves the Shire to investigate the Ring's history -- heading to Isengard to consult Saruman.",
+      "chapterTitle": "The Shadow of the Past"
+    },
+    "evt_006": {
+      "title": "Frodo and Sam leave the Shire",
+      "description": "Frodo sells Bag End and sets out on the roads with Sam, awaiting Gandalf who does not come.",
+      "chapterTitle": "The Shadow of the Past"
+    },
+    "evt_007": {
+      "title": "Gandalf imprisoned at Orthanc",
+      "description": "Saruman reveals his treachery and imprisons Gandalf atop the tower of Orthanc at Isengard.",
+      "chapterTitle": "The Barrow-downs and Bree"
+    },
+    "evt_008": {
+      "title": "Tom Bombadil rescues the Hobbits",
+      "description": "Tom Bombadil frees the Hobbits from the Barrow-downs and gives them swords.",
+      "chapterTitle": "The Barrow-downs and Bree"
+    },
+    "evt_009": {
+      "title": "Meeting Strider at Bree",
+      "description": "At the Prancing Pony, the Hobbits meet Aragorn, alias Strider, who offers to guide them to Rivendell.",
+      "chapterTitle": "The Barrow-downs and Bree"
+    },
+    "evt_010": {
+      "title": "Frodo wounded at Weathertop",
+      "description": "The Witch-king wounds Frodo with a Morgul-blade on the ruins of Weathertop (Amon Sul).",
+      "chapterTitle": "The Ford of Bruinen"
+    },
+    "evt_011": {
+      "title": "Glorfindel escorts Frodo to the Ford",
+      "description": "Glorfindel, lord of Rivendell, appears and escorts the wounded Frodo to the Ford of Bruinen.",
+      "chapterTitle": "The Ford of Bruinen"
+    },
+    "evt_012": {
+      "title": "The flood of the Bruinen repels the Riders",
+      "description": "Elrond unleashes the flood of the Bruinen, sweeping away the Black Riders pursuing Frodo.",
+      "chapterTitle": "The Ford of Bruinen"
+    },
+    "evt_013": {
+      "title": "Gandalf escapes Isengard",
+      "description": "Gwaihir the Windlord rescues Gandalf from the pinnacle of Orthanc and carries him to Rivendell.",
+      "chapterTitle": "The Council of Elrond"
+    },
+    "evt_014": {
+      "title": "Frodo healed by Elrond at Rivendell",
+      "description": "Elrond heals Frodo's wound. Frodo is reunited with Bilbo, old and weary.",
+      "chapterTitle": "The Council of Elrond"
+    },
+    "evt_015": {
+      "title": "The Great Council -- Frodo volunteers as Ring-bearer",
+      "description": "Representatives of the Free Peoples debate the fate of the Ring. Frodo volunteers to destroy it.",
+      "chapterTitle": "The Council of Elrond"
+    },
+    "evt_flash_002": {
+      "title": "The Last Alliance -- Isildur cuts Sauron's finger",
+      "description": "Elrond tells the Council how the Last Alliance of Elves and Men defeated Sauron, and how Isildur refused to destroy the Ring after victory, yielding to its corruption. This memory has haunted Elrond for three thousand years.",
+      "chapterTitle": "The Council of Elrond"
+    },
+    "evt_016": {
+      "title": "Formation of the Fellowship of the Ring",
+      "description": "Elrond forms the Fellowship of nine members to accompany Frodo to Mordor.",
+      "chapterTitle": "The Council of Elrond"
+    },
+    "evt_017": {
+      "title": "Failure at Caradhras Pass",
+      "description": "The Fellowship attempts to cross the Misty Mountains via Caradhras but is driven back by snow and cold.",
+      "chapterTitle": "The Road into Darkness"
+    },
+    "evt_018": {
+      "title": "Decision to enter Moria",
+      "description": "Gandalf persuades the Fellowship to cross the Mines of Moria to pass beneath the mountains.",
+      "chapterTitle": "The Road into Darkness"
+    },
+    "evt_019": {
+      "title": "The Fellowship enters Moria",
+      "description": "The Fellowship enters the Mines through the Western Gate, after Gandalf solves the riddle.",
+      "chapterTitle": "A Journey in the Dark"
+    },
+    "evt_020": {
+      "title": "Discovery of Balin's tomb",
+      "description": "The Fellowship finds Balin's burial chamber. Pippin knocks a skeleton into a well -- the Orcs attack.",
+      "chapterTitle": "A Journey in the Dark"
+    },
+    "evt_021": {
+      "title": "Gandalf falls at the Bridge of Khazad-dum",
+      "description": "Gandalf confronts the Balrog on the Bridge of Khazad-dum. He breaks the bridge but is dragged into the abyss.",
+      "chapterTitle": "A Journey in the Dark"
+    },
+    "evt_022": {
+      "title": "Welcomed by Galadriel and Celeborn",
+      "description": "The Fellowship (without Gandalf) arrives at Caras Galadhon. Galadriel reads their hearts.",
+      "chapterTitle": "Lothlorien"
+    },
+    "evt_023": {
+      "title": "Galadriel gives Lembas and the gifts",
+      "description": "Galadriel gives presents to each member: Elven cloaks, Lembas, vials, and the Phial for Frodo.",
+      "chapterTitle": "Lothlorien"
+    },
+    "evt_024": {
+      "title": "Boromir tries to take the Ring",
+      "description": "Boromir, corrupted by the Ring, attempts to seize it from Frodo on Amon Hen.",
+      "chapterTitle": "The Breaking of the Fellowship"
+    },
+    "evt_025": {
+      "title": "Frodo and Sam cross the River alone",
+      "description": "Frodo decides to continue alone toward Mordor. Sam joins him by swimming -- the Fellowship is broken.",
+      "chapterTitle": "The Breaking of the Fellowship"
+    },
+    "evt_026": {
+      "title": "Death of Boromir",
+      "description": "Boromir is mortally wounded defending Merry and Pippin against the Uruk-hai. Aragorn pays him tribute.",
+      "chapterTitle": "The Breaking of the Fellowship"
+    },
+    "evt_t2_01": {
+      "title": "Frodo and Sam capture Gollum",
+      "description": "In the rocks of the Emyn Muil, Frodo and Sam trap Gollum who has been following them since Parth Galen. Frodo makes him swear on the Ring to guide them to Mordor.",
+      "chapterTitle": "The Emyn Muil"
+    },
+    "evt_t2_02": {
+      "title": "Crossing the Dead Marshes",
+      "description": "Gollum guides Frodo and Sam through the Dead Marshes. Frodo nearly drowns after gazing at the faces of the dead beneath the black water. Nazgul patrol the skies.",
+      "chapterTitle": "The Dead Marshes"
+    },
+    "evt_t2_03": {
+      "title": "The impasse at the Black Gate",
+      "description": "Frodo and Sam, guided by Gollum, reach the Black Gate of Mordor (Morannon). It is impenetrable. Gollum proposes a secret path -- Cirith Ungol -- which Frodo reluctantly accepts.",
+      "chapterTitle": "The Black Gate Is Closed"
+    },
+    "evt_t2_04": {
+      "title": "Faramir captures Frodo in Ithilien",
+      "description": "In Ithilien, Faramir's Rangers ambush a column of Haradrim. Faramir spots Frodo and Sam and leads them to Henneth Annun -- the Window on the West.",
+      "chapterTitle": "The Window on the West"
+    },
+    "evt_t2_05": {
+      "title": "Faramir refuses the Ring -- Gollum revealed",
+      "description": "Faramir interrogates Frodo about his mission. He learns of the Ring's existence and chooses not to take it -- unlike Boromir. Gollum is captured then released at Frodo's request.",
+      "chapterTitle": "The Window on the West"
+    },
+    "evt_t2_06": {
+      "title": "Merry and Pippin escape into Fangorn",
+      "description": "During a Rohirrim attack on the Uruk-hai camp, Merry and Pippin seize the chaos to flee into Fangorn Forest, reputed to be malevolent.",
+      "chapterTitle": "The Riders of Rohan"
+    },
+    "evt_t2_07": {
+      "title": "Meeting Treebeard",
+      "description": "In the forest, Merry and Pippin meet Treebeard (Fangorn), the oldest of the Ents. He welcomes them and listens to their account of Saruman's devastation of the trees -- his anger begins to stir.",
+      "chapterTitle": "The Riders of Rohan"
+    },
+    "evt_t2_08": {
+      "title": "The Ents destroy Isengard",
+      "description": "After the Entmoot -- a deliberation lasting several days -- Treebeard leads the Ents against Isengard. Saruman's fortress is destroyed in a single night: walls shattered, forges drowned. The Ents and Huorns devastate Isengard's army.",
+      "chapterTitle": "The Voice of Saruman"
+    },
+    "evt_t2_09": {
+      "title": "Aragorn finds Gandalf the White",
+      "description": "Aragorn, Legolas and Gimli, who were tracking Merry and Pippin's captors, find in Fangorn an old man in white. They first think it is Saruman -- it is Gandalf, returned from death, transformed into the White.",
+      "chapterTitle": "Fangorn Forest"
+    },
+    "evt_t2_10": {
+      "title": "Theoden under Grima's thrall",
+      "description": "Gandalf, Aragorn, Legolas and Gimli arrive at Edoras. Theoden, aged and broken by years of Grima Wormtongue's influence, rejects their warnings.",
+      "chapterTitle": "King of the Golden Hall"
+    },
+    "evt_t2_11": {
+      "title": "Gandalf frees Theoden -- banishment of Grima",
+      "description": "Gandalf breaks Saruman's hold on Theoden. The king recovers his vigor and judgment. He exiles Grima Wormtongue from Edoras. Theoden prepares Rohan for war.",
+      "chapterTitle": "King of the Golden Hall"
+    },
+    "evt_t2_12": {
+      "title": "Night of the Battle of Helm's Deep",
+      "description": "Ten thousand Uruk-hai of Saruman besiege Helm's Deep. Aragorn leads the defense alongside Theoden. The wall is blown open by an Uruk-hai powder charge. The situation becomes desperate.",
+      "chapterTitle": "Helm's Deep"
+    },
+    "evt_t2_13": {
+      "title": "Gandalf and Eomer at dawn -- victory",
+      "description": "At dawn, Gandalf the White arrives with Eomer and an army of Rohirrim riders. The Huorns of Fangorn encircle the surviving Uruk-hai. The battle turns. Rohan is saved.",
+      "chapterTitle": "Helm's Deep"
+    },
+    "evt_t2_14": {
+      "title": "Confrontation with Saruman at Orthanc",
+      "description": "Gandalf, Theoden and Aragorn go to Orthanc to parley with Saruman, holed up in his tower. Gandalf strips him of his rank and breaks his staff. Grima throws the Palantir from the tower.",
+      "chapterTitle": "The Voice of Saruman"
+    },
+    "evt_t2_15": {
+      "title": "Pippin looks into the Palantir",
+      "description": "Pippin, irresistibly drawn, seizes the Palantir and looks into it. Sauron sees him and believes he has found the Ring-bearer. Gandalf realizes Sauron will launch his offensive believing the Ring is at Minas Tirith.",
+      "chapterTitle": "The Voice of Saruman"
+    },
+    "evt_t3_01": {
+      "title": "Gandalf and Pippin arrive at Minas Tirith",
+      "description": "Gandalf rides Shadowfax across Gondor with Pippin. They arrive at Minas Tirith -- seven circles of white stone under the shadow of Mordor. Pippin discovers a magnificent city consumed by fear. Gandalf prepares for the siege.",
+      "chapterTitle": "Minas Tirith -- the White City"
+    },
+    "evt_t3_02": {
+      "title": "Denethor interrogates Pippin about Boromir's death",
+      "description": "Denethor receives Gandalf and Pippin in the Throne Room. He questions Pippin about the exact circumstances of Boromir's death. The hobbit, overwhelmed with gratitude and guilt, swears service to Gondor -- becoming a Guard of the Citadel.",
+      "chapterTitle": "Minas Tirith -- the White City"
+    },
+    "evt_t3_03": {
+      "title": "Aragorn takes the Paths of the Dead",
+      "description": "Aragorn chooses the most dangerous and fastest route: crossing the Paths of the Dead beneath the White Mountains. Invoking his right as heir of Isildur, he summons the Army of the Dead to honor their broken oath -- or wander for eternity.",
+      "chapterTitle": "The Paths of the Dead"
+    },
+    "evt_t3_04": {
+      "title": "Siege of Minas Tirith -- Faramir wounded",
+      "description": "The armies of Mordor besiege Minas Tirith. Faramir leads a desperate sortie to defend Osgiliath but is wounded by a Nazgul's poisoned dart. He is brought back unconscious. The battering ram Grond breaks the gates. Gandalf alone faces the Witch-king.",
+      "chapterTitle": "The Siege of Gondor"
+    },
+    "evt_t3_05": {
+      "title": "Denethor's madness -- the pyre",
+      "description": "Convinced all is lost, Denethor attempts to immolate his wounded son Faramir and himself on a pyre in the Tombs of the Kings. Pippin alerts Gandalf. Beregond and Gandalf save Faramir just in time. Denethor throws himself into the flames clutching the Palantir.",
+      "chapterTitle": "The Siege of Gondor"
+    },
+    "evt_t3_06": {
+      "title": "Theoden's charge at dawn on the Pelennor",
+      "description": "Six thousand riders of Rohan arrive at dawn on the Pelennor. Theoden sounds the horn and charges Mordor's army. A moment of pure heroism -- the greatest cavalry charge in Middle-earth's history. But Theoden is unhorsed by the Witch-king and mortally crushed by his horse.",
+      "chapterTitle": "The Battle of the Pelennor Fields"
+    },
+    "evt_t3_07": {
+      "title": "Eowyn and Merry slay the Witch-king",
+      "description": "The Witch-king looms over the dying Theoden. Eowyn, disguised as Dernhelm, faces him. 'No man can kill me.' -- 'I am no man.' Merry strikes from behind with his Barrow-blade (enchanted against spirits of Evil). Eowyn finishes the Nazgul. The prophecy is fulfilled.",
+      "chapterTitle": "The Battle of the Pelennor Fields"
+    },
+    "evt_t3_08": {
+      "title": "Aragorn arrives with the Army of the Dead -- victory at the Pelennor",
+      "description": "As the battle seems to turn against the defenders again -- Mumakil from Harad, the Corsair army -- the black ships sail up the Anduin. But it is Aragorn who disembarks, with the Army of the Dead and the Rangers of the South. The Pelennor is won. The Army of the Dead is freed from their curse.",
+      "chapterTitle": "The Battle of the Pelennor Fields"
+    },
+    "evt_t3_09": {
+      "title": "March to the Black Gate -- diversion for Frodo",
+      "description": "Aragorn leads the remaining army of Gondor and Rohan before the Black Gate of Mordor -- not to conquer, but to divert Sauron's attention from Frodo. A deliberate sacrifice. Seven thousand men against tens of thousands. Gandalf knows everything rests on the Ring-bearer.",
+      "chapterTitle": "The Black Gate"
+    },
+    "evt_t3_10": {
+      "title": "The Mouth of Sauron -- parley",
+      "description": "Sauron's herald emerges from the Black Gate. He brandishes Frodo's mithril coat and Sting -- evidence that the Ring-bearer has been captured. Despair threatens. But Gandalf refuses to negotiate and snatches the relics. Battle begins.",
+      "chapterTitle": "The Black Gate"
+    },
+    "evt_t3_11": {
+      "title": "The Stairs of Cirith Ungol -- the climb toward the trap",
+      "description": "Frodo, Sam and Gollum bypass Minas Morgul whose greenish light radiates malevolence. They climb the interminable stairs -- Straight Stair then Winding Stair. Frodo weakens. Gollum prepares his betrayal in silence. Sam knows something is wrong but cannot prove it.",
+      "chapterTitle": "The Stairs of Cirith Ungol"
+    },
+    "evt_t3_12": {
+      "title": "Shelob attacks Frodo -- Sam counterattacks with the Phial and Sting",
+      "description": "Gollum leads Frodo into Shelob's tunnel. The spider attacks and poisons Frodo with her stinger. Sam, desperate, raises the Phial of Galadriel -- the light drives Shelob back -- then strikes the creature with Sting. Shelob retreats, wounded. But Frodo lies still.",
+      "chapterTitle": "Shelob's Lair"
+    },
+    "evt_t3_13": {
+      "title": "Sam takes the Ring -- believes Frodo dead",
+      "description": "Believing Frodo dead, Sam takes the Ring and Sting. He must continue the Quest alone. But the Orcs arrive and carry Frodo away -- Sam realizes he is only asleep from the venom. Frodo is alive, but a prisoner in the tower of Cirith Ungol.",
+      "chapterTitle": "Shelob's Lair"
+    },
+    "evt_t3_14": {
+      "title": "Sam infiltrates the tower of Cirith Ungol and rescues Frodo",
+      "description": "Sam, wearing the Ring, infiltrates the tower of Cirith Ungol alone. The Orcs have killed each other over Frodo's mithril coat. Sam finds Frodo naked and tortured on the upper floors. He returns the Ring. They disguise themselves as Orcs and escape toward Mordor.",
+      "chapterTitle": "The Black Gate"
+    },
+    "evt_t3_15": {
+      "title": "Crossing the plateau of Gorgoroth",
+      "description": "Frodo and Sam cross the desolate plains of Mordor toward Mount Doom. Water runs out. Food runs out. The Ring weighs heavier and heavier. Sam literally carries Frodo up the last slope. 'I can't carry it for you, but I can carry you.'",
+      "chapterTitle": "Mount Doom"
+    },
+    "evt_t3_16": {
+      "title": "Frodo claims the Ring -- Gollum falls into the fire",
+      "description": "At the edge of the Cracks of Doom, Frodo finally yields to the Ring: 'The Ring is mine.' He puts it on his finger. But Gollum, who has followed them, lunges at him, bites off his finger and the Ring, and falls into the lava -- destroying the One Ring. Frodo's pity for Gollum has saved the world.",
+      "chapterTitle": "Mount Doom"
+    },
+    "evt_t3_17": {
+      "title": "The Ring destroyed -- Sauron falls -- the Eagles",
+      "description": "The Ring is destroyed. Barad-dur collapses. Sauron's army at the Black Gate disintegrates. Mordor crumbles upon itself. Gandalf sends Gwaihir's Eagles to rescue Frodo and Sam on the slopes of the erupting Mountain.",
+      "chapterTitle": "Mount Doom"
+    },
+    "evt_t3_18": {
+      "title": "Aragorn's coronation -- the King has returned",
+      "description": "Aragorn is crowned King Elessar Telcontar of the reunited Gondor and Arnor. Gandalf places the Winged Crown upon his head. Arwen Undomiel arrives -- they wed. The hobbits are honored before the assembled people. The Fourth Age begins.",
+      "chapterTitle": "The Grey Havens"
+    },
+    "evt_t3_19": {
+      "title": "The Grey Havens -- Frodo departs for Valinor",
+      "description": "Frodo, too deeply wounded by the burden of the Ring, is granted the right to sail to the Undying Lands with Gandalf, Bilbo, Galadriel and Elrond. At the Grey Havens, Sam bids farewell to his master. The White Ship vanishes over the horizon. Sam goes home: 'Well, I'm back.'",
+      "chapterTitle": "The Grey Havens"
+    }
+  },
+  "chapters": {
+    "ch1": {
+      "title": "A Long-Expected Party",
+      "summary": "The Shire is presented in all its Hobbit tranquility. Bilbo celebrates his 111th birthday and passes the Ring to Frodo. Gandalf watches, uneasy. The peaceful world and the underlying threat are established."
+    },
+    "ch2": {
+      "title": "The Shadow of the Past",
+      "summary": "Gandalf reveals the true nature of the Ring to Frodo. Sauron is searching for it. Frodo must leave the Shire. The fate of the world rests on a simple hobbit."
+    },
+    "ch3": {
+      "title": "The Road to Rivendell",
+      "summary": "Frodo hesitates and wavers. The journey to Rivendell is fraught with peril. At Rivendell, the Council of Elrond debates the Ring's future. Frodo volunteers."
+    },
+    "ch4": {
+      "title": "The Fellowship of the Ring",
+      "summary": "The Fellowship is formed. Aragorn, Frodo's confidant, represents the subplot of hidden kingship. The company heads south then attempts the pass of Caradhras."
+    },
+    "ch5": {
+      "title": "Moria",
+      "summary": "The Fellowship enters the Mines of Moria. Battle against the Balrog. Gandalf falls into the abyss, sacrificing himself to save the group."
+    },
+    "ch6": {
+      "title": "Lorien",
+      "summary": "Refuge at Lothlorien. Galadriel tests Frodo and offers him a mirror of visions. Boromir grows ever more corrupted by the Ring. The Fellowship departs on the Anduin."
+    },
+    "ch7": {
+      "title": "The Betrayal of Boromir",
+      "summary": "Boromir yields to the Ring and attacks Frodo. Frodo flees. The Fellowship is attacked by the Uruk-hai. All seems lost: the mission and the group are in peril."
+    },
+    "ch8": {
+      "title": "The Fall of Boromir",
+      "summary": "Boromir redeems himself by dying to defend Merry and Pippin. Frodo realizes he must continue alone to protect his friends. He sets out with Sam."
+    },
+    "ch9": {
+      "title": "The Departure for Mordor",
+      "summary": "Frodo and Sam set out alone toward Mordor. The final image contrasts with the initial tranquility of the Shire: two hobbits walk toward the dark lands, determined."
+    },
+    "ch_t2_01": {
+      "title": "The Bearer Alone -- Gollum Captured",
+      "summary": "Frodo and Sam, alone after the breaking, press on through the crags of the Emyn Muil. They capture Gollum who was following them. Frodo gives him a chance -- a new arc of ambiguous trust. Opening image of the second volume: two exhausted hobbits and a tortured guide."
+    },
+    "ch_t2_02": {
+      "title": "The Doubtful Guide",
+      "summary": "Gollum guides Frodo and Sam through the Dead Marshes. His Smeagol/Gollum duality asserts itself. Frodo feels pity for him -- Sam mistrusts. The three-way relationship is established as the B-story of the volume."
+    },
+    "ch_t2_03": {
+      "title": "Merry, Pippin and the Ents",
+      "summary": "Merry and Pippin find refuge in Fangorn and meet Treebeard. The Ent narrative thread opens in parallel. Two stories unfold simultaneously -- Aragorn/Legolas/Gimli track their lost friends."
+    },
+    "ch_t2_04": {
+      "title": "Return of Gandalf the White",
+      "summary": "In Fangorn, Aragorn finds Gandalf -- returned from death, more powerful. The midpoint of the volume: everything changes. A lost ally is recovered, transformed. Hope is reborn. Gandalf reveals the situation is worse than expected -- and time is running out."
+    },
+    "ch_t2_05": {
+      "title": "Edoras -- The Awakening of Rohan",
+      "summary": "Arrival at Edoras, healing of Theoden, expulsion of Grima. Rohan awakens for war. Eowyn appears -- subplot of the hidden warrior. Forces gather to defend Helm's Deep."
+    },
+    "ch_t2_06": {
+      "title": "The Black Gate and Ithilien",
+      "summary": "Frodo realizes the direct way is impossible. Gollum proposes Cirith Ungol. Sam opposes. Meeting with Faramir -- the Ring is within reach of a man of Gondor, and he chooses not to take it. Contrast with Boromir."
+    },
+    "ch_t2_06b": {
+      "title": "The Window on the West",
+      "summary": "Faramir captures Frodo and Sam in Ithilien. He discovers the Ring's existence and faces the same temptation as his brother Boromir. But where Boromir yielded, Faramir chooses not to take it -- proving a man of quality can resist. Gollum is captured at the forbidden pool, then released out of regard for Frodo."
+    },
+    "ch_t2_07": {
+      "title": "The Night of Helm's Deep",
+      "summary": "The Battle of Helm's Deep -- a night without hope. The wall explodes, defenses crumble. Aragorn and Theoden hold off the inevitable. All seems lost. The darkest night of the volume."
+    },
+    "ch_t2_08": {
+      "title": "The March of the Ents -- Dawn",
+      "summary": "Double reversal: Gandalf and Eomer arrive at Helm's Deep at dawn and save Rohan. Simultaneously, the Ents destroy Isengard. Saruman is neutralized. The second front of the war turns in favor of the Free Peoples."
+    },
+    "ch_t2_09": {
+      "title": "Into the Darkness",
+      "summary": "Confrontation with Saruman at Orthanc -- he is deposed. Pippin looks into the Palantir, partially revealing the Ring to Sauron. Frodo and Sam resume their road toward Cirith Ungol with Gollum. Final image: two hobbits and a tortured creature walk toward absolute darkness."
+    },
+    "ch_t3_01": {
+      "title": "Minas Tirith -- the White City",
+      "summary": "Gandalf and Pippin arrive at Minas Tirith. Denethor, the Steward, receives the news of Boromir's death. Pippin swears service to Gondor. The city prepares for the siege. Opening image of the last volume: a white city under a growing black shadow."
+    },
+    "ch_t3_02": {
+      "title": "The Stairs of Cirith Ungol",
+      "summary": "Frodo, Sam and Gollum bypass Minas Morgul and climb the interminable stairs toward the pass of Cirith Ungol. The Ring's weight increases. The volume's theme crystallizes: can one accomplish the impossible when the price is the loss of oneself?"
+    },
+    "ch_t3_03": {
+      "title": "The Paths of the Dead",
+      "summary": "Aragorn leaves Edoras for the shortest and most terrible road. With Legolas and Gimli, he crosses the Dwimorberg and summons the Army of the Dead. In parallel, Merry pledges fealty to Theoden and rides secretly toward Gondor with Eowyn in disguise."
+    },
+    "ch_t3_04": {
+      "title": "The Siege of Gondor",
+      "summary": "The siege begins. Faramir is wounded. Grond breaks the gates. Gandalf alone stands against the Witch-king. Denethor, broken by the Palantir, tries to burn Faramir and himself. The volume's midpoint -- the situation is at its darkest."
+    },
+    "ch_t3_05": {
+      "title": "The Battle of the Pelennor Fields",
+      "summary": "Dawn brings the Rohirrim. Theoden charges -- and dies heroically. Eowyn and Merry slay the Witch-king. Aragorn arrives by river. The battle is won, but the cost is immense. The military climax of the volume."
+    },
+    "ch_t3_06": {
+      "title": "Shelob's Lair",
+      "summary": "Gollum leads Frodo into Shelob's tunnel. The spider poisons Frodo. Sam, alone, uses the Phial and Sting to repel the creature. Believing Frodo dead, he takes the Ring. The Orcs carry Frodo away -- he is alive. All is lost for Sam."
+    },
+    "ch_t3_07": {
+      "title": "The Black Gate",
+      "summary": "Double front: Aragorn leads the remaining army before the Black Gate as a diversion. The Mouth of Sauron brandishes Frodo's relics. In parallel, Sam infiltrates the tower of Cirith Ungol and rescues Frodo. The third act begins."
+    },
+    "ch_t3_08": {
+      "title": "Mount Doom",
+      "summary": "Frodo and Sam cross Mordor. Sam carries Frodo up the last slopes. At the edge of the Cracks of Doom, Frodo yields to the Ring. Gollum tears it away and falls into the lava. The Ring is destroyed. Sauron collapses. The Eagles rescue the hobbits. The absolute finale."
+    },
+    "ch_t3_09": {
+      "title": "The Grey Havens",
+      "summary": "Aragorn is crowned King Elessar. The hobbits return to the Shire. Frodo, too wounded by the burden, is granted passage to the Undying Lands. At the Grey Havens, he bids farewell to Sam, Merry and Pippin. The White Ship vanishes. Sam goes home: 'Well, I'm back.' Final image of the entire trilogy."
+    }
+  },
+  "plants": {
+    "plant_001": {
+      "label": "The Ring inherited from Bilbo",
+      "notes": "Bilbo bequeaths the Ring to Frodo at his birthday party. Gandalf reveals its true nature in the following chapter."
+    },
+    "plant_002": {
+      "label": "Bilbo's mithril coat",
+      "notes": "Bilbo gives his coat to Frodo at Rivendell. It will save him from an Orc spear in Balin's chamber in Moria."
+    },
+    "plant_003": {
+      "label": "Sting's blade glows near Orcs",
+      "notes": "Gandalf explains that Sting glows in the presence of Orcs -- a property established during the journey. Confirmed at the attack on Weathertop."
+    },
+    "plant_004": {
+      "label": "The prophecy of Gondor's dreams about Isildur",
+      "notes": "Gandalf mentions Isildur's heir. The Council of Elrond reveals that Aragorn is that heir."
+    },
+    "plant_005": {
+      "label": "Boromir's temptation by the Ring",
+      "notes": "At the Council, Boromir proposes using the Ring as a weapon. His growing conviction leads to his attack on Frodo at Amon Hen."
+    },
+    "plant_006": {
+      "label": "Galadriel's refusal of the Ring",
+      "notes": "Galadriel refuses the Ring offered by Frodo, choosing to remain herself. This inspires Frodo to depart alone to protect his companions."
+    },
+    "plant_007": {
+      "label": "Gandalf and Saruman's secret",
+      "notes": "Gandalf goes to consult Saruman and is imprisoned. At the Council, he reveals the betrayal of the head of the Istari."
+    },
+    "plant_008": {
+      "label": "The Phial of Galadriel for the darkness",
+      "notes": "Galadriel gives her Phial to Frodo -- 'a light for you in dark places'. The resolution will come in later volumes."
+    },
+    "plant_t2_01": {
+      "label": "Gollum announced by Gandalf in V1, guide in V2",
+      "notes": "Gandalf mentions to Frodo that Gollum had been tracking the Ring for centuries. This shadow-character, planted in chapter 2, becomes the pivotal guide of the entire second volume."
+    },
+    "plant_t2_02": {
+      "label": "The Phial of Galadriel -- light in the darkness",
+      "notes": "Given to Frodo 'for dark places when all other lights go out'. The resolution will come in Volume 3 against Shelob in Cirith Ungol."
+    },
+    "plant_t2_03": {
+      "label": "Saruman's hold on Theoden",
+      "notes": "Gandalf's imprisonment at Isengard (V1) reveals that Saruman has agents everywhere. His hold on Theoden is a direct consequence of this corruption -- resolved when Gandalf frees the king."
+    },
+    "plant_t2_04": {
+      "label": "The Palantir of Orthanc -- Sauron's vision",
+      "notes": "The Seeing Stone is planted from Gandalf's imprisonment at Orthanc. Its revelation in V2 (Pippin looks, Sauron sees) accelerates the war -- and sets up the Minas Tirith arc in V3."
+    },
+    "plant_t2_05": {
+      "label": "Frodo's pity for Gollum",
+      "notes": "Frodo chooses to spare Gollum and trust him against Sam's advice. This pity, incomprehensible to Sam, will prove of capital importance at Mount Doom (V3). Open seed."
+    },
+    "plant_t3_01": {
+      "label": "The Phial of Galadriel -- light against Shelob",
+      "notes": "Galadriel gives the Phial to Frodo 'for dark places when all other lights go out'. This is exactly what happens in Shelob's lair: Sam raises the Phial, and the light of Earendil repels the spider. Planted in V1, resolved in V3."
+    },
+    "plant_t3_02": {
+      "label": "Frodo's pity for Gollum -- salvation at Mount Doom",
+      "notes": "Frodo chooses to spare Gollum and trust him, against Sam's advice. This pity, incomprehensible in V2, saves the world in V3: it is Gollum who, by tearing the Ring from Frodo, inadvertently destroys it by falling into the lava. Without the pity, no destruction of the Ring."
+    },
+    "plant_t3_03": {
+      "label": "Merry's Barrow-blade -- death of the Witch-king",
+      "notes": "Tom Bombadil saves the hobbits from the Barrow-downs and gives them swords forged against the Witch-king of Angmar long ago. Merry's is precisely enchanted to break the bond between the Nazgul and the physical world -- without it, Eowyn's blow would not have sufficed. A plant from chapter 3 of V1 resolved in chapter 24 of V3."
+    },
+    "plant_t3_04": {
+      "label": "Aragorn's destiny -- the King is crowned",
+      "notes": "Since the Council of Elrond (V1 ch4), Aragorn's destiny as heir of Isildur and future king of Gondor is established. The reforged sword (Anduril), the Paths of the Dead, the Battle of the Pelennor -- everything converges toward the coronation in V3 ch28. The longest arc of the trilogy."
+    },
+    "plant_t3_05": {
+      "label": "Denethor's Palantir -- the Steward's madness",
+      "notes": "From Gandalf's arrival, Denethor's behavior betrays knowledge he should not have -- fruit of his secret use of the Palantir. This plant resolves when Denethor throws himself into the flames clutching the Stone, finally revealing the source of his despair."
+    },
+    "plant_t3_06": {
+      "label": "Eowyn disguised as Dernhelm -- the prophecy fulfilled",
+      "notes": "Eowyn rides secretly with the Rohirrim, disguised as a rider named Dernhelm, taking Merry with her. At the Pelennor, she reveals her identity to the Witch-king who declares no man can kill him: 'I am no man.' The prophecy of Glorfindel is fulfilled."
+    }
+  },
+  "threads": {
+    "thr_quest": {
+      "name": "The Quest of the Ring",
+      "description": "Main thread: destroy the One Ring in the fires of Mount Doom before Sauron recovers it."
+    },
+    "thr_aragorn": {
+      "name": "Aragorn's Destiny",
+      "description": "The gradual revelation of Aragorn's royal identity -- heir of Isildur -- and his difficult acceptance of his heritage."
+    },
+    "thr_boromir": {
+      "name": "The Corruption of Boromir",
+      "description": "Boromir's growing temptation by the Ring, his moral fall and his final heroic redemption."
+    },
+    "thr_rohan": {
+      "name": "The Awakening of Rohan",
+      "description": "The liberation of Theoden, the mustering of Rohan and the defense of Helm's Deep -- a horse-people rising against Saruman's tide."
+    },
+    "thr_ents": {
+      "name": "The March of the Ents",
+      "description": "Treebeard and the Ents' slow anger at Fangorn's destruction by Isengard, culminating in the destruction of Saruman's fortress."
+    },
+    "thr_gollum": {
+      "name": "The Duality of Smeagol",
+      "description": "The inner war between Smeagol (pity, fragile loyalty) and Gollum (obsession, betrayal) -- and the question of whether Frodo's pity is wisdom or naivety."
+    },
+    "thr_gondor": {
+      "name": "The Defense of Gondor",
+      "description": "The siege of Minas Tirith, Denethor's madness, Faramir's wounding. Gandalf and Pippin at the heart of the besieged city. Culmination: the Gate broken by Grond and Gandalf alone against the Witch-king."
+    },
+    "thr_shelob": {
+      "name": "Shelob's Lair",
+      "description": "Gollum's betrayal takes shape: he leads Frodo into Shelob's trap. Sam alone must save his master. The thread that crystallizes Sam's transformation from simple gardener to hero."
+    },
+    "thr_return": {
+      "name": "The Return of the King",
+      "description": "Aragorn's arc reaches its resolution: the Paths of the Dead, the Pelennor, the coronation. In parallel, the hobbits' return to the Shire and Frodo's departure at the Grey Havens. The end of an age, the beginning of another."
+    }
+  },
+  "incoherences": {
+    "inc_001": {
+      "title": "Gandalf imprisoned at Isengard: before or after the Council?",
+      "explanation": "Gandalf is listed as a visitor of Isengard and is imprisoned there by Saruman, but no chronological data specifies whether this capture occurred before or after the formation of the Fellowship at Rivendell. His simultaneous presence as the Fellowship's guide and Orthanc's prisoner creates an unresolved temporal ambiguity."
+    },
+    "inc_002": {
+      "title": "Thorin Oakenshield mentioned but absent from the database",
+      "explanation": "The Mithril coat states it was 'given to Bilbo by Thorin Oakenshield', but Thorin does not exist as an entity in the database. This crucial character is cited in an object's description without being referenceable, making the chain of possession incomplete."
+    },
+    "inc_003": {
+      "title": "Gandalf listed as holder of Lembas despite his absence from Lothlorien",
+      "explanation": "Lembas lists Gandalf among its holders, but this Elven bread was given by Galadriel at Lothlorien after the crossing of Moria. Gandalf fell at the Bridge of Khazad-dum before the Fellowship reached Lothlorien -- he therefore cannot be among the Lembas holders."
+    },
+    "inc_004": {
+      "title": "Glorfindel absent from Rivendell despite his role as Elf-lord",
+      "explanation": "Glorfindel is listed as a visitor of the Ford of Bruinen and his origin is 'Rivendell -- Imladris', but he does not appear in Rivendell's visitedBy list. An Elf-lord of Rivendell who appears at the Ford with no trace of his presence in the Elven city he is supposed to protect constitutes a traceability inconsistency."
+    },
+    "inc_005": {
+      "title": "Anduril forged by 'Elves of Rivendell' with no associated entity",
+      "explanation": "Anduril's creator is 'Elves of Rivendell (reforge of Narsil)', but this collective entity is not referenced. Elrond, Lord of Rivendell and bearer of Vilya, would be the logical master smith of this reforging -- yet no direct link is established between him and the sword in the database."
+    },
+    "inc_006": {
+      "title": "Tom Bombadil from an unreferenced location",
+      "explanation": "Tom Bombadil's origin is 'Old Forest' and his affiliation is 'Old Forest (independent)', but this place does not exist as a location entity in the database. His domain -- the Barrow-downs -- is present, but the Old Forest itself remains an orphan reference."
+    },
+    "inc_007": {
+      "title": "Boromir affiliated with 'Gondor': location absent from database",
+      "explanation": "Boromir has the affiliation 'Gondor', but Gondor exists neither as a location nor as an entity in the database. His origin 'Minas Tirith -- Gondor' suggests that Gondor should be a referenced location. This orphan affiliation prevents creating any graphical link to his native faction."
+    },
+    "inc_008": {
+      "title": "Gandalf's Staff: unknown creator and place of creation",
+      "explanation": "Gandalf's Staff indicates 'Unknown (brought from Valinor?)' as creator and 'Unknown' as place of creation. Yet Valinor is mentioned as Gandalf's own origin -- minimal consistency would require his staff be associated with the same origin, or that Valinor be added as a location entity."
+    },
+    "inc_t2_01": {
+      "title": "Eomer banished then at Helm's Deep -- fuzzy chronology",
+      "explanation": "Eomer is banished from Edoras by Theoden under Grima's influence for disobedience. Yet a few events later, he arrives at dawn at Helm's Deep with his army of riders. The exact duration and conditions of his banishment -- was he free to fight regardless? -- are not specified, creating a status inconsistency."
+    },
+    "inc_t2_02": {
+      "title": "Grima Wormtongue absent from the database as an entity",
+      "explanation": "Grima Wormtongue is the pivot of the Rohan sequence -- his sorcery on Theoden is the starting point of the entire Edoras narrative thread. He is mentioned in several events but does not exist as a character entity in the database. His chain of actions (thrall, banishment, throwing the Palantir) therefore cannot be traced."
+    },
+    "inc_t2_03": {
+      "title": "The Palantir -- who threw it, who holds it?",
+      "explanation": "The Palantir is listed as belonging to Saruman, current holder. Yet it is Grima (unreferenced) who throws it from the tower of Orthanc. Pippin picks it up. The actual chain of possession (Saruman, Grima, Pippin, Gandalf) is not reflected in the database."
+    },
+    "inc_t2_04": {
+      "title": "Faramir affiliated with 'Gondor' -- location absent from database",
+      "explanation": "Like his brother Boromir, Faramir carries the affiliation 'Gondor', but Gondor does not exist as a location entity in the database. Minas Tirith is not referenced either. The Gondor affiliation of both of Denethor's sons thus remains an orphan affiliation with no target entity."
+    },
+    "inc_t3_01": {
+      "title": "Denethor 'sees' through the Palantir but not the truth",
+      "explanation": "The Palantiri show the truth -- but Sauron controlled what Denethor could see, showing him only visions of defeat and overwhelming power. The Palantir does not lie, but its user can be manipulated by a stronger mind. The Stone's 'omnipotence' is therefore conditional, which the narrative does not always make explicit."
+    },
+    "inc_t3_02": {
+      "title": "The Army of the Dead vanishes after the Pelennor -- why not use them against Mordor?",
+      "explanation": "Aragorn releases the Army of the Dead from their oath as soon as the Pelennor is won, even though they could have marched on Mordor and crushed Sauron. Explanation: the oath was tied to a specific act (defending Gondor), and keeping the dead beyond that would have been an act of domination -- contrary to Aragorn's nature. Nevertheless, the narrative does not explicitly detail this limitation."
+    },
+    "inc_t3_03": {
+      "title": "The mithril coat taken at Cirith Ungol then shown at the Black Gate",
+      "explanation": "The Orcs take the mithril coat from Frodo in the tower of Cirith Ungol. The Mouth of Sauron brandishes it at the Black Gate -- he recovered it. But how did an object taken by an Orc from an isolated garrison reach Barad-dur and then the Gate so quickly? The object's tracking in the database is discontinuous."
+    },
+    "inc_t3_04": {
+      "title": "The Eagles at Mount Doom -- why not sooner?",
+      "explanation": "Gwaihir's Eagles rescue Frodo and Sam after the Ring's destruction. The classic question: why not fly directly to Mordor from the start? The Eagles are sovereign beings, not mounts. The winged Nazgul control the sky. The Ring would have corrupted an Eagle. But the text does not explicitly provide these explanations -- it is a recurring point of debate among readers."
+    }
+  },
+  "heroJourney": {
+    "char_frodo_ordinary_world": {
+      "summary": "Frodo leads a peaceful life in the Shire, heir to Bilbo, with no heroic ambitions."
+    },
+    "char_frodo_call_to_adventure": {
+      "summary": "Gandalf reveals the truth about the One Ring -- Frodo must carry it far from the Shire."
+    },
+    "char_frodo_refusal": {
+      "summary": "Frodo tries to give the Ring to Gandalf, seeking to flee the responsibility."
+    },
+    "char_frodo_mentor": {
+      "summary": "Gandalf guides and protects Frodo, reveals the Ring's history and shows him the way."
+    },
+    "char_frodo_threshold": {
+      "summary": "Frodo leaves the Shire with Sam. The meeting with Aragorn seals his commitment to the adventure."
+    },
+    "char_frodo_tests": {
+      "summary": "Weathertop, the Witch-king's wound, the flight to the Ford -- Frodo learns the price of courage."
+    },
+    "char_frodo_inmost_cave": {
+      "summary": "Moria: Frodo enters absolute darkness, confronted with the ancient terror of the Balrog."
+    },
+    "char_frodo_ordeal": {
+      "summary": "Gandalf falls at the Bridge of Khazad-dum. The Fellowship loses its guide -- Frodo must carry on alone."
+    },
+    "char_frodo_reward": {
+      "summary": "Lothlorien: rest, Galadriel's gifts, the Phial of light -- Frodo receives the tools of his victory."
+    },
+    "char_frodo_road_back": {
+      "summary": "Frodo decides to go alone toward Mordor, refusing to put his companions in danger."
+    },
+    "char_frodo_resurrection": {
+      "summary": "The confrontation with Boromir reveals the Ring's corruption -- Frodo must die to his former life."
+    },
+    "char_frodo_return_with_elixir": {
+      "summary": "Frodo and Sam cross the river. The elixir is not yet won -- the true ordeal begins."
+    },
+    "char_gandalf_ordinary_world": {
+      "summary": "Gandalf the Grey has wandered Middle-earth for centuries -- a discreet guide, fireworks and wisdom. An Istari among the Free Peoples, tireless watchman."
+    },
+    "char_gandalf_call_to_adventure": {
+      "summary": "Gandalf identifies Bilbo's ring as the One Ring. Sauron's threat is confirmed -- he must act now or all will be lost."
+    },
+    "char_gandalf_refusal": {
+      "summary": "Frodo offers him the Ring. Gandalf refuses in terror: 'Do not tempt me!' -- he knows such power would corrupt him despite his good intentions."
+    },
+    "char_gandalf_mentor": {
+      "summary": "At the Council of Elrond, Gandalf orchestrates the formation of the Fellowship. He does not merely guide -- he gives a common purpose to nine walkers whom everything separates."
+    },
+    "char_gandalf_threshold": {
+      "summary": "Gandalf leads the Fellowship out of Rivendell. The choice of Moria, against all counsel, seals his commitment: he will bear the consequences."
+    },
+    "char_gandalf_tests": {
+      "summary": "Caradhras repels the Fellowship. The doors of Moria, the approaching Balrog's darkness -- Gandalf navigates between dangers while shielding the group."
+    },
+    "char_gandalf_inmost_cave": {
+      "summary": "The Bridge of Khazad-dum. Gandalf faces the Balrog of Morgoth -- a Maiar against a Maiar. 'You shall not pass!'"
+    },
+    "char_gandalf_ordeal": {
+      "summary": "Gandalf falls with the Balrog into the depths of Khazad-dum. Death of Gandalf the Grey -- sacrifice to save the Fellowship."
+    },
+    "char_gandalf_reward": {
+      "summary": "Sent back by the Valar, Gandalf returns as Gandalf the White -- more powerful, wiser, invested with new authority to complete his mission."
+    },
+    "char_gandalf_road_back": {
+      "summary": "Gandalf frees Theoden from Saruman's thrall, rallies Rohan and orchestrates the defense of Helm's Deep. The counteroffensive begins."
+    },
+    "char_gandalf_resurrection": {
+      "summary": "Before the Black Gate, Gandalf leads the army of the West in a suicidal diversion. He knows everything rests on Frodo -- and accepts dying a second time if he must."
+    },
+    "char_gandalf_return_with_elixir": {
+      "summary": "The Ring destroyed, Sauron vanquished. Gandalf crowns Aragorn, accompanies the Hobbits home, then embarks at the Grey Havens -- his mission in Middle-earth is complete."
+    },
+    "char_aragorn_ordinary_world": {
+      "summary": "Aragorn at Parth Galen after Boromir's death -- a guide without a Fellowship, without a clear heading."
+    },
+    "char_aragorn_call_to_adventure": {
+      "summary": "The return of Gandalf the White redefines the mission: go to Edoras, rally Rohan."
+    },
+    "char_aragorn_refusal": {
+      "summary": "Aragorn doubts his heritage: the shadow of Isildur weighs on him. Can he claim the throne without repeating his ancestor's weakness?"
+    },
+    "char_aragorn_mentor": {
+      "summary": "Gandalf the White -- wiser, more powerful -- resumes his role as mentor and strategist."
+    },
+    "char_aragorn_threshold": {
+      "summary": "Edoras: Aragorn enters the hall of a corrupted king, with no certainty of success."
+    },
+    "char_aragorn_tests": {
+      "summary": "Free Theoden, convince the Rohirrim, prepare for a battle with no real hope."
+    },
+    "char_aragorn_inmost_cave": {
+      "summary": "Helm's Deep: a besieged fortress, a night with no way out -- the cave of despair."
+    },
+    "char_aragorn_ordeal": {
+      "summary": "The wall explodes, the enemy enters -- Aragorn must choose between surviving and sacrificing."
+    },
+    "char_aragorn_reward": {
+      "summary": "Dawn and Gandalf -- the unexpected victory at Helm's Deep. The resistance held."
+    },
+    "char_aragorn_road_back": {
+      "summary": "March to the devastated Isengard -- the war is not over, but one front is closed."
+    },
+    "char_aragorn_resurrection": {
+      "summary": "Facing Saruman in his tower: Aragorn resists the enchanting voice -- identity proven."
+    },
+    "char_aragorn_return_with_elixir": {
+      "summary": "Aragorn sets out toward the war to come -- strengthened, recognized, the king-in-waiting asserts himself."
+    },
+    "char_sam_ordinary_world": {
+      "summary": "Sam follows Frodo toward Mordor -- a faithful gardener with no heroic pretension. His strength comes from simple loyalty and his love for the Shire."
+    },
+    "char_sam_call_to_adventure": {
+      "summary": "The Stairs of Cirith Ungol -- the road becomes lethal. Sam understands this quest may have no return."
+    },
+    "char_sam_refusal": {
+      "summary": "Sam wants to convince Frodo not to follow Gollum into the tunnel. His instinct screams trap, but Frodo will not listen."
+    },
+    "char_sam_mentor": {
+      "summary": "The memory of Gandalf and the light of the Phial: 'There's some good in this world, Mr. Frodo, and it's worth fighting for.'"
+    },
+    "char_sam_threshold": {
+      "summary": "Sam takes the Ring believing Frodo dead -- he becomes a Ring-bearer. Crossing the threshold: from aide to hero."
+    },
+    "char_sam_tests": {
+      "summary": "Sam infiltrates the tower of Cirith Ungol alone -- fights Orcs, finds Frodo naked and tortured. The loneliest ordeal."
+    },
+    "char_sam_inmost_cave": {
+      "summary": "The plain of Gorgoroth -- march toward Mount Doom. No water, no food. Sam carries Frodo up the last slopes."
+    },
+    "char_sam_ordeal": {
+      "summary": "Frodo claims the Ring at the edge of the Cracks of Doom. The ultimate nightmare for Sam -- his master has yielded."
+    },
+    "char_sam_reward": {
+      "summary": "Gollum falls with the Ring -- the Ring is destroyed. The Quest is accomplished. Sam and Frodo are saved by the Eagles."
+    },
+    "char_sam_road_back": {
+      "summary": "Return to the Shire -- but the world has changed. Sam must learn to live after the adventure."
+    },
+    "char_sam_resurrection": {
+      "summary": "Sam faces the Scouring of the Shire -- he proves he has become a leader, not just a follower."
+    },
+    "char_sam_return_with_elixir": {
+      "summary": "Sam plants Galadriel's mallorn at Hobbiton, marries Rosie, founds his family and becomes Mayor of the Shire. The quiet hero who saved the world goes home: 'Well, I'm back.'"
+    }
+  }
+}

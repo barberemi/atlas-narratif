@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useProject } from '../db/ProjectContext';
+import { useTranslation } from 'react-i18next';
 import { useHeroJourneyStore } from '../stores/useHeroJourneyStore';
 import { useLoreStore } from '../stores/useLoreStore';
 import { useVolumeStore } from '../stores/useVolumeStore';
+import { useStoreLoader } from '../hooks/useStoreLoader';
+import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 import { useVolumeFilter } from '../hooks/useVolumeFilter';
 import { HERO_PHASES, HERO_STAGES, HERO_PHASE_MAP } from '../data/hero_journey_config';
 
 // ── StageCard ─────────────────────────────────────────────────────────────────
 
-function StageCard({ stage, entry, onSave, onRemove }) {
+function StageCard({ stage, entry, onSave, onRemove, t }) {
   const phase      = HERO_PHASE_MAP[stage.phase];
   const phaseColor = phase?.color ?? '#3F51B5';
 
@@ -68,7 +71,7 @@ function StageCard({ stage, entry, onSave, onRemove }) {
           <span className="text-xl flex-shrink-0 mt-0.5">{stage.icon}</span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-bold text-slate-200">{stage.label}</p>
+              <p className="text-sm font-bold text-slate-200">{t(`narrative:hero.stages.${stage.key}.label`, stage.label)}</p>
               {hasChapter && (
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
@@ -83,7 +86,7 @@ function StageCard({ stage, entry, onSave, onRemove }) {
               )}
             </div>
             <p className="text-xs text-slate-500 italic font-serif mt-0.5 leading-relaxed">
-              {stage.desc}
+              {t(`narrative:hero.stages.${stage.key}.desc`, stage.desc)}
             </p>
             {hasSummary && (
               <p className="text-xs text-slate-300 mt-2 leading-relaxed border-t border-white/5 pt-2">
@@ -95,7 +98,7 @@ function StageCard({ stage, entry, onSave, onRemove }) {
                 className="text-[10px] mt-2 transition-colors"
                 style={{ color: phaseColor, opacity: 0.6 }}
               >
-                {hasSummary ? 'Cliquer pour modifier…' : 'Cliquer pour annoter…'}
+                {hasSummary ? t('hero.clickToEdit', 'Cliquer pour modifier\u2026') : t('hero.clickToAnnotate', 'Cliquer pour annoter\u2026')}
               </p>
             )}
           </div>
@@ -110,7 +113,7 @@ function StageCard({ stage, entry, onSave, onRemove }) {
         >
           <div className="flex items-center gap-3 pt-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest">Chapitre</label>
+              <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('label.chapters', 'Chapitre')}</label>
               <input
                 type="number"
                 min={1}
@@ -125,11 +128,11 @@ function StageCard({ stage, entry, onSave, onRemove }) {
               />
             </div>
             <div className="flex-1 flex flex-col gap-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest">Note / Résumé</label>
+              <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('hero.noteSummary', 'Note / R\u00e9sum\u00e9')}</label>
               <textarea
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
-                placeholder="Décrivez comment cette étape se manifeste dans votre histoire…"
+                placeholder={t('hero.summaryPlaceholder', 'D\u00e9crivez comment cette \u00e9tape se manifeste dans votre histoire\u2026')}
                 rows={3}
                 className="w-full px-3 py-2 rounded-lg text-xs text-slate-200 outline-none resize-none"
                 style={{
@@ -151,14 +154,14 @@ function StageCard({ stage, entry, onSave, onRemove }) {
                 border: `1px solid ${phaseColor}40`,
               }}
             >
-              Enregistrer
+              {t('btn.save')}
             </button>
             <button
               onClick={handleCancel}
               className="px-3 py-1.5 rounded-lg text-xs text-slate-500 transition-all hover:text-slate-300"
               style={{ border: '1px solid rgba(255,255,255,0.06)' }}
             >
-              Annuler
+              {t('btn.cancel')}
             </button>
             {entry && (
               <button
@@ -166,7 +169,7 @@ function StageCard({ stage, entry, onSave, onRemove }) {
                 className="ml-auto px-3 py-1.5 rounded-lg text-xs text-red-500 transition-all hover:text-red-400"
                 style={{ border: '1px solid rgba(239,68,68,0.2)' }}
               >
-                Effacer
+                {t('btn.delete')}
               </button>
             )}
           </div>
@@ -179,10 +182,8 @@ function StageCard({ stage, entry, onSave, onRemove }) {
 // ── Composant principal ───────────────────────────────────────────────────────
 
 export default function HeroJourney() {
-  const { projectId } = useProject();
-
+  const { t } = useTranslation();
   const allEntries     = useHeroJourneyStore(s => s.entries);
-  const loadEntries    = useHeroJourneyStore(s => s.load);
   const saveEntry      = useHeroJourneyStore(s => s.saveEntry);
   const removeEntry    = useHeroJourneyStore(s => s.removeEntry);
   const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
@@ -190,13 +191,8 @@ export default function HeroJourney() {
   const entries        = filterByVolume(allEntries);
 
   const characters    = useLoreStore(s => s.characters);
-  const loadLore      = useLoreStore(s => s.load);
 
-  useEffect(() => {
-    if (!projectId) return;
-    loadEntries(projectId);
-    if (!characters) loadLore(projectId);
-  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useStoreLoader([useHeroJourneyStore]);
 
   // ── Personnage héros sélectionné ──────────────────────────────────────────
   const [heroCharId,    setHeroCharId]    = useState('');
@@ -263,16 +259,16 @@ export default function HeroJourney() {
       <header data-tour="heros-stages" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4 flex-wrap">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Voyage du <span style={{ color: '#3F51B5' }}>Héros</span>
+            {t('hero.titlePrefix', 'Voyage du')} <span style={{ color: '#3F51B5' }}>{t('hero.titleHighlight', 'H\u00e9ros')}</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            12 étapes archétypales de Joseph Campbell · {filledCount}/{HERO_STAGES.length} étapes renseignées
+            {t('hero.subtitle', '12 \u00e9tapes arch\u00e9typales de Joseph Campbell')} · {filledCount}/{HERO_STAGES.length} {t('hero.stagesFilled', '\u00e9tapes renseign\u00e9es')}
           </p>
         </div>
 
         {/* Sélecteur de personnage */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-xs text-slate-500 uppercase tracking-widest">Héros</span>
+          <span className="text-xs text-slate-500 uppercase tracking-widest">{t('hero.heroLabel', 'H\u00e9ros')}</span>
           <div className="relative" ref={charMenuRef}>
             {(() => {
               const selectedChar = characterList.find(c => c.id === heroCharId);
@@ -312,7 +308,7 @@ export default function HeroJourney() {
                     ) : (
                       <>
                         <span className="text-slate-500">👤</span>
-                        Choisir un personnage…
+                        {t('hero.chooseCharacter', 'Choisir un personnage\u2026')}
                       </>
                     )}
                     <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
@@ -327,7 +323,7 @@ export default function HeroJourney() {
                         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all hover:bg-white/5 text-slate-600"
                       >
                         <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-700" />
-                        Aucun personnage
+                        {t('hero.noCharacter', 'Aucun personnage')}
                       </button>
                       {characterList.map(c => {
                         const count   = countPerChar.get(c.id) ?? 0;
@@ -371,9 +367,9 @@ export default function HeroJourney() {
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6">
 
         {entries === null ? (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-slate-600 font-serif italic">Chargement…</p>
-          </div>
+          <Skeleton variant="card" />
+        ) : characterList.length === 0 ? (
+          <EmptyState icon="🦸" title={t('empty.noCharacters')} hint={t('hero.emptyHint', 'Ajoutez des personnages dans le Lore pour commencer le Voyage du H\u00e9ros.')} />
         ) : (
           <div data-tour="heros-grid" className="max-w-6xl mx-auto">
 
@@ -385,7 +381,7 @@ export default function HeroJourney() {
                     className="w-3 h-3 rounded-sm flex-shrink-0"
                     style={{ backgroundColor: phase.color }}
                   />
-                  <span className="text-xs text-slate-400 font-semibold">{phase.label}</span>
+                  <span className="text-xs text-slate-400 font-semibold">{t(`narrative:hero.phases.${phase.id}`, phase.label)}</span>
                 </div>
               ))}
               <div className="ml-auto">
@@ -401,7 +397,7 @@ export default function HeroJourney() {
                       : '1px solid rgba(255,255,255,0.06)',
                   }}
                 >
-                  {filledCount}/{HERO_STAGES.length} étapes
+                  {filledCount}/{HERO_STAGES.length} {t('hero.stages', '\u00e9tapes')}
                 </div>
               </div>
             </div>
@@ -425,7 +421,7 @@ export default function HeroJourney() {
                         style={{ backgroundColor: phase.color }}
                       />
                       <span className="text-xs font-black tracking-wide uppercase" style={{ color: phase.color }}>
-                        {phase.label}
+                        {t(`narrative:hero.phases.${phase.id}`, phase.label)}
                       </span>
                       <span className="text-[10px] text-slate-600 ml-auto">
                         {phaseStages.filter(s => entryMap.has(s.key)).length}/{phaseStages.length}
@@ -440,6 +436,7 @@ export default function HeroJourney() {
                         entry={entryMap.get(stage.key) ?? null}
                         onSave={handleSave}
                         onRemove={removeEntry}
+                        t={t}
                       />
                     ))}
                   </div>

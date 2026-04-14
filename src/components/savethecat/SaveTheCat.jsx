@@ -1,25 +1,30 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BEATS } from '../../data/beats_config';
 import { computeAlertsFromEvents } from '../../db/queries';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { useStcStore } from '../../stores/useStcStore';
 import { useVolumeFilter } from '../../hooks/useVolumeFilter';
 import { useVolumeStore } from '../../stores/useVolumeStore';
+import { useStoreLoader } from '../../hooks/useStoreLoader';
 import Frise from './Frise';
 import AlertCard from './AlertCard';
 import BeatRow from './BeatRow';
+import EmptyState from '../ui/EmptyState';
+import Skeleton from '../ui/Skeleton';
 import EventEditor from '../timeline/EventEditor';
 import { extractChapters } from '../../utils/reviewUtils';
 import { buildCoverageMap } from '../../utils/coverageUtils';
 
-const ENTITY_SECTIONS = [
-  { type: 'character', label: 'Personnages', color: (e) => e.color ?? '#818cf8' },
-  { type: 'location',  label: 'Lieux',       color: ()  => '#60a5fa'             },
-  { type: 'object',    label: 'Objets',      color: ()  => '#a78bfa'             },
+const ENTITY_SECTION_KEYS = [
+  { type: 'character', labelKey: 'label.characters', color: (e) => e.color ?? '#818cf8' },
+  { type: 'location',  labelKey: 'label.locations',  color: ()  => '#60a5fa'             },
+  { type: 'object',    labelKey: 'label.objects',     color: ()  => '#a78bfa'             },
 ];
 
 // ── Panneau couverture des entités ─────────────────────────────────────────────
-function EntityCoveragePanel({ events, characters, locations, objects }) {
+function EntityCoveragePanel({ events, characters, locations, objects, t }) {
   const entityListByType = {
     character: characters,
     location:  locations,
@@ -41,7 +46,7 @@ function EntityCoveragePanel({ events, characters, locations, objects }) {
         className="p-4 rounded-xl text-center"
         style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
       >
-        <p className="text-xs text-slate-600 uppercase tracking-widest mb-1">Couverture entités</p>
+        <p className="text-xs text-slate-600 uppercase tracking-widest mb-1">{t('stc.entityCoverage')}</p>
         <p className="text-3xl font-black" style={{ color: coveredCount === allCount ? '#10b981' : '#fbbf24' }}>
           {coveredCount}<span className="text-sm font-normal text-slate-600">/{allCount}</span>
         </p>
@@ -57,17 +62,17 @@ function EntityCoveragePanel({ events, characters, locations, objects }) {
       </div>
 
       {/* Liste par type */}
-      {ENTITY_SECTIONS.map(({ type, label, color }) => {
+      {ENTITY_SECTION_KEYS.map(({ type, labelKey, color }) => {
         const list = entityListByType[type] ?? [];
         if (!list.length) return null;
         const uncovered = list.filter(e => !coverageMap[`${type}:${e.id}`]);
         return (
           <div key={type}>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              {label}
+              {t(labelKey)}
               {uncovered.length > 0 && (
                 <span className="font-normal normal-case" style={{ color: '#ef4444' }}>
-                  {uncovered.length} non couvert{uncovered.length > 1 ? 's' : ''}
+                  {t('stc.uncovered', { count: uncovered.length })}
                 </span>
               )}
             </p>
@@ -95,7 +100,7 @@ function EntityCoveragePanel({ events, characters, locations, objects }) {
                         {e.name}
                       </p>
                       {none ? (
-                        <p className="text-[10px] mt-0.5" style={{ color: '#ef4444' }}>Aucun chapitre</p>
+                        <p className="text-[10px] mt-0.5" style={{ color: '#ef4444' }}>{t('stc.noChapter')}</p>
                       ) : (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {chs.map(ch => (
@@ -121,7 +126,7 @@ function EntityCoveragePanel({ events, characters, locations, objects }) {
 
       {allCount === 0 && (
         <p className="text-xs text-slate-700 italic text-center py-8">
-          Aucune entité dans la base de données.
+          {t('stc.noEntities')}
         </p>
       )}
     </div>
@@ -130,6 +135,8 @@ function EntityCoveragePanel({ events, characters, locations, objects }) {
 
 // ── SaveTheCat ─────────────────────────────────────────────────────────────────
 export default function SaveTheCat() {
+  const { t } = useTranslation();
+  useStoreLoader([useTimelineStore, useStcStore]);
   const filterByVolume             = useVolumeFilter();
   const { events: allEvents }      = useTimelineStore();
   const events                     = filterByVolume(allEvents);
@@ -184,9 +191,11 @@ export default function SaveTheCat() {
 
   const handleAssign = (beat, event) => setAssigning({ beat, event: event ?? null });
 
-  if (!events) return (
+  if (!events) return <Skeleton variant="list" />;
+
+  if (events.length === 0) return (
     <div className="h-full flex items-center justify-center">
-      <span className="text-slate-600 font-serif italic">Chargement…</span>
+      <EmptyState icon="🎬" title={t('stc.emptyTitle')} hint={t('stc.emptyHint')} />
     </div>
   );
 
@@ -221,15 +230,15 @@ export default function SaveTheCat() {
                 ))
               : `${placedCount}/${BEATS.length}`
             }
-            {' '}beats placés
+            {' '}{t('stc.beatsPlaced')}
             {criticalCount > 0 && (
               <span style={{ color: '#ef4444' }}>
-                {' '}· {criticalCount} alerte{criticalCount > 1 ? 's' : ''} critique{criticalCount > 1 ? 's' : ''}
+                {' '}· {t('stc.criticalAlerts', { count: criticalCount })}
               </span>
             )}
             {warningCount > 0 && (
               <span style={{ color: '#fbbf24' }}>
-                {' '}· {warningCount} attention{warningCount > 1 ? 's' : ''}
+                {' '}· {t('stc.warnings', { count: warningCount })}
               </span>
             )}
           </p>
@@ -246,22 +255,22 @@ export default function SaveTheCat() {
             className="inline-block rounded-full border"
             style={{ width: 12, height: 12, backgroundColor: 'rgba(129,140,248,0.15)', borderColor: 'rgba(129,140,248,0.55)' }}
           />
-          Beat placé (position réelle)
+          {t('stc.legendPlaced')}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
           <span
             className="inline-block"
             style={{ width: 10, height: 10, transform: 'rotate(45deg)', border: '1.5px solid rgba(129,140,248,0.5)', backgroundColor: 'rgba(129,140,248,0.15)' }}
           />
-          Position idéale
+          {t('stc.legendIdeal')}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
           <span style={{ color: '#fbbf24' }}>⚠</span>
-          Déviation
+          {t('stc.legendDeviation')}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
           <span style={{ color: '#ef4444' }}>⛔</span>
-          Critique
+          {t('severity.critical')}
         </span>
       </div>
 
@@ -275,7 +284,7 @@ export default function SaveTheCat() {
                 className="text-[11px] font-bold uppercase tracking-widest mb-3"
                 style={{ color: 'rgba(129,140,248,0.6)' }}
               >
-                Tome {vd.volume.number} — {vd.volume.title}
+                {t('volume.tome', { number: vd.volume.number })} — {vd.volume.title}
               </p>
               <Frise
                 chapters={vd.chapters}
@@ -307,7 +316,7 @@ export default function SaveTheCat() {
         {/* Alertes */}
         <div className="flex-1 p-5 md:border-r border-white/5">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-            Alertes narratives
+            {t('stc.narrativeAlerts')}
             {alerts.length > 0 && (
               <span className="ml-2 font-normal text-slate-600">({alerts.length})</span>
             )}
@@ -316,8 +325,8 @@ export default function SaveTheCat() {
           {alerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <span className="text-4xl">✓</span>
-              <p className="text-base text-slate-400 font-bold">Structure narrative solide !</p>
-              <p className="text-sm text-slate-600 font-serif italic">Tous les beats sont bien placés dans les intervalles recommandés.</p>
+              <p className="text-base text-slate-400 font-bold">{t('stc.solidStructure')}</p>
+              <p className="text-sm text-slate-600 font-serif italic">{t('stc.solidStructureHint')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -337,8 +346,8 @@ export default function SaveTheCat() {
           {/* Onglets */}
           <div className="flex border-b border-white/5 flex-shrink-0">
             {[
-              { id: 'beats',    label: 'Les 15 beats' },
-              { id: 'entities', label: 'Entités' },
+              { id: 'beats',    label: t('stc.the15beats') },
+              { id: 'entities', label: t('stc.entities') },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -377,7 +386,7 @@ export default function SaveTheCat() {
                 className="mt-5 p-4 rounded-xl"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <p className="text-xs text-slate-600 uppercase tracking-widest mb-3 text-center">Couverture beats</p>
+                <p className="text-xs text-slate-600 uppercase tracking-widest mb-3 text-center">{t('stc.beatsCoverage')}</p>
                 {placedByVolume ? (
                   <div className="space-y-2.5">
                     {placedByVolume.map(pv => {
@@ -424,6 +433,7 @@ export default function SaveTheCat() {
               characters={characters}
               locations={locations}
               objects={objects}
+              t={t}
             />
           )}
         </div>

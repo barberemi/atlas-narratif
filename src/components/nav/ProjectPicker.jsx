@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useProject } from '../../db/ProjectContext';
 import { deleteProject } from '../../api/client';
 import { exportProject } from '../../db/exportProject';
+import { toast } from '../../lib/toast';
 
 export default function ProjectPicker() {
+  const { t } = useTranslation();
   const { projectId, setProjectId, projects, reloadProjects } = useProject();
   const [open,       setOpen]       = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
@@ -12,9 +15,11 @@ export default function ProjectPicker() {
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setConfirmDel(null); } };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setConfirmDel(null); } };
+    const handleKey = (e) => { if (e.key === 'Escape') { setOpen(false); setConfirmDel(null); } };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => { document.removeEventListener('mousedown', handleClick); document.removeEventListener('keydown', handleKey); };
   }, [open]);
 
   const active = projects.find(p => p.id === projectId);
@@ -22,18 +27,28 @@ export default function ProjectPicker() {
   const handleExport = async () => {
     if (exporting) return;
     setExporting(true);
-    try { await exportProject(null, projectId); }
-    finally { setExporting(false); }
+    try {
+      await exportProject(null, projectId);
+    } catch {
+      // erreur toast global via api()
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleDelete = async (id) => {
-    await deleteProject(id);
-    await reloadProjects();
-    if (id === projectId) {
-      const remaining = projects.filter(p => p.id !== id);
-      if (remaining.length) setProjectId(remaining[0].id);
+    try {
+      await deleteProject(id);
+      await reloadProjects();
+      if (id === projectId) {
+        const remaining = projects.filter(p => p.id !== id);
+        if (remaining.length) setProjectId(remaining[0].id);
+      }
+      setConfirmDel(null);
+      toast(t('toast.projectDeleted'));
+    } catch {
+      // erreur toast global via api()
     }
-    setConfirmDel(null);
   };
 
   if (!active) return null;
@@ -82,15 +97,15 @@ export default function ProjectPicker() {
                     <button
                       onClick={() => setConfirmDel(p.id)}
                       className="opacity-0 group-hover:opacity-100 text-[10px] text-slate-600 hover:text-red-400 transition-all w-5 h-5 flex items-center justify-center rounded"
-                      title="Supprimer ce projet"
+                      title={t('project.deleteProject')}
                     >🗑</button>
                   )}
 
                   {isDel && (
                     <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-red-400">Supprimer ?</span>
-                      <button onClick={() => handleDelete(p.id)} className="text-[9px] font-black text-red-400 hover:text-red-300 px-1">Oui</button>
-                      <button onClick={() => setConfirmDel(null)} className="text-[9px] text-slate-600 hover:text-slate-400 px-1">Non</button>
+                      <span className="text-[9px] text-red-400">{t('project.confirmDelete')}</span>
+                      <button onClick={() => handleDelete(p.id)} className="text-[9px] font-black text-red-400 hover:text-red-300 px-1">{t('project.yes')}</button>
+                      <button onClick={() => setConfirmDel(null)} className="text-[9px] text-slate-600 hover:text-slate-400 px-1">{t('project.no')}</button>
                     </div>
                   )}
                 </div>
@@ -108,7 +123,7 @@ export default function ProjectPicker() {
               onMouseLeave={e => { if (!exporting) e.currentTarget.style.color = '#64748b'; }}
             >
               <span style={{ fontSize: 12 }}>↓</span>
-              {exporting ? 'Export en cours…' : 'Exporter ce projet'}
+              {exporting ? t('btn.exporting') : t('btn.export')}
             </button>
           </div>
         </div>

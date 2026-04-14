@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { getVolumes, insertVolume, updateVolume, deleteVolume } from '../api/client';
+import { toast } from '../lib/toast';
+import i18n from '../i18n';
+import { useSaveIndicator } from './useSaveIndicator';
 
 /**
  * Store gérant les volumes (tomes) d'une série.
@@ -11,11 +14,16 @@ export const useVolumeStore = create((set, get) => ({
   volumes:        null,
   activeVolumeId: null,
   _projectId:     null,
+  _loading:       false,
 
   load: async (projectId) => {
-    set({ _projectId: projectId });
-    const volumes = await getVolumes(projectId);
-    set({ volumes });
+    const { _projectId, _loading, volumes } = get();
+    if (_loading || (_projectId === projectId && volumes !== null)) return;
+    set({ _projectId: projectId, _loading: true });
+    try {
+      const result = await getVolumes(projectId);
+      set({ volumes: result, _loading: false });
+    } catch (e) { set({ _loading: false }); throw e; }
   },
 
   setActiveVolume: (id) => set({ activeVolumeId: id }),
@@ -23,7 +31,9 @@ export const useVolumeStore = create((set, get) => ({
   addVolume: async (data) => {
     const { _projectId, volumes } = get();
     if (!_projectId) return null;
+    useSaveIndicator.getState().markSaving();
     const id = await insertVolume(data, _projectId);
+    useSaveIndicator.getState().markSaved();
     const newVolume = {
       id,
       number:      data.number,
@@ -31,13 +41,16 @@ export const useVolumeStore = create((set, get) => ({
       description: data.description ?? null,
     };
     set({ volumes: [...(volumes ?? []), newVolume].sort((a, b) => a.number - b.number) });
+    toast.success(i18n.t('toast.volumeAdded'));
     return id;
   },
 
   editVolume: async (volumeId, data) => {
     const { _projectId, volumes } = get();
     if (!_projectId) return;
+    useSaveIndicator.getState().markSaving();
     await updateVolume(volumeId, data, _projectId);
+    useSaveIndicator.getState().markSaved();
     set({
       volumes: (volumes ?? [])
         .map(v => v.id === volumeId ? { ...v, ...data } : v)
@@ -48,13 +61,16 @@ export const useVolumeStore = create((set, get) => ({
   removeVolume: async (volumeId) => {
     const { _projectId, volumes, activeVolumeId } = get();
     if (!_projectId) return;
-    await deleteVolume(volumeId, _projectId);
+    useSaveIndicator.getState().markSaving();
+    const snapshot = await deleteVolume(volumeId, _projectId);
+    useSaveIndicator.getState().markSaved();
     const next = (volumes ?? []).filter(v => v.id !== volumeId);
     set({
       volumes: next,
       activeVolumeId: activeVolumeId === volumeId ? null : activeVolumeId,
     });
+    return snapshot;
   },
 
-  reset: () => set({ volumes: null, activeVolumeId: null, _projectId: null }),
+  reset: () => set({ volumes: null, activeVolumeId: null, _projectId: null, _loading: false }),
 }));

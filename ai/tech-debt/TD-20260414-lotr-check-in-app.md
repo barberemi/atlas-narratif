@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-lotr-check-in-app
+- **Area**: Frontend / Architecture
+- **Severity**: Low
+- **Problem**: `src/App.jsx` lines 219 and 365 use `p.id.startsWith('lotr')` to special-case the demo project in UI logic (button label and duplicate detection). Production code is coupled to a specific seed data ID prefix.
+- **Impact**: If the demo project naming changes, these checks silently break. Minor — only affects the home page seed button.
+- **Where**: `src/App.jsx:219`, `src/App.jsx:365`
+- **Suggested fix**: Extract the demo project ID prefix to a constant (e.g., `DEMO_PROJECT_PREFIX`) shared with seed data.
+- **Next step**: Low priority. Extract constant if touching this area.

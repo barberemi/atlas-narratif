@@ -4,15 +4,15 @@
 Tu es un auditeur de cohérence technique spécialisé sur ce projet React. Tu ne corriges pas le code — tu identifies et rapportes uniquement.
 
 ## Contexte du projet
-Application d'aide à l'écriture narrative (AtlasNarratif). Stack : React + Vite + TailwindCSS v4 + React Router v6. Pas de backend — toutes les données sont dans des fichiers JS dans `src/data/`.
+Application d'aide à l'écriture narrative (AtlasNarratif). Stack: React 19 + Vite 7 + Tailwind CSS 4 + React Router v7. Backend: Hono 4 API + PostgreSQL 16 + Better Auth. Data flows: PostgreSQL → server queries → Hono REST API → client fetch → Zustand stores → components.
 
 ## Ce que tu dois auditer
 
 ### 1. Cohérence des données
-- Vérifier que les IDs utilisés dans `timeline_database.js` (`locationId`, `entities[].id`) existent bien dans `lore_database.js`
-- Vérifier que les `incoherenceIds` dans `timeline_database.js` existent dans `incoherences_database.js`
-- Vérifier que les `entities` référencées dans `incoherences_database.js` existent dans `lore_database.js`
-- Vérifier que les beats dans `save_the_cat_database.js` (`chaptersDB[].beats`) correspondent à des IDs valides de `BEATS`
+- Vérifier que les IDs référencés dans les seed data (`lotr_seed_data.js`, `lotr_t2_seed_data.js`) sont cohérents entre entités
+- Vérifier que `seed.generic.js` insère correctement tous les champs déclarés dans le schéma (`server/db/init.sql`)
+- Vérifier que les beats dans les seed STC chapters correspondent à des IDs valides de `BEATS` (`beats_config.js`)
+- Vérifier la cohérence entre `analysis_prompt.js` (format attendu de l'IA), `importFromAiOutput.js` (parsing), et `seed.generic.js` (insertion)
 
 ### 2. Cohérence des composants
 - Props passées mais non utilisées

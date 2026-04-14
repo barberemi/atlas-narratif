@@ -1,0 +1,104 @@
+{
+  "audited_at": "2026-04-13T21:45:35.865348673+00:00",
+  "mappings": [
+    {
+      "ai_file": "ai/index.md",
+      "audit_step": 1,
+      "sources": [
+        "README.md",
+        "package.json",
+        "Cargo.toml",
+        "composer.json",
+        "go.mod",
+        "docker-compose.yml",
+        "Makefile",
+        "Dockerfile"
+      ],
+      "checksums": {
+        "Makefile": "4facdd8e264e169a1f77b18c7a85b4153cc2db77835e1d3ff6d8239b3e2f71bc",
+        "README.md": "2d13cbae79fec801b3250160089647b90f0219949bcf0aa4b643d9e3d466f113",
+        "package.json": "e37580e820a8d710045ab2b0c82b8b3ec615850c2c5e10c178c4a012d349c276"
+      }
+    },
+    {
+      "ai_file": "ai/repo-map.md",
+      "audit_step": 3,
+      "sources": [
+        "__GIT_LS_FILES__"
+      ],
+      "checksums": {
+        "__GIT_LS_FILES__": "6f8a9672c1ae9381045c635b45dab077d6d3346803422066187a075a9189b3e3"
+      }
+    },
+    {
+      "ai_file": "ai/coding-rules.md",
+      "audit_step": 4,
+      "sources": [
+        "package.json",
+        "Cargo.toml",
+        "tsconfig.json",
+        "rustfmt.toml",
+        "pyproject.toml"
+      ],
+      "checksums": {
+        "package.json": "e37580e820a8d710045ab2b0c82b8b3ec615850c2c5e10c178c4a012d349c276"
+      }
+    },
+    {
+      "ai_file": "ai/testing-quality.md",
+      "audit_step": 5,
+      "sources": [
+        "package.json",
+        "Cargo.toml",
+        "pyproject.toml"
+      ],
+      "checksums": {
+        "package.json": "e37580e820a8d710045ab2b0c82b8b3ec615850c2c5e10c178c4a012d349c276"
+      }
+    },
+    {
+      "ai_file": "ai/architecture/overview.md",
+      "audit_step": 6,
+      "sources": [
+        "docker-compose.yml",
+        "src/main.*",
+        "src/lib.*",
+        "src/index.*"
+      ],
+      "checksums": {
+        "src/index.css": "2d8e8cc8b1be1b00c0b45cd2c140c656f455ce1569bca95be2986585113cf49e",
+        "src/main.jsx": "5e7aff51c18b9e1a6f047668a0c3e3fe362bc2c7ad990149e51f030593b7c476"
+      }
+    },
+    {
+      "ai_file": "ai/operations/debug-operations.md",
+      "audit_step": 7,
+      "sources": [
+        "docker-compose.yml",
+        "Makefile",
+        "Dockerfile"
+      ],
+      "checksums": {
+        "Makefile": "4facdd8e264e169a1f77b18c7a85b4153cc2db77835e1d3ff6d8239b3e2f71bc"
+      }
+    },
+    {
+      "ai_file": "ai/operations/mcp-servers.md",
+      "audit_step": 8,
+      "sources": [
+        ".mcp.json"
+      ],
+      "checksums": {}
+    },
+    {
+      "ai_file": "ai/inconsistencies-tech-debt.md",
+      "audit_step": 9,
+      "sources": [
+        "__GIT_HEAD__"
+      ],
+      "checksums": {
+        "__GIT_HEAD__": "eb90f7f256a1d20221a6abb8bfaecbe8db820abd"
+      }
+    }
+  ]
+}

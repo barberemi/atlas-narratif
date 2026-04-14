@@ -1,10 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { useIncStore } from '../../stores/useIncStore';
 import EntityChip from './EntityChip';
 import FixButton from './FixButton';
-
-const SEVERITY_LABELS = { critical: 'Critique', high: 'Élevée', medium: 'Moyenne', low: 'Faible' };
 
 const TYPE_ICONS = {
   // critical
@@ -30,6 +29,7 @@ const TYPE_ICONS = {
 };
 
 export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick, onEntityFilter, onFix }) {
+  const { t } = useTranslation();
   const cfg  = SEVERITY_CONFIG[inc.severity];
   const icon = TYPE_ICONS[inc.type] ?? '⚠';
   const setNote = useIncStore(s => s.setNote);
@@ -49,18 +49,18 @@ export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEnt
               className="text-xs px-2 py-0.5 rounded font-mono font-bold tracking-wide"
               style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: resolved ? '#475569' : cfg.color, border: '1px solid rgba(255,255,255,0.08)' }}
             >
-              {icon} {inc.type}
+              {icon} {t(`incType.${inc.type}`, { defaultValue: inc.type })}
             </span>
             <span
               className="text-xs px-2 py-0.5 rounded-full font-bold"
               style={{ backgroundColor: resolved ? 'rgba(255,255,255,0.04)' : cfg.bg, color: resolved ? '#475569' : cfg.color, border: `1px solid ${resolved ? 'rgba(255,255,255,0.06)' : cfg.border}` }}
             >
-              {SEVERITY_LABELS[inc.severity]}
+              {t(`severity.${inc.severity}`)}
             </span>
           </div>
 
-          <label className="flex items-center gap-1.5 cursor-pointer group flex-shrink-0" title="Marquer comme résolu">
-            <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">Résolu</span>
+          <label className="flex items-center gap-1.5 cursor-pointer group flex-shrink-0" title={t('inc.markResolved')}>
+            <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">{t('inc.resolved')}</span>
             <div
               className="w-4 h-4 rounded border flex items-center justify-center transition-all duration-150"
               style={{ backgroundColor: resolved ? cfg.color : 'transparent', borderColor: resolved ? cfg.color : 'rgba(255,255,255,0.2)' }}
@@ -88,17 +88,17 @@ export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEnt
 
       {resolved && (
         <div className="px-4 pb-4 flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">Note de résolution</label>
+          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('inc.resolutionNote')}</label>
           <textarea
             value={note}
             onChange={e => setLocalNote(e.target.value)}
-            placeholder="Comment as-tu réglé ça dans ton manuscrit ?"
+            placeholder={t('inc.resolutionPlaceholder')}
             rows={3}
             style={{ backgroundColor: '#1e2d3d', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 8, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6, padding: '8px 12px', outline: 'none', resize: 'none', width: '100%', fontFamily: 'serif' }}
             onFocus={e => { e.currentTarget.style.borderColor = 'rgba(129,140,248,0.7)'; }}
             onBlur={e => { e.currentTarget.style.borderColor = 'rgba(129,140,248,0.3)'; setNote(inc.id, note); }}
           />
-          {note && <p className="text-[10px] text-slate-600 text-right">✓ Sauvegardé</p>}
+          {note && <p className="text-[10px] text-slate-600 text-right">✓ {t('saveIndicator.saved')}</p>}
         </div>
       )}
     </div>

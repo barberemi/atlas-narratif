@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCharacterArcStore } from '../../stores/useCharacterArcStore';
 import { useLoreStore } from '../../stores/useLoreStore';
 import { CHART_H, PAD, xToSvg, smoothPath } from '../../utils/arcUtils';
@@ -115,7 +116,7 @@ function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick, 
 
 // ── Autocomplétion label ──────────────────────────────────────────────────────
 
-function LabelAutocomplete({ value, onChange, suggestions, onSelect }) {
+function LabelAutocomplete({ value, onChange, suggestions, onSelect, placeholder }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -136,7 +137,7 @@ function LabelAutocomplete({ value, onChange, suggestions, onSelect }) {
       <input
         type="text"
         value={value}
-        placeholder="Nom de l'axe…"
+        placeholder={placeholder}
         onChange={e => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         className="w-full px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-white/5 border border-white/10 outline-none focus:border-indigo-500/50"
@@ -164,6 +165,7 @@ function LabelAutocomplete({ value, onChange, suggestions, onSelect }) {
 // ── Vue principale ────────────────────────────────────────────────────────────
 
 export default function CharacterArcView({ chapters, chapterOffset = 0, volumes = [], activeVolumeId = null, volumeSeparators = [] }) {
+  const { t } = useTranslation();
   const axes       = useCharacterArcStore(s => s.axes);
   const points     = useCharacterArcStore(s => s.points);
   const axisLabels = useCharacterArcStore(s => s.axisLabels);
@@ -286,10 +288,10 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
 
       {/* Barre de mode */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-500 uppercase tracking-widest">Mode</span>
+        <span className="text-xs text-slate-500 uppercase tracking-widest">{t('arc.mode')}</span>
         {[
-          { id: 'char', label: '1 personnage · tous ses axes' },
-          { id: 'axis', label: '1 axe · tous les personnages' },
+          { id: 'char', label: t('arc.modeChar') },
+          { id: 'axis', label: t('arc.modeAxis') },
         ].map(m => (
           <button
             key={m.id}
@@ -310,7 +312,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {/* Sélecteur */}
       {mode === 'char' ? (
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Personnage</span>
+          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.characters', { count: 1 })}</span>
           <div className="relative" ref={charMenuRef}>
             <button
               onClick={() => setCharMenuOpen(v => !v)}
@@ -330,7 +332,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
               ) : (
                 <>
                   <span className="text-slate-500">👤</span>
-                  Choisir un personnage…
+                  {t('arc.chooseCharacter')}
                 </>
               )}
               <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
@@ -358,9 +360,9 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
         </div>
       ) : (
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Axe</span>
+          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('arc.axis')}</span>
           {allLabels.length === 0 ? (
-            <span className="text-xs text-slate-600 italic">Aucun axe créé dans ce projet.</span>
+            <span className="text-xs text-slate-600 italic">{t('arc.noAxes')}</span>
           ) : allLabels.map(lbl => (
             <button
               key={lbl}
@@ -410,7 +412,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
           )}
           {isSeriesView && (
             <div className="absolute bottom-2 right-3 text-[10px] text-slate-600 italic pointer-events-none">
-              Vue série — sélectionnez un tome pour éditer
+              {t('arc.seriesViewHint')}
             </div>
           )}
         </div>
@@ -423,7 +425,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <p className="text-sm font-black text-slate-200">
-            Chapitre {activeChapterData.number}{activeChapterData.localNumber != null ? ` (ch.${activeChapterData.localNumber})` : ''} — {activeChapterData.title}
+            {t('arc.chapter')} {activeChapterData.number}{activeChapterData.localNumber != null ? ` (ch.${activeChapterData.localNumber})` : ''} — {activeChapterData.title}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {charAxes.map(ax => {
@@ -506,7 +508,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
           className="rounded-xl p-4 flex flex-col gap-3"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <p className="text-[10px] text-slate-600 uppercase tracking-widest">Axes de {selectedChar?.name ?? '…'}</p>
+          <p className="text-[10px] text-slate-600 uppercase tracking-widest">{t('arc.axesOf', { name: selectedChar?.name ?? '…' })}</p>
 
           {/* Liste des axes existants */}
           {charAxes.length > 0 && (
@@ -532,13 +534,14 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
               onChange={setNewLabel}
               suggestions={axisLabels}
               onSelect={setNewLabel}
+              placeholder={t('arc.axisNamePlaceholder')}
             />
             <input
               type="color"
               value={newColor}
               onChange={e => setNewColor(e.target.value)}
               className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent flex-shrink-0"
-              title="Couleur de l'axe"
+              title={t('arc.axisColor')}
             />
             <button
               onClick={handleAddAxis}
@@ -546,7 +549,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
               className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex-shrink-0 disabled:opacity-30"
               style={{ backgroundColor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
             >
-              {adding ? '…' : '+ Axe'}
+              {adding ? '…' : `+ ${t('arc.axis')}`}
             </button>
           </div>
         </div>
@@ -555,15 +558,15 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {/* État vide */}
       {mode === 'char' && !selectedCharId && (
         <div className="flex items-center justify-center py-12">
-          <p className="text-slate-600 font-serif italic text-sm">Sélectionnez un personnage pour voir ses axes d'évolution.</p>
+          <p className="text-slate-600 font-serif italic text-sm">{t('arc.selectCharHint')}</p>
         </div>
       )}
       {mode === 'axis' && !selectedLabel && (
         <div className="flex items-center justify-center py-12">
           <p className="text-slate-600 font-serif italic text-sm">
             {allLabels.length === 0
-              ? 'Aucun axe créé — ajoutez des axes depuis le mode "1 personnage".'
-              : 'Sélectionnez un axe pour comparer les personnages.'}
+              ? t('arc.noAxesHint')
+              : t('arc.selectAxisHint')}
           </p>
         </div>
       )}

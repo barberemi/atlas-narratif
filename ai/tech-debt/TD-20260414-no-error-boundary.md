@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-no-error-boundary
+- **Area**: Frontend / UX
+- **Severity**: Medium
+- **Problem**: `src/App.jsx` uses `React.lazy()` for 13+ route components wrapped in `<Suspense>`, but there is no React Error Boundary. If a lazy chunk fails to load (network error, deploy mismatch), the entire app crashes with an unhandled error.
+- **Impact**: Users see a white screen with no recovery path on chunk load failure.
+- **Where**: `src/App.jsx` (all lazy imports, lines 13-29)
+- **Suggested fix**: Add an Error Boundary component around the `<Suspense>` that catches chunk load errors and offers a retry/reload action.
+- **Next step**: Create an ErrorBoundary component and wrap the router outlet.

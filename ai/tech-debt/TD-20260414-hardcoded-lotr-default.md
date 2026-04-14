@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-hardcoded-lotr-default
+- **Area**: Frontend / Data layer
+- **Severity**: High
+- **Problem**: 18 query functions in `src/db/queries.js` use `projectId = 'lotr'` as default parameter. This means any caller that forgets to pass a `projectId` will silently query the demo dataset instead of the active project.
+- **Impact**: Data leakage risk in multi-project usage; silent wrong-project reads if a store or component omits the argument. Server-side `server/src/db-queries.js` has no such defaults — the two files are inconsistent.
+- **Where**: `src/db/queries.js` lines 71, 93, 111, 132, 156, 195, 205, 431, 464, 503, 510, 519, 556, 577, 598, 699, 711, 721
+- **Suggested fix**: Remove default values. Require explicit `projectId` everywhere. The active project is already tracked in Zustand and can be passed by callers.
+- **Next step**: Audit all call sites to ensure they pass `projectId`, then remove defaults.

@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-console-log-auth
+- **Area**: Server / Security
+- **Severity**: Medium
+- **Problem**: `server/src/auth.js` contains 8 `console.log`/`console.warn`/`console.error` statements that log email addresses, verification URLs, and Resend API responses. No log-level filtering — all statements run in production.
+- **Impact**: User PII (email addresses) and security-sensitive data (verification URLs) written to stdout in production. Could be captured by log aggregators.
+- **Where**: `server/src/auth.js` lines 9, 12, 15, 28, 30, 35, 37, 77
+- **Suggested fix**: Use a logging library with levels (e.g., pino) or at minimum gate verbose logging behind `NODE_ENV !== 'production'`. Remove email/URL logging in production.
+- **Next step**: Introduce structured logging or conditional log guards.

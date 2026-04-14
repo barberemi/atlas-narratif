@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useProject } from '../db/ProjectContext';
+import { useTranslation } from 'react-i18next';
 import { useArcStore } from '../stores/useArcStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useStcStore } from '../stores/useStcStore';
+import { useStoreLoader } from '../hooks/useStoreLoader';
 import { useVolumeFilter } from '../hooks/useVolumeFilter';
 import { useVolumeStore }  from '../stores/useVolumeStore';
 import { BEATS } from '../data/beats_config';
@@ -10,25 +11,24 @@ import { CHART_H, PAD, yToSvg, xToSvg, smoothPath, arcColor } from '../utils/arc
 import { extractChapters } from '../utils/reviewUtils';
 import CharacterArcView from '../components/arc/CharacterArcView';
 
-// ── Constantes ────────────────────────────────────────────────────────────────
-
-const INTENSITY_LABELS = {
-  1: 'Calme plat',      2: 'Paisible',        3: 'Légère tension',
-  4: 'Tension',         5: 'Montée',           6: 'Dramatique',
-  7: 'Intense',         8: 'Très intense',     9: 'Climax',
-  10: 'Paroxysme',
-};
-
 // ── Composant principal ───────────────────────────────────────────────────────
 
-const TABS = [
-  { id: 'global',      label: 'Arc global' },
-  { id: 'personnages', label: 'Arc personnages' },
-];
-
 export default function EmotionalArc() {
+  const { t } = useTranslation();
+
+  const INTENSITY_LABELS = {
+    1: t('arc.intensity1'),   2: t('arc.intensity2'),   3: t('arc.intensity3'),
+    4: t('arc.intensity4'),   5: t('arc.intensity5'),   6: t('arc.intensity6'),
+    7: t('arc.intensity7'),   8: t('arc.intensity8'),   9: t('arc.intensity9'),
+    10: t('arc.intensity10'),
+  };
+
+  const TABS = [
+    { id: 'global',      label: t('arc.tabGlobal', 'Arc global') },
+    { id: 'personnages', label: t('arc.tabCharacters', 'Arc personnages') },
+  ];
+
   const [tab, setTab] = useState('global');
-  const { projectId } = useProject();
 
   const filterByVolume  = useVolumeFilter();
   const _volumes        = useVolumeStore(s => s.volumes);
@@ -36,24 +36,16 @@ export default function EmotionalArc() {
   const activeVolumeId  = useVolumeStore(s => s.activeVolumeId);
 
   const pointsRaw    = useArcStore(s => s.points);
-  const loadArc      = useArcStore(s => s.load);
   const setIntensity = useArcStore(s => s.setIntensity);
 
   const eventsRaw      = useTimelineStore(s => s.events);
-  const loadTimeline   = useTimelineStore(s => s.load);
   const stcChaptersRaw = useStcStore(s => s.chapters);
-  const loadStc        = useStcStore(s => s.load);
 
   const points      = filterByVolume(pointsRaw    ?? []);
   const events      = filterByVolume(eventsRaw    ?? []);
   const stcChapters = filterByVolume(stcChaptersRaw ?? []);
 
-  useEffect(() => {
-    if (!projectId) return;
-    loadArc(projectId);
-    if (!eventsRaw)       loadTimeline(projectId);
-    if (!stcChaptersRaw)  loadStc(projectId);
-  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useStoreLoader([useArcStore, useTimelineStore, useStcStore]);
 
   // ── Chapitres depuis la timeline ──────────────────────────────────────────
   const chapters = useMemo(() => extractChapters(events), [events]);
@@ -203,12 +195,12 @@ export default function EmotionalArc() {
       <header data-tour="arc-chart" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-6">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Arc <span style={{ color }}>Émotionnel</span>
+            {t('arc.titlePrefix', 'Arc')} <span style={{ color }}>{t('arc.titleHighlight', '\u00c9motionnel')}</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
             {tab === 'global'
-              ? `Courbe de tension narrative · ${chapters.length} chapitre${chapters.length !== 1 ? 's' : ''}${avgIntensity != null ? ` · intensité moy. ${avgIntensity.toFixed(1)}/10` : ''}`
-              : 'Évolution individuelle des personnages par axe'}
+              ? `${t('arc.tensionCurve', 'Courbe de tension narrative')} \u00b7 ${chapters.length} ${t('label.chapters', 'chapitre(s)')}${avgIntensity != null ? ` \u00b7 ${t('arc.avgIntensity', 'intensit\u00e9 moy.')} ${avgIntensity.toFixed(1)}/10` : ''}`
+              : t('arc.characterEvolution', '\u00c9volution individuelle des personnages par axe')}
           </p>
         </div>
         <div className="flex items-center gap-1 p-1 rounded-xl flex-shrink-0"
@@ -247,7 +239,7 @@ export default function EmotionalArc() {
         {/* Tab : Arc global */}
         {tab === 'global' && (chapters.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <p className="text-slate-600 font-serif italic">Aucun chapitre dans la timeline.</p>
+            <p className="text-slate-600 font-serif italic">{t('empty.noEvents', 'Aucun chapitre dans la timeline.')}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-6 max-w-5xl mx-auto">
@@ -348,12 +340,12 @@ export default function EmotionalArc() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-black text-slate-200">
-                      Chapitre {activePoint.number} — {activePoint.title}
+                      {t('arc.chapterLabel', 'Chapitre {{number}} \u2014 {{title}}', { number: activePoint.number, title: activePoint.title })}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5 font-serif italic">
                       {activePoint.intensity != null
                         ? INTENSITY_LABELS[activePoint.intensity]
-                        : 'Intensité non définie — déplace le curseur'}
+                        : t('arc.intensityUndefined', 'Intensit\u00e9 non d\u00e9finie \u2014 d\u00e9place le curseur')}
                     </p>
                   </div>
                   <div className="text-3xl font-black flex-shrink-0" style={{ color, minWidth: 40, textAlign: 'right' }}>
@@ -415,25 +407,25 @@ export default function EmotionalArc() {
               className="rounded-xl p-4 flex flex-col gap-3"
               style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
-              <p className="text-[10px] text-slate-600 uppercase tracking-widest">Couleur de la courbe</p>
+              <p className="text-[10px] text-slate-600 uppercase tracking-widest">{t('arc.curveColor', 'Couleur de la courbe')}</p>
               <div className="flex items-center gap-3">
                 {[
-                  { color: '#60a5fa', label: '< 3', desc: 'Calme' },
-                  { color: '#facc15', label: '3–5', desc: 'Modéré' },
-                  { color: '#fb923c', label: '5–7', desc: 'Dramatique' },
-                  { color: '#f87171', label: '≥ 7', desc: 'Intense' },
+                  { color: '#60a5fa', label: '< 3', desc: t('arc.calm', 'Calme') },
+                  { color: '#facc15', label: '3\u20135', desc: t('arc.moderate', 'Mod\u00e9r\u00e9') },
+                  { color: '#fb923c', label: '5\u20137', desc: t('arc.dramatic', 'Dramatique') },
+                  { color: '#f87171', label: '\u2265 7', desc: t('arc.intense', 'Intense') },
                 ].map(({ color: c, label, desc }) => (
                   <div key={label} className="flex items-center gap-1.5 flex-1">
                     <div className="w-8 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: c }} />
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold" style={{ color: c }}>{desc}</span>
-                      <span className="text-[9px] text-slate-700">moy. {label}</span>
+                      <span className="text-[9px] text-slate-700">{t('arc.avgLabel')} {label}</span>
                     </div>
                   </div>
                 ))}
               </div>
               <p className="text-[10px] text-slate-700 italic">
-                La couleur reflète l'intensité moyenne de tous les chapitres définis.
+                {t('arc.colorExplanation', 'La couleur refl\u00e8te l\'intensit\u00e9 moyenne de tous les chapitres d\u00e9finis.')}
               </p>
             </div>
 
@@ -443,7 +435,7 @@ export default function EmotionalArc() {
                 className="rounded-xl p-4"
                 style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
-                <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-3">Beats STC placés</p>
+                <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-3">{t('arc.beatsPlaced', 'Beats STC plac\u00e9s')}</p>
                 <div className="flex flex-wrap gap-2">
                   {beatMarkers.map(({ beat, chapterNumber }) => (
                     <span

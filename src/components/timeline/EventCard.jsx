@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { getEntityMeta } from '../../utils/entityUtils';
 import { OUTCOME_MAP } from '../../data/outcome_config';
@@ -8,6 +9,7 @@ import EntityChip from './EntityChip';
 import DarkCard from '../ui/DarkCard';
 
 export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allIncoherences, beat, volumeLabel }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   const linkedIncs = useMemo(() =>
@@ -58,7 +60,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
             onClick={e => { e.stopPropagation(); onEdit(event); }}
             className="w-6 h-6 flex items-center justify-center rounded-md flex-shrink-0 transition-all duration-200"
             style={{ backgroundColor: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }}
-            title="Modifier"
+            title={t('btn.edit', 'Modifier')}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -79,7 +81,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                   className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: 'rgba(217,119,6,0.12)', color: '#fbbf24', border: '1px solid rgba(217,119,6,0.3)' }}
                 >
-                  Flashback
+                  {t('eventEditor.flashback', 'Flashback')}
                   {event.storyChapterRef != null && (
                     <span style={{ opacity: 0.7 }}>· ch.{event.storyChapterRef}</span>
                   )}
@@ -125,7 +127,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                       <span key={p.id}
                         className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                         style={{ backgroundColor: `${typeCfg.color}18`, color: typeCfg.color, border: `1px solid ${typeCfg.color}40` }}
-                        title={isPayoff ? `Payoff : ${p.label}` : `Amorce : ${p.label}`}
+                        title={isPayoff ? `Payoff : ${p.label}` : `${t('plants.plant')} : ${p.label}`}
                       >
                         {isPayoff ? '◎' : '◉'} {p.label.slice(0, 18)}{p.label.length > 18 ? '…' : ''}
                       </span>
@@ -148,13 +150,13 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                 <div className="space-y-1.5">
                   {event.sceneGoal && (
                     <div className="text-xs">
-                      <span className="text-slate-600 uppercase tracking-wider text-[9px] font-bold">Objectif </span>
+                      <span className="text-slate-600 uppercase tracking-wider text-[9px] font-bold">{t('eventEditor.sceneGoal')} </span>
                       <span className="text-slate-400 font-serif">{event.sceneGoal}</span>
                     </div>
                   )}
                   {event.sceneConflict && (
                     <div className="text-xs">
-                      <span className="text-slate-600 uppercase tracking-wider text-[9px] font-bold">Conflit </span>
+                      <span className="text-slate-600 uppercase tracking-wider text-[9px] font-bold">{t('eventEditor.sceneConflict')} </span>
                       <span className="text-slate-400 font-serif">{event.sceneConflict}</span>
                     </div>
                   )}
@@ -163,7 +165,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                       className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: `${outcome.color}18`, color: outcome.color, border: `1px solid ${outcome.color}40` }}
                     >
-                      {outcome.icon} {outcome.label}
+                      {outcome.icon} {t(`outcome.${outcome.id}`, outcome.label)}
                     </span>
                   )}
                 </div>

@@ -194,6 +194,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
       await tx`
         INSERT INTO incoherence_links (incoherence_id, project_id, entity_id, entity_type, label)
         VALUES (${inc.id}, ${projectId}, ${link.entityId}, ${link.entityType}, ${link.label ?? null})
+        ON CONFLICT DO NOTHING
       `;
     }
     done++;
@@ -210,6 +211,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
       await tx`
         INSERT INTO stc_chapter_beats (chapter_id, project_id, beat_id)
         VALUES (${ch.id}, ${projectId}, ${beatId})
+        ON CONFLICT DO NOTHING
       `;
     }
     done++;
@@ -310,8 +312,8 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const e of heroJourneyDB) {
     const id = `hj_${e.characterId}_${e.stageKey}`;
     await tx`
-      INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary)
-      VALUES (${id}, ${projectId}, ${e.stageKey}, ${e.characterId ?? null}, ${e.chapterNum ?? null}, ${e.summary ?? null})
+      INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
+      VALUES (${id}, ${projectId}, ${e.stageKey}, ${e.characterId ?? null}, ${e.chapterNum ?? null}, ${e.summary ?? null}, ${e.volumeId ?? null})
       ON CONFLICT DO NOTHING
     `;
     done++;

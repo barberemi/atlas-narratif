@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
@@ -13,6 +14,7 @@ const ACCENT = '#818cf8';
 // ── Sélecteur multi-entités ────────────────────────────────────────────────────
 
 function EntitySelector({ label, items, selected, onToggle, getColor, getName, getId }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -32,7 +34,7 @@ function EntitySelector({ label, items, selected, onToggle, getColor, getName, g
                 className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
                 style={{ backgroundColor: `${color}20`, color, border: `1px solid ${color}50` }}
                 onClick={() => onToggle(item)}
-                title="Retirer"
+                title={t('eventEditor.remove')}
               >
                 {getName(item).split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
               </span>
@@ -43,7 +45,7 @@ function EntitySelector({ label, items, selected, onToggle, getColor, getName, g
       <input
         value={search}
         onChange={e => setSearch(e.target.value)}
-        placeholder={`Rechercher…`}
+        placeholder={t('search.placeholder')}
         className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600 mb-1.5"
       />
       <div className="space-y-0.5 max-h-36 overflow-y-auto">
@@ -67,7 +69,7 @@ function EntitySelector({ label, items, selected, onToggle, getColor, getName, g
           );
         })}
         {filtered.length === 0 && (
-          <p className="text-xs text-slate-600 text-center py-2 italic">Aucun résultat</p>
+          <p className="text-xs text-slate-600 text-center py-2 italic">{t('empty.noSearch')}</p>
         )}
       </div>
     </Field>
@@ -77,6 +79,7 @@ function EntitySelector({ label, items, selected, onToggle, getColor, getName, g
 // ── Sélecteur lieu unique ──────────────────────────────────────────────────────
 
 function LocationSelector({ locations, locationId, onChange }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -87,14 +90,14 @@ function LocationSelector({ locations, locationId, onChange }) {
   const selected = locations.find(l => l.id === locationId);
 
   return (
-    <Field label="Lieu (pour détection de conflits)">
+    <Field label={t('eventEditor.locationLabel')}>
       {selected && (
         <div className="flex flex-wrap gap-1.5 mb-2">
           <span
             className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
             style={{ backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}
             onClick={() => onChange(null)}
-            title="Retirer"
+            title={t('eventEditor.remove')}
           >
             📍 {selected.name} <span style={{ opacity: 0.5 }}>✕</span>
           </span>
@@ -103,7 +106,7 @@ function LocationSelector({ locations, locationId, onChange }) {
       <input
         value={search}
         onChange={e => setSearch(e.target.value)}
-        placeholder="Rechercher un lieu…"
+        placeholder={t('eventEditor.searchLocation')}
         className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600 mb-1.5"
       />
       <div className="space-y-0.5 max-h-36 overflow-y-auto">
@@ -125,7 +128,7 @@ function LocationSelector({ locations, locationId, onChange }) {
           );
         })}
         {filtered.length === 0 && (
-          <p className="text-xs text-slate-600 text-center py-2 italic">Aucun résultat</p>
+          <p className="text-xs text-slate-600 text-center py-2 italic">{t('empty.noSearch')}</p>
         )}
       </div>
     </Field>
@@ -179,6 +182,7 @@ function initData(event, chapters, defaultBeatId) {
 // ── EventEditor ────────────────────────────────────────────────────────────────
 
 export default function EventEditor({ event, chapters, onClose, defaultBeatId }) {
+  const { t } = useTranslation();
   const isEdit = !!event;
 
   const saving      = useTimelineStore(s => s.saving);
@@ -283,7 +287,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
           <div>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest">
-              {isEdit ? 'Modifier l\'événement' : 'Nouvel événement'}
+              {isEdit ? t('eventEditor.editEvent') : t('eventEditor.newEvent')}
             </p>
             <h2 className="text-sm font-black text-white mt-0.5">
               Timeline <span style={{ color: ACCENT }}>Narrative</span>
@@ -301,7 +305,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           {/* Chapitre + Ordre */}
           <div className="flex gap-3">
             <div style={{ width: 90 }}>
-              <Field label="Chapitre *">
+              <Field label={`${t('label.chapters')} *`}>
                 <Input
                   type="number"
                   min="1"
@@ -312,16 +316,16 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
               </Field>
             </div>
             <div className="flex-1">
-              <Field label="Titre du chapitre">
+              <Field label={t('eventEditor.chapterTitle')}>
                 <Input
                   value={data.chapterTitle}
                   onChange={e => set('chapterTitle', e.target.value)}
-                  placeholder={chapterTitleSuggestion || 'Titre du chapitre…'}
+                  placeholder={chapterTitleSuggestion || t('eventEditor.chapterTitlePlaceholder')}
                 />
               </Field>
             </div>
             <div style={{ width: 72 }}>
-              <Field label="Ordre">
+              <Field label={t('eventEditor.order')}>
                 <Input
                   type="number"
                   min="1"
@@ -334,48 +338,48 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           </div>
 
           {/* Titre événement */}
-          <Field label="Titre de l'événement *">
+          <Field label={`${t('eventEditor.eventTitle')} *`}>
             <Input
               value={data.title}
               onChange={e => set('title', e.target.value)}
-              placeholder="Ce qui se passe…"
+              placeholder={t('eventEditor.eventTitlePlaceholder')}
               autoFocus
             />
           </Field>
 
           {/* Description */}
-          <Field label="Description">
+          <Field label={t('label.description')}>
             <Textarea
               rows={4}
               value={data.description}
               onChange={e => set('description', e.target.value)}
-              placeholder="Détails de la scène…"
+              placeholder={t('eventEditor.descriptionPlaceholder')}
             />
           </Field>
 
           {/* ── Anatomie de scène ── */}
           <div className="rounded-xl p-4 space-y-4" style={{ backgroundColor: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>Anatomie de scène</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>{t('eventEditor.sceneAnatomy')}</p>
 
-            <Field label="Objectif du POV">
+            <Field label={t('eventEditor.sceneGoal')}>
               <Textarea
                 rows={2}
                 value={data.sceneGoal}
                 onChange={e => set('sceneGoal', e.target.value)}
-                placeholder="Que veut obtenir le personnage dans cette scène ?"
+                placeholder={t('eventEditor.sceneGoalPlaceholder')}
               />
             </Field>
 
-            <Field label="Conflit / Obstacle">
+            <Field label={t('eventEditor.sceneConflict')}>
               <Textarea
                 rows={2}
                 value={data.sceneConflict}
                 onChange={e => set('sceneConflict', e.target.value)}
-                placeholder="Qu'est-ce qui s'y oppose ?"
+                placeholder={t('eventEditor.sceneConflictPlaceholder')}
               />
             </Field>
 
-            <Field label="Issue">
+            <Field label={t('eventEditor.sceneOutcome')}>
               <div className="flex flex-wrap gap-1.5">
                 {OUTCOMES.map(o => {
                   const active = data.sceneOutcome === o.id;
@@ -391,7 +395,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                         border:          `1px solid ${active ? `${o.color}50` : 'rgba(255,255,255,0.08)'}`,
                       }}
                     >
-                      <span>{o.icon}</span> {o.label}
+                      <span>{o.icon}</span> {t(`outcome.${o.id}`, o.label)}
                     </button>
                   );
                 })}
@@ -407,7 +411,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           />
 
           {/* POV */}
-          <Field label="Point de vue (POV)">
+          <Field label={t('eventEditor.pov')}>
             {data.povCharacterId && (() => {
               const pov = allCharacters.find(c => c.id === data.povCharacterId);
               return pov ? (
@@ -416,7 +420,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                     className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
                     style={{ backgroundColor: `${pov.color}20`, color: pov.color, border: `1px solid ${pov.color}50` }}
                     onClick={() => set('povCharacterId', null)}
-                    title="Retirer le POV"
+                    title={t('eventEditor.removePov')}
                   >
                     👁 {pov.name.split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
                   </span>
@@ -431,7 +435,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
               onFocus={e => { e.currentTarget.style.borderColor = `${ACCENT}80`; }}
               onBlur={e  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
             >
-              <option value="">— Aucun POV —</option>
+              <option value="">— {t('eventEditor.noPov')} —</option>
               {allCharacters.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -440,7 +444,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
 
           {/* Personnages */}
           <EntitySelector
-            label="Personnages présents"
+            label={t('eventEditor.presentCharacters')}
             items={allCharacters}
             selected={data.characters}
             onToggle={toggleCharacter}
@@ -450,7 +454,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           />
 
           {/* Beat STC */}
-          <Field label="Beat Save the Cat">
+          <Field label={t('eventEditor.beatStc')}>
             {data.beatId && (() => {
               const beat = BEATS.find(b => b.id === data.beatId);
               return beat ? (
@@ -459,10 +463,10 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                     className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs cursor-pointer"
                     style={{ backgroundColor: `${beat.color}20`, color: beat.color, border: `1px solid ${beat.color}50` }}
                     onClick={() => set('beatId', null)}
-                    title="Retirer"
+                    title={t('eventEditor.remove')}
                   >
                     <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: beat.color }} />
-                    {beat.label}
+                    {t(`narrative:beats.${beat.id}.label`, beat.label)}
                     <span style={{ opacity: 0.5 }}>✕</span>
                   </span>
                 </div>
@@ -476,10 +480,10 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
               onFocus={e => { e.currentTarget.style.borderColor = `${ACCENT}80`; }}
               onBlur={e  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
             >
-              <option value="">— Aucun beat —</option>
+              <option value="">— {t('eventEditor.noBeat')} —</option>
               {BEATS.map(beat => (
                 <option key={beat.id} value={beat.id}>
-                  {beat.label} ({beat.idealPercent}%)
+                  {t(`narrative:beats.${beat.id}.label`, beat.label)} ({beat.idealPercent}%)
                 </option>
               ))}
             </select>
@@ -487,7 +491,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
 
           {/* Objets */}
           <EntitySelector
-            label="Objets présents"
+            label={t('eventEditor.presentObjects')}
             items={allObjects}
             selected={data.objects}
             onToggle={toggleObject}
@@ -523,17 +527,17 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
               />
               <div>
                 <p className="text-xs font-bold" style={{ color: data.isFlashback ? '#fbbf24' : '#64748b' }}>
-                  ↩ Flashback
+                  ↩ {t('eventEditor.flashback')}
                 </p>
                 <p className="text-[10px] text-slate-600 font-serif italic">
-                  Cette scène est narrée hors de l'ordre chronologique
+                  {t('eventEditor.flashbackHint')}
                 </p>
               </div>
             </label>
 
             {data.isFlashback && (
               <div style={{ width: 140 }}>
-                <Field label="Position diégétique (ch. ~)">
+                <Field label={t('eventEditor.diegeticPosition')}>
                   <Input
                     type="number"
                     value={data.storyChapterRef ?? ''}
@@ -542,7 +546,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                   />
                 </Field>
                 <p className="text-[9px] text-slate-600 mt-1 font-serif italic">
-                  Quand ça se passe vraiment dans l'histoire. Négatif = avant le début.
+                  {t('eventEditor.diegeticHint')}
                 </p>
               </div>
             )}
@@ -550,7 +554,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
 
           {/* Fils narratifs */}
           {allThreads.length > 0 && (
-            <Field label={`Fil narratif (${data.threadIds.length})`}>
+            <Field label={`${t('label.threads')} (${data.threadIds.length})`}>
               <div className="flex flex-wrap gap-1.5">
                 {allThreads.map(thread => {
                   const active = data.threadIds.includes(thread.id);
@@ -595,7 +599,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
               cursor:          canSave ? 'pointer' : 'not-allowed',
             }}
           >
-            {saving ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : 'Créer l\'événement'}
+            {saving ? t('btn.saving') : isEdit ? t('btn.save') : t('eventEditor.createEvent')}
           </button>
 
           {isEdit && !confirmDelete && (
@@ -604,7 +608,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
               className="w-full py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
               style={{ border: '1px solid rgba(255,255,255,0.05)' }}
             >
-              Supprimer cet événement
+              {t('eventEditor.deleteEvent')}
             </button>
           )}
 
@@ -614,14 +618,14 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                 onClick={() => setConfirmDelete(false)}
                 className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
               >
-                Annuler
+                {t('btn.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 py-2 rounded-lg text-xs font-black transition-all duration-150"
                 style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.35)' }}
               >
-                Confirmer la suppression
+                {t('btn.confirm')}
               </button>
             </div>
           )}

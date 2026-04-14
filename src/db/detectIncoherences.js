@@ -4,6 +4,10 @@
  * Retourne un tableau d'incohérences au même format que getIncoherences().
  */
 
+import i18n from '../i18n';
+
+const t = (key, opts) => i18n.t(`detect.${key}`, opts);
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeId(type, ...parts) {
@@ -127,8 +131,8 @@ function detectOrphanCharacters(characters, events) {
       id:          makeId('orphan_char', c.id),
       type:        'Entité Orpheline',
       severity:    'low',
-      title:       `${c.name} n'apparaît dans aucun événement`,
-      explanation: `Le personnage "${c.name}" existe dans le lore mais n'est associé à aucun événement de la timeline.`,
+      title:       t('orphanChar.title', { name: c.name }),
+      explanation: t('orphanChar.explanation', { name: c.name }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: c.id, entityType: 'character', label: c.name }],
@@ -149,8 +153,8 @@ function detectOrphanLocations(locations, events) {
       id:          makeId('orphan_loc', l.id),
       type:        'Entité Orpheline',
       severity:    'low',
-      title:       `Le lieu "${l.name}" n'est jamais visité`,
-      explanation: `Le lieu "${l.name}" existe dans le lore mais n'est associé à aucun événement de la timeline.`,
+      title:       t('orphanLoc.title', { name: l.name }),
+      explanation: t('orphanLoc.explanation', { name: l.name }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: l.id, entityType: 'location', label: l.name }],
@@ -168,8 +172,8 @@ function detectBrokenHolders(objects, characters) {
       id:          makeId('holder', o.id),
       type:        'Incohérence de Porteur',
       severity:    'medium',
-      title:       `Détenteur inconnu pour "${o.name}"`,
-      explanation: `L'objet "${o.name}" est attribué à "${o.currentHolder}" mais ce personnage n'existe pas dans la base.`,
+      title:       t('brokenHolder.title', { name: o.name }),
+      explanation: t('brokenHolder.explanation', { name: o.name, holder: o.currentHolder }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: o.id, entityType: 'object', label: o.name }],
@@ -201,8 +205,8 @@ function detectBrokenReferences(events, characters, locations, objects) {
         id:          makeId('broken_ref', entity.id),
         type:        'Entité Non Référencée',
         severity:    'high',
-        title:       `Entité supprimée encore liée à des événements`,
-        explanation: `Une entité (id: ${entity.id}) est référencée dans "${evt.title}" mais n'existe plus dans le lore. Elle a peut-être été supprimée.`,
+        title:       t('brokenRef.title'),
+        explanation: t('brokenRef.explanation', { entityId: entity.id, eventTitle: evt.title }),
         resolved:    false,
         resolutionNote: null,
         links:       [],
@@ -239,8 +243,8 @@ function detectDeadCharacterReappearance(characters, events) {
       id:          makeId('dead_reappear', char.id),
       type:        'Continuité de Personnage',
       severity:    'critical',
-      title:       `${char.name} apparaît après sa mort ("${deathEvent.title}")`,
-      explanation: `${char.name} est marqué comme mort lors de "${deathEvent.title}" (ch.${deathEvent.chapter}) mais apparaît dans : ${eventTitles}.`,
+      title:       t('deadReappear.title', { name: char.name, deathEvent: deathEvent.title }),
+      explanation: t('deadReappear.explanation', { name: char.name, deathEvent: deathEvent.title, deathChapter: deathEvent.chapter, events: eventTitles }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: char.id, entityType: 'character', label: char.name }],
@@ -264,14 +268,14 @@ function detectUsedInactiveObject(objects, events) {
       !(evt.isFlashback && evt.storyChapterRef != null && evt.storyChapterRef < obj.statusChangedAtChapter)
     );
     if (!afterChange.length) continue;
-    const label      = obj.status === 'lost' ? 'perdu' : 'détruit';
+    const statusLabel = t(`status.${obj.status}`);
     const eventTitles = afterChange.map(e => `"${e.title}" (ch.${e.chapter})`).join(', ');
     results.push({
       id:          makeId('inactive_obj', obj.id),
       type:        "Continuité d'Objet",
       severity:    'high',
-      title:       `"${obj.name}" utilisé après avoir été ${label} (ch.${obj.statusChangedAtChapter})`,
-      explanation: `L'objet "${obj.name}" est marqué comme ${label} depuis le chapitre ${obj.statusChangedAtChapter} mais apparaît dans : ${eventTitles}.`,
+      title:       t('inactiveObj.title', { name: obj.name, status: statusLabel, chapter: obj.statusChangedAtChapter }),
+      explanation: t('inactiveObj.explanation', { name: obj.name, status: statusLabel, chapter: obj.statusChangedAtChapter, events: eventTitles }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: obj.id, entityType: 'object', label: obj.name }],
@@ -296,8 +300,8 @@ function detectPayoffBeforePlant(plants) {
       id:          makeId('payoff_before_plant', p.id),
       type:        'Payoff Avant Plant',
       severity:    'high',
-      title:       `Le payoff de "${p.label}" précède son amorce`,
-      explanation: `L'amorce "${p.label}" est posée au chapitre ${p.plantChapterNum} mais son payoff est au chapitre ${p.payoffChapterNum}, ce qui est impossible.`,
+      title:       t('payoffBeforePlant.title', { label: p.label }),
+      explanation: t('payoffBeforePlant.explanation', { label: p.label, plantChapter: p.plantChapterNum, payoffChapter: p.payoffChapterNum }),
       resolved:    false,
       resolutionNote: null,
       links:       [],
@@ -322,8 +326,8 @@ function detectGhostAffiliations(groups, characters) {
         id:          makeId('ghost_affil', group.id, member.characterId),
         type:        'Affiliation Fantôme',
         severity:    'medium',
-        title:       `Membre introuvable dans le groupe "${group.name}"`,
-        explanation: `Le groupe "${group.name}" référence un personnage (id: ${member.characterId}) qui n'existe plus dans le lore.`,
+        title:       t('ghostAffil.title', { name: group.name }),
+        explanation: t('ghostAffil.explanation', { name: group.name, charId: member.characterId }),
         resolved:    false,
         resolutionNote: null,
         links:       [],
@@ -351,8 +355,8 @@ function detectOpenPlants(plants, events) {
       id:          makeId('open_plant', p.id),
       type:        'Plant Sans Payoff',
       severity:    'medium',
-      title:       `Amorce non résolue : "${p.label}"`,
-      explanation: `L'amorce "${p.label}" (posée ch.${p.plantChapterNum}) n'a aucun payoff défini alors que le récit va jusqu'au chapitre ${maxChapter}.`,
+      title:       t('openPlant.title', { label: p.label }),
+      explanation: t('openPlant.explanation', { label: p.label, plantChapter: p.plantChapterNum, maxChapter }),
       resolved:    false,
       resolutionNote: null,
       links:       [],
@@ -366,13 +370,13 @@ function detectEmptyThreads(threads, events) {
   if (!threads.length) return [];
   const usedThreadIds = new Set(events.flatMap(e => e.threadIds ?? []));
   return threads
-    .filter(t => !usedThreadIds.has(t.id))
-    .map(t => ({
-      id:          makeId('empty_thread', t.id),
+    .filter(th => !usedThreadIds.has(th.id))
+    .map(th => ({
+      id:          makeId('empty_thread', th.id),
       type:        'Fil Narratif Vide',
       severity:    'low',
-      title:       `Le fil narratif "${t.name}" n'est lié à aucune scène`,
-      explanation: `Le fil narratif "${t.name}" existe mais aucun événement de la timeline n'y est associé.`,
+      title:       t('emptyThread.title', { name: th.name }),
+      explanation: t('emptyThread.explanation', { name: th.name }),
       resolved:    false,
       resolutionNote: null,
       links:       [],
@@ -392,8 +396,8 @@ function detectMissingPovInScene(events) {
       id:          makeId('pov_missing', e.id),
       type:        'Personnage POV Absent',
       severity:    'medium',
-      title:       `Le personnage POV est absent de la scène "${e.title}"`,
-      explanation: `La scène "${e.title}" (ch.${e.chapter}) a un personnage POV défini mais ce personnage ne figure pas dans les entités de la scène.`,
+      title:       t('povMissing.title', { title: e.title }),
+      explanation: t('povMissing.explanation', { title: e.title, chapter: e.chapter }),
       resolved:    false,
       resolutionNote: null,
       links:       [],
@@ -410,8 +414,8 @@ function detectEmptyScenes(events) {
       id:          makeId('empty_scene', e.id),
       type:        'Scène Vide',
       severity:    'low',
-      title:       `Scène sans entités ni lieu : "${e.title}"`,
-      explanation: `L'événement "${e.title}" (ch.${e.chapter}) n'est lié à aucun personnage, lieu ou objet.`,
+      title:       t('emptyScene.title', { title: e.title }),
+      explanation: t('emptyScene.explanation', { title: e.title, chapter: e.chapter }),
       resolved:    false,
       resolutionNote: null,
       links:       [],
@@ -459,8 +463,8 @@ function detectCrossVolumeDeadCharacter(characters, events, volumes) {
       id:          makeId('cross_dead', char.id),
       type:        'Mort Cross-Tomes',
       severity:    'critical',
-      title:       `${char.name} mort au T${deathVolume?.number ?? '?'} réapparaît dans un tome ultérieur`,
-      explanation: `${char.name} est marqué comme mort dans "${deathEvent.title}" (T${deathVolume?.number ?? '?'}) mais apparaît dans : ${eventTitles}.`,
+      title:       t('crossDead.title', { name: char.name, volume: deathVolume?.number ?? '?' }),
+      explanation: t('crossDead.explanation', { name: char.name, deathEvent: deathEvent.title, volume: deathVolume?.number ?? '?', events: eventTitles }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: char.id, entityType: 'character', label: char.name }],
@@ -504,7 +508,7 @@ function detectCrossVolumeInactiveObject(objects, events, volumes) {
     if (!afterChange.length) continue;
 
     const changeVolume = volumes.find(v => v.id === changeEvent.volumeId);
-    const label        = obj.status === 'lost' ? 'perdu' : 'détruit';
+    const statusLabel  = t(`status.${obj.status}`);
     const eventTitles  = afterChange.map(e => {
       const vol = volumes.find(v => v.id === e.volumeId);
       return `"${e.title}" (T${vol?.number ?? '?'})`;
@@ -514,8 +518,8 @@ function detectCrossVolumeInactiveObject(objects, events, volumes) {
       id:          makeId('cross_obj', obj.id),
       type:        'Objet Cross-Tomes',
       severity:    'high',
-      title:       `"${obj.name}" ${label} au T${changeVolume?.number ?? '?'} mais utilisé dans un tome ultérieur`,
-      explanation: `L'objet "${obj.name}" est marqué comme ${label} (ch.${obj.statusChangedAtChapter}, T${changeVolume?.number ?? '?'}) mais apparaît dans : ${eventTitles}.`,
+      title:       t('crossObj.title', { name: obj.name, status: statusLabel, volume: changeVolume?.number ?? '?' }),
+      explanation: t('crossObj.explanation', { name: obj.name, status: statusLabel, chapter: obj.statusChangedAtChapter, volume: changeVolume?.number ?? '?', events: eventTitles }),
       resolved:    false,
       resolutionNote: null,
       links:       [{ entityId: obj.id, entityType: 'object', label: obj.name }],
@@ -544,8 +548,8 @@ function detectCrossVolumePlantWithoutPayoff(plants, volumes) {
         id:          makeId('cross_plant', p.id),
         type:        'Plant Cross-Tomes',
         severity:    'medium',
-        title:       `Amorce "${p.label}" sans payoff dans toute la série`,
-        explanation: `L'amorce "${p.label}" est posée au T${plantVol?.number ?? '?'} mais n'a aucun payoff défini dans l'ensemble de la série.`,
+        title:       t('crossPlant.title', { label: p.label }),
+        explanation: t('crossPlant.explanation', { label: p.label, volume: plantVol?.number ?? '?' }),
         resolved:    false,
         resolutionNote: null,
         links:       [],
@@ -575,13 +579,13 @@ function detectFlashbackAfterDeath(characters, events) {
     );
     if (!bad.length) continue;
 
-    const titles = bad.map(e => `"${e.title}" (narré ch.${e.chapter}, diég. ch.${e.storyChapterRef})`).join(', ');
+    const titles = bad.map(e => `"${e.title}" (ch.${e.chapter} → ch.${e.storyChapterRef})`).join(', ');
     results.push({
       id:             makeId('flash_death', char.id),
       type:           'Flashback Temporel',
       severity:       'critical',
-      title:          `${char.name} dans un flashback après sa mort (ch.${deathChapter})`,
-      explanation:    `${char.name} meurt au chapitre ${deathChapter} mais apparaît dans des flashbacks dont la position diégétique est postérieure : ${titles}.`,
+      title:          t('flashDeath.title', { name: char.name, chapter: deathChapter }),
+      explanation:    t('flashDeath.explanation', { name: char.name, chapter: deathChapter, events: titles }),
       resolved:       false,
       resolutionNote: null,
       links:          [{ entityId: char.id, entityType: 'character', label: char.name }],
@@ -606,14 +610,14 @@ function detectFlashbackObjectDestroyed(objects, events) {
     );
     if (!bad.length) continue;
 
-    const label = obj.status === 'lost' ? 'perdu' : 'détruit';
-    const titles = bad.map(e => `"${e.title}" (diég. ch.${e.storyChapterRef})`).join(', ');
+    const statusLabel = t(`status.${obj.status}`);
+    const titles = bad.map(e => `"${e.title}" (ch.${e.storyChapterRef})`).join(', ');
     results.push({
       id:             makeId('flash_obj', obj.id),
       type:           'Flashback Temporel',
       severity:       'high',
-      title:          `"${obj.name}" dans un flashback après avoir été ${label} (ch.${obj.statusChangedAtChapter})`,
-      explanation:    `L'objet "${obj.name}" est ${label} depuis le chapitre ${obj.statusChangedAtChapter} mais apparaît dans des flashbacks diégétiquement postérieurs : ${titles}.`,
+      title:          t('flashObj.title', { name: obj.name, status: statusLabel, chapter: obj.statusChangedAtChapter }),
+      explanation:    t('flashObj.explanation', { name: obj.name, status: statusLabel, chapter: obj.statusChangedAtChapter, events: titles }),
       resolved:       false,
       resolutionNote: null,
       links:          [{ entityId: obj.id, entityType: 'object', label: obj.name }],
@@ -632,8 +636,8 @@ function detectFlashbackWithoutStoryRef(events) {
       id:             makeId('flash_noref', e.id),
       type:           'Flashback Non Ancré',
       severity:       'low',
-      title:          `Flashback sans position diégétique : "${e.title}"`,
-      explanation:    `L'événement "${e.title}" (ch.${e.chapter}) est marqué comme flashback mais n'a pas de position diégétique définie. Sans cette information, la cohérence temporelle ne peut pas être vérifiée.`,
+      title:          t('flashNoRef.title', { title: e.title }),
+      explanation:    t('flashNoRef.explanation', { title: e.title, chapter: e.chapter }),
       resolved:       false,
       resolutionNote: null,
       links:          [],

@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.13-alpine
     environment:
       POSTGRES_DB: atlas
       POSTGRES_USER: atlas
@@ -17,7 +17,7 @@ services:
       retries: 5
 
   api:
-    image: node:20-alpine
+    image: node:20.20-alpine
     working_dir: /app
     command: sh -c "npm install --silent && node --watch src/index.js"
     env_file:
@@ -26,7 +26,8 @@ services:
       DATABASE_URL: postgresql://atlas:atlas_dev@postgres:5432/atlas
       PORT: 3001
       FRONTEND_URL: http://localhost:5173
-      BETTER_AUTH_SECRET: dev-secret-atlas-narratif-change-in-prod
+      # BETTER_AUTH_SECRET chargé depuis server/.env (env_file ci-dessus)
+      # ⚠ Ne PAS mettre de secret en dur ici — générer via: openssl rand -base64 32
       BETTER_AUTH_URL: http://localhost:3001
     ports:
       - "3001:3001"
@@ -38,7 +39,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: node:20-alpine
+    image: node:20.20-alpine
     working_dir: /app
     command: sh -c "npm install --silent && npm run dev -- --host"
     environment:
@@ -49,5 +50,17 @@ services:
       - .:/app
       - /app/node_modules
 
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    network_mode: host
+    working_dir: /app
+    entrypoint: sh -c "npm install --silent && exec \"$$@\"" --
+    volumes:
+      - .:/app
+      - e2e_node_modules:/app/node_modules
+    profiles:
+      - e2e
+
 volumes:
   postgres_dev_data:
+  e2e_node_modules:

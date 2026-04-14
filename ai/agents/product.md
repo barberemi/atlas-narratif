@@ -23,7 +23,7 @@ Pour chaque vue/fonctionnalité, évaluer :
 
 ### 2. Fonctionnalités manquantes critiques
 Identifier ce qui manque pour qu'un auteur puisse réellement utiliser l'outil au quotidien :
-- Peut-il ajouter/modifier/supprimer du contenu directement dans l'UI ? (actuellement tout est dans des fichiers JS)
+- Peut-il ajouter/modifier/supprimer du contenu directement dans l'UI ? (CRUD is now implemented via API — evaluate its completeness and UX)
 - Y a-t-il un workflow clair pour un auteur débutant ?
 - Quelles fonctionnalités d'outils concurrents (Scrivener, Campfire, WorldAnvil, Notion) seraient très attendues ?
 

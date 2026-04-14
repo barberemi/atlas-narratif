@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getEntityMeta } from '../../utils/entityUtils';
 import SourceBadge from '../ui/SourceBadge';
 import DarkCard from '../ui/DarkCard';
 
 export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelations }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const [hoveredChar, setHoveredChar] = useState(null);
   useEffect(() => {
@@ -17,7 +20,7 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
         <div>
           <span className="text-xs px-2 py-0.5 rounded bg-amber-900/30 text-amber-400 border border-amber-800/40">{obj.type}</span>
           <h3 className="text-base font-black text-white mt-1">{obj.name}</h3>
-          {obj.creator && <p className="text-xs text-slate-500 italic mt-0.5">Forgé par {obj.creator}</p>}
+          {obj.creator && <p className="text-xs text-slate-500 italic mt-0.5">{t('lore.forgedBy', { name: obj.creator })}</p>}
         </div>
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{obj.description}</p>
         {obj.powers?.length > 0 && (
@@ -29,32 +32,35 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
         )}
         {obj.holders?.length > 0 && (
           <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">Porteur(s)</p>
+            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">{t('lore.bearers')}</p>
             <div className="flex flex-wrap gap-1.5">
               {obj.holders.map((char) => {
-                const hex = char.color.replace('#', '');
+                const meta = getEntityMeta(char.id, 'character');
+                const displayName = meta?.name ?? char.name;
+                const color = meta?.color ?? char.color;
+                const hex = color.replace('#', '');
                 const r = parseInt(hex.slice(0, 2), 16);
                 const g = parseInt(hex.slice(2, 4), 16);
                 const b = parseInt(hex.slice(4, 6), 16);
                 return (
                   <button
                     key={char.id}
-                    onClick={e => { e.stopPropagation(); onCharacterClick?.(char.name); }}
+                    onClick={e => { e.stopPropagation(); onCharacterClick?.(displayName); }}
                     onMouseEnter={() => setHoveredChar(char.id)}
                     onMouseLeave={() => setHoveredChar(null)}
                     className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-all duration-150"
                     style={{
                       backgroundColor: hoveredChar === char.id ? `rgba(${r},${g},${b},0.25)` : `rgba(${r},${g},${b},0.12)`,
-                      color: char.color,
+                      color,
                       border: `1px solid rgba(${r},${g},${b},${hoveredChar === char.id ? '0.6' : '0.3'})`,
                       cursor: onCharacterClick ? 'pointer' : 'default',
                       transform: hoveredChar === char.id ? 'translateY(-1px)' : 'none',
                       boxShadow: hoveredChar === char.id ? `0 3px 8px rgba(${r},${g},${b},0.3)` : 'none',
                     }}
-                    title={`Voir la fiche de ${char.name}`}
+                    title={t('lore.viewProfile', { name: displayName })}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: char.color }} />
-                    {char.name.split(' ')[0]}
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                    {displayName.split(' ')[0]}
                   </button>
                 );
               })}
@@ -75,7 +81,7 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>
                 <line x1="3.5" y1="6.3" x2="10.5" y2="3"/><line x1="3.5" y1="7.7" x2="10.5" y2="11"/>
               </svg>
-              Relations
+              {t('lore.relations')}
             </button>
           </div>
         )}

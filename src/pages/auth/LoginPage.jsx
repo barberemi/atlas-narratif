@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authClient } from '../../lib/authClient';
 import { claimProjects } from '../../api/client';
 import Button from '../../components/ui/Button';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -17,11 +19,11 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const { error: err } = await authClient.signIn.email({ email, password });
-      if (err) { setError(err.message ?? 'Identifiants invalides'); return; }
+      if (err) { setError(err.message ?? t('authPages.invalidCredentials')); return; }
       await claimProjects().catch(() => {});
       navigate('/');
     } catch {
-      setError('Erreur réseau, réessaie.');
+      setError(t('authPages.networkError'));
     } finally {
       setLoading(false);
     }
@@ -39,11 +41,11 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm flex flex-col gap-8">
 
-          <h1 className="text-2xl font-black text-white tracking-tight">Connexion</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">{t('authPages.login')}</h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">Email</label>
+              <label className="text-xs text-slate-500 font-semibold">{t('authPages.email')}</label>
               <input
                 type="email"
                 required
@@ -59,9 +61,9 @@ export default function LoginPage() {
 
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs text-slate-500 font-semibold">Mot de passe</label>
+                <label className="text-xs text-slate-500 font-semibold">{t('authPages.password')}</label>
                 <Link to="/forgot-password" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                  Mot de passe oublié ?
+                  {t('authPages.forgotPasswordLink')}
                 </Link>
               </div>
               <input
@@ -85,14 +87,14 @@ export default function LoginPage() {
             )}
 
             <Button type="submit" fullWidth loading={loading} disabled={loading}>
-              {loading ? 'Connexion…' : 'Se connecter →'}
+              {loading ? t('authPages.loginLoading') : t('authPages.loginSubmit')}
             </Button>
           </form>
 
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-slate-600">ou</span>
+              <span className="text-xs text-slate-600">{t('authPages.or')}</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
             <button
@@ -108,14 +110,14 @@ export default function LoginPage() {
                 <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                 <path fill="none" d="M0 0h48v48H0z"/>
               </svg>
-              Continuer avec Google
+              {t('authPages.continueWithGoogle')}
             </button>
           </div>
 
           <p className="text-center text-xs text-slate-600">
-            Pas encore de compte ?{' '}
+            {t('authPages.noAccount')}{' '}
             <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
-              Créer un compte
+              {t('authPages.createAccountLink')}
             </Link>
           </p>
 

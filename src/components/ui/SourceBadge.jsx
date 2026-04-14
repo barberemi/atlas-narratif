@@ -1,6 +1,9 @@
+import { useTranslation } from 'react-i18next';
+
 export default function SourceBadge({ source }) {
+  const { t } = useTranslation();
   if (!source || source === 'import') return null;
-  const label = source === 'manual' ? '✏️ Manuel' : '📄✏️ Modifié';
+  const label = source === 'manual' ? `✏️ ${t('review.sourceManual')}` : `📄✏️ ${t('review.sourceModified')}`;
   return (
     <div
       className="absolute bottom-2 right-2 text-[9px] px-1.5 py-0.5 rounded font-bold z-10"

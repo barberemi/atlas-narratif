@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Éditeur de trajet manuel pour un personnage.
  * Permet d'ordonner une liste de lieux localisés.
  */
 export default function JourneyEditor({ characters, locations, journeys, onSave }) {
+  const { t } = useTranslation();
   const [charKey,     setCharKey]     = useState(null);
   const [steps,       setSteps]       = useState([]);   // [{ locId, lieu, x, y }]
   const [dirty,       setDirty]       = useState(false);
@@ -78,9 +80,9 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-black tracking-tight text-slate-200">Trajets manuels</h2>
+          <h2 className="text-sm font-black tracking-tight text-slate-200">{t('map.manualJourneys')}</h2>
           <p className="text-xs text-slate-500 font-serif italic mt-0.5">
-            Définissez l'ordre des passages de chaque personnage sur la carte.
+            {t('map.manualJourneysDesc')}
           </p>
         </div>
         {dirty && (
@@ -90,14 +92,14 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
             style={{ backgroundColor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
           >
-            {saving ? '…' : 'Enregistrer'}
+            {saving ? '…' : t('btn.save')}
           </button>
         )}
       </div>
 
       {/* Sélecteur de personnage */}
       <div className="flex items-center gap-3">
-        <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Personnage</span>
+        <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.characters', { count: 1 })}</span>
         <div className="relative" ref={charDropRef}>
           <button
             onClick={() => setCharDropOpen(v => !v)}
@@ -117,7 +119,7 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
             ) : (
               <>
                 <span className="text-slate-500">👤</span>
-                Choisir un personnage…
+                {t('map.chooseCharacter')}
               </>
             )}
             <span className="ml-auto text-slate-600 text-[10px]">{charDropOpen ? '▲' : '▼'}</span>
@@ -150,7 +152,7 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
         <div className="flex flex-col gap-1.5">
           {steps.length === 0 && (
             <p className="text-xs text-slate-600 font-serif italic py-2">
-              Aucune étape — ajoutez des lieux ci-dessous.
+              {t('map.noSteps')}
             </p>
           )}
           {steps.map((s, i) => (
@@ -179,7 +181,7 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
               style={{ border: '1px dashed rgba(255,255,255,0.08)' }}
             >
-              + Ajouter un lieu
+              + {t('map.addLocation')}
             </button>
             {addOpen && (
               <div
@@ -187,7 +189,7 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
                 style={{ backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}
               >
                 {localized.length === 0 ? (
-                  <p className="text-xs text-slate-600 p-3 italic">Aucun lieu localisé sur la carte.</p>
+                  <p className="text-xs text-slate-600 p-3 italic">{t('map.noLocalizedLocations')}</p>
                 ) : (
                   <div className="p-1">
                     {localized.map(loc => (

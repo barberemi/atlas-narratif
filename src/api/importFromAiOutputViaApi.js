@@ -38,14 +38,30 @@ export async function importFromAiOutputViaApi(file, { projectName, projectDesc,
   data.timelineDB            ??= [];
   data.incoherencesDB        ??= [];
   data.chaptersDB            ??= [];
+  data.plantsDB              ??= [];
+  data.threadsDB             ??= [];
+  data.heroJourneyDB         ??= [];
   data.journeys                = [];
+
+  // Extraire les champs extras inline des événements vers eventExtrasDB
+  const eventExtrasDB = {};
+  for (const evt of data.timelineDB) {
+    const ex = {};
+    if (evt.beatId)           ex.beatId           = evt.beatId;
+    if (evt.povCharacterId)   ex.povCharacterId   = evt.povCharacterId;
+    if (evt.threadIds?.length) ex.threadIds        = evt.threadIds;
+    if (evt.sceneGoal)        ex.sceneGoal        = evt.sceneGoal;
+    if (evt.sceneConflict)    ex.sceneConflict    = evt.sceneConflict;
+    if (evt.sceneOutcome)     ex.sceneOutcome     = evt.sceneOutcome;
+    if (Object.keys(ex).length) eventExtrasDB[evt.id] = ex;
+  }
 
   onProgress?.('Envoi au serveur…');
 
   const projectId = slugify(projectName);
   await seedProjectViaApi(
     { id: projectId, name: projectName, description: projectDesc || null, mapImage: null },
-    { ...data, volumesDB: data.volumes },
+    { ...data, volumesDB: data.volumes, eventExtrasDB },
   );
 
   return projectId;

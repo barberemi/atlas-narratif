@@ -1,16 +1,25 @@
 import { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Button from '../ui/Button';
 import { useProject } from '../../db/ProjectContext';
 import ProjectPicker from './ProjectPicker';
 import VolumePicker  from './VolumePicker';
+import SaveIndicator from './SaveIndicator';
 import NavDropdown from './NavDropdown';
 import { NAV_GROUPS } from './navConfig';
 import { authClient } from '../../lib/authClient';
 import { useTourStore } from '../../stores/useTourStore';
 import { TOUR_STEPS } from '../../data/tour_steps';
 
+const LANGS = [
+  { code: 'fr', label: 'FR' },
+  { code: 'en', label: 'EN' },
+  { code: 'zh', label: '中文' },
+];
+
 export default function TopNav({ onSearchOpen }) {
+  const { t, i18n } = useTranslation();
   const location  = useLocation();
   const navigate  = useNavigate();
   const { projects, loading, projectId } = useProject();
@@ -22,7 +31,7 @@ export default function TopNav({ onSearchOpen }) {
   const tourActive   = useTourStore(s => s.active);
   const hasPageTour  = !tourActive && !!projectId && TOUR_STEPS.some(s => s.route === location.pathname && s.dataKey !== null);
 
-  const allMobileItems = NAV_GROUPS.flatMap(g => g.items.map(i => ({ ...i, group: g.label })));
+  const allMobileItems = NAV_GROUPS.flatMap(g => g.items.map(i => ({ ...i, groupKey: g.labelKey })));
 
   return (
     <>
@@ -43,19 +52,21 @@ export default function TopNav({ onSearchOpen }) {
             <ProjectPicker />
             <div className="w-px h-5 bg-white/10 mx-1 flex-shrink-0" />
             <VolumePicker />
+            <div className="hidden md:block"><SaveIndicator /></div>
             <div className="w-px h-5 bg-white/10 mx-2 flex-shrink-0" />
           </>
         )}
 
         {hasProjects && NAV_GROUPS.map(group => (
           <div key={group.key} className="hidden md:block">
-            <NavDropdown label={group.label} icon={group.icon} items={group.items} />
+            <NavDropdown labelKey={group.labelKey} icon={group.icon} items={group.items} />
           </div>
         ))}
 
         {hasProjects && (
           <button
             onClick={onSearchOpen}
+            aria-label="Recherche globale"
             className="hidden md:flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg transition-all duration-150 flex-shrink-0"
             style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#475569', border: '1px solid rgba(255,255,255,0.08)' }}
             onMouseEnter={e => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
@@ -63,7 +74,7 @@ export default function TopNav({ onSearchOpen }) {
             title="Recherche globale"
           >
             <span>🔍</span>
-            <span>Rechercher</span>
+            <span>{t('search.label')}</span>
             <kbd className="text-[10px] px-1 py-0.5 rounded font-mono" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>⌘K</kbd>
           </button>
         )}
@@ -72,30 +83,47 @@ export default function TopNav({ onSearchOpen }) {
         {hasPageTour && (
           <Button
             onClick={() => startAtRoute(location.pathname)}
-            size="sm" variant="ghost" title="Revoir la présentation de cette page"
+            size="sm" variant="ghost" title="Revoir la présentation de cette page" aria-label="Aide"
             className="ml-auto flex-shrink-0"
           >
             ?
           </Button>
         )}
 
+        {/* ── Sélecteur de langue ── */}
+        <div className={`hidden md:flex items-center gap-0.5 flex-shrink-0 ${!hasPageTour ? 'ml-auto' : ''}`}>
+          {LANGS.map(({ code, label: langLabel }) => (
+            <button
+              key={code}
+              onClick={() => i18n.changeLanguage(code)}
+              className="text-[10px] px-1.5 py-0.5 rounded font-bold transition-all"
+              style={{
+                backgroundColor: i18n.language?.startsWith(code) ? 'rgba(63,81,181,0.2)' : 'transparent',
+                color: i18n.language?.startsWith(code) ? '#818cf8' : '#475569',
+              }}
+            >
+              {langLabel}
+            </button>
+          ))}
+        </div>
+
         {/* ── Bouton utilisateur ── */}
         {user ? (
-          <div className={`flex items-center gap-2 flex-shrink-0 ${!hasPageTour ? 'ml-auto' : ''}`}>
-            <span className="hidden md:block text-xs text-slate-500 truncate max-w-[140px]">{user.name || user.email}</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link to="/account" className="hidden md:block text-xs text-slate-500 truncate max-w-[140px] hover:text-slate-300 transition-colors">{user.name || user.email}</Link>
             <Button
               onClick={async () => { await authClient.signOut(); navigate('/'); }}
-              size="sm" variant="ghost" title="Se déconnecter"
+              size="sm" variant="ghost" title={t('nav.logout')}
             >
-              Déconnexion
+              {t('nav.logout')}
             </Button>
           </div>
         ) : (
           <Button
             onClick={() => navigate('/login')}
-            size="sm" variant="secondary" className={`flex-shrink-0 ${!hasPageTour ? 'ml-auto' : ''}`}
+            size="sm" variant="secondary" className="flex-shrink-0"
           >
-            Connexion
+            {t('nav.login')}
           </Button>
         )}
 
@@ -116,7 +144,7 @@ export default function TopNav({ onSearchOpen }) {
       {mobileOpen && hasProjects && (
         <div className="md:hidden flex-shrink-0 border-b border-white/10" style={{ backgroundColor: 'rgba(11,22,33,0.98)', zIndex: 49 }}>
           <div className="px-3 py-2 flex flex-col gap-0.5">
-            {allMobileItems.map(({ path, label, icon, group }) => {
+            {allMobileItems.map(({ path, labelKey, icon, groupKey }) => {
               const isActive    = location.pathname === path;
               const isWarning   = path === '/incoherences';
               const activeColor = isWarning ? '#EF4444' : '#818cf8';
@@ -130,8 +158,8 @@ export default function TopNav({ onSearchOpen }) {
                   style={{ backgroundColor: isActive ? activeBg : 'transparent', color: isActive ? activeColor : '#64748b', textDecoration: 'none' }}
                 >
                   <span className="text-base">{icon}</span>
-                  <span>{label}</span>
-                  {group && <span className="ml-auto text-[10px] text-slate-700 font-normal">{group}</span>}
+                  <span>{t(labelKey)}</span>
+                  {groupKey && <span className="ml-auto text-[10px] text-slate-700 font-normal">{t(groupKey)}</span>}
                 </NavLink>
               );
             })}

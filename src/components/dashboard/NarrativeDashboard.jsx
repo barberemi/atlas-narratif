@@ -1,6 +1,8 @@
 import { useMemo, useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SEVERITY_CONFIG, SEVERITY_ORDER } from '../../data/severity_config';
+import Skeleton from '../ui/Skeleton';
 import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
 import { useIncStore }          from '../../stores/useIncStore';
 import { useLoreStore }         from '../../stores/useLoreStore';
@@ -10,6 +12,9 @@ import { usePlantStore }        from '../../stores/usePlantStore';
 import { useArcStore }          from '../../stores/useArcStore';
 import { useHeroJourneyStore }  from '../../stores/useHeroJourneyStore';
 import { useVolumeStore }       from '../../stores/useVolumeStore';
+import { useCharacterArcStore } from '../../stores/useCharacterArcStore';
+import { useThreadStore }       from '../../stores/useThreadStore';
+import { useStoreLoader }       from '../../hooks/useStoreLoader';
 import { PLANT_TYPES }          from '../../pages/PlantsBrowser';
 import EntityEditor      from '../lore/EntityEditor';
 import CircularGauge     from './CircularGauge';
@@ -33,7 +38,7 @@ const TOTAL_VH_STAGES = 12;
 
 // ── FrameworkCard ─────────────────────────────────────────────────────────────
 
-function FrameworkCard({ icon, title, filled, total, score, path, onNavigate, subtitle }) {
+function FrameworkCard({ icon, title, filled, total, score, path, onNavigate, subtitle, openLabel }) {
   const color = score >= 80 ? '#10B981' : score >= 40 ? '#f59e0b' : score > 0 ? '#ef4444' : '#475569';
   return (
     <div
@@ -50,7 +55,7 @@ function FrameworkCard({ icon, title, filled, total, score, path, onNavigate, su
           className="text-[10px] font-bold transition-opacity opacity-50 hover:opacity-100"
           style={{ color: '#818cf8' }}
         >
-          Ouvrir →
+          {openLabel}
         </button>
       </div>
       <div className="flex items-end gap-2">
@@ -71,8 +76,12 @@ function FrameworkCard({ icon, title, filled, total, score, path, onNavigate, su
 
 // ── Dashboard principal ───────────────────────────────────────────────────────
 function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [editorState, setEditorState] = useState(null);
+
+  // Lazy-load tous les stores nécessaires au dashboard
+  useStoreLoader([useTimelineStore, useStcStore, useIncStore, usePlantStore, useArcStore, useHeroJourneyStore, useCharacterArcStore, useThreadStore]);
 
   const incoherences = useIncStore(s => s.data);
   const characters   = useLoreStore(s => s.characters);
@@ -201,7 +210,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
     }
     const bestCharId = [...hjByChar.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
     const bestChar   = bestCharId && bestCharId !== '__none__' ? characters.find(c => c.id === bestCharId) : null;
-    const vjSubtitle = bestChar ? `Meilleur : ${bestChar.name} (${hjByChar.get(bestCharId)}/12)` : null;
+    const vjSubtitle = bestChar ? { charName: bestChar.name, charFilled: hjByChar.get(bestCharId) } : null;
 
     // Arc émotionnel — chapitres avec au moins un point
     const arcCoveredChapters = new Set(arcList.map(p => p.chapterNumber)).size;
@@ -351,7 +360,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
   }, [penaltyScore, coverageScore, frameworkCoverage, inventory, hjEntries]);
 
   const globalColor = globalScore >= 80 ? '#10B981' : globalScore >= 50 ? '#f59e0b' : '#ef4444';
-  const globalLabel = globalScore >= 80 ? 'Bon' : globalScore >= 50 ? 'Moyen' : 'Critique';
+  const globalLabel = globalScore >= 80 ? t('dashboard.good') : globalScore >= 50 ? t('dashboard.average') : t('dashboard.critical');
 
   // ── Recommandations ─────────────────────────────────────────────────────────
   const recommendations = useMemo(() => {
@@ -362,55 +371,55 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
 
     if (critical.length > 0) list.push({
       icon: '🔴', color: '#ef4444',
-      label: `${critical.length} incohérence${critical.length > 1 ? 's' : ''} critique${critical.length > 1 ? 's' : ''} non résolue${critical.length > 1 ? 's' : ''}`,
-      actionLabel: 'Corriger', action: () => onOpenIncoherences('critical'),
+      label: t('dashboard.recCritical', { count: critical.length }),
+      actionLabel: t('dashboard.actionFix'), action: () => onOpenIncoherences('critical'),
     });
     else if (high.length > 0) list.push({
       icon: '🟠', color: '#f97316',
-      label: `${high.length} incohérence${high.length > 1 ? 's' : ''} de sévérité élevée`,
-      actionLabel: 'Corriger', action: () => onOpenIncoherences('high'),
+      label: t('dashboard.recHigh', { count: high.length }),
+      actionLabel: t('dashboard.actionFix'), action: () => onOpenIncoherences('high'),
     });
 
     const missingBeats = TOTAL_BEATS - inventory.beats;
     if (missingBeats > 0) list.push({
       icon: '🐱', color: '#f59e0b',
-      label: `${missingBeats} beat${missingBeats > 1 ? 's' : ''} Save the Cat manquant${missingBeats > 1 ? 's' : ''}`,
-      actionLabel: 'Structurer', action: () => navigate('/savethecat'),
+      label: t('dashboard.recMissingBeats', { count: missingBeats }),
+      actionLabel: t('dashboard.actionStructure'), action: () => navigate('/savethecat'),
     });
 
     if (coverage.orphanChars.length > 0) list.push({
       icon: '👤', color: '#818cf8',
-      label: `${coverage.orphanChars.length} personnage${coverage.orphanChars.length > 1 ? 's' : ''} absent${coverage.orphanChars.length > 1 ? 's' : ''} de la timeline`,
-      actionLabel: 'Timeline', action: () => navigate('/timeline'),
+      label: t('dashboard.recOrphanChars', { count: coverage.orphanChars.length }),
+      actionLabel: t('dashboard.actionTimeline'), action: () => navigate('/timeline'),
     });
 
     if (inventory.chapters > 0 && frameworkCoverage.arc.score < 50) list.push({
       icon: '〰️', color: '#6366f1',
-      label: `Arc émotionnel incomplet — ${frameworkCoverage.arc.filled}/${frameworkCoverage.arc.total} chapitres renseignés`,
-      actionLabel: 'Compléter', action: () => navigate('/arc'),
+      label: t('dashboard.recArcIncomplete', { filled: frameworkCoverage.arc.filled, total: frameworkCoverage.arc.total }),
+      actionLabel: t('dashboard.actionComplete'), action: () => navigate('/arc'),
     });
 
     if (frameworkCoverage.vj.score < 50 && characters.length > 0) list.push({
       icon: '⚔️', color: '#8B5CF6',
-      label: `Voyage du Héros — seulement ${frameworkCoverage.vj.filled}/${TOTAL_VH_STAGES} étapes renseignées`,
-      actionLabel: 'Remplir', action: () => navigate('/heros'),
+      label: t('dashboard.recHeroJourney', { filled: frameworkCoverage.vj.filled, total: TOTAL_VH_STAGES }),
+      actionLabel: t('dashboard.actionFill'), action: () => navigate('/heros'),
     });
 
     if (inventory.events > 0 && frameworkCoverage.anatomy.score < 30) list.push({
       icon: '🔬', color: '#14b8a6',
-      label: `${frameworkCoverage.anatomy.total - frameworkCoverage.anatomy.filled} scène${frameworkCoverage.anatomy.total - frameworkCoverage.anatomy.filled > 1 ? 's' : ''} sans anatomie complète`,
-      actionLabel: 'Timeline', action: () => navigate('/timeline'),
+      label: t('dashboard.recNoAnatomy', { count: frameworkCoverage.anatomy.total - frameworkCoverage.anatomy.filled }),
+      actionLabel: t('dashboard.actionTimeline'), action: () => navigate('/timeline'),
     });
 
     const modifiedCount = [...characters, ...locations, ...objects].filter(e => e.source !== 'import').length;
     if (modifiedCount > 0) list.push({
       icon: '✏️', color: '#34d399',
-      label: `${modifiedCount} entité${modifiedCount > 1 ? 's' : ''} modifiée${modifiedCount > 1 ? 's' : ''} ou ajoutée${modifiedCount > 1 ? 's' : ''} manuellement`,
-      actionLabel: 'Révision', action: () => navigate('/review'),
+      label: t('dashboard.recModified', { count: modifiedCount }),
+      actionLabel: t('dashboard.actionReview'), action: () => navigate('/review'),
     });
 
     return list.slice(0, 6);
-  }, [incoherences, inventory, coverage, frameworkCoverage, characters, locations, objects, navigate, onOpenIncoherences]);
+  }, [incoherences, inventory, coverage, frameworkCoverage, characters, locations, objects, navigate, onOpenIncoherences, t]);
 
   // ── Entités modifiées ──────────────────────────────────────────────────────
   const modifiedEntities = useMemo(() => {
@@ -423,13 +432,9 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
   }, [characters, locations, objects]);
 
   const SOURCE_COLORS = { manual: '#34d399', modified: '#f59e0b' };
-  const SOURCE_LABELS = { manual: 'Manuel', modified: 'Modifié' };
+  const SOURCE_LABELS = { manual: t('dashboard.sourceManual'), modified: t('dashboard.sourceModified') };
 
-  if (!incoherences) return (
-    <div className="h-full flex items-center justify-center">
-      <span className="text-slate-600 font-serif italic">Chargement…</span>
-    </div>
-  );
+  if (!incoherences) return <Skeleton variant="dashboard" />;
 
 
   const resolvedCount = (incoherences ?? []).filter(i => i.resolved).length;
@@ -443,9 +448,9 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
       <header data-tour="dashboard-stats" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Santé <span style={{ color: '#3F51B5' }}>Narrative</span>
+            {t('dashboard.narrativeHealth')} <span style={{ color: '#3F51B5' }}>{t('dashboard.narrativeHighlight')}</span>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">Vue d'ensemble de ton projet</p>
+          <p className="text-xs text-slate-500 font-serif italic">{t('dashboard.projectOverviewSubtitle')}</p>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="text-right">
@@ -470,25 +475,25 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
         <div className="max-w-6xl mx-auto space-y-6">
 
           {/* ── Inventaire narratif ── */}
-          <SectionTitle>Vue d'ensemble</SectionTitle>
+          <SectionTitle>{t('dashboard.overview')}</SectionTitle>
           <div data-tour="dashboard-inventory" className="grid grid-cols-3 md:grid-cols-6 gap-3">
-            <StatCard icon="👤" value={inventory.characters} label="Personnages" />
-            <StatCard icon="📍" value={inventory.locations}  label="Lieux" />
-            <StatCard icon="⚔️" value={inventory.objects}    label="Objets" />
-            <StatCard icon="📖" value={inventory.chapters}   label="Chapitres" />
-            <StatCard icon="📅" value={inventory.events}     label="Événements" />
+            <StatCard icon="👤" value={inventory.characters} label={t('label.characters')} />
+            <StatCard icon="📍" value={inventory.locations}  label={t('label.locations')} />
+            <StatCard icon="⚔️" value={inventory.objects}    label={t('label.objects')} />
+            <StatCard icon="📖" value={inventory.chapters}   label={t('label.chapters')} />
+            <StatCard icon="📅" value={inventory.events}     label={t('label.events')} />
             <StatCard
               icon="🐱"
               value={`${inventory.beats}/${TOTAL_BEATS}`}
-              label="Beats STC"
-              sub={inventory.beats === TOTAL_BEATS ? 'Structure complète' : `${TOTAL_BEATS - inventory.beats} manquant${TOTAL_BEATS - inventory.beats > 1 ? 's' : ''}`}
+              label={`${t('label.beats')} STC`}
+              sub={inventory.beats === TOTAL_BEATS ? t('dashboard.structureComplete') : t('dashboard.missing', { count: TOTAL_BEATS - inventory.beats })}
             />
           </div>
 
           {/* ── Vue Série ── */}
           {seriesStats && (
             <>
-              <SectionTitle>Vue Série</SectionTitle>
+              <SectionTitle>{t('dashboard.seriesView')}</SectionTitle>
               <div
                 data-tour="dashboard-series"
                 className="rounded-2xl overflow-hidden"
@@ -499,11 +504,11 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                   className="grid items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-600"
                   style={{ gridTemplateColumns: '1fr 6fr 2rem 2rem 5rem', backgroundColor: 'rgba(255,255,255,0.02)', gap: '0.75rem' }}
                 >
-                  <span>Tome</span>
-                  <span>Densité narrative</span>
+                  <span>{t('dashboard.volume')}</span>
+                  <span>{t('dashboard.narrativeDensity')}</span>
                   <span className="text-center">STC</span>
                   <span className="text-center">Arc</span>
-                  <span className="text-right">Incohérences</span>
+                  <span className="text-right">{t('dashboard.incoherences')}</span>
                 </div>
 
                 {seriesStats.map(({ vol, eventCount, chapterCount, density, maxDensity, stcScore, arcScore, criticalInc, highInc }, idx) => {
@@ -562,7 +567,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                             className="text-[10px] font-black px-1.5 py-0.5 rounded"
                             style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444' }}
                           >
-                            {criticalInc} crit.
+                            {criticalInc} {t('dashboard.crit')}
                           </span>
                         )}
                         {highInc > 0 && (
@@ -570,7 +575,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                             className="text-[10px] font-black px-1.5 py-0.5 rounded"
                             style={{ backgroundColor: 'rgba(249,115,22,0.15)', color: '#f97316' }}
                           >
-                            {highInc} high
+                            {highInc} {t('dashboard.high')}
                           </span>
                         )}
                         {!hasAlerts && (
@@ -587,21 +592,21 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
           {/* ── Plants cross-tomes ── */}
           {crossTomePlants && (
             <>
-              <SectionTitle>Continuité inter-tomes</SectionTitle>
+              <SectionTitle>{t('dashboard.crossVolumeContinuity')}</SectionTitle>
               <div
                 className="rounded-2xl p-5 flex flex-col gap-5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] text-slate-500 uppercase tracking-widest">
-                    Amorces qui traversent plusieurs tomes
+                    {t('dashboard.crossVolumeSetups')}
                   </p>
                   <button
                     onClick={() => navigate('/plants')}
                     className="text-[10px] font-bold transition-opacity opacity-50 hover:opacity-100"
                     style={{ color: '#818cf8' }}
                   >
-                    Voir tout →
+                    {t('dashboard.viewAll')}
                   </button>
                 </div>
 
@@ -609,7 +614,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                 {crossTomePlants.bridges.length > 0 && (
                   <div className="flex flex-col gap-2">
                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                      Confirmés — {crossTomePlants.bridges.length} fil{crossTomePlants.bridges.length > 1 ? 's' : ''}
+                      {t('dashboard.confirmed', { count: crossTomePlants.bridges.length })}
                     </p>
                     {crossTomePlants.bridges.map(p => {
                       const typeCfg = PLANT_TYPES.find(t => t.id === p.type) ?? PLANT_TYPES[2];
@@ -639,7 +644,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                                 : { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }
                               }
                             >
-                              {isClosed ? 'résolu' : 'en cours'}
+                              {isClosed ? t('dashboard.resolved') : t('dashboard.inProgress')}
                             </span>
                           </div>
                         </div>
@@ -652,7 +657,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                 {crossTomePlants.pending.length > 0 && (
                   <div className="flex flex-col gap-2">
                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                      En suspens — {crossTomePlants.pending.length} sans payoff assigné
+                      {t('dashboard.pending', { count: crossTomePlants.pending.length })}
                     </p>
                     {crossTomePlants.pending.map(p => {
                       const typeCfg = PLANT_TYPES.find(t => t.id === p.type) ?? PLANT_TYPES[2];
@@ -712,16 +717,16 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
             {[
               {
                 score: penaltyScore,
-                title: 'Correction des incohérences',
+                title: t('dashboard.incoherenceCorrection'),
               },
               {
                 score: coverageScore,
-                title: 'Couverture des personnages',
+                title: t('dashboard.characterCoverage'),
                 valueLabel: `${inventory.characters - coverage.orphanChars.length}/${inventory.characters}`,
               },
               {
                 score: frameworkCoverage.stc.score,
-                title: 'Structure Save the Cat',
+                title: t('dashboard.stcStructure'),
                 valueLabel: `${inventory.beats}/${TOTAL_BEATS}`,
               },
             ].map(({ score, title, valueLabel }) => (
@@ -736,59 +741,63 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
           </div>
 
           {/* ── Couverture des méthodes ── */}
-          <SectionTitle>Couverture des méthodes</SectionTitle>
+          <SectionTitle>{t('dashboard.methodCoverage')}</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <FrameworkCard
               icon="🐱"
-              title="Save the Cat"
+              title={t('dashboard.saveTheCat')}
               filled={frameworkCoverage.stc.filled}
               total={frameworkCoverage.stc.total}
               score={frameworkCoverage.stc.score}
               path="/savethecat"
               onNavigate={navigate}
-              subtitle={`${frameworkCoverage.stc.total - frameworkCoverage.stc.filled} beats manquants`}
+              openLabel={t('dashboard.open')}
+              subtitle={t('dashboard.missingBeats', { count: frameworkCoverage.stc.total - frameworkCoverage.stc.filled })}
             />
             <FrameworkCard
               icon="⚔️"
-              title="Voyage du Héros"
+              title={t('dashboard.heroJourney')}
               filled={frameworkCoverage.vj.filled}
               total={frameworkCoverage.vj.total}
               score={frameworkCoverage.vj.score}
               path="/heros"
               onNavigate={navigate}
-              subtitle={frameworkCoverage.vj.subtitle ?? `${frameworkCoverage.vj.total - frameworkCoverage.vj.filled} étapes manquantes`}
+              openLabel={t('dashboard.open')}
+              subtitle={frameworkCoverage.vj.subtitle ? t('dashboard.bestChar', { name: frameworkCoverage.vj.subtitle.charName, filled: frameworkCoverage.vj.subtitle.charFilled }) : t('dashboard.missingStages', { count: frameworkCoverage.vj.total - frameworkCoverage.vj.filled })}
             />
             <FrameworkCard
               icon="〰️"
-              title="Arc émotionnel"
+              title={t('dashboard.emotionalArc')}
               filled={frameworkCoverage.arc.filled}
               total={frameworkCoverage.arc.total}
               score={frameworkCoverage.arc.score}
               path="/arc"
               onNavigate={navigate}
-              subtitle={frameworkCoverage.arc.total === 0 ? 'Aucun chapitre' : `${frameworkCoverage.arc.total - frameworkCoverage.arc.filled} chap. sans point`}
+              openLabel={t('dashboard.open')}
+              subtitle={frameworkCoverage.arc.total === 0 ? t('dashboard.noChapters') : t('dashboard.chaptersWithoutPoint', { count: frameworkCoverage.arc.total - frameworkCoverage.arc.filled })}
             />
             <FrameworkCard
               icon="🔬"
-              title="Anatomie de scène"
+              title={t('dashboard.sceneAnatomy')}
               filled={frameworkCoverage.anatomy.filled}
               total={frameworkCoverage.anatomy.total}
               score={frameworkCoverage.anatomy.score}
               path="/timeline"
               onNavigate={navigate}
-              subtitle={`goal + conflit + issue`}
+              openLabel={t('dashboard.open')}
+              subtitle={t('dashboard.goalConflictOutcome')}
             />
           </div>
 
           {/* ── À faire maintenant ── */}
-          <SectionTitle>À faire maintenant</SectionTitle>
+          <SectionTitle>{t('dashboard.todoNow')}</SectionTitle>
           {recommendations.length === 0 ? (
             <div
               className="rounded-xl px-5 py-4 flex items-center gap-3"
               style={{ backgroundColor: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}
             >
               <span className="text-lg">✅</span>
-              <p className="text-sm text-emerald-400 font-semibold">Tout est en ordre — aucune action requise.</p>
+              <p className="text-sm text-emerald-400 font-semibold">{t('dashboard.allGood')}</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -807,13 +816,13 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">Amorces narratives</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">{t('dashboard.narrativeSetups')}</p>
                   <button
                     onClick={() => navigate('/plants')}
                     className="text-[10px] font-bold transition-colors"
                     style={{ color: '#818cf8' }}
                   >
-                    Voir tout →
+                    {t('dashboard.viewAll')}
                   </button>
                 </div>
                 <div className="flex items-center gap-6 mb-3">
@@ -821,11 +830,11 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                     <span className="text-2xl font-black" style={{ color: openPlants.length > 0 ? '#818cf8' : '#22c55e' }}>
                       {openPlants.length}
                     </span>
-                    <span className="text-[10px] text-slate-500">en suspens</span>
+                    <span className="text-[10px] text-slate-500">{t('dashboard.pending')}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-2xl font-black text-slate-400">{plants.length}</span>
-                    <span className="text-[10px] text-slate-500">total</span>
+                    <span className="text-[10px] text-slate-500">{t('dashboard.total')}</span>
                   </div>
                 </div>
                 {openPlants.length > 0 && (
@@ -843,19 +852,19 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                       );
                     })}
                     {openPlants.length > 4 && (
-                      <p className="text-[10px] text-slate-600 italic">+{openPlants.length - 4} autres…</p>
+                      <p className="text-[10px] text-slate-600 italic">{t('dashboard.others', { count: openPlants.length - 4 })}</p>
                     )}
                   </div>
                 )}
                 {openPlants.length === 0 && (
-                  <p className="text-xs text-emerald-400 font-semibold">Toutes les amorces sont résolues.</p>
+                  <p className="text-xs text-emerald-400 font-semibold">{t('dashboard.allSetupsResolved')}</p>
                 )}
               </div>
             );
           })()}
 
           {/* ── Rythme & Présences ── */}
-          <SectionTitle>Rythme &amp; Présences</SectionTitle>
+          <SectionTitle>{t('dashboard.rhythmAndPresence')}</SectionTitle>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -864,9 +873,9 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
               className="rounded-2xl p-5 md:col-span-1"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Personnages actifs</p>
+              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">{t('dashboard.activeCharacters')}</p>
               {coverage.topChars.length === 0 ? (
-                <p className="text-xs text-slate-600 italic">Aucun événement timeline</p>
+                <p className="text-xs text-slate-600 italic">{t('dashboard.noTimelineEvents')}</p>
               ) : (
                 <div className="flex flex-col gap-2.5">
                   {coverage.topChars.map(({ id, name, color, count }) => (
@@ -874,7 +883,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-slate-300 truncate">{name}</span>
                         <span className="text-[10px] font-mono text-slate-500 flex-shrink-0 ml-2">
-                          {count} scène{count > 1 ? 's' : ''}
+                          {t('dashboard.scene', { count })}
                         </span>
                       </div>
                       <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
@@ -897,7 +906,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
               {/* Personnages orphelins */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">Hors timeline</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">{t('dashboard.offTimeline')}</p>
                   <span
                     className="text-xs font-black px-2 py-0.5 rounded-full"
                     style={{
@@ -909,7 +918,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                   </span>
                 </div>
                 {coverage.orphanChars.length === 0 ? (
-                  <p className="text-xs text-green-500 italic">Tous présents</p>
+                  <p className="text-xs text-green-500 italic">{t('dashboard.allPresent')}</p>
                 ) : (
                   <div className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 160 }}>
                     {coverage.orphanChars.map(c => (
@@ -925,7 +934,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
               {/* Lieux orphelins */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">Lieux non visités</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">{t('dashboard.unvisitedLocations')}</p>
                   <span
                     className="text-xs font-black px-2 py-0.5 rounded-full"
                     style={{
@@ -937,7 +946,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                   </span>
                 </div>
                 {coverage.orphanLocs.length === 0 ? (
-                  <p className="text-xs text-green-500 italic">Tous utilisés</p>
+                  <p className="text-xs text-green-500 italic">{t('dashboard.allUsed')}</p>
                 ) : (
                   <div className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 160 }}>
                     {coverage.orphanLocs.map(l => (
@@ -961,7 +970,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                 className="rounded-2xl p-5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Événements par chapitre</p>
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">{t('dashboard.eventsPerChapter')}</p>
                 <div className="flex flex-col gap-1.5 overflow-y-auto" style={{ maxHeight: 240 }}>
                   {rhythm.chapters.map(ch => (
                     <div key={ch.num} className="flex items-center gap-2">
@@ -989,7 +998,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                 className="rounded-2xl p-5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Personnages actifs par chapitre</p>
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">{t('dashboard.activeCharsPerChapter')}</p>
                 <div className="flex flex-col gap-1.5 overflow-y-auto" style={{ maxHeight: 240 }}>
                   {rhythm.chapters.map(ch => (
                     <div key={ch.num} className="flex items-center gap-2">
@@ -1017,7 +1026,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
           )}
 
           {/* ── Incohérences ── */}
-          <SectionTitle>Incohérences</SectionTitle>
+          <SectionTitle>{t('label.incoherences')}</SectionTitle>
 
           <div className="grid grid-cols-1 gap-4">
             <div
@@ -1025,10 +1034,10 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
               <div>
-                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">Progression de résolution</p>
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">{t('dashboard.resolutionProgress')}</p>
                 <div className="flex items-end gap-3 mb-4">
                   <span className="text-5xl font-black text-white">{resolvedCount}</span>
-                  <span className="text-slate-500 text-lg mb-1">/ {total} incohérences résolues</span>
+                  <span className="text-slate-500 text-lg mb-1">{t('dashboard.resolvedIncoherences', { total })}</span>
                 </div>
                 <div className="w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
                   <div
@@ -1042,7 +1051,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                     }}
                   />
                 </div>
-                <p className="text-xs text-slate-600 mt-2 font-mono">{resolvedPct}% complété</p>
+                <p className="text-xs text-slate-600 mt-2 font-mono">{t('dashboard.percentComplete', { pct: resolvedPct })}</p>
               </div>
 
               <div className="grid grid-cols-4 gap-3 mt-4">
@@ -1071,7 +1080,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                         </p>
                         {allDone && <span className="text-[10px] text-green-500 font-bold">✓</span>}
                       </div>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{cfg.label}</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t(`severity.${sev}`)}</p>
                       <div className="w-full h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
                         <div
                           className="h-full rounded-full transition-all duration-700"
@@ -1083,7 +1092,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                         />
                       </div>
                       <p className="text-[10px] font-mono" style={{ color: allDone ? '#10B981' : '#475569' }}>
-                        {resolved > 0 ? `${resolved} résolu${resolved > 1 ? 's' : ''}` : 'aucun résolu'}
+                        {t('dashboard.resolvedCount', { count: resolved })}
                       </p>
                     </div>
                   );
@@ -1099,7 +1108,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
               className="rounded-2xl p-5"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Entités les plus impliquées</p>
+              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">{t('dashboard.mostInvolvedEntities')}</p>
               <div className="space-y-2">
                 {topEntities.map((e, idx) => {
                   const cfg     = e.maxSev ? SEVERITY_CONFIG[e.maxSev] : null;
@@ -1115,13 +1124,13 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                       <span className="text-slate-600 font-mono text-xs w-4 text-center flex-shrink-0">#{idx + 1}</span>
                       <span className="text-sm flex-shrink-0">{ENTITY_ICONS[e.meta.type]}</span>
                       <span className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors flex-1 truncate">{e.meta.name}</span>
-                      <span className="text-xs font-mono" style={{ color: e.meta.color }}>{e.count} lien{e.count > 1 ? 's' : ''}</span>
+                      <span className="text-xs font-mono" style={{ color: e.meta.color }}>{t('dashboard.link', { count: e.count })}</span>
                       {cfg && (
                         <span
                           className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
                           style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
                         >
-                          {cfg.label}
+                          {t(`severity.${e.maxSev}`)}
                         </span>
                       )}
                     </button>
@@ -1134,7 +1143,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
               className="rounded-2xl p-5"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Répartition par type</p>
+              <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">{t('dashboard.distributionByType')}</p>
               <div className="space-y-3">
                 {Object.entries(byType)
                   .sort((a, b) => b[1] - a[1])
@@ -1144,7 +1153,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                     return (
                       <div key={type}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-400">{icon} {type}</span>
+                          <span className="text-xs text-slate-400">{icon} {t(`incType.${type}`, type)}</span>
                           <span className="text-xs font-mono text-slate-500">{count}</span>
                         </div>
                         <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
@@ -1168,7 +1177,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
           {/* ── Modifications depuis l'import ── */}
           {modifiedEntities.length > 0 && (
             <>
-              <SectionTitle>Modifications depuis l'import</SectionTitle>
+              <SectionTitle>{t('dashboard.modificationsSinceImport')}</SectionTitle>
               <div
                 className="rounded-2xl p-5"
                 style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
@@ -1207,7 +1216,7 @@ function NarrativeDashboard({ onEntityClick, onOpenIncoherences }) {
                   className="w-full py-2 rounded-lg text-xs font-bold transition-all duration-150"
                   style={{ backgroundColor: 'rgba(129,140,248,0.08)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.2)' }}
                 >
-                  Voir tout dans Révision →
+                  {t('dashboard.viewAllInReview')}
                 </button>
               </div>
             </>

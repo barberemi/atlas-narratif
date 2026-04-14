@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { buildAnalysisPrompt } from './data/analysis_prompt';
 import { createProject, seedProjectViaApi, claimProjects } from './api/client';
 import { authClient } from './lib/authClient';
 import { buildLotrSeedPayload } from './db/seed.lotr';
 import { importFromAiOutputViaApi } from './api/importFromAiOutputViaApi';
 import { Routes, Route, Navigate, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Button from './components/ui/Button';
 import GuidedTour   from './components/tour/GuidedTour';
 import WelcomeModal from './components/tour/WelcomeModal';
 import { shouldShowWelcome } from './components/tour/tourUtils';
 import TourPageButton from './components/tour/TourPageButton';
+import { useLotrReseed } from './hooks/useLotrReseed';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
 const LoreBrowser          = lazy(() => import('./components/lore/LoreBrowser'));
 const LoginPage            = lazy(() => import('./pages/auth/LoginPage'));
@@ -27,10 +29,19 @@ const EmotionalArc         = lazy(() => import('./pages/EmotionalArc'));
 const HeroJourney          = lazy(() => import('./pages/HeroJourney'));
 const PlantsBrowser        = lazy(() => import('./pages/PlantsBrowser'));
 const ThreadsBrowser       = lazy(() => import('./pages/ThreadsBrowser'));
+const PrivacyPage          = lazy(() => import('./pages/legal/PrivacyPage'));
+const TermsPage            = lazy(() => import('./pages/legal/TermsPage'));
+const AccountPage          = lazy(() => import('./pages/AccountPage'));
+const NotFoundPage         = lazy(() => import('./pages/NotFoundPage'));
 import { getEntityMeta } from './utils/entityUtils';
 import { ProjectProvider, useProject } from './db/ProjectContext';
 import GlobalSearch  from './components/search/GlobalSearch';
 import TopNav        from './components/nav/TopNav';
+import Footer        from './components/nav/Footer';
+import ErrorBoundary from './components/ErrorBoundary';
+import Skeleton from './components/ui/Skeleton';
+import { Toaster } from 'sonner';
+import { toast } from './lib/toast';
 
 
 // ── Route : Carte ─────────────────────────────────────────────────────────────
@@ -121,6 +132,7 @@ function IncoherencesRoute() {
 
 // ── Page d'accueil / Import ───────────────────────────────────────────────────
 function HomePage() {
+  const { t, i18n } = useTranslation();
   const { reloadProjects, setProjectId, projects } = useProject();
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
@@ -191,6 +203,7 @@ function HomePage() {
       });
       await reloadProjects();
       setProjectId(projectId);
+      toast.success(t('toast.projectImported'));
       navigate('/review');
     } catch (err) {
       setError(err.message);
@@ -206,6 +219,7 @@ function HomePage() {
       const projectId = await createProject({ name: buildName.trim() });
       await reloadProjects();
       setProjectId(projectId);
+      toast.success(t('toast.projectCreated'));
       navigate('/savethecat');
     } catch (err) {
       setBuildError(err.message);
@@ -223,17 +237,19 @@ function HomePage() {
       return;
     }
     setStatus('analyzing');
-    setProgress('Préparation de la démo Le Seigneur des Anneaux…');
+    setProgress(t('home.demoLoading'));
     setSeedPercent(0);
     setError(null);
     try {
-      const payload = await buildLotrSeedPayload();
-      setProgress('Envoi au serveur…');
+      const lang = i18n.language?.split('-')[0] || 'fr';
+      const payload = await buildLotrSeedPayload({ lang });
+      setProgress(t('home.demoSending'));
       setSeedPercent(30);
       const lotrId = await seedProjectViaApi(payload.meta, payload.data);
       setSeedPercent(100);
       await reloadProjects();
       setProjectId(lotrId);
+      toast.success(t('toast.projectImported'));
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -246,14 +262,16 @@ function HomePage() {
     {
       id:      'savethecat',
       label:   'Save the Cat',
-      desc:    '15 beats narratifs pour structurer votre histoire de A à Z',
+      desc:    t('home.methodSaveTheCat'),
+      hint:    t('home.methodSaveTheCatHint'),
       icon:    '🐱',
       available: true,
     },
     {
       id:      'heros',
       label:   'Voyage du Héros',
-      desc:    '12 étapes archétypales de Joseph Campbell',
+      desc:    t('home.methodHeroJourney'),
+      hint:    t('home.methodHeroJourneyHint'),
       icon:    '⚔️',
       available: true,
     },
@@ -270,7 +288,7 @@ function HomePage() {
             Atlas<span className="text-[#3F51B5] drop-shadow-[0_0_20px_rgba(63,81,181,0.4)]">Narratif</span>
           </h1>
           <p className="text-slate-500 font-serif italic opacity-80">
-            Architecte de cohérence narrative
+            {t('app.tagline')}
           </p>
         </header>
 
@@ -278,7 +296,7 @@ function HomePage() {
         {flow === null && (
           <div className="flex flex-col gap-4">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-              Par où commencer ?
+              {t('home.startQuestion')}
             </p>
             <div data-tour="home-cards" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Carte construire */}
@@ -289,12 +307,12 @@ function HomePage() {
               >
                 <span className="text-3xl">✍️</span>
                 <div>
-                  <p className="text-sm font-black text-slate-200">Je construis mon histoire</p>
+                  <p className="text-sm font-black text-slate-200">{t('home.buildTitle')}</p>
                   <p className="text-xs text-slate-500 mt-1 font-serif italic">
-                    Planifier avec une méthode narrative, créer mes personnages et lieux
+                    {t('home.buildDesc')}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-indigo-400 mt-auto">Démarrer →</span>
+                <span className="text-xs font-bold text-indigo-400 mt-auto">{t('home.buildAction')}</span>
               </button>
 
               {/* Carte analyser */}
@@ -305,12 +323,12 @@ function HomePage() {
               >
                 <span className="text-3xl">📖</span>
                 <div>
-                  <p className="text-sm font-black text-slate-200">J'ai un texte à analyser</p>
+                  <p className="text-sm font-black text-slate-200">{t('home.analyzeTitle')}</p>
                   <p className="text-xs text-slate-500 mt-1 font-serif italic">
-                    Importer un manuscrit ou des notes pour extraire timeline, carte, incohérences…
+                    {t('home.analyzeDesc')}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-slate-400 mt-auto">Importer →</span>
+                <span className="text-xs font-bold text-slate-400 mt-auto">{t('home.analyzeAction')}</span>
               </button>
             </div>
 
@@ -336,11 +354,11 @@ function HomePage() {
 
               {/* Texte */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-black text-slate-300">Découvrir avec la démo</p>
+                <p className="text-sm font-black text-slate-300">{t('home.demoTitle')}</p>
                 {status === 'analyzing' ? (
                   <div className="mt-1 flex flex-col gap-1">
                     <p className="text-xs font-mono" style={{ color: '#818cf8' }}>
-                      {progress || 'Chargement…'}
+                      {progress || t('home.demoLoading')}
                       {seedPercent !== null ? ` (${seedPercent}%)` : ''}
                     </p>
                     {seedPercent !== null && (
@@ -354,7 +372,7 @@ function HomePage() {
                   </div>
                 ) : (
                   <p className="text-xs text-slate-600 font-serif italic mt-0.5">
-                    Le Seigneur des Anneaux — Communauté de l'Anneau · personnages, carte, timeline, incohérences…
+                    {t('home.demoDesc')}
                   </p>
                 )}
               </div>
@@ -362,7 +380,7 @@ function HomePage() {
               {/* Bouton */}
               {status !== 'analyzing' && (
                 <Button onClick={handleLoadDemo} size="sm" className="flex-shrink-0">
-                  {projects.find(p => p.id.startsWith('lotr')) ? 'Ouvrir →' : 'Charger →'}
+                  {projects.find(p => p.id.startsWith('lotr')) ? t('home.demoOpen') : t('home.demoAction')}
                 </Button>
               )}
             </div>
@@ -413,7 +431,8 @@ function HomePage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5 font-serif italic">{m.desc}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{m.desc}</p>
+                    {m.hint && <p className="text-[10px] text-slate-600 mt-1 font-serif italic">{m.hint}</p>}
                   </div>
                   {m.available && (
                     <span
@@ -456,7 +475,7 @@ function HomePage() {
                 loading={buildStatus === 'creating'}
                 disabled={!buildName.trim() || buildStatus === 'creating'}
               >
-                {buildStatus === 'creating' ? 'Création en cours…' : 'Créer le projet →'}
+                {buildStatus === 'creating' ? t('home.creating') : t('home.createProject')}
               </Button>
             )}
 
@@ -668,23 +687,38 @@ function RequireProject({ children }) {
 
 // ── Layout principal ──────────────────────────────────────────────────────────
 function AppLayout() {
+  const { t } = useTranslation();
   const { projects, loading, projectId, reloadProjects } = useProject();
   const hasProjects = !loading && projects.length > 0;
   const { data: session } = authClient.useSession();
+  const { reseeding } = useLotrReseed();
   const navigate = useNavigate();
 
-  // Recharge les projets à chaque changement de session (login / logout)
+  // Recharge les projets uniquement quand la session change réellement (pas au mount)
+  const prevUserRef = useRef(session?.user?.id);
+  const mountedRef  = useRef(false);
   useEffect(() => {
-    reloadProjects();
+    const prev = prevUserRef.current;
+    const curr = session?.user?.id;
+    // Session expirée : l'utilisateur était connecté et ne l'est plus
+    if (prev && !curr) {
+      toast('Session expirée');
+      navigate('/login');
+    }
+    prevUserRef.current = curr;
+    // Au mount initial, ProjectContext charge déjà les projets → skip
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    // Recharge uniquement si la session a réellement changé
+    if (prev !== curr) reloadProjects();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [showWelcome,  setShowWelcome]  = useState(false);
   const location = useLocation();
 
-  // Affiche le modal de bienvenue quand on arrive sur /dashboard avec le projet LOTR
+  // Affiche le modal de bienvenue quand on arrive sur /dashboard avec un nouveau projet
   useEffect(() => {
-    if (location.pathname === '/dashboard' && projectId?.startsWith('lotr') && shouldShowWelcome()) {
+    if (location.pathname === '/dashboard' && projectId && shouldShowWelcome(projectId)) {
       setShowWelcome(true);
     }
   }, [location.pathname, projectId]);
@@ -704,8 +738,20 @@ function AppLayout() {
   return (
     <div className="h-screen w-full flex flex-col bg-[#0B1621] text-slate-200 selection:bg-[#3F51B5]/30 overflow-hidden">
       <TopNav onSearchOpen={() => setSearchOpen(true)} />
+      {reseeding && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(11,22,33,0.85)' }}>
+          <div className="flex flex-col items-center gap-3">
+            <svg className="animate-spin" width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="rgba(99,102,241,0.2)" strokeWidth="3"/>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="#818cf8" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
+            <span className="text-sm text-indigo-300 font-semibold">{t('home.demoReloading')}</span>
+          </div>
+        </div>
+      )}
       <div className={`flex-1 min-h-0 overflow-y-auto${!session?.user && !loading && projects.length > 0 ? ' pb-12' : ''}`}>
-        <Suspense fallback={<div className="flex items-center justify-center h-full text-slate-400 text-sm">Chargement…</div>}>
+        <ErrorBoundary>
+        <Suspense fallback={<Skeleton variant="list" />}>
         <Routes>
           <Route path="/"                 element={<HomePage />} />
           <Route path="/map"          element={<RequireProject><MapRoute /></RequireProject>} />
@@ -720,18 +766,22 @@ function AppLayout() {
           <Route path="/threads"      element={<RequireProject><ThreadsBrowser /></RequireProject>} />
           <Route path="/heros"        element={<RequireProject><HeroJourney /></RequireProject>} />
           <Route path="/review"       element={<RequireProject><ReviewPage /></RequireProject>} />
+          <Route path="/account"     element={<AccountPage />} />
+          <Route path="*"            element={<NotFoundPage />} />
         </Routes>
         </Suspense>
+        </ErrorBoundary>
       </div>
+      <Footer />
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
       <GuidedTour />
       <TourPageButton />
-      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
+      {showWelcome && <WelcomeModal projectId={projectId} onClose={() => setShowWelcome(false)} />}
       {!session?.user && !loading && projects.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 px-6 py-3"
+        <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-4 px-6 py-3"
           style={{ backgroundColor: 'rgba(17,24,39,0.97)', borderTop: '1px solid rgba(234,179,8,0.25)' }}>
           <span className="text-xs" style={{ color: '#fbbf24' }}>
-            Vos projets sont liés à ce navigateur — ils seront perdus si vous videz vos cookies.
+            {t('auth.cookieWarning')}
           </span>
           <button
             onClick={() => navigate('/login')}
@@ -740,7 +790,7 @@ function AppLayout() {
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(234,179,8,0.28)'; e.currentTarget.style.borderColor = 'rgba(234,179,8,0.5)'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(234,179,8,0.15)'; e.currentTarget.style.borderColor = 'rgba(234,179,8,0.3)'; }}
           >
-            Se connecter →
+            {t('auth.signIn')}
           </button>
         </div>
       )}
@@ -750,15 +800,20 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <ProjectProvider>
-      <Routes>
-        <Route path="/login"           element={<LoginPage />} />
-        <Route path="/register"        element={<RegisterPage />} />
-        <Route path="/verify-email"    element={<VerifyEmailPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password"  element={<ResetPasswordPage />} />
-        <Route path="*"                element={<AppLayout />} />
-      </Routes>
-    </ProjectProvider>
+    <ErrorBoundary>
+      <Toaster position="bottom-right" theme="dark" richColors closeButton />
+      <ProjectProvider>
+        <Routes>
+          <Route path="/login"           element={<LoginPage />} />
+          <Route path="/register"        element={<RegisterPage />} />
+          <Route path="/verify-email"    element={<VerifyEmailPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password"  element={<ResetPasswordPage />} />
+          <Route path="/privacy"         element={<PrivacyPage />} />
+          <Route path="/terms"           element={<TermsPage />} />
+          <Route path="*"                element={<AppLayout />} />
+        </Routes>
+      </ProjectProvider>
+    </ErrorBoundary>
   );
 }

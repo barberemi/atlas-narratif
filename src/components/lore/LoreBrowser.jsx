@@ -1,6 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { useVolumeStore } from '../../stores/useVolumeStore';
 import EntityEditor    from './EntityEditor';
+import Skeleton        from '../ui/Skeleton';
 import GroupEditor     from './GroupEditor';
 import CharacterCard   from './CharacterCard';
 import LocationCard    from './LocationCard';
@@ -8,11 +11,11 @@ import ObjectCard      from './ObjectCard';
 import GroupCard       from './GroupCard';
 
 
-const TAB_DEFS = [
-  { key: 'characters', label: 'Personnages' },
-  { key: 'locations',  label: 'Lieux'       },
-  { key: 'objects',    label: 'Objets'      },
-  { key: 'groups',     label: 'Groupes'     },
+const TAB_KEYS = [
+  { key: 'characters', i18nKey: 'label.characters' },
+  { key: 'locations',  i18nKey: 'label.locations'  },
+  { key: 'objects',    i18nKey: 'label.objects'     },
+  { key: 'groups',     i18nKey: 'label.groups'      },
 ];
 
 // ── LoreBrowser principal ─────────────────────────────────────────────────────
@@ -24,7 +27,11 @@ const TAB_DEFS = [
  *   onEntityClick   — (id) => void — ouvre le graphe de l'entité
  */
 export default function LoreBrowser({ initialTab = 'characters', initialSearch = '', onEntityClick }) {
+  const { t } = useTranslation();
   const { characters, locations, objects, groups, ready } = useLoreStore();
+  const volumes = useVolumeStore(s => s.volumes);
+  const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
+  const activeVolume = activeVolumeId ? (volumes ?? []).find(v => v.id === activeVolumeId) : null;
   const [activeTab,    setActiveTab]    = useState(initialTab);
   const [search,       setSearch]       = useState(initialSearch);
   // undefined = fermé, null = création, objet = édition
@@ -39,12 +46,14 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
     setSearch(charName);
   };
 
-  const TABS = useMemo(() => ready ? [
-    { key: 'characters', label: 'Personnages', data: characters },
-    { key: 'locations',  label: 'Lieux',       data: locations  },
-    { key: 'objects',    label: 'Objets',       data: objects    },
-    { key: 'groups',     label: 'Groupes',      data: groups     },
-  ] : TAB_DEFS.map(t => ({ ...t, data: [] })), [ready, characters, locations, objects, groups]);
+  const TABS = useMemo(() => {
+    const dataMap = { characters, locations, objects, groups };
+    return TAB_KEYS.map(tab => ({
+      key: tab.key,
+      label: t(tab.i18nKey),
+      data: ready ? (dataMap[tab.key] ?? []) : [],
+    }));
+  }, [ready, characters, locations, objects, groups, t]);
 
   const currentTab = TABS.find((t) => t.key === activeTab) ?? TABS[0];
 
@@ -76,11 +85,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
     return found?.id ?? null;
   }, [initialSearch, currentTab]);
 
-  if (!ready) return (
-    <div className="h-full flex items-center justify-center">
-      <span className="text-slate-600 font-serif italic">Chargement…</span>
-    </div>
-  );
+  if (!ready) return <Skeleton variant="card" />;
 
   return (
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
@@ -91,7 +96,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             Lore <span style={{ color: '#3F51B5' }}>Browser</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            Encyclopédie — La Communauté de l'Anneau
+            {t('lore.subtitle')}{activeVolume ? ` — ${activeVolume.title}` : ''}
           </p>
         </div>
 
@@ -104,7 +109,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             className="text-xs px-3 py-1.5 rounded-lg font-black transition-all duration-200 flex items-center gap-1.5"
             style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
           >
-            + Ajouter
+            {t('btn.add')}
           </button>
         </div>
       </header>
@@ -144,7 +149,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Rechercher dans les ${currentTab.label.toLowerCase()}…`}
+            placeholder={t('search.placeholder')}
             className="w-full pl-8 pr-4 py-2 text-sm rounded-lg bg-white/5 border border-white/10 text-slate-200 placeholder-slate-600 outline-none focus:border-[#3F51B5]/50 transition-colors"
           />
           {search && (
@@ -164,7 +169,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
           <div className="flex flex-col items-center justify-center h-64 text-slate-600">
             <p className="text-4xl mb-4">◯</p>
             <p className="font-serif italic">
-              {search ? `Aucun résultat pour « ${search} »` : 'Aucune donnée pour le moment'}
+              {search ? t('empty.noSearch') : t('empty.noData')}
             </p>
           </div>
         ) : (

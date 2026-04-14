@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { buildGraph, RELATION_COLORS, RELATION_LABELS } from '../../utils/buildGraph';
+import { useTranslation } from 'react-i18next';
+import { buildGraph, RELATION_COLORS } from '../../utils/buildGraph';
 import { getMaxSeverity, SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
 import { getEntityInfo } from '../../utils/entityUtils';
 import { useGraphSimulation, W, H, CX, CY } from './useGraphSimulation';
 import IncPanel from './IncPanel';
 import { useIncStore } from '../../stores/useIncStore';
+import { useStoreLoader } from '../../hooks/useStoreLoader';
 
 // ── Constantes de rendu ───────────────────────────────────────────────────────
 const CENTER_R = 52;
@@ -25,6 +27,8 @@ function truncate(str, n) {
 }
 
 export default function EntityGraph({ entityId, onNodeClick }) {
+  const { t } = useTranslation();
+  useStoreLoader([useIncStore]);
   const rawIncs = useIncStore(s => s.data);
   const [currentId,     setCurrentId]     = useState(entityId);
   const [history,       setHistory]       = useState([entityId]);
@@ -87,7 +91,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
   );
 
   if (!graph) {
-    return <div className="h-full flex items-center justify-center bg-[#0B1621] text-slate-400">Entité introuvable.</div>;
+    return <div className="h-full flex items-center justify-center bg-[#0B1621] text-slate-400">{t('graph.entityNotFound')}</div>;
   }
 
   const { central, satellites, edges, relNodes: graphRelNodes = [] } = graph;
@@ -103,10 +107,10 @@ export default function EntityGraph({ entityId, onNodeClick }) {
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Atlas <span style={{ color: '#3F51B5' }}>Relations</span>
+            Atlas <span style={{ color: '#3F51B5' }}>{t('graph.relations')}</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            {central.name} — {N} connexion{N !== 1 ? 's' : ''}
+            {central.name} — {t('graph.connections', { count: N })}
           </p>
         </div>
       </header>
@@ -197,7 +201,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
             const x1 = from.x + ux * r1, y1 = from.y + uy * r1;
             const x2 = to.x   - ux * r2, y2 = to.y   - uy * r2;
             const showLabel = !fRel && !tRel;
-            const label = showLabel ? (RELATION_LABELS[edge.relType] || '') : '';
+            const label = showLabel ? (t(`graph.rel_${edge.relType}`) || '') : '';
             const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
             const lw = label.length * 6 + 10;
             return (
@@ -285,7 +289,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
                   fill={relNode.color} fontSize="8" fontWeight="800"
                   style={{ letterSpacing: '0.06em', textTransform: 'uppercase' }}
                 >
-                  {relNode.label.toUpperCase()}
+                  {(t(`graph.rel_${relNode.relType}`) || relNode.label).toUpperCase()}
                 </text>
               </g>
             );
@@ -330,7 +334,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
               </g>
             );
           })()}
-          {N === 0 && <text x={CX} y={CY + CENTER_R + 50} textAnchor="middle" fill="#475569" fontSize="13" fontStyle="italic">Aucune connexion trouvée</text>}
+          {N === 0 && <text x={CX} y={CY + CENTER_R + 50} textAnchor="middle" fill="#475569" fontSize="13" fontStyle="italic">{t('graph.noConnections')}</text>}
         </svg>
 
         {/* Tooltip hover */}
@@ -355,7 +359,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
               {node.race        && <p className="text-xs mt-0.5" style={{ color }}>{node.race}</p>}
               {node.type        && <p className="text-xs mt-0.5" style={{ color }}>{node.type}</p>}
               {node.description && <p className="text-xs text-slate-400 mt-1.5 leading-relaxed font-serif line-clamp-2">{node.description}</p>}
-              <p className="text-xs text-slate-600 mt-1.5 italic">Cliquer pour explorer →</p>
+              <p className="text-xs text-slate-600 mt-1.5 italic">{t('graph.clickToExplore')}</p>
             </div>
           );
         })()}
@@ -375,12 +379,12 @@ export default function EntityGraph({ entityId, onNodeClick }) {
         {/* Légende relations */}
         {usedRelTypes.length > 0 && (
           <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm border border-white/10 rounded-xl p-3">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Relations</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{t('graph.relations')}</p>
             <div className="space-y-1.5">
               {usedRelTypes.map(key => (
                 <div key={key} className="flex items-center gap-2">
                   <div className="w-4" style={{ backgroundColor: RELATION_COLORS[key], height: '1.5px', boxShadow: `0 0 4px ${RELATION_COLORS[key]}` }} />
-                  <span className="text-[11px] text-slate-400">{RELATION_LABELS[key]}</span>
+                  <span className="text-[11px] text-slate-400">{t(`graph.rel_${key}`)}</span>
                 </div>
               ))}
             </div>
@@ -389,13 +393,13 @@ export default function EntityGraph({ entityId, onNodeClick }) {
 
         {/* Légende types */}
         <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm border border-white/10 rounded-xl p-3">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Entités</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{t('graph.entities')}</p>
           <div className="space-y-1.5">
             {[
-              { type: 'character', label: 'Personnage', color: '#9CA3AF' },
-              { type: 'location',  label: 'Lieu',       color: NODE_COLORS.location },
-              { type: 'object',    label: 'Objet',      color: NODE_COLORS.object },
-              { type: 'group',     label: 'Groupe',     color: '#10B981' },
+              { type: 'character', label: t('label.characters'), color: '#9CA3AF' },
+              { type: 'location',  label: t('label.locations'),  color: NODE_COLORS.location },
+              { type: 'object',    label: t('label.objects'),    color: NODE_COLORS.object },
+              { type: 'group',     label: t('label.groups'),     color: '#10B981' },
             ].map(({ type, label, color }) => (
               <div key={type} className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />

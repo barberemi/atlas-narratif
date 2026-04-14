@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-source-case-duplication
+- **Area**: Data layer
+- **Severity**: Low
+- **Problem**: The SQL fragment `SOURCE_CASE` is duplicated verbatim in `src/db/queries.js:11` (PGlite client) and `server/src/db-queries.js:14` (server). Both encode the same business rule: when an imported entity is updated, its `source` changes from `'import'` to `'modified'`.
+- **Impact**: If the business rule changes, both files must be updated in sync. Risk of drift.
+- **Where**: `src/db/queries.js:11`, `server/src/db-queries.js:14`
+- **Suggested fix**: Accept as intentional duplication for now — client (PGlite) and server (postgres.js) use different query APIs, making a shared module non-trivial. Document the coupling.
+- **Next step**: No immediate action. Track for awareness.

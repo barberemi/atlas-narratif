@@ -3,6 +3,7 @@ import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
 
 export default function EntityChip({ link, onEntityClick, onEntityFilter }) {
   const meta = useMemo(() => getEntityMeta(link.entityId, link.entityType), [link]);
+  const displayName = meta?.name ?? link.label;
 
   const color = meta?.color ?? ENTITY_COLORS[link.entityType] ?? '#64748B';
   const hex   = color.replace('#', '');
@@ -38,13 +39,13 @@ export default function EntityChip({ link, onEntityClick, onEntityFilter }) {
       }}
       title={meta
         ? onEntityFilter
-          ? `Filtrer par ${link.label} (Shift+clic → relations)`
-          : `Ouvrir la fiche de ${link.label}`
+          ? `Filtrer par ${displayName} (Shift+clic → relations)`
+          : `Ouvrir la fiche de ${displayName}`
         : 'Entité non trouvée dans la base'
       }
     >
       <span>{icon}</span>
-      {link.label}
+      {displayName}
     </button>
   );
 }

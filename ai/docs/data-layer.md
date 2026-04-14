@@ -33,29 +33,68 @@ Point d'entrée unique pour toutes les données côté frontend. Remplace les an
 
 ## Stores Zustand (src/stores/)
 
-### Pattern général (`createEntityStore`)
+### Factory : `createEntityStore`
 
-Chaque store expose :
-- Les données : `items`, `characters`, `events`, etc.
+Fonction factory dans `createEntityStore.js` pour créer des stores CRUD standardisés.
+
+Paramètres :
+```js
+createEntityStore({ initialState, fetchFn, insertFn, updateFn, deleteFn })
+```
+
+Le store généré expose :
 - `load(projectId)` — charge via `client.js` (fetch API)
-- CRUD : `add(data)`, `edit(id, data)`, `remove(id)` — optimistic update + persist serveur
+- `save(data)` — insert ou update (optimistic update + persist serveur)
+- `remove(id)` — suppression (optimistic)
+- `_reload()` — recharge depuis le serveur
+- `reset()` — vide le store
+- `saving` / `_loading` / `_projectId` — état interne
+
+Intègre automatiquement `useSaveIndicator` pour le feedback visuel global.
+
+Utilisé par : `useStcStore`, `useTimelineStore`.
+
+### Pattern custom
+
+Certains stores ont une logique trop spécifique pour la factory et utilisent Zustand directement avec un wrapper `_withSaving()` :
+- `useLoreStore` — gère 4 types d'entités (characters, locations, objects, groups) + cache d'entités
+- `useVolumeStore` — gère `activeVolumeId` (état global cross-stores)
+- `useMapStore` — mode auto/manual, auto-calcul de trajets
+- `useIncStore` — rescan client-side via `runDetection()`
+- `useCharacterArcStore` — axes + points
 
 ### Inventaire
 
-| Store | Données gérées | Fichier |
-|-------|---------------|---------|
-| `useVolumeStore` | volumes + `activeVolumeId` | useVolumeStore.js |
-| `useLoreStore` | characters, locations, objects, groups | useLoreStore.js |
-| `useTimelineStore` | timeline_events + event_entities | useTimelineStore.js |
-| `useStcStore` | stc_chapters + beats + entities | useStcStore.js |
-| `useMapStore` | character_journeys + mapImage | useMapStore.js |
-| `useArcStore` | arc_points | useArcStore.js |
-| `useCharacterArcStore` | character_arc_axes + character_arc_points | useCharacterArcStore.js |
-| `useIncStore` | incoherences + incoherence_links | useIncStore.js |
-| `useNotesStore` | chapter_notes | useNotesStore.js |
-| `usePlantStore` | plant_payoffs | usePlantStore.js |
-| `useThreadStore` | narrative_threads | useThreadStore.js |
-| `useHeroJourneyStore` | hero_journey_entries | useHeroJourneyStore.js |
+| Store | Données gérées | Pattern | Fichier |
+|-------|---------------|---------|---------|
+| `useVolumeStore` | volumes + `activeVolumeId` | custom | useVolumeStore.js |
+| `useLoreStore` | characters, locations, objects, groups | custom | useLoreStore.js |
+| `useTimelineStore` | timeline_events + event_entities | factory | useTimelineStore.js |
+| `useStcStore` | stc_chapters + beats + entities | factory | useStcStore.js |
+| `useMapStore` | character_journeys + mapImage | custom | useMapStore.js |
+| `useArcStore` | arc_points | custom | useArcStore.js |
+| `useCharacterArcStore` | character_arc_axes + character_arc_points | custom | useCharacterArcStore.js |
+| `useIncStore` | incoherences + incoherence_links | custom | useIncStore.js |
+| `useNotesStore` | chapter_notes | custom | useNotesStore.js |
+| `usePlantStore` | plant_payoffs | custom | usePlantStore.js |
+| `useThreadStore` | narrative_threads | custom | useThreadStore.js |
+| `useHeroJourneyStore` | hero_journey_entries | custom | useHeroJourneyStore.js |
+| `useTourStore` | tour guidé (active, stepIndex) | custom | useTourStore.js |
+| `useSaveIndicator` | indicateur de sauvegarde global | custom | useSaveIndicator.js |
+
+### useTourStore — détail
+
+- `active` — tour en cours (boolean)
+- `stepIndex` — étape courante
+- `start(fromIndex)` / `startAtRoute(route)` / `next()` / `prev()` / `stop()`
+- Étapes définies dans `src/data/tour_steps.js` (`TOUR_STEPS`)
+
+### useSaveIndicator — détail
+
+- `saving` — compteur de sauvegardes en cours
+- `lastSavedAt` — timestamp de la dernière sauvegarde
+- `markSaving()` / `markSaved()` — incrémente/décrémente le compteur
+- Utilisé par `SaveIndicator` dans la TopNav
 
 ### useVolumeStore — détail
 
@@ -64,7 +103,13 @@ Chaque store expose :
 - `setActiveVolume(id | null)` — change le filtre global cross-stores
 - Ne pas utiliser `createEntityStore` car `activeVolumeId` est un état global
 
-## Schéma SQL (server/db/init.sql)
+## Schéma SQL (server/db/init.sql + migrations/)
+
+### Migrations
+
+- Fichiers dans `server/db/migrations/` (ex: `001_add_indexes.sql`)
+- Table `schema_migrations` — suivi des migrations appliquées
+- Runner : `server/src/migrate.js`
 
 ### Tables Better Auth (en premier, avant les tables app)
 
@@ -101,6 +146,7 @@ Chaque store expose :
 | `hero_journey_entries` | `id` | Étapes du Voyage du Héros |
 | `character_arc_axes` | `(id, project_id)` | Axes d'évolution par personnage |
 | `character_arc_points` | `(project_id, axis_id, chapter_num)` | Valeur (0-10) d'un axe |
+| `schema_migrations` | `name` | Migrations SQL appliquées |
 
 ### Conventions
 
@@ -109,6 +155,40 @@ Chaque store expose :
 - `source TEXT` sur characters/locations/objects/timeline_events : `'import'` (IA) ou `'manual'`
 - `extra JSONB DEFAULT '{}'` pour données arbitraires (utilisé pour beat_id, thread_ids, POV, goal/conflict/outcome sur timeline_events)
 - Champs directs sur `timeline_events` : `pov_character_id`, `scene_order`, `scene_goal`, `scene_conflict`, `scene_outcome`
+
+## Fichiers de configuration (src/data/)
+
+| Fichier | Contenu |
+|---------|---------|
+| `beats_config.js` | `BEATS` — 15 beats Save the Cat (ideal%, tolérance, alertes, exemples) |
+| `hero_journey_config.js` | Structure du Voyage du Héros |
+| `severity_config.js` | Niveaux de sévérité des incohérences |
+| `outcome_config.js` | Types de dénouement de scène |
+| `tour_steps.js` | `TOUR_STEPS` — étapes du tour guidé (route, dataKey, title, description) |
+| `analysis_prompt.js` | `buildAnalysisPrompt()` — prompt envoyé à l'IA pour analyser un manuscrit |
+
+## Hooks custom (src/hooks/)
+
+| Hook | Rôle |
+|------|------|
+| `useVolumeFilter` | Filtre les données par volume actif |
+| `useUndoableDelete` | Suppression avec undo (toast + timer) |
+| `useDragScroll` | Scroll par drag sur les frises horizontales |
+| `useLotrReseed` | Re-seed du projet LOTR de démo |
+| `useStoreLoader` | Initialisation des stores au changement de projet |
+
+## Utilitaires (src/utils/)
+
+| Fichier | Rôle |
+|---------|------|
+| `entityUtils.js` | Cache de métadonnées entités — `getEntityMeta(id)` |
+| `buildGraph.js` | Construction du graphe de relations (nœuds + arêtes) |
+| `color.js` | Utilitaires couleur (hex → rgba, contraste) |
+| `coverageUtils.js` | Métriques de couverture narrative |
+| `arcUtils.js` | Calculs d'arc / intensité |
+| `journeyUtils.js` | Calcul auto des trajets (`computeAutoJourneys`) |
+| `reviewUtils.js` | Données de la page review |
+| `exportMarkdown.js` | Export projet en Markdown |
 
 ## Flux d'import IA
 

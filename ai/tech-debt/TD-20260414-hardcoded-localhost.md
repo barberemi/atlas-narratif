@@ -1,0 +1,11 @@
+- **ID**: TD-20260414-hardcoded-localhost
+- **Area**: Frontend / Configuration
+- **Severity**: Medium
+- **Problem**: Three files use `?? 'http://localhost:3001'` as fallback when `VITE_API_URL` is undefined. In production, a missing env var will silently direct API calls to localhost instead of failing clearly.
+- **Impact**: Silent failure in production if env var is not set. Requests would fail at network level with no helpful error.
+- **Where**:
+  - `src/lib/authClient.js:4`
+  - `src/db/exportProject.js:8`
+  - `src/api/client.js:10`
+- **Suggested fix**: Either throw at startup if `VITE_API_URL` is undefined in production, or centralize the base URL in a single config module that validates it once.
+- **Next step**: Create a shared config module with env validation.

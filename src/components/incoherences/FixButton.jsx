@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getEntityMeta } from '../../utils/entityUtils';
 
 export default function FixButton({ links, onFix }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -22,7 +24,7 @@ export default function FixButton({ links, onFix }) {
         className="text-xs font-bold px-2.5 py-1 rounded-lg transition-all duration-150 flex-shrink-0"
         style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
       >
-        Corriger →
+        {t('inc.fix')}
       </button>
     );
   }
@@ -34,7 +36,7 @@ export default function FixButton({ links, onFix }) {
         className="text-xs font-bold px-2.5 py-1 rounded-lg transition-all duration-150"
         style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
       >
-        Corriger ▾
+        {t('inc.fixMultiple')}
       </button>
       {open && (
         <div
@@ -50,7 +52,7 @@ export default function FixButton({ links, onFix }) {
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#e2e8f0'; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}
             >
-              {link.label}
+              {getEntityMeta(link.entityId, link.entityType)?.name ?? link.label}
             </button>
           ))}
         </div>

@@ -112,9 +112,11 @@ describe('saveCharacter()', () => {
 // ── removeCharacter() ────────────────────────────────────────────────────────
 
 describe('removeCharacter()', () => {
+  const SNAPSHOT = { entity: { id: 'char_1', name: 'Alice' }, eventEntities: [] };
+
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    vi.mocked(deleteCharacter).mockResolvedValue();
+    vi.mocked(deleteCharacter).mockResolvedValue(SNAPSHOT);
     await useLoreStore.getState().load(PROJECT_ID);
   });
 
@@ -128,6 +130,11 @@ describe('removeCharacter()', () => {
     vi.mocked(getLoreData).mockResolvedValue(updated);
     await useLoreStore.getState().removeCharacter('char_1');
     expect(useLoreStore.getState().characters).toEqual([]);
+  });
+
+  it('retourne le snapshot pour undo', async () => {
+    const result = await useLoreStore.getState().removeCharacter('char_1');
+    expect(result).toEqual(SNAPSHOT);
   });
 });
 
@@ -152,6 +159,7 @@ describe('setCoordinates()', () => {
       { id: 'loc_2', name: 'Londres', coordinates: { x: 30, y: 40 } },
     ]};
     vi.mocked(getLoreData).mockResolvedValue(extra);
+    useLoreStore.getState().reset();
     await useLoreStore.getState().load(PROJECT_ID);
 
     await useLoreStore.getState().setCoordinates('loc_1', { x: 99, y: 99 });
@@ -194,15 +202,22 @@ describe('saveLocation()', () => {
 });
 
 describe('removeLocation()', () => {
+  const SNAPSHOT = { entity: { id: 'loc_1', name: 'Paris' }, eventEntities: [] };
+
   beforeEach(async () => {
     vi.mocked(getLoreData).mockResolvedValue(LORE_DATA);
-    vi.mocked(deleteLocation).mockResolvedValue();
+    vi.mocked(deleteLocation).mockResolvedValue(SNAPSHOT);
     await useLoreStore.getState().load(PROJECT_ID);
   });
 
   it('appelle deleteLocation', async () => {
     await useLoreStore.getState().removeLocation('loc_1');
     expect(deleteLocation).toHaveBeenCalledWith('loc_1', PROJECT_ID);
+  });
+
+  it('retourne le snapshot pour undo', async () => {
+    const result = await useLoreStore.getState().removeLocation('loc_1');
+    expect(result).toEqual(SNAPSHOT);
   });
 });
 
