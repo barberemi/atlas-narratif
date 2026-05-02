@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('../api/client', () => ({
-  getAllCharacterAxes:     vi.fn(),
-  getAllProjectAxisLabels: vi.fn(),
-  getAllCharacterArcPoints: vi.fn(),
+  getAllCharacterArcs:     vi.fn(),
   insertCharacterAxis:    vi.fn(),
   deleteCharacterAxis:    vi.fn(),
   upsertCharacterArcPoint: vi.fn(),
@@ -15,9 +13,7 @@ vi.mock('./useVolumeStore', () => ({
 
 import { useCharacterArcStore } from './useCharacterArcStore';
 import {
-  getAllCharacterAxes,
-  getAllProjectAxisLabels,
-  getAllCharacterArcPoints,
+  getAllCharacterArcs,
   insertCharacterAxis,
   deleteCharacterAxis,
   upsertCharacterArcPoint,
@@ -48,9 +44,7 @@ beforeEach(() => {
 
 describe('load()', () => {
   beforeEach(async () => {
-    vi.mocked(getAllCharacterAxes).mockResolvedValue(RAW_AXES);
-    vi.mocked(getAllCharacterArcPoints).mockResolvedValue(RAW_POINTS);
-    vi.mocked(getAllProjectAxisLabels).mockResolvedValue(AXIS_LABELS);
+    vi.mocked(getAllCharacterArcs).mockResolvedValue({ axes: RAW_AXES, points: RAW_POINTS, labels: AXIS_LABELS });
     await useCharacterArcStore.getState().load(PROJECT_ID);
   });
 
@@ -76,10 +70,9 @@ describe('load()', () => {
     expect(useCharacterArcStore.getState().axisLabels).toEqual(AXIS_LABELS);
   });
 
-  it('appelle les 3 APIs en parallèle', () => {
-    expect(getAllCharacterAxes).toHaveBeenCalledWith(PROJECT_ID);
-    expect(getAllCharacterArcPoints).toHaveBeenCalledWith(PROJECT_ID);
-    expect(getAllProjectAxisLabels).toHaveBeenCalledWith(PROJECT_ID);
+  it('appelle getAllCharacterArcs une seule fois', () => {
+    expect(getAllCharacterArcs).toHaveBeenCalledWith(PROJECT_ID);
+    expect(getAllCharacterArcs).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -87,9 +80,7 @@ describe('load()', () => {
 
 describe('addAxis()', () => {
   beforeEach(async () => {
-    vi.mocked(getAllCharacterAxes).mockResolvedValue([]);
-    vi.mocked(getAllCharacterArcPoints).mockResolvedValue([]);
-    vi.mocked(getAllProjectAxisLabels).mockResolvedValue(['Courage']);
+    vi.mocked(getAllCharacterArcs).mockResolvedValue({ axes: [], points: [], labels: ['Courage'] });
     await useCharacterArcStore.getState().load(PROJECT_ID);
   });
 
@@ -135,9 +126,7 @@ describe('addAxis()', () => {
 
 describe('removeAxis()', () => {
   beforeEach(async () => {
-    vi.mocked(getAllCharacterAxes).mockResolvedValue(RAW_AXES);
-    vi.mocked(getAllCharacterArcPoints).mockResolvedValue(RAW_POINTS);
-    vi.mocked(getAllProjectAxisLabels).mockResolvedValue(AXIS_LABELS);
+    vi.mocked(getAllCharacterArcs).mockResolvedValue({ axes: RAW_AXES, points: RAW_POINTS, labels: AXIS_LABELS });
     vi.mocked(deleteCharacterAxis).mockResolvedValue();
     await useCharacterArcStore.getState().load(PROJECT_ID);
   });
@@ -167,9 +156,7 @@ describe('removeAxis()', () => {
 
 describe('setPoint()', () => {
   beforeEach(async () => {
-    vi.mocked(getAllCharacterAxes).mockResolvedValue(RAW_AXES);
-    vi.mocked(getAllCharacterArcPoints).mockResolvedValue(RAW_POINTS);
-    vi.mocked(getAllProjectAxisLabels).mockResolvedValue(AXIS_LABELS);
+    vi.mocked(getAllCharacterArcs).mockResolvedValue({ axes: RAW_AXES, points: RAW_POINTS, labels: AXIS_LABELS });
     vi.mocked(upsertCharacterArcPoint).mockResolvedValue();
     await useCharacterArcStore.getState().load(PROJECT_ID);
   });
@@ -210,9 +197,7 @@ describe('setPoint()', () => {
 
 describe('reset()', () => {
   it('restaure l\'état initial', async () => {
-    vi.mocked(getAllCharacterAxes).mockResolvedValue(RAW_AXES);
-    vi.mocked(getAllCharacterArcPoints).mockResolvedValue(RAW_POINTS);
-    vi.mocked(getAllProjectAxisLabels).mockResolvedValue(AXIS_LABELS);
+    vi.mocked(getAllCharacterArcs).mockResolvedValue({ axes: RAW_AXES, points: RAW_POINTS, labels: AXIS_LABELS });
     await useCharacterArcStore.getState().load(PROJECT_ID);
     useCharacterArcStore.getState().reset();
     const s = useCharacterArcStore.getState();

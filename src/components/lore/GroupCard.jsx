@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
 
 export default function GroupCard({ group, onCharacterClick, onRelations }) {
+  const { t } = useTranslation();
   const characters = useLoreStore(s => s.characters);
   const locations  = useLoreStore(s => s.locations);
   const [hoveredChar, setHoveredChar] = useState(null);
@@ -55,7 +57,7 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
         {/* Membres */}
         <div className="mt-auto pt-2">
           <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-1.5">
-            {memberChars.length} membre{memberChars.length !== 1 ? 's' : ''}
+            {t('label.memberCount', { count: memberChars.length })}
           </p>
           {memberChars.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -79,7 +81,7 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
                       transform:       hoveredChar === c.id ? 'translateY(-1px)' : 'none',
                       boxShadow:       hoveredChar === c.id ? `0 3px 8px rgba(${r},${g},${b},0.3)` : 'none',
                     }}
-                    title={`Voir la fiche de ${c.name}`}
+                    title={t('lore.viewProfile', { name: c.name })}
                   >
                     <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                     {c.name.split(' ')[0]}
@@ -101,7 +103,7 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>
                 <line x1="3.5" y1="6.3" x2="10.5" y2="3"/><line x1="3.5" y1="7.7" x2="10.5" y2="11"/>
               </svg>
-              Relations
+              {t('lore.relations')}
             </button>
           </div>
         )}

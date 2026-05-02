@@ -3,6 +3,7 @@ import { serve } from '@hono/node-server';
 import { cors } from 'hono/cors';
 import sql from './db.js';
 import { auth } from './auth.js';
+import { migrate } from './migrate.js';
 
 const app = new Hono();
 
@@ -10,14 +11,15 @@ const app = new Hono();
 // Dev : tout localhost autorisé
 // Prod : uniquement FRONTEND_URL (mais nginx proxy = même origine, CORS inutile)
 
-const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:5173')
-  .split(',').map(s => s.trim());
+const allowedOrigins = process.env.FRONTEND_URL.split(',').map(s => s.trim());
+
+const isDev = process.env.NODE_ENV !== 'production';
 
 function resolveOrigin(requestOrigin) {
   if (!requestOrigin) return allowedOrigins[0];
   if (allowedOrigins.includes(requestOrigin)) return requestOrigin;
-  // En dev, autoriser tout localhost
-  if (requestOrigin.startsWith('http://localhost:') || requestOrigin.startsWith('http://127.0.0.1:')) {
+  // En dev uniquement, autoriser tout localhost
+  if (isDev && (requestOrigin.startsWith('http://localhost:') || requestOrigin.startsWith('http://127.0.0.1:'))) {
     return requestOrigin;
   }
   return null;
@@ -26,8 +28,9 @@ function resolveOrigin(requestOrigin) {
 const corsMiddleware = cors({
   origin: resolveOrigin,
   credentials: true,
-  allowHeaders: ['Content-Type', 'Authorization', 'X-Device-Id'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Device-Id', 'X-Device-Token'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  maxAge: 86400,
 });
 
 app.use('*', corsMiddleware);
@@ -36,9 +39,9 @@ app.use('*', corsMiddleware);
 // Better Auth retourne un Response natif, on lui ajoute les headers CORS manuellement.
 
 app.all('/auth/*', async (c) => {
-  console.log(`[auth] ${c.req.method} ${c.req.path}`);
+  if (isDev) console.log(`[auth] ${c.req.method} ${c.req.path}`);
   const res    = await auth.handler(c.req.raw);
-  console.log(`[auth] réponse : ${res.status}`);
+  if (isDev) console.log(`[auth] réponse : ${res.status}`);
   const origin = c.req.header('origin');
   const allowed = origin ? resolveOrigin(origin) : null;
   if (!allowed) return res;
@@ -55,8 +58,8 @@ app.get('/health', async (c) => {
   try {
     await sql`SELECT 1`;
     return c.json({ status: 'ok', db: 'connected' });
-  } catch (err) {
-    return c.json({ status: 'error', db: err.message }, 500);
+  } catch {
+    return c.json({ status: 'error', db: 'unavailable' }, 500);
   }
 });
 
@@ -64,9 +67,28 @@ app.get('/health', async (c) => {
 import api from './routes/api.js';
 app.route('/api', api);
 
-// ── Démarrage ─────────────────────────────────────────────────────────────────
+// ── Migrations + Démarrage ───────────────────────────────────────────────────
 const port = Number(process.env.PORT) || 3001;
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`API Atlas Narratif → http://localhost:${port}`);
-  console.log(`DB  → ${process.env.DATABASE_URL ?? 'postgresql://atlas:atlas_dev@localhost:5432/atlas'}`);
+await migrate().catch(err => {
+  console.error('[migrate] FATAL :', err.message);
+  process.exit(1);
 });
+const server = serve({ fetch: app.fetch, port }, () => {
+  console.log(`API Atlas Narratif → http://localhost:${port}`);
+  console.log('DB  → connectée');
+});
+
+// ── Graceful shutdown ────────────────────────────────────────────────────────
+function shutdown(signal) {
+  console.log(`[shutdown] ${signal} reçu, arrêt en cours…`);
+  server.close(() => {
+    sql.end().then(() => {
+      console.log('[shutdown] Connexions DB fermées. Bye.');
+      process.exit(0);
+    });
+  });
+  // Si le shutdown prend trop longtemps, forcer l'arrêt après 5s
+  setTimeout(() => { console.error('[shutdown] Timeout, arrêt forcé.'); process.exit(1); }, 5000);
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));

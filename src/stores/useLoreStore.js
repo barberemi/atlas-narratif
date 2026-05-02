@@ -9,6 +9,7 @@ import {
   setCharacterGroups,
 } from '../api/client';
 import { initEntityCache } from '../utils/entityUtils';
+import { useSaveIndicator } from './useSaveIndicator';
 
 export const useLoreStore = create((set, get) => {
   async function _reload() {
@@ -22,11 +23,14 @@ export const useLoreStore = create((set, get) => {
     const { _projectId } = get();
     if (!_projectId) return;
     set({ saving: true });
+    useSaveIndicator.getState().markSaving();
     try {
-      await fn(_projectId);
+      const result = await fn(_projectId);
       await _reload();
+      return result;
     } finally {
       set({ saving: false });
+      useSaveIndicator.getState().markSaved();
     }
   }
 
@@ -38,12 +42,17 @@ export const useLoreStore = create((set, get) => {
     ready:      false,
     saving:     false,
     _projectId: null,
+    _loading:   false,
 
     load: async (projectId) => {
-      set({ _projectId: projectId });
-      const data = await getLoreData(projectId);
-      initEntityCache(data);
-      set({ ...data, ready: true });
+      const { _projectId, _loading, ready } = get();
+      if (_loading || (_projectId === projectId && ready)) return;
+      set({ _projectId: projectId, _loading: true });
+      try {
+        const data = await getLoreData(projectId);
+        initEntityCache(data);
+        set({ ...data, ready: true, _loading: false });
+      } catch (e) { set({ _loading: false }); throw e; }
     },
 
     _reload,
@@ -100,6 +109,6 @@ export const useLoreStore = create((set, get) => {
       deleteGroup(groupId, pid)
     ),
 
-    reset: () => set({ characters: [], locations: [], objects: [], groups: [], ready: false, saving: false, _projectId: null }),
+    reset: () => set({ characters: [], locations: [], objects: [], groups: [], ready: false, saving: false, _projectId: null, _loading: false }),
   };
 });

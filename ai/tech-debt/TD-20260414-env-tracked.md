@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-env-tracked
+- **Area**: DevOps / Security
+- **Severity**: Medium
+- **Problem**: `.env` is tracked in git (contains `VITE_API_URL=http://localhost:3001`). It is not listed in `.gitignore`. Currently holds only a localhost URL, but the pattern invites accidental commits of secrets.
+- **Impact**: Any future addition of API keys or tokens to `.env` will be committed automatically.
+- **Where**: `.env` (root), `.gitignore` (missing entry)
+- **Suggested fix**: Add `.env` to `.gitignore`. Provide `.env.example` as the template (already has `.env.mcp.example`). Remove `.env` from tracking with `git rm --cached .env`.
+- **Next step**: Add `.env` to `.gitignore` and untrack the file.

@@ -1,16 +1,17 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
 
 // ── Config des groupes ─────────────────────────────────────────────────────────
-const GROUPS = [
-  { id: 'character', label: 'Personnages', icon: '👤', color: '#818cf8' },
-  { id: 'location',  label: 'Lieux',       icon: '📍', color: '#60a5fa' },
-  { id: 'object',    label: 'Objets',      icon: '⚔️', color: '#a78bfa' },
-  { id: 'event',     label: 'Événements',  icon: '📅', color: '#6366f1' },
-  { id: 'inco',      label: 'Incohérences',icon: '⚠️', color: '#ef4444' },
+const GROUP_DEFS = [
+  { id: 'character', i18nKey: 'label.characters', icon: '👤', color: '#818cf8' },
+  { id: 'location',  i18nKey: 'label.locations',  icon: '📍', color: '#60a5fa' },
+  { id: 'object',    i18nKey: 'label.objects',     icon: '⚔️', color: '#a78bfa' },
+  { id: 'event',     i18nKey: 'label.events',      icon: '📅', color: '#6366f1' },
+  { id: 'inco',      i18nKey: 'label.incoherences',icon: '⚠️', color: '#ef4444' },
 ];
 
 const SEVERITY_COLORS = {
@@ -34,8 +35,8 @@ function Highlight({ text, query }) {
 }
 
 // ── Ligne de résultat ─────────────────────────────────────────────────────────
-function ResultRow({ result, query, isActive, onSelect, onHover }) {
-  const group = GROUPS.find(g => g.id === result.group);
+function ResultRow({ result, query, isActive, onSelect, onHover, groups }) {
+  const group = groups.find(g => g.id === result.group);
   return (
     <button
       onMouseEnter={onHover}
@@ -69,6 +70,7 @@ function ResultRow({ result, query, isActive, onSelect, onHover }) {
 
 // ── GlobalSearch ───────────────────────────────────────────────────────────────
 export default function GlobalSearch({ onClose }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const listRef  = useRef(null);
@@ -78,6 +80,8 @@ export default function GlobalSearch({ onClose }) {
   const objects    = useLoreStore(s => s.objects);
   const events     = useTimelineStore(s => s.events);
   const incos      = useIncStore(s => s.data);
+
+  const GROUPS = useMemo(() => GROUP_DEFS.map(g => ({ ...g, label: t(g.i18nKey) })), [t]);
 
   const [query,       setQuery]       = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -100,7 +104,7 @@ export default function GlobalSearch({ onClose }) {
           group: 'character',
           title: c.name,
           sub:   null,
-          badge: c.source !== 'import' ? (c.source === 'manual' ? 'Manuel' : 'Modifié') : null,
+          badge: c.source !== 'import' ? (c.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
           badgeColor: c.source === 'manual' ? '#34d399' : '#f59e0b',
           action: () => navigate(`/lore?tab=characters&search=${encodeURIComponent(c.name)}`),
         });
@@ -114,7 +118,7 @@ export default function GlobalSearch({ onClose }) {
           group: 'location',
           title: l.name,
           sub:   l.type ?? null,
-          badge: l.source !== 'import' ? (l.source === 'manual' ? 'Manuel' : 'Modifié') : null,
+          badge: l.source !== 'import' ? (l.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
           badgeColor: l.source === 'manual' ? '#34d399' : '#f59e0b',
           action: () => navigate(`/lore?tab=locations&search=${encodeURIComponent(l.name)}`),
         });
@@ -128,7 +132,7 @@ export default function GlobalSearch({ onClose }) {
           group: 'object',
           title: o.name,
           sub:   o.type ?? null,
-          badge: o.source !== 'import' ? (o.source === 'manual' ? 'Manuel' : 'Modifié') : null,
+          badge: o.source !== 'import' ? (o.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
           badgeColor: o.source === 'manual' ? '#34d399' : '#f59e0b',
           action: () => navigate(`/lore?tab=objects&search=${encodeURIComponent(o.name)}`),
         });
@@ -149,13 +153,14 @@ export default function GlobalSearch({ onClose }) {
     });
 
     (incos ?? []).forEach(i => {
-      if (match(i.title) || match(i.explanation) || match(i.type)) {
+      const translatedType = i.type ? t(`incType.${i.type}`, { defaultValue: i.type }) : '';
+      if (match(i.title) || match(i.explanation) || match(i.type) || match(translatedType)) {
         out.push({
           id:         i.id,
           group:      'inco',
           title:      i.title,
-          sub:        i.type ?? null,
-          badge:      i.severity,
+          sub:        translatedType || null,
+          badge:      t(`severity.${i.severity}`, { defaultValue: i.severity }),
           badgeColor: SEVERITY_COLORS[i.severity] ?? '#64748b',
           action:     () => navigate(`/incoherences?filter=${i.severity}`),
         });
@@ -163,7 +168,7 @@ export default function GlobalSearch({ onClose }) {
     });
 
     return out;
-  }, [query, characters, locations, objects, events, incos, navigate]);
+  }, [query, characters, locations, objects, events, incos, navigate, t]);
 
   // Reset activeIndex quand les résultats changent
   useEffect(() => { setActiveIndex(0); }, [results]);
@@ -198,7 +203,7 @@ export default function GlobalSearch({ onClose }) {
   // Groupes présents dans les résultats
   const presentGroups = useMemo(
     () => GROUPS.filter(g => results.some(r => r.group === g.id)),
-    [results],
+    [results, GROUPS],
   );
 
   return (
@@ -231,7 +236,8 @@ export default function GlobalSearch({ onClose }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Rechercher un personnage, lieu, événement…"
+            placeholder={t('search.placeholder')}
+            aria-label={t('search.globalSearch')}
             className="flex-1 bg-transparent text-sm text-white outline-none placeholder-slate-600"
           />
           {query && (
@@ -239,7 +245,7 @@ export default function GlobalSearch({ onClose }) {
               onClick={() => setQuery('')}
               className="text-slate-600 hover:text-slate-400 transition-colors text-xs"
             >
-              Effacer
+              {t('btn.close')}
             </button>
           )}
           <kbd
@@ -259,7 +265,7 @@ export default function GlobalSearch({ onClose }) {
           >
             {results.length === 0 ? (
               <p className="text-slate-600 font-serif italic text-sm text-center py-10">
-                Aucun résultat pour « {query} »
+                {t('empty.noSearch')}
               </p>
             ) : (
               presentGroups.map(group => {
@@ -288,6 +294,7 @@ export default function GlobalSearch({ onClose }) {
                             isActive={globalIdx === activeIndex}
                             onSelect={() => handleSelect(result)}
                             onHover={() => setActiveIndex(globalIdx)}
+                            groups={GROUPS}
                           />
                         </div>
                       );
@@ -303,7 +310,7 @@ export default function GlobalSearch({ onClose }) {
         {!query.trim() && (
           <div className="px-4 py-4 text-center">
             <p className="text-xs text-slate-700 font-serif italic">
-              Tapez pour rechercher dans tout le projet…
+              {t('search.placeholder')}
             </p>
           </div>
         )}
@@ -313,11 +320,11 @@ export default function GlobalSearch({ onClose }) {
             className="flex items-center justify-between px-4 py-2 border-t border-white/5 flex-shrink-0"
             style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
           >
-            <span className="text-[10px] text-slate-700">{results.length} résultat{results.length > 1 ? 's' : ''}</span>
+            <span className="text-[10px] text-slate-700">{t('search.resultCount', { count: results.length })}</span>
             <div className="flex items-center gap-3 text-[10px] text-slate-700">
-              <span><kbd className="font-mono">↑↓</kbd> naviguer</span>
-              <span><kbd className="font-mono">↵</kbd> ouvrir</span>
-              <span><kbd className="font-mono">Esc</kbd> fermer</span>
+              <span><kbd className="font-mono">↑↓</kbd> {t('search.navigate')}</span>
+              <span><kbd className="font-mono">↵</kbd> {t('search.open')}</span>
+              <span><kbd className="font-mono">Esc</kbd> {t('search.close')}</span>
             </div>
           </div>
         )}

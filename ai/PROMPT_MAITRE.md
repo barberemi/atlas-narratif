@@ -8,9 +8,8 @@ Copiez-collez ce prompt au début d'une nouvelle session Claude Code pour lancer
 
 ```
 Je travaille sur AtlasNarratif, une application web d'aide à l'écriture narrative pour auteurs.
-Le projet est dans /home/rbarbe/Sites/atlas-narratif.
 
-Stack : React + Vite + TailwindCSS v4 + React Router v6. Données statiques dans src/data/. Pas de backend.
+Stack : React 19 + Vite 7 + Tailwind CSS 4 + React Router v7 + Zustand 5. Backend : Hono 4 API + PostgreSQL 16 + Better Auth. Données stockées en base, seed LOTR pour la démo.
 
 Objectif de l'application : aider les auteurs à gérer leur lore, visualiser les relations entre entités, suivre leur timeline narrative, détecter les incohérences, et analyser leur structure narrative (méthode Save the Cat).
 
@@ -24,7 +23,7 @@ Lance les agents suivants EN PARALLÈLE, chacun avec son fichier d'instructions 
 2. **Agent Documentation** — lit /ai/agents/documentation.md, documente le projet, écrit dans /ai/docs/
 3. **Agent Produit** — lit /ai/agents/product.md, analyse la valeur produit, écrit /ai/reports/product-report.md
 4. **Agent Narratif** — lit /ai/agents/narrative.md, évalue la pertinence narrative, écrit /ai/reports/narrative-report.md
-5. **Agent Migration Technique** — lit /ai/agents/tech-migration.md, conçoit la stratégie de migration vers SQLite multi-projet, écrit /ai/reports/tech-migration-report.md
+5. **Agent Migration Technique** — lit /ai/agents/tech-migration.md (note : migration déjà réalisée — cet agent est historique), écrit /ai/reports/tech-migration-report.md
 6. **Agent Refactoring** — lit /ai/agents/refactoring.md, détecte les duplications et propose un plan de découpage en composants réutilisables, écrit /ai/reports/refactoring-report.md
 
 Une fois tous les agents terminés, donne-moi un résumé consolidé des points les plus importants remontés par l'ensemble des agents.

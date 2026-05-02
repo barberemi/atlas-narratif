@@ -11,6 +11,10 @@ import sql from './db.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/**
+ * Clause SQL statique — marque les entités importées comme "modified" après édition.
+ * SÉCURITÉ : cette chaîne ne doit JAMAIS contenir de variable ou d'entrée utilisateur.
+ */
 const SOURCE_CASE = `source = CASE WHEN source='import' THEN 'modified' ELSE source END`;
 
 function makeId(prefix, projectId) {
@@ -61,14 +65,47 @@ export async function updateVolume(volumeId, data, projectId) {
 }
 
 export async function deleteVolume(volumeId, projectId) {
+  const [entity] = await sql`SELECT * FROM volumes WHERE id = ${volumeId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  // Capture IDs of entities referencing this volume (SET NULL, not DELETE)
+  const events = (await sql`SELECT id FROM timeline_events WHERE volume_id = ${volumeId} AND project_id = ${projectId}`).map(r => r.id);
+  const chapters = (await sql`SELECT id FROM stc_chapters WHERE volume_id = ${volumeId} AND project_id = ${projectId}`).map(r => r.id);
+  const heroEntries = (await sql`SELECT id FROM hero_journey_entries WHERE volume_id = ${volumeId} AND project_id = ${projectId}`).map(r => r.id);
+  const plantsByPlant = (await sql`SELECT id FROM plant_payoffs WHERE plant_volume_id = ${volumeId} AND project_id = ${projectId}`).map(r => r.id);
+  const plantsByPayoff = (await sql`SELECT id FROM plant_payoffs WHERE payoff_volume_id = ${volumeId} AND project_id = ${projectId}`).map(r => r.id);
+
+  // SET NULL on all references
+  if (events.length) await sql`UPDATE timeline_events SET volume_id = NULL WHERE id = ANY(${events}) AND project_id = ${projectId}`;
+  if (chapters.length) await sql`UPDATE stc_chapters SET volume_id = NULL WHERE id = ANY(${chapters}) AND project_id = ${projectId}`;
+  if (heroEntries.length) await sql`UPDATE hero_journey_entries SET volume_id = NULL WHERE id = ANY(${heroEntries}) AND project_id = ${projectId}`;
+  if (plantsByPlant.length) await sql`UPDATE plant_payoffs SET plant_volume_id = NULL WHERE id = ANY(${plantsByPlant}) AND project_id = ${projectId}`;
+  if (plantsByPayoff.length) await sql`UPDATE plant_payoffs SET payoff_volume_id = NULL WHERE id = ANY(${plantsByPayoff}) AND project_id = ${projectId}`;
+
   await sql`DELETE FROM volumes WHERE id = ${volumeId} AND project_id = ${projectId}`;
+
+  return { entity, refs: { events, chapters, heroEntries, plantsByPlant, plantsByPayoff } };
+}
+
+export async function restoreVolume(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO volumes (id, project_id, number, title, description)
+    VALUES (${e.id}, ${projectId}, ${e.number}, ${e.title}, ${e.description ?? null})
+    ON CONFLICT DO NOTHING
+  `;
+  const refs = snapshot.refs ?? {};
+  if (refs.events?.length) await sql`UPDATE timeline_events SET volume_id = ${e.id} WHERE id = ANY(${refs.events}) AND project_id = ${projectId}`;
+  if (refs.chapters?.length) await sql`UPDATE stc_chapters SET volume_id = ${e.id} WHERE id = ANY(${refs.chapters}) AND project_id = ${projectId}`;
+  if (refs.heroEntries?.length) await sql`UPDATE hero_journey_entries SET volume_id = ${e.id} WHERE id = ANY(${refs.heroEntries}) AND project_id = ${projectId}`;
+  if (refs.plantsByPlant?.length) await sql`UPDATE plant_payoffs SET plant_volume_id = ${e.id} WHERE id = ANY(${refs.plantsByPlant}) AND project_id = ${projectId}`;
+  if (refs.plantsByPayoff?.length) await sql`UPDATE plant_payoffs SET payoff_volume_id = ${e.id} WHERE id = ANY(${refs.plantsByPayoff}) AND project_id = ${projectId}`;
 }
 
 // ── Personnages ───────────────────────────────────────────────────────────────
 
 export async function getCharacters(projectId) {
   const rows = await sql`
-    SELECT * FROM characters WHERE project_id = ${projectId} ORDER BY name
+    SELECT * FROM characters WHERE project_id = ${projectId} ORDER BY LOWER(name)
   `;
   return rows.map(r => ({
     id:           r.id,
@@ -145,14 +182,60 @@ export async function updateCharacter(charId, data, projectId) {
 }
 
 export async function deleteCharacter(charId, projectId) {
+  const [entity] = await sql`SELECT * FROM characters WHERE id = ${charId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const eventEntities = await sql`SELECT * FROM event_entities WHERE entity_id = ${charId} AND project_id = ${projectId}`;
+  const charGroups = await sql`SELECT * FROM character_groups WHERE character_id = ${charId} AND project_id = ${projectId}`;
+  const axes = await sql`SELECT * FROM character_arc_axes WHERE character_id = ${charId} AND project_id = ${projectId}`;
+  const axisIds = axes.map(a => a.id);
+  const arcPoints = axisIds.length
+    ? await sql`SELECT * FROM character_arc_points WHERE axis_id = ANY(${axisIds}) AND project_id = ${projectId}`
+    : [];
+  const heroEntries = await sql`SELECT * FROM hero_journey_entries WHERE character_id = ${charId} AND project_id = ${projectId}`;
+
+  await sql`DELETE FROM event_entities WHERE entity_id = ${charId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM character_groups WHERE character_id = ${charId} AND project_id = ${projectId}`;
+  if (axisIds.length) {
+    await sql`DELETE FROM character_arc_points WHERE axis_id = ANY(${axisIds}) AND project_id = ${projectId}`;
+  }
+  await sql`DELETE FROM character_arc_axes WHERE character_id = ${charId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM hero_journey_entries WHERE character_id = ${charId} AND project_id = ${projectId}`;
   await sql`DELETE FROM characters WHERE id = ${charId} AND project_id = ${projectId}`;
+
+  return { entity, eventEntities, charGroups, axes, arcPoints, heroEntries };
+}
+
+export async function restoreCharacter(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO characters (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id, source)
+    VALUES (${e.id}, ${projectId}, ${e.name}, ${e.aliases ?? []}, ${e.race ?? null}, ${e.role ?? null},
+            ${e.affiliations ?? []}, ${e.traits ?? []}, ${e.origin ?? null}, ${e.description ?? null},
+            ${e.color ?? '#64748b'}, ${e.journey_key ?? null}, ${e.death_event_id ?? null}, ${e.source ?? 'import'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.eventEntities ?? [])) {
+    await sql`INSERT INTO event_entities (event_id, project_id, entity_id, entity_type) VALUES (${r.event_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
+  for (const r of (snapshot.charGroups ?? [])) {
+    await sql`INSERT INTO character_groups (character_id, group_id, project_id, role_in_group) VALUES (${r.character_id}, ${r.group_id}, ${projectId}, ${r.role_in_group ?? null}) ON CONFLICT DO NOTHING`;
+  }
+  for (const r of (snapshot.axes ?? [])) {
+    await sql`INSERT INTO character_arc_axes (id, project_id, character_id, label, color) VALUES (${r.id}, ${projectId}, ${r.character_id}, ${r.label}, ${r.color}) ON CONFLICT DO NOTHING`;
+  }
+  for (const r of (snapshot.arcPoints ?? [])) {
+    await sql`INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note, volume_id) VALUES (${projectId}, ${r.axis_id}, ${r.chapter_num}, ${r.value}, ${r.note ?? null}, ${r.volume_id ?? null}) ON CONFLICT DO NOTHING`;
+  }
+  for (const r of (snapshot.heroEntries ?? [])) {
+    await sql`INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id) VALUES (${r.id}, ${projectId}, ${r.stage_key}, ${r.character_id ?? null}, ${r.chapter_num ?? null}, ${r.summary ?? null}, ${r.volume_id ?? null}) ON CONFLICT DO NOTHING`;
+  }
 }
 
 // ── Lieux ─────────────────────────────────────────────────────────────────────
 
 export async function getLocations(projectId) {
   const rows = await sql`
-    SELECT * FROM locations WHERE project_id = ${projectId} ORDER BY name
+    SELECT * FROM locations WHERE project_id = ${projectId} ORDER BY LOWER(name)
   `;
   return rows.map(r => ({
     id:          r.id,
@@ -203,14 +286,34 @@ export async function updateLocation(locId, data, projectId) {
 }
 
 export async function deleteLocation(locId, projectId) {
+  const [entity] = await sql`SELECT * FROM locations WHERE id = ${locId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const eventEntities = await sql`SELECT * FROM event_entities WHERE entity_id = ${locId} AND project_id = ${projectId}`;
+
+  await sql`DELETE FROM event_entities WHERE entity_id = ${locId} AND project_id = ${projectId}`;
   await sql`DELETE FROM locations WHERE id = ${locId} AND project_id = ${projectId}`;
+
+  return { entity, eventEntities };
+}
+
+export async function restoreLocation(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO locations (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places, source)
+    VALUES (${e.id}, ${projectId}, ${e.name}, ${e.type ?? null}, ${e.regime ?? null}, ${e.description ?? null},
+            ${e.coordinates ?? null}, ${e.inhabitants ?? []}, ${e.visited_by ?? []}, ${e.key_places ?? []}, ${e.source ?? 'import'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.eventEntities ?? [])) {
+    await sql`INSERT INTO event_entities (event_id, project_id, entity_id, entity_type) VALUES (${r.event_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
 }
 
 // ── Objets ────────────────────────────────────────────────────────────────────
 
 export async function getObjects(projectId) {
   const rows = await sql`
-    SELECT * FROM objects WHERE project_id = ${projectId} ORDER BY name
+    SELECT * FROM objects WHERE project_id = ${projectId} ORDER BY LOWER(name)
   `;
   return rows.map(r => ({
     id:                     r.id,
@@ -273,7 +376,28 @@ export async function updateObject(objId, data, projectId) {
 }
 
 export async function deleteObject(objId, projectId) {
+  const [entity] = await sql`SELECT * FROM objects WHERE id = ${objId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const eventEntities = await sql`SELECT * FROM event_entities WHERE entity_id = ${objId} AND project_id = ${projectId}`;
+
+  await sql`DELETE FROM event_entities WHERE entity_id = ${objId} AND project_id = ${projectId}`;
   await sql`DELETE FROM objects WHERE id = ${objId} AND project_id = ${projectId}`;
+
+  return { entity, eventEntities };
+}
+
+export async function restoreObject(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, powers, holders, created_in, inscription, status, status_changed_at_chapter, source)
+    VALUES (${e.id}, ${projectId}, ${e.name}, ${e.type ?? null}, ${e.description ?? null}, ${e.creator ?? null},
+            ${e.current_holder ?? null}, ${e.powers ?? []}, ${e.holders ?? []}, ${e.created_in ?? null},
+            ${e.inscription ?? null}, ${e.status ?? 'active'}, ${e.status_changed_at_chapter ?? null}, ${e.source ?? 'import'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.eventEntities ?? [])) {
+    await sql`INSERT INTO event_entities (event_id, project_id, entity_id, entity_type) VALUES (${r.event_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
@@ -398,9 +522,43 @@ export async function updateTimelineEvent(eventId, data, projectId) {
   }
 }
 
+export async function reorderEvents(projectId, updates) {
+  await sql.begin(async (tx) => {
+    for (const u of updates) {
+      await tx`
+        UPDATE timeline_events
+        SET chapter_num = ${u.chapter}, scene_order = ${u.sceneOrder}
+        WHERE id = ${u.id} AND project_id = ${projectId}
+      `;
+    }
+  });
+}
+
 export async function deleteTimelineEvent(eventId, projectId) {
+  const [entity] = await sql`SELECT * FROM timeline_events WHERE id = ${eventId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const eventEntities = await sql`SELECT * FROM event_entities WHERE event_id = ${eventId} AND project_id = ${projectId}`;
+
   await sql`DELETE FROM event_entities WHERE event_id = ${eventId} AND project_id = ${projectId}`;
   await sql`DELETE FROM timeline_events WHERE id = ${eventId} AND project_id = ${projectId}`;
+
+  return { entity, eventEntities };
+}
+
+export async function restoreTimelineEvent(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO timeline_events (id, project_id, chapter_num, chapter_title, title, description, location_id, beat_id,
+      pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome, thread_ids, volume_id, is_flashback, story_chapter_ref, source)
+    VALUES (${e.id}, ${projectId}, ${e.chapter_num}, ${e.chapter_title}, ${e.title}, ${e.description ?? null},
+            ${e.location_id ?? null}, ${e.beat_id ?? null}, ${e.pov_character_id ?? null}, ${e.scene_order ?? 0},
+            ${e.scene_goal ?? null}, ${e.scene_conflict ?? null}, ${e.scene_outcome ?? null},
+            ${e.thread_ids ?? []}, ${e.volume_id ?? null}, ${e.is_flashback ?? false}, ${e.story_chapter_ref ?? null}, ${e.source ?? 'import'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.eventEntities ?? [])) {
+    await sql`INSERT INTO event_entities (event_id, project_id, entity_id, entity_type) VALUES (${r.event_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
 }
 
 // ── Incohérences ──────────────────────────────────────────────────────────────
@@ -568,10 +726,43 @@ export async function updateStcChapter(chapterId, { number, title, summary, beat
   }
 }
 
+export async function reorderStcChapters(projectId, updates) {
+  await sql.begin(async (tx) => {
+    for (const u of updates) {
+      await tx`
+        UPDATE stc_chapters SET number = ${u.number}
+        WHERE id = ${u.id} AND project_id = ${projectId}
+      `;
+    }
+  });
+}
+
 export async function deleteStcChapter(chapterId, projectId) {
+  const [entity] = await sql`SELECT * FROM stc_chapters WHERE id = ${chapterId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const beats = await sql`SELECT * FROM stc_chapter_beats WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
+  const entities = await sql`SELECT * FROM stc_chapter_entities WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
+
   await sql`DELETE FROM stc_chapter_entities WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
   await sql`DELETE FROM stc_chapter_beats WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
   await sql`DELETE FROM stc_chapters WHERE id = ${chapterId} AND project_id = ${projectId}`;
+
+  return { entity, beats, entities };
+}
+
+export async function restoreStcChapter(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO stc_chapters (id, project_id, number, title, summary, volume_id)
+    VALUES (${e.id}, ${projectId}, ${e.number}, ${e.title}, ${e.summary ?? null}, ${e.volume_id ?? null})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.beats ?? [])) {
+    await sql`INSERT INTO stc_chapter_beats (chapter_id, project_id, beat_id) VALUES (${r.chapter_id}, ${projectId}, ${r.beat_id}) ON CONFLICT DO NOTHING`;
+  }
+  for (const r of (snapshot.entities ?? [])) {
+    await sql`INSERT INTO stc_chapter_entities (chapter_id, project_id, entity_id, entity_type) VALUES (${r.chapter_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
 }
 
 // ── Arc émotionnel ────────────────────────────────────────────────────────────
@@ -630,7 +821,7 @@ export async function getProjects({ userId, deviceId } = {}) {
       WHERE device_id = ${deviceId} AND user_id IS NULL ORDER BY created_at
     `;
   } else {
-    rows = await sql`SELECT id, name, description, created_at FROM projects ORDER BY created_at`;
+    return [];
   }
   return rows.map(r => ({
     id:          r.id,
@@ -655,8 +846,15 @@ export async function createProject({ name, description }, { userId, deviceId } 
   return id;
 }
 
-export async function deleteProject(projectId) {
-  await sql`DELETE FROM projects WHERE id = ${projectId}`;
+export async function deleteProject(projectId, { userId, deviceId } = {}) {
+  if (!userId && !deviceId) throw new Error('deleteProject: userId ou deviceId requis');
+  if (userId) {
+    const res = await sql`DELETE FROM projects WHERE id = ${projectId} AND user_id = ${userId}`;
+    if (res.count === 0) throw new Error('Projet introuvable ou non autorisé');
+  } else {
+    const res = await sql`DELETE FROM projects WHERE id = ${projectId} AND device_id = ${deviceId} AND user_id IS NULL`;
+    if (res.count === 0) throw new Error('Projet introuvable ou non autorisé');
+  }
 }
 
 export async function claimProjectsForUser(userId, deviceId) {
@@ -797,14 +995,30 @@ export async function updatePlant(plantId, data, projectId) {
 }
 
 export async function deletePlant(plantId, projectId) {
+  const [entity] = await sql`SELECT * FROM plant_payoffs WHERE id = ${plantId} AND project_id = ${projectId}`;
+  if (!entity) return null;
   await sql`DELETE FROM plant_payoffs WHERE id = ${plantId} AND project_id = ${projectId}`;
+  return { entity };
+}
+
+export async function restorePlant(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO plant_payoffs (id, project_id, label, type, plant_chapter_num, plant_event_id, plant_volume_id,
+      payoff_chapter_num, payoff_event_id, payoff_volume_id, entity_id, entity_type, status, notes)
+    VALUES (${e.id}, ${projectId}, ${e.label}, ${e.type ?? 'information'},
+            ${e.plant_chapter_num ?? null}, ${e.plant_event_id ?? null}, ${e.plant_volume_id ?? null},
+            ${e.payoff_chapter_num ?? null}, ${e.payoff_event_id ?? null}, ${e.payoff_volume_id ?? null},
+            ${e.entity_id ?? null}, ${e.entity_type ?? null}, ${e.status ?? 'open'}, ${e.notes ?? null})
+    ON CONFLICT DO NOTHING
+  `;
 }
 
 // ── Groupes d'appartenance ─────────────────────────────────────────────────────
 
 export async function getGroups(projectId) {
   const groupRows = await sql`
-    SELECT * FROM groups WHERE project_id = ${projectId} ORDER BY name
+    SELECT * FROM groups WHERE project_id = ${projectId} ORDER BY LOWER(name)
   `;
   const memberRows = await sql`
     SELECT * FROM character_groups WHERE project_id = ${projectId}
@@ -855,8 +1069,33 @@ export async function updateGroup(groupId, data, projectId) {
 }
 
 export async function deleteGroup(groupId, projectId) {
+  const [entity] = await sql`SELECT * FROM groups WHERE id = ${groupId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const charGroups = await sql`SELECT * FROM character_groups WHERE group_id = ${groupId} AND project_id = ${projectId}`;
+
   await sql`DELETE FROM character_groups WHERE group_id = ${groupId} AND project_id = ${projectId}`;
   await sql`DELETE FROM groups WHERE id = ${groupId} AND project_id = ${projectId}`;
+
+  return { entity, charGroups };
+}
+
+export async function restoreGroup(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
+    VALUES (${e.id}, ${projectId}, ${e.name}, ${e.type ?? 'autre'}, ${e.color ?? '#64748B'}, ${e.description ?? null}, ${e.homeland_id ?? null})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.charGroups ?? [])) {
+    await sql`INSERT INTO character_groups (character_id, group_id, project_id, role_in_group) VALUES (${r.character_id}, ${r.group_id}, ${projectId}, ${r.role_in_group ?? null}) ON CONFLICT DO NOTHING`;
+  }
+}
+
+export async function setGroupMemberRole(groupId, characterId, roleInGroup, projectId) {
+  await sql`
+    UPDATE character_groups SET role_in_group = ${roleInGroup ?? null}
+    WHERE group_id = ${groupId} AND character_id = ${characterId} AND project_id = ${projectId}
+  `;
 }
 
 export async function setCharacterGroups(characterId, groupIds, projectId) {
@@ -915,7 +1154,47 @@ export async function updateThread(threadId, data, projectId) {
 }
 
 export async function deleteThread(threadId, projectId) {
+  const [entity] = await sql`SELECT * FROM narrative_threads WHERE id = ${threadId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  // Capture events referencing this thread in their JSONB thread_ids
+  const affectedEvents = await sql`
+    SELECT id FROM timeline_events
+    WHERE project_id = ${projectId} AND thread_ids @> ${JSON.stringify([threadId])}::jsonb
+  `;
+  const affectedEventIds = affectedEvents.map(r => r.id);
+  // Remove thread ID from JSONB arrays
+  if (affectedEventIds.length) {
+    await sql`
+      UPDATE timeline_events
+      SET thread_ids = (
+        SELECT COALESCE(jsonb_agg(elem), '[]'::jsonb)
+        FROM jsonb_array_elements(thread_ids) AS elem
+        WHERE elem::text != ${JSON.stringify(threadId)}
+      )
+      WHERE project_id = ${projectId} AND id = ANY(${affectedEventIds})
+    `;
+  }
   await sql`DELETE FROM narrative_threads WHERE id = ${threadId} AND project_id = ${projectId}`;
+
+  return { entity, affectedEventIds };
+}
+
+export async function restoreThread(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
+    VALUES (${e.id}, ${projectId}, ${e.name}, ${e.color ?? '#3F51B5'}, ${e.role ?? 'subplot'}, ${e.description ?? null}, ${e.sort_order ?? 0})
+    ON CONFLICT DO NOTHING
+  `;
+  // Re-add thread ID to affected events' JSONB arrays
+  for (const eventId of (snapshot.affectedEventIds ?? [])) {
+    await sql`
+      UPDATE timeline_events
+      SET thread_ids = thread_ids || ${JSON.stringify([e.id])}::jsonb
+      WHERE id = ${eventId} AND project_id = ${projectId}
+        AND NOT thread_ids @> ${JSON.stringify([e.id])}::jsonb
+    `;
+  }
 }
 
 // ── Arc des personnages ────────────────────────────────────────────────────────
@@ -957,8 +1236,26 @@ export async function insertCharacterAxis(data, projectId) {
 }
 
 export async function deleteCharacterAxis(axisId, projectId) {
+  const [entity] = await sql`SELECT * FROM character_arc_axes WHERE id = ${axisId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const arcPoints = await sql`SELECT * FROM character_arc_points WHERE axis_id = ${axisId} AND project_id = ${projectId}`;
+
   await sql`DELETE FROM character_arc_points WHERE axis_id = ${axisId} AND project_id = ${projectId}`;
   await sql`DELETE FROM character_arc_axes WHERE id = ${axisId} AND project_id = ${projectId}`;
+
+  return { entity, arcPoints };
+}
+
+export async function restoreCharacterAxis(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
+    VALUES (${e.id}, ${projectId}, ${e.character_id}, ${e.label}, ${e.color ?? '#64748b'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.arcPoints ?? [])) {
+    await sql`INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note, volume_id) VALUES (${projectId}, ${r.axis_id}, ${r.chapter_num}, ${r.value}, ${r.note ?? null}, ${r.volume_id ?? null}) ON CONFLICT DO NOTHING`;
+  }
 }
 
 export async function upsertCharacterArcPoint(projectId, axisId, chapterNum, value, note, volumeId) {
@@ -1056,7 +1353,19 @@ export async function saveHeroJourneyEntry({ stageKey, characterId, chapterNum, 
 }
 
 export async function removeHeroJourneyEntry(entryId, projectId) {
+  const [entity] = await sql`SELECT * FROM hero_journey_entries WHERE id = ${entryId} AND project_id = ${projectId}`;
+  if (!entity) return null;
   await sql`DELETE FROM hero_journey_entries WHERE id = ${entryId} AND project_id = ${projectId}`;
+  return { entity };
+}
+
+export async function restoreHeroJourneyEntry(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
+    VALUES (${e.id}, ${projectId}, ${e.stage_key}, ${e.character_id ?? null}, ${e.chapter_num ?? null}, ${e.summary ?? null}, ${e.volume_id ?? null})
+    ON CONFLICT DO NOTHING
+  `;
 }
 
 export async function exportProject(projectId) {
@@ -1075,9 +1384,9 @@ export async function exportProject(projectId) {
     heroJourneyEntries,
   ] = await Promise.all([
     sql`SELECT * FROM volumes                WHERE project_id = ${projectId} ORDER BY number`,
-    sql`SELECT * FROM characters             WHERE project_id = ${projectId} ORDER BY name`,
-    sql`SELECT * FROM locations              WHERE project_id = ${projectId} ORDER BY name`,
-    sql`SELECT * FROM objects                WHERE project_id = ${projectId} ORDER BY name`,
+    sql`SELECT * FROM characters             WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
+    sql`SELECT * FROM locations              WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
+    sql`SELECT * FROM objects                WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
     sql`SELECT * FROM timeline_events        WHERE project_id = ${projectId} ORDER BY chapter_num, id`,
     sql`SELECT * FROM event_entities         WHERE project_id = ${projectId}`,
     sql`SELECT * FROM incoherences           WHERE project_id = ${projectId}`,
@@ -1086,7 +1395,7 @@ export async function exportProject(projectId) {
     sql`SELECT * FROM stc_chapter_beats      WHERE project_id = ${projectId}`,
     sql`SELECT * FROM stc_chapter_entities   WHERE project_id = ${projectId}`,
     sql`SELECT * FROM character_journeys     WHERE project_id = ${projectId} ORDER BY char_key, step_index`,
-    sql`SELECT * FROM groups                 WHERE project_id = ${projectId} ORDER BY name`,
+    sql`SELECT * FROM groups                 WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
     sql`SELECT * FROM character_groups       WHERE project_id = ${projectId}`,
     sql`SELECT * FROM plant_payoffs          WHERE project_id = ${projectId}`,
     sql`SELECT * FROM arc_points             WHERE project_id = ${projectId} ORDER BY chapter_number`,
@@ -1110,4 +1419,38 @@ export async function exportProject(projectId) {
     characterArcAxes, characterArcPoints,
     heroJourneyEntries,
   };
+}
+
+// ── RGPD — Export & suppression de compte ─────────────────────────────────────
+
+export async function exportUserData(userId) {
+  const [user] = await sql`
+    SELECT id, name, email, "emailVerified", "createdAt", "updatedAt"
+    FROM "user" WHERE id = ${userId}
+  `;
+  if (!user) throw new Error('Utilisateur introuvable');
+
+  const projects = await sql`SELECT id FROM projects WHERE user_id = ${userId}`;
+  const projectsData = [];
+  for (const p of projects) {
+    projectsData.push(await exportProject(p.id));
+  }
+
+  return {
+    user: { id: user.id, name: user.name, email: user.email, emailVerified: user.emailVerified, createdAt: user.createdAt },
+    projects: projectsData,
+    exportedAt: new Date().toISOString(),
+  };
+}
+
+export async function deleteUser(userId) {
+  await sql.begin(async (tx) => {
+    // Récupérer l'email pour nettoyer la table verification (pas de FK vers user)
+    const [user] = await tx`SELECT email FROM "user" WHERE id = ${userId}`;
+    await tx`DELETE FROM projects WHERE user_id = ${userId}`;
+    if (user?.email) {
+      await tx`DELETE FROM verification WHERE identifier = ${user.email}`;
+    }
+    await tx`DELETE FROM "user" WHERE id = ${userId}`;
+  });
 }

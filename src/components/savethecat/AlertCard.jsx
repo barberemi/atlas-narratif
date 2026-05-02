@@ -1,6 +1,13 @@
+import { useTranslation } from 'react-i18next';
+
 export default function AlertCard({ alert, isHovered, onHover }) {
+  const { t } = useTranslation();
   const isCritical = alert.severity === 'critical';
   const isMissing  = alert.type === 'missing';
+
+  const alertType = isMissing ? 'missing' : (alert.diff > 0 ? 'too_late' : 'too_early');
+  const messageKey = `narrative:beats.${alert.beat.id}.alert_${alertType}`;
+  const message = t(messageKey, alert.message);
 
   return (
     <div
@@ -21,11 +28,11 @@ export default function AlertCard({ alert, isHovered, onHover }) {
           {isMissing ? '○' : isCritical ? '⛔' : '⚠'}
         </span>
         <span className="text-xs font-bold" style={{ color: alert.beat.color }}>
-          {alert.beat.number}. {alert.beat.label}
+          {alert.beat.number}. {t(`narrative:beats.${alert.beat.id}.label`, alert.beat.label)}
         </span>
         {!isMissing && (
           <span className="text-[11px] font-mono text-slate-500 ml-auto whitespace-nowrap">
-            {alert.actualPct}% · idéal {alert.idealPct}%
+            {alert.actualPct}% · {t('stc.ideal')} {alert.idealPct}%
           </span>
         )}
         {alert.chapterNumber != null && (
@@ -43,7 +50,7 @@ export default function AlertCard({ alert, isHovered, onHover }) {
         )}
       </div>
       <p className="text-xs text-slate-400 leading-relaxed pl-5 font-serif italic">
-        {alert.message}
+        {message}
       </p>
     </div>
   );

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLoreStore }    from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import SourceBadge from '../ui/SourceBadge';
 import DarkCard from '../ui/DarkCard';
 
 export default function CharacterCard({ char, highlighted, onRelations }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
   useEffect(() => {
     if (highlighted && ref.current) ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -104,7 +106,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>
                 <line x1="3.5" y1="6.3" x2="10.5" y2="3"/><line x1="3.5" y1="7.7" x2="10.5" y2="11"/>
               </svg>
-              Relations
+              {t('lore.relations')}
             </button>
           </div>
         )}

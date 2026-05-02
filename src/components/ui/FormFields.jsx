@@ -1,10 +1,15 @@
+import { useId, cloneElement, isValidElement } from 'react';
+
 const DEFAULT_ACCENT = '#818cf8';
 
-export function Field({ label, children }) {
+export function Field({ label, required, children }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5">{label}</label>
-      {children}
+      <label htmlFor={id} className="block text-[10px] text-slate-500 uppercase tracking-widest mb-1.5">
+        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      </label>
+      {isValidElement(children) ? cloneElement(children, { id, 'aria-required': required || undefined }) : children}
     </div>
   );
 }

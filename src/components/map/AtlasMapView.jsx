@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import MapCanvas from './MapCanvas';
 import JourneyTimeline from './JourneyTimeline';
 import JourneyEditor from './JourneyEditor';
 import { hexToRgb } from '../../utils/color';
+import Skeleton from '../ui/Skeleton';
 import { useMapStore }      from '../../stores/useMapStore';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
+import { useStoreLoader }   from '../../hooks/useStoreLoader';
 
 function ControlButton({ active, onClick, children, title }) {
   return (
@@ -25,6 +28,9 @@ function ControlButton({ active, onClick, children, title }) {
 }
 
 export default function AtlasMapView({ onLocationClick }) {
+  const { t } = useTranslation();
+
+  useStoreLoader([useMapStore, useTimelineStore]);
 
   const journeys       = useMapStore(s => s.journeys);
   const autoJourneys   = useMapStore(s => s.autoJourneys);
@@ -171,11 +177,7 @@ export default function AtlasMapView({ onLocationClick }) {
     });
   }, [charKeys]);
 
-  if (!journeys && !autoJourneys) return (
-    <div className="h-full flex items-center justify-center">
-      <span className="text-slate-600 font-serif italic">Chargement…</span>
-    </div>
-  );
+  if (!journeys && !autoJourneys) return <Skeleton variant="card" />;
 
   if (!charKeys.length) return (
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
@@ -183,7 +185,7 @@ export default function AtlasMapView({ onLocationClick }) {
       <header className="sticky top-0 z-20 flex items-center px-6 py-3 border-b border-white/10 bg-[#0B1621]">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Carte <span style={{ color: '#3F51B5' }}>Interactive</span>
+            {t('nav.map')} <span style={{ color: '#3F51B5' }}>Interactive</span>
           </h1>
         </div>
       </header>
@@ -193,18 +195,18 @@ export default function AtlasMapView({ onLocationClick }) {
         <div className="flex flex-col items-center gap-6 max-w-sm text-center">
           <span className="text-5xl">🗺️</span>
           <div>
-            <p className="text-sm font-black text-slate-300 mb-1">Aucun trajet à afficher</p>
+            <p className="text-sm font-black text-slate-300 mb-1">{t('map.noJourneys')}</p>
             <p className="text-xs text-slate-600 font-serif italic">
               {mode === 'auto'
-                ? 'Ajoutez des personnages à vos événements timeline pour voir leurs trajets ici.'
-                : 'Aucun trajet manuel disponible.'}
+                ? t('map.noJourneysAutoHint')
+                : t('map.noJourneysManualHint')}
             </p>
           </div>
 
           {/* Upload carte */}
           <div className="w-full flex flex-col gap-2">
             <p className="text-xs text-slate-500 font-semibold">
-              {mapImage ? 'Remplacer la carte de fond' : 'Ajouter une carte de fond'}
+              {mapImage ? t('map.replaceBackground') : t('map.addBackground')}
             </p>
             <label
               className="flex items-center gap-3 px-4 py-4 rounded-xl cursor-pointer transition-all duration-150 hover:border-slate-600 w-full"
@@ -212,7 +214,7 @@ export default function AtlasMapView({ onLocationClick }) {
             >
               <span className="text-xl">{mapImage ? '✓' : '↑'}</span>
               <span className="text-xs text-slate-500">
-                {mapImage ? 'Carte chargée — cliquer pour remplacer' : 'Choisir une image (.jpg, .png…)'}
+                {mapImage ? t('map.backgroundLoaded') : t('map.chooseImage')}
               </span>
               <input type="file" accept="image/*" className="hidden" onChange={handleMapFile} />
             </label>
@@ -221,7 +223,7 @@ export default function AtlasMapView({ onLocationClick }) {
                 onClick={() => saveMapImage(null)}
                 className="text-[10px] text-slate-700 hover:text-red-400 transition-colors text-left"
               >
-                Supprimer la carte
+                {t('map.deleteBackground')}
               </button>
             )}
           </div>
@@ -231,7 +233,7 @@ export default function AtlasMapView({ onLocationClick }) {
               onClick={() => setMode('auto')}
               className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
             >
-              Passer en mode automatique →
+              {t('map.switchToAuto')}
             </button>
           )}
         </div>
@@ -327,11 +329,11 @@ export default function AtlasMapView({ onLocationClick }) {
       <header data-tour="map-canvas" className="sticky top-0 z-20 flex items-center px-6 py-3 border-b border-white/10 bg-[#0B1621]">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Carte <span style={{ color: '#3F51B5' }}>Interactive</span>
+            {t('nav.map')} <span style={{ color: '#3F51B5' }}>Interactive</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            {charKeys.length} personnage{charKeys.length > 1 ? 's' : ''} —
-            {mode === 'auto' ? ' trajets depuis la timeline' : ' trajets manuels'}
+            {t('map.charCount', { count: charKeys.length })} —
+            {mode === 'auto' ? ` ${t('map.journeysFromTimeline')}` : ` ${t('map.manualJourneys')}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -339,26 +341,26 @@ export default function AtlasMapView({ onLocationClick }) {
           <ControlButton
             active={mode === 'auto'}
             onClick={() => setMode(mode === 'auto' ? 'manual' : 'auto')}
-            title={mode === 'auto' ? 'Trajets calculés depuis vos événements timeline' : 'Trajets extraits par Claude à l\'import'}
+            title={mode === 'auto' ? t('map.autoModeTitle') : t('map.manualModeTitle')}
           >
             <span>{mode === 'auto' ? '⚡' : '📥'}</span>
-            <span className="hidden sm:inline">{mode === 'auto' ? 'Timeline' : 'Import'}</span>
+            <span className="hidden sm:inline">{mode === 'auto' ? t('map.autoModeLabel') : t('map.manualModeLabel')}</span>
           </ControlButton>
 
-          <ControlButton active={linked} onClick={toggleLinked} title="Lier les timelines — cliquer plusieurs personnages pour synchroniser">
+          <ControlButton active={linked} onClick={toggleLinked} title={t('map.linkTitle')}>
             <span className="w-3 h-3 rounded-full border-2 transition-colors"
               style={{ borderColor: linked ? '#818cf8' : '#475569' }} />
-            <span className="hidden sm:inline">Lier{linked && selected.size > 1 ? ` (${selected.size})` : ''}</span>
+            <span className="hidden sm:inline">{t('map.link')}{linked && selected.size > 1 ? ` (${selected.size})` : ''}</span>
           </ControlButton>
 
           {/* Toggle mode édition */}
           <ControlButton
             active={editMode}
             onClick={() => { setEditMode(v => !v); setPlacement(null); }}
-            title={editMode ? 'Quitter le mode édition' : 'Placer les lieux sur la carte'}
+            title={editMode ? t('map.exitEditMode') : t('map.enterEditMode')}
           >
             <span>✏️</span>
-            <span className="hidden sm:inline">{editMode ? 'Édition' : 'Placer lieu'}</span>
+            <span className="hidden sm:inline">{editMode ? t('map.editing') : t('map.placeLocation')}</span>
           </ControlButton>
 
         </div>
@@ -373,8 +375,8 @@ export default function AtlasMapView({ onLocationClick }) {
           <span style={{ color: '#818cf8' }}>✏️</span>
           <span style={{ color: '#94a3b8' }}>
             {unlocalizedLocs.length > 0
-              ? `Cliquez sur la carte pour placer un lieu · ${unlocalizedLocs.length} lieu${unlocalizedLocs.length > 1 ? 'x' : ''} à positionner · Cliquez un pin rouge pour le retirer`
-              : 'Tous les lieux sont positionnés · Cliquez un pin pour retirer ses coordonnées'}
+              ? t('map.editBannerUnlocalized', { count: unlocalizedLocs.length })
+              : t('map.editBannerAllPlaced')}
           </span>
         </div>
       )}
@@ -387,11 +389,11 @@ export default function AtlasMapView({ onLocationClick }) {
         >
           <span style={{ color: '#fb923c' }}>⚠</span>
           <span style={{ color: '#94a3b8' }}>
-            {unlocalized.length} lieu{unlocalized.length > 1 ? 'x' : ''} non localisé{unlocalized.length > 1 ? 's' : ''} sur la carte —{' '}
+            {t('map.unlocalizedWarning', { count: unlocalized.length })} —{' '}
             <span style={{ color: '#fb923c' }}>
               {unlocalized.map(l => l.name).join(', ')}
             </span>
-            <span className="text-slate-600"> · Ajoutez des coordonnées dans le Lore</span>
+            <span className="text-slate-600"> · {t('map.addCoordsInLore')}</span>
           </span>
         </div>
       )}
@@ -401,7 +403,7 @@ export default function AtlasMapView({ onLocationClick }) {
         className="px-4 py-2 border-b border-white/10 flex items-center gap-3"
         style={{ backgroundColor: 'rgba(5,10,18,0.97)' }}
       >
-        <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Suivre</span>
+        <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('map.follow')}</span>
         <div className="relative" ref={charDropRef}>
           {/* Bouton déclencheur */}
           <button
@@ -423,7 +425,7 @@ export default function AtlasMapView({ onLocationClick }) {
             {linked ? (
               <>
                 <span className="w-2 h-2 rounded flex-shrink-0" style={{ backgroundColor: selected.size > 0 ? '#818cf8' : '#334155' }} />
-                {selected.size > 1 ? `${selected.size} personnages` : selected.size === 1 ? CHARACTERS[[...selected][0]]?.label : 'Sélectionner…'}
+                {selected.size > 1 ? t('map.charCount', { count: selected.size }) : selected.size === 1 ? CHARACTERS[[...selected][0]]?.label : t('map.select')}
               </>
             ) : focused ? (
               <>
@@ -436,7 +438,7 @@ export default function AtlasMapView({ onLocationClick }) {
             ) : (
               <>
                 <span className="text-slate-500">👤</span>
-                Tous les personnages
+                {t('map.allCharacters')}
               </>
             )}
             <span className="ml-auto text-slate-600 text-[10px]">{charDropOpen ? '▲' : '▼'}</span>
@@ -498,7 +500,7 @@ export default function AtlasMapView({ onLocationClick }) {
                       onClick={e => { e.stopPropagation(); toggleVisible(key); }}
                       className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded transition-all hover:bg-white/10"
                       style={{ color: isVisible ? '#475569' : '#1e293b' }}
-                      title={isVisible ? 'Masquer sur la carte' : 'Afficher sur la carte'}
+                      title={isVisible ? t('map.hideOnMap') : t('map.showOnMap')}
                     >
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         {isVisible
@@ -520,7 +522,7 @@ export default function AtlasMapView({ onLocationClick }) {
                       onClick={() => setVisible(prev => { const n = { ...prev }; charKeys.forEach(k => { n[k] = !allVisible; }); return n; })}
                       className="w-full text-left px-3 py-1.5 rounded-lg text-[10px] font-bold text-slate-600 hover:text-slate-400 hover:bg-white/5 transition-all"
                     >
-                      {allVisible ? 'Tout masquer' : visibleCount === 0 ? 'Tout afficher' : `${visibleCount}/${charKeys.length} affichés · tout ${allVisible ? 'masquer' : 'afficher'}`}
+                      {allVisible ? t('map.hideAll') : visibleCount === 0 ? t('map.showAll') : `${visibleCount}/${charKeys.length} · ${allVisible ? t('map.hideAll') : t('map.showAll')}`}
                     </button>
                   );
                 })()}
@@ -566,7 +568,7 @@ export default function AtlasMapView({ onLocationClick }) {
             }}
           >
             <div className="px-3 pt-3 pb-1 flex items-center justify-between">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Placer ici</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('map.placeHere')}</p>
               <button onClick={() => setPlacement(null)} className="text-slate-600 hover:text-slate-300 text-xs transition-colors">×</button>
             </div>
             <div className="p-1 max-h-48 overflow-y-auto">
@@ -592,9 +594,9 @@ export default function AtlasMapView({ onLocationClick }) {
           style={{ backgroundColor: 'rgba(5,10,18,0.97)' }}
         >
           <div>
-            <h2 className="text-sm font-black tracking-tight text-slate-200">Trajets des personnages</h2>
+            <h2 className="text-sm font-black tracking-tight text-slate-200">{t('map.characterJourneys')}</h2>
             <p className="text-xs text-slate-500 font-serif italic mt-0.5">
-              Naviguez chapitre par chapitre sur la carte — cliquez un lieu pour en voir le détail.
+              {t('map.journeysHint')}
             </p>
           </div>
           <div className="flex flex-col gap-1.5">

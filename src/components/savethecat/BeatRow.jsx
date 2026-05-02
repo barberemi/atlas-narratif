@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const PencilIcon = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -8,6 +9,7 @@ const PencilIcon = () => (
 );
 
 export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered, onHover, totalChapters, onAssign }) {
+  const { t } = useTranslation();
   const primaryEvent = events[0] ?? null;
   const multiVolume  = events.length > 1;
 
@@ -18,7 +20,9 @@ export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered
   const [showExamples, setShowExamples] = useState(false);
   const [exampleIdx,   setExampleIdx]   = useState(0);
 
-  const examples = beat.examples ?? [];
+  const rawExamples = beat.examples ?? [];
+  const translatedExamples = t(`narrative:beats.${beat.id}.examples`, { returnObjects: true, defaultValue: null });
+  const examples = Array.isArray(translatedExamples) ? translatedExamples : rawExamples;
   const current  = examples[exampleIdx];
 
   const prev = (e) => { e.stopPropagation(); setExampleIdx(i => (i - 1 + examples.length) % examples.length); };
@@ -55,9 +59,9 @@ export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered
           <span
             className="text-xs block truncate"
             style={{ color: primaryEvent ? '#94a3b8' : '#475569' }}
-            title={beat.description}
+            title={t(`narrative:beats.${beat.id}.desc`, beat.description)}
           >
-            {beat.label}
+            {t(`narrative:beats.${beat.id}.label`, beat.label)}
           </span>
 
           {/* Mono-tome : une seule ligne */}
@@ -89,7 +93,7 @@ export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered
                       onClick={() => onAssign(beat, evt)}
                       className="w-5 h-5 flex items-center justify-center rounded-md flex-shrink-0 transition-all duration-200"
                       style={{ backgroundColor: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }}
-                      title="Modifier"
+                      title={t('stc.editEvent')}
                     >
                       <PencilIcon />
                     </button>
@@ -123,7 +127,7 @@ export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered
                 ? { backgroundColor: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }
                 : { backgroundColor: 'rgba(255,255,255,0.04)', color: '#475569', border: '1px solid rgba(255,255,255,0.08)' }
             }
-            title={primaryEvent ? 'Modifier cet événement' : 'Créer un événement pour ce beat'}
+            title={primaryEvent ? t('stc.editEvent') : t('stc.createEventForBeat')}
           >
             {primaryEvent ? <PencilIcon /> : <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>}
           </button>
@@ -135,7 +139,7 @@ export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered
             onClick={() => onAssign(beat, null)}
             className="w-6 h-6 flex items-center justify-center rounded-md flex-shrink-0 transition-all duration-200"
             style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#475569', border: '1px solid rgba(255,255,255,0.08)' }}
-            title="Créer un événement pour ce beat"
+            title={t('stc.createEventForBeat')}
           >
             <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
           </button>
@@ -151,7 +155,7 @@ export default function BeatRow({ beat, events = [], volumes, isAlert, isHovered
               backgroundColor: showExamples ? `${beat.color}18` : 'transparent',
               border:          `1px solid ${showExamples ? `${beat.color}40` : 'rgba(255,255,255,0.05)'}`,
             }}
-            title="Voir des exemples"
+            title={t('stc.showExamples')}
           >
             💡
           </button>

@@ -9,7 +9,7 @@
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-// ── Device ID (tracking anonyme) ─────────────────────────────────────────────
+// ── Device ID signé ──────────────────────────────────────────────────────────
 
 export function getDeviceId() {
   let id = localStorage.getItem('atlas_device_id');
@@ -20,6 +20,28 @@ export function getDeviceId() {
   return id;
 }
 
+function getDeviceToken() {
+  return localStorage.getItem('atlas_device_token');
+}
+
+/** Enregistre le deviceId auprès du serveur et stocke le token HMAC. */
+let _registerPromise = null;
+export function ensureDeviceRegistered() {
+  if (getDeviceToken()) return Promise.resolve();
+  if (_registerPromise) return _registerPromise;
+  _registerPromise = fetch(`${BASE}/api/device/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ deviceId: getDeviceId() }),
+  })
+    .then(r => r.json())
+    .then(({ token }) => {
+      if (token) localStorage.setItem('atlas_device_token', token);
+    })
+    .finally(() => { _registerPromise = null; });
+  return _registerPromise;
+}
+
 // ── Fetch helper ──────────────────────────────────────────────────────────────
 
 async function api(method, path, body) {
@@ -28,20 +50,32 @@ async function api(method, path, body) {
     console.error(err.message, err.stack);
     throw err;
   }
+  // S'assurer que le device est enregistré avant toute requête
+  await ensureDeviceRegistered();
+
   const opts = {
     method,
     credentials: 'include',
     headers: {
-      'Content-Type': 'application/json',
-      'X-Device-Id':  getDeviceId(),
+      'Content-Type':   'application/json',
+      'X-Device-Id':    getDeviceId(),
+      'X-Device-Token': getDeviceToken() ?? '',
     },
   };
   if (body !== undefined) opts.body = JSON.stringify(body);
 
   const res = await fetch(`${BASE}${path}`, opts);
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error ?? `HTTP ${res.status}`);
+    const payload = await res.json().catch(() => ({ error: res.statusText }));
+    const message = payload.error ?? `HTTP ${res.status}`;
+    if (res.status === 401) {
+      // Token expiré ou invalide → forcer re-registration au prochain appel
+      localStorage.removeItem('atlas_device_token');
+      _registerPromise = null;
+    } else {
+      import('./toast-bridge.js').then(m => m.showError(message));
+    }
+    throw new Error(message);
   }
   // 204 No Content
   if (res.status === 204) return null;
@@ -98,7 +132,12 @@ export async function updateVolume(volumeId, data, projectId) {
 }
 
 export async function deleteVolume(volumeId, projectId) {
-  return del(`/api/projects/${projectId}/volumes/${volumeId}`);
+  const res = await del(`/api/projects/${projectId}/volumes/${volumeId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreVolume(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/volumes/restore`, snapshot);
 }
 
 // ── Lore agrégé ───────────────────────────────────────────────────────────────
@@ -128,7 +167,12 @@ export async function updateCharacter(charId, data, projectId) {
 }
 
 export async function deleteCharacter(charId, projectId) {
-  return del(`/api/projects/${projectId}/characters/${charId}`);
+  const res = await del(`/api/projects/${projectId}/characters/${charId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreCharacter(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/characters/restore`, snapshot);
 }
 
 export async function setCharacterGroups(characterId, groupIds, projectId) {
@@ -152,7 +196,12 @@ export async function updateLocation(locId, data, projectId) {
 }
 
 export async function deleteLocation(locId, projectId) {
-  return del(`/api/projects/${projectId}/locations/${locId}`);
+  const res = await del(`/api/projects/${projectId}/locations/${locId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreLocation(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/locations/restore`, snapshot);
 }
 
 export async function setLocationCoordinates(locId, projectId, coords) {
@@ -176,7 +225,12 @@ export async function updateObject(objId, data, projectId) {
 }
 
 export async function deleteObject(objId, projectId) {
-  return del(`/api/projects/${projectId}/objects/${objId}`);
+  const res = await del(`/api/projects/${projectId}/objects/${objId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreObject(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/objects/restore`, snapshot);
 }
 
 // ── Groupes ───────────────────────────────────────────────────────────────────
@@ -195,8 +249,17 @@ export async function updateGroup(groupId, data, projectId) {
   return put(`/api/projects/${projectId}/groups/${groupId}`, data);
 }
 
+export async function setGroupMemberRole(groupId, characterId, roleInGroup, projectId) {
+  return put(`/api/projects/${projectId}/groups/${groupId}/members/${characterId}/role`, { roleInGroup });
+}
+
 export async function deleteGroup(groupId, projectId) {
-  return del(`/api/projects/${projectId}/groups/${groupId}`);
+  const res = await del(`/api/projects/${projectId}/groups/${groupId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreGroup(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/groups/restore`, snapshot);
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
@@ -219,7 +282,16 @@ export async function updateTimelineEvent(eventId, data, projectId) {
 }
 
 export async function deleteTimelineEvent(eventId, projectId) {
-  return del(`/api/projects/${projectId}/events/${eventId}`);
+  const res = await del(`/api/projects/${projectId}/events/${eventId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreTimelineEvent(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/events/restore`, snapshot);
+}
+
+export async function reorderEvents(projectId, updates) {
+  return put(`/api/projects/${projectId}/events/reorder`, { updates });
 }
 
 // ── Save the Cat ──────────────────────────────────────────────────────────────
@@ -238,7 +310,16 @@ export async function updateStcChapter(chapterId, data, projectId) {
 }
 
 export async function deleteStcChapter(chapterId, projectId) {
-  return del(`/api/projects/${projectId}/stc/${chapterId}`);
+  const res = await del(`/api/projects/${projectId}/stc/${chapterId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreStcChapter(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/stc/restore`, snapshot);
+}
+
+export async function reorderStcChapters(projectId, updates) {
+  return put(`/api/projects/${projectId}/stc/reorder`, { updates });
 }
 
 // ── Incohérences ──────────────────────────────────────────────────────────────
@@ -303,7 +384,12 @@ export async function updatePlant(plantId, data, projectId) {
 }
 
 export async function deletePlant(plantId, projectId) {
-  return del(`/api/projects/${projectId}/plants/${plantId}`);
+  const res = await del(`/api/projects/${projectId}/plants/${plantId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restorePlant(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/plants/restore`, snapshot);
 }
 
 // ── Fils narratifs ────────────────────────────────────────────────────────────
@@ -322,7 +408,12 @@ export async function updateThread(threadId, data, projectId) {
 }
 
 export async function deleteThread(threadId, projectId) {
-  return del(`/api/projects/${projectId}/threads/${threadId}`);
+  const res = await del(`/api/projects/${projectId}/threads/${threadId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreThread(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/threads/restore`, snapshot);
 }
 
 // ── Trajets / Carte ───────────────────────────────────────────────────────────
@@ -341,19 +432,8 @@ export async function saveJourney(projectId, charKey, steps) {
 
 // ── Arc des personnages ────────────────────────────────────────────────────────
 
-export async function getAllCharacterAxes(projectId) {
-  const { axes } = await get(`/api/projects/${projectId}/character-arcs`);
-  return axes;
-}
-
-export async function getAllCharacterArcPoints(projectId) {
-  const { points } = await get(`/api/projects/${projectId}/character-arcs`);
-  return points;
-}
-
-export async function getAllProjectAxisLabels(projectId) {
-  const { labels } = await get(`/api/projects/${projectId}/character-arcs`);
-  return labels;
+export async function getAllCharacterArcs(projectId) {
+  return get(`/api/projects/${projectId}/character-arcs`);
 }
 
 export async function getCharacterAxes(characterId, projectId) {
@@ -366,7 +446,12 @@ export async function insertCharacterAxis(data, projectId) {
 }
 
 export async function deleteCharacterAxis(axisId, projectId) {
-  return del(`/api/projects/${projectId}/character-arcs/${axisId}`);
+  const res = await del(`/api/projects/${projectId}/character-arcs/${axisId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreCharacterAxis(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/character-arcs/restore`, snapshot);
 }
 
 export async function upsertCharacterArcPoint(projectId, axisId, chapterNum, value, note, volumeId) {
@@ -391,7 +476,12 @@ export async function saveHeroJourneyEntry(data, projectId) {
 }
 
 export async function removeHeroJourneyEntry(entryId, projectId) {
-  return del(`/api/projects/${projectId}/hero-journey/${entryId}`);
+  const res = await del(`/api/projects/${projectId}/hero-journey/${entryId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreHeroJourneyEntry(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/hero-journey/restore`, snapshot);
 }
 
 // ── Seed / Import ─────────────────────────────────────────────────────────────
@@ -404,6 +494,16 @@ export async function seedProjectViaApi(meta, data) {
 export async function importBackupViaApi(payload) {
   const { id } = await post('/api/import/backup', payload);
   return id;
+}
+
+// ── Compte utilisateur (RGPD) ─────────────────────────────────────────────────
+
+export async function exportAccountData() {
+  return get('/api/account/export');
+}
+
+export async function deleteAccount() {
+  return del('/api/account');
 }
 
 // ── Utilitaires synchrones (re-exportés depuis queries.js) ────────────────────

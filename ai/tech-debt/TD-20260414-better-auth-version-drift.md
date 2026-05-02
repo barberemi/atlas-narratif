@@ -1,0 +1,8 @@
+- **ID**: TD-20260414-better-auth-version-drift
+- **Area**: DevOps / Dependencies
+- **Severity**: Medium
+- **Problem**: Both `package.json` (frontend) and `server/package.json` declare `"better-auth": "^1.5.6"` with caret ranges. They have separate `node_modules` and lockfiles, so `npm install` can resolve different patch/minor versions independently.
+- **Impact**: If client and server run different better-auth versions, auth token format or session handling could diverge, causing hard-to-diagnose auth failures.
+- **Where**: `package.json:17`, `server/package.json`
+- **Suggested fix**: Pin to exact version (remove `^`) or ensure both lockfiles are updated together. Alternatively, move to a monorepo workspace.
+- **Next step**: Consider pinning versions on next better-auth update.

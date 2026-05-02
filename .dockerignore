@@ -1,0 +1,12 @@
+node_modules
+server
+.git
+e2e
+ai
+dist
+.env
+.env.*
+!.env.example
+!.env.prod.example
+*.md
+.claude

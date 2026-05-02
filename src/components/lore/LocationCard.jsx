@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getEntityMeta } from '../../utils/entityUtils';
 import SourceBadge from '../ui/SourceBadge';
 import DarkCard from '../ui/DarkCard';
 
 export default function LocationCard({ loc, highlighted, onCharacterClick, onRelations }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const [hoveredChar, setHoveredChar] = useState(null);
   useEffect(() => {
@@ -24,7 +27,7 @@ export default function LocationCard({ loc, highlighted, onCharacterClick, onRel
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{loc.description}</p>
         {loc.inhabitants?.filter(Boolean).length > 0 && (
           <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1">Habitants</p>
+            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1">{t('label.inhabitants')}</p>
             <div className="flex flex-wrap gap-1.5">
               {loc.inhabitants.map((h, i) => (
                 <span key={i} className="text-xs px-2 py-0.5 rounded text-slate-300 bg-white/5 border border-white/8">{h}</span>
@@ -37,32 +40,35 @@ export default function LocationCard({ loc, highlighted, onCharacterClick, onRel
         )}
         {loc.visitedBy?.length > 0 && (
           <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">Passés par ici</p>
+            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">{t('lore.visitedBy')}</p>
             <div className="flex flex-wrap gap-1.5">
               {loc.visitedBy.map((char) => {
-                const hex = char.color.replace('#', '');
+                const meta = getEntityMeta(char.id, 'character');
+                const displayName = meta?.name ?? char.name;
+                const color = meta?.color ?? char.color;
+                const hex = color.replace('#', '');
                 const r = parseInt(hex.slice(0, 2), 16);
                 const g = parseInt(hex.slice(2, 4), 16);
                 const b = parseInt(hex.slice(4, 6), 16);
                 return (
                   <button
                     key={char.id}
-                    onClick={e => { e.stopPropagation(); onCharacterClick?.(char.name); }}
+                    onClick={e => { e.stopPropagation(); onCharacterClick?.(displayName); }}
                     onMouseEnter={() => setHoveredChar(char.id)}
                     onMouseLeave={() => setHoveredChar(null)}
                     className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-all duration-150"
                     style={{
                       backgroundColor: hoveredChar === char.id ? `rgba(${r},${g},${b},0.25)` : `rgba(${r},${g},${b},0.12)`,
-                      color: char.color,
+                      color,
                       border: `1px solid rgba(${r},${g},${b},${hoveredChar === char.id ? '0.6' : '0.3'})`,
                       cursor: onCharacterClick ? 'pointer' : 'default',
                       transform: hoveredChar === char.id ? 'translateY(-1px)' : 'none',
                       boxShadow: hoveredChar === char.id ? `0 3px 8px rgba(${r},${g},${b},0.3)` : 'none',
                     }}
-                    title={`Voir la fiche de ${char.name}`}
+                    title={t('lore.viewProfile', { name: displayName })}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: char.color }} />
-                    {char.name.split(' ')[0]}
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                    {displayName.split(' ')[0]}
                   </button>
                 );
               })}
@@ -80,7 +86,7 @@ export default function LocationCard({ loc, highlighted, onCharacterClick, onRel
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>
                 <line x1="3.5" y1="6.3" x2="10.5" y2="3"/><line x1="3.5" y1="7.7" x2="10.5" y2="11"/>
               </svg>
-              Relations
+              {t('lore.relations')}
             </button>
           </div>
         )}

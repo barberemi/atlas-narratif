@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useThreadStore }   from '../stores/useThreadStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
+import { useStoreLoader }   from '../hooks/useStoreLoader';
+import EmptyState from '../components/ui/EmptyState';
+import Skeleton from '../components/ui/Skeleton';
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 
@@ -23,7 +27,7 @@ function getRoleConfig(roleId) {
 
 // ── ThreadForm ─────────────────────────────────────────────────────────────────
 
-function ThreadForm({ initial, onSave, onCancel }) {
+function ThreadForm({ initial, onSave, onCancel, t }) {
   const [form, setForm] = useState({
     name:        initial?.name        ?? '',
     color:       initial?.color       ?? '#3F51B5',
@@ -40,16 +44,16 @@ function ThreadForm({ initial, onSave, onCancel }) {
       style={{ backgroundColor: 'rgba(63,81,181,0.06)', border: '1px solid rgba(63,81,181,0.2)' }}
     >
       <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#818cf8' }}>
-        {initial ? 'Modifier le fil' : 'Nouveau fil narratif'}
+        {initial ? t('threads.editThread', 'Modifier le fil') : t('threads.newThread', 'Nouveau fil narratif')}
       </p>
 
       {/* Nom */}
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Nom *</label>
+        <label className="block text-xs text-slate-400 mb-1.5">{t('label.name')} *</label>
         <input
           value={form.name}
           onChange={e => set('name', e.target.value)}
-          placeholder="Ex : Romance Aragorn/Arwen, Trahison de Saroumane…"
+          placeholder={t('threads.namePlaceholder')}
           autoFocus
           className="w-full px-3 py-2 rounded-lg text-sm text-white border border-white/10 outline-none"
           style={{ backgroundColor: '#0d1b2a' }}
@@ -58,7 +62,7 @@ function ThreadForm({ initial, onSave, onCancel }) {
 
       {/* Rôle */}
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Rôle</label>
+        <label className="block text-xs text-slate-400 mb-1.5">{t('label.role')}</label>
         <div className="flex flex-wrap gap-1.5">
           {THREAD_ROLES.map(r => {
             const active = form.role === r.id;
@@ -74,7 +78,7 @@ function ThreadForm({ initial, onSave, onCancel }) {
                   border:          `1px solid ${active ? `${r.color}50` : 'rgba(255,255,255,0.08)'}`,
                 }}
               >
-                {r.label}
+                {t(`threads.role${r.id[0].toUpperCase()}${r.id.slice(1).replace(/_(\w)/g, (_, c) => c.toUpperCase())}`, r.label)}
               </button>
             );
           })}
@@ -83,7 +87,7 @@ function ThreadForm({ initial, onSave, onCancel }) {
 
       {/* Couleur */}
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Couleur</label>
+        <label className="block text-xs text-slate-400 mb-1.5">{t('label.color')}</label>
         <div className="flex flex-wrap gap-2">
           {PALETTE.map(c => (
             <button
@@ -104,12 +108,12 @@ function ThreadForm({ initial, onSave, onCancel }) {
 
       {/* Description */}
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Description</label>
+        <label className="block text-xs text-slate-400 mb-1.5">{t('label.description')}</label>
         <textarea
           rows={2}
           value={form.description}
           onChange={e => set('description', e.target.value)}
-          placeholder="Résumé de l'intrigue, enjeux…"
+          placeholder={t('threads.descriptionPlaceholder', 'R\u00e9sum\u00e9 de l\'intrigue, enjeux\u2026')}
           className="w-full px-3 py-2 rounded-lg text-sm text-slate-300 border border-white/10 outline-none resize-none"
           style={{ backgroundColor: '#0d1b2a' }}
         />
@@ -121,7 +125,7 @@ function ThreadForm({ initial, onSave, onCancel }) {
           onClick={onCancel}
           className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
         >
-          Annuler
+          {t('btn.cancel')}
         </button>
         <button
           onClick={() => canSave && onSave({ ...form, description: form.description.trim() || null })}
@@ -133,7 +137,7 @@ function ThreadForm({ initial, onSave, onCancel }) {
             border:          `1px solid ${canSave ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.1)'}`,
           }}
         >
-          {initial ? 'Enregistrer' : 'Créer le fil'}
+          {initial ? t('btn.save') : t('threads.createThread', 'Cr\u00e9er le fil')}
         </button>
       </div>
     </div>
@@ -142,7 +146,7 @@ function ThreadForm({ initial, onSave, onCancel }) {
 
 // ── ThreadCard ─────────────────────────────────────────────────────────────────
 
-function ThreadCard({ thread, events, onEdit, onDelete }) {
+function ThreadCard({ thread, events, onEdit, onDelete, t }) {
   const [expanded,      setExpanded]      = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -186,7 +190,7 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
                 border:          `1px solid ${roleConfig.color}30`,
               }}
             >
-              {roleConfig.label}
+              {t(`threads.role${thread.role[0].toUpperCase()}${thread.role.slice(1).replace(/_(\w)/g, (_, c) => c.toUpperCase())}`, roleConfig.label)}
             </span>
             {chapterRange && (
               <span className="text-[10px] text-slate-500 font-mono">{chapterRange}</span>
@@ -198,7 +202,7 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
             </p>
           )}
           <p className="text-xs text-slate-600 mt-1.5">
-            {threadEvents.length} événement{threadEvents.length !== 1 ? 's' : ''} taggé{threadEvents.length !== 1 ? 's' : ''}
+            {t('threads.taggedEvents', '{{count}} \u00e9v\u00e9nement(s) tagg\u00e9(s)', { count: threadEvents.length })}
           </p>
         </div>
 
@@ -208,7 +212,7 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
             <button
               onClick={() => setExpanded(v => !v)}
               className="w-6 h-6 rounded flex items-center justify-center text-slate-500 hover:text-slate-300 hover:bg-white/08 transition-all text-[10px]"
-              title={expanded ? 'Réduire' : 'Voir les événements'}
+              title={expanded ? t('threads.collapse', 'R\u00e9duire') : t('threads.showEvents', 'Voir les \u00e9v\u00e9nements')}
             >
               {expanded ? '▲' : '▼'}
             </button>
@@ -224,7 +228,7 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
             }}
             onMouseEnter={e => e.currentTarget.style.opacity = '1'}
             onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}
-            title="Modifier"
+            title={t('threads.edit', 'Modifier')}
           >
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
               <path d="M8.5 1.5a1.414 1.414 0 0 1 2 2L3.5 10.5l-2.5.5.5-2.5L8.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -234,7 +238,7 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
             <button
               onClick={() => setConfirmDelete(true)}
               className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all text-xs"
-              title="Supprimer"
+              title={t('btn.delete')}
             >
               ✕
             </button>
@@ -244,14 +248,14 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
                 onClick={() => setConfirmDelete(false)}
                 className="px-2 py-0.5 rounded text-[10px] font-bold text-slate-500 border border-white/08 hover:bg-white/05"
               >
-                Non
+                {t('project.no')}
               </button>
               <button
                 onClick={() => onDelete(thread.id)}
                 className="px-2 py-0.5 rounded text-[10px] font-bold transition-all"
                 style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.35)' }}
               >
-                Oui
+                {t('project.yes')}
               </button>
             </div>
           )}
@@ -284,12 +288,15 @@ function ThreadCard({ thread, events, onEdit, onDelete }) {
 // ── ThreadsBrowser ─────────────────────────────────────────────────────────────
 
 export default function ThreadsBrowser() {
-  const threads      = useThreadStore(s => s.threads);
+  const { t } = useTranslation();
+  useStoreLoader([useThreadStore, useTimelineStore]);
+  const _threads     = useThreadStore(s => s.threads);
+  const threads      = _threads ?? [];
   const addThread    = useThreadStore(s => s.addThread);
   const editThread   = useThreadStore(s => s.editThread);
   const removeThread = useThreadStore(s => s.removeThread);
 
-  const events = useTimelineStore(s => s.events);
+  const events = useTimelineStore(s => s.events) ?? [];
 
   const [showForm,   setShowForm]   = useState(false);
   const [editingId,  setEditingId]  = useState(null);
@@ -324,11 +331,7 @@ export default function ThreadsBrowser() {
     setEditingId(null);
   };
 
-  if (threads === null) return (
-    <div className="h-full flex items-center justify-center">
-      <span className="text-slate-600 font-serif italic">Chargement…</span>
-    </div>
-  );
+  if (threads === null) return <Skeleton variant="list" />;
 
   return (
     <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
@@ -337,10 +340,10 @@ export default function ThreadsBrowser() {
       <header data-tour="threads-list" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
         <div className="flex-1">
           <h1 className="text-lg font-black tracking-tight">
-            Fils <span style={{ color: '#3F51B5' }}>Narratifs</span>
+            {t('threads.titlePrefix', 'Fils')} <span style={{ color: '#3F51B5' }}>{t('threads.titleHighlight', 'Narratifs')}</span>
           </h1>
           <p className="text-xs text-slate-500 font-serif italic">
-            {threads.length} fil{threads.length !== 1 ? 's' : ''} · {taggedEventCount} événement{taggedEventCount !== 1 ? 's' : ''} taggé{taggedEventCount !== 1 ? 's' : ''}
+            {t('threads.statsLine', '{{threadCount}} fil(s) \u00b7 {{eventCount}} \u00e9v\u00e9nement(s) tagg\u00e9(s)', { threadCount: threads.length, eventCount: taggedEventCount })}
           </p>
         </div>
         <button
@@ -348,7 +351,7 @@ export default function ThreadsBrowser() {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
           style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
         >
-          + Nouveau fil
+          + {t('threads.newThreadBtn', 'Nouveau fil')}
         </button>
       </header>
 
@@ -361,20 +364,13 @@ export default function ThreadsBrowser() {
             <ThreadForm
               onSave={handleSave}
               onCancel={handleCancelForm}
+              t={t}
             />
           )}
 
           {/* Vide */}
           {threads.length === 0 && !showForm && (
-            <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-              <p className="text-4xl opacity-20">🧵</p>
-              <p className="text-slate-500 font-serif italic text-sm">
-                Aucun fil narratif pour l'instant.
-              </p>
-              <p className="text-slate-600 text-xs max-w-xs">
-                Créez vos fils (intrigue principale, subplot B, backstory…) puis taggez vos événements depuis la Timeline.
-              </p>
-            </div>
+            <EmptyState icon="🧵" title={t('threads.emptyTitle', 'Aucun fil narratif')} hint={t('threads.emptyHint', 'Cr\u00e9ez vos fils (intrigue principale, subplot B, backstory\u2026) puis taggez vos \u00e9v\u00e9nements depuis la Timeline.')} />
           )}
 
           {/* Liste des fils */}
@@ -385,6 +381,7 @@ export default function ThreadsBrowser() {
                 initial={thread}
                 onSave={handleSave}
                 onCancel={handleCancelForm}
+                t={t}
               />
             ) : (
               <ThreadCard
@@ -393,6 +390,7 @@ export default function ThreadsBrowser() {
                 events={events}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                t={t}
               />
             )
           ))}

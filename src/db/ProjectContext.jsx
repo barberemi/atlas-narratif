@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getProjects } from '../api/client';
 import { useLoreStore }          from '../stores/useLoreStore';
 import { useIncStore }           from '../stores/useIncStore';
@@ -17,26 +17,13 @@ const LS_KEY = 'atlas_active_project';
 
 const ProjectCtx = createContext(null);
 
-/** Charge toutes les données pour un projet donné.
- *  - Critique : lore, volumes, timeline, stc, incoherences → bloquant
- *  - Secondaire : map, arc, plants, threads, heroJourney, characterArc → différé
+/** Charge uniquement les stores "core" nécessaires partout (lore + volumes).
+ *  Les autres stores sont chargés à la demande via useStoreLoader() dans chaque page.
  */
-async function loadAll(projectId) {
+async function loadCore(projectId) {
   await Promise.all([
     useLoreStore.getState().load(projectId),
     useVolumeStore.getState().load(projectId),
-    useTimelineStore.getState().load(projectId),
-    useStcStore.getState().load(projectId),
-    useIncStore.getState().load(projectId),
-  ]);
-
-  Promise.all([
-    useMapStore.getState().load(projectId),
-    useArcStore.getState().load(projectId),
-    usePlantStore.getState().load(projectId),
-    useThreadStore.getState().load(projectId),
-    useHeroJourneyStore.getState().load(projectId),
-    useCharacterArcStore.getState().load(projectId),
   ]);
 }
 
@@ -59,12 +46,18 @@ export function ProjectProvider({ children }) {
   const [projects,  setProjects]    = useState([]);
   const [projectId, setProjectIdRaw] = useState(null);
   const [loading,   setLoading]     = useState(true);
+  const inflightRef = useRef(null);
 
   const reloadProjects = useCallback(async () => {
-    const list = await getProjects();
-    setProjects(list);
-    setProjectIdRaw(prev => list.find(p => p.id === prev) ? prev : (list[0]?.id ?? null));
-    return list;
+    // Dedup : si un appel est déjà en cours, retourner la même promise
+    if (inflightRef.current) return inflightRef.current;
+    const promise = getProjects().then(list => {
+      setProjects(list);
+      setProjectIdRaw(prev => list.find(p => p.id === prev) ? prev : (list[0]?.id ?? null));
+      return list;
+    }).finally(() => { inflightRef.current = null; });
+    inflightRef.current = promise;
+    return promise;
   }, []);
 
   useEffect(() => {
@@ -81,7 +74,7 @@ export function ProjectProvider({ children }) {
   useEffect(() => {
     if (!projectId) return;
     resetAll();
-    loadAll(projectId);
+    loadCore(projectId);
   }, [projectId]);
 
   const setProjectId = (id) => {

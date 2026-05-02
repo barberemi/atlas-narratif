@@ -272,27 +272,31 @@ async function _doSeed(db, projectId, meta, data, onProgress) {
     );
     for (const m of (g.members ?? [])) {
       await db.query(
-        `INSERT INTO character_groups (character_id, group_id, project_id)
-         VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`,
-        [m.characterId, g.id, projectId],
+        `INSERT INTO character_groups (character_id, group_id, project_id, role_in_group)
+         VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+        [m.characterId, g.id, projectId, m.roleInGroup ?? null],
       );
     }
     done++;
   }
 
   // ── Amorces narratives ───────────────────────────────────────────────────────
+  const PLANT_TYPE_NORM = { objet: 'object', personnage: 'character', indice: 'information', comportement: 'character', 'thème': 'theme' };
+  const PLANT_STATUS_NORM = { closed: 'resolved', résolu: 'resolved', abandonné: 'dropped' };
   report('Amorces narratives…');
   for (const p of plantsDB) {
+    const rawType   = (p.type ?? 'information').toLowerCase();
+    const rawStatus = (p.status ?? 'open').toLowerCase();
     await db.query(
       `INSERT INTO plant_payoffs
          (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes, plant_volume_id, payoff_volume_id)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT DO NOTHING`,
       [
-        p.id, projectId, p.label, p.type ?? 'information',
+        p.id, projectId, p.label, PLANT_TYPE_NORM[rawType] ?? rawType,
         p.plant_chapter_num ?? null, p.plant_event_id ?? null,
         p.payoff_chapter_num ?? null, p.payoff_event_id ?? null,
         p.entity_id ?? null, p.entity_type ?? null,
-        p.status ?? 'open', p.notes ?? null,
+        PLANT_STATUS_NORM[rawStatus] ?? rawStatus, p.notes ?? null,
         p.plantVolumeId ?? null, p.payoffVolumeId ?? null,
       ],
     );

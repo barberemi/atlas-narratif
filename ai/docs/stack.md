@@ -10,6 +10,27 @@
 | @vitejs/plugin-react | 5.x | JSX transform |
 | Zustand | 5.x | State management |
 | Tailwind CSS | 4.x | Styling via PostCSS |
+| sonner | 2.x | Toasts (notifications) |
+| @dnd-kit | core 6.x / sortable 10.x | Drag-and-drop (timeline, lore) |
+| i18next + react-i18next | 25.x / 15.x | Internationalisation (fr, en, zh) |
+
+## Internationalisation (i18n)
+
+- Config dans `src/i18n/index.js`
+- 3 langues : **fr** (fallback), **en**, **zh**
+- 2 namespaces : `common` (UI générale) + `narrative` (termes métier)
+- Fichiers de traduction : `src/i18n/locales/{fr,en,zh}/{common,narrative}.json`
+- Détection : `localStorage` (`atlas_lang`) → navigateur
+- Traductions du seed LOTR : `src/data/lotr_translations/` (en.json, zh.json + index.js)
+
+## Tests
+
+| Outil | Version | Rôle |
+|-------|---------|------|
+| Vitest | 4.x | Tests unitaires (runner + assertions) |
+| @testing-library/react | 16.x | Rendu React pour tests |
+| jsdom | 29.x | DOM virtuel pour Vitest |
+| Playwright | 1.x | Tests E2E (navigateur headless) |
 
 ## Backend (server/)
 
@@ -38,6 +59,12 @@ await sql.begin(async tx => {
 // JSONB est retourné comme objet JS parsé
 ```
 
+### Migrations SQL
+
+- Fichiers dans `server/db/migrations/` (ex: `001_add_indexes.sql`)
+- Runner : `server/src/migrate.js` — lit `schema_migrations`, applique les fichiers non encore exécutés
+- Table `schema_migrations` créée automatiquement au premier run
+
 ## Auth — Better Auth v1.x
 
 - Config dans `server/src/auth.js`
@@ -54,6 +81,11 @@ Remplace les anciens appels PGlite directs. Toutes les fonctions d'accès aux do
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 // En prod (Docker), VITE_API_URL="" → URLs relatives → nginx proxy vers api:3001
 ```
+
+Fichiers :
+- `src/api/client.js` — fonctions CRUD + re-export des calculs purement JS (`computeAlerts`)
+- `src/api/importFromAiOutputViaApi.js` — import du JSON IA via `POST /api/seed`
+- `src/api/toast-bridge.js` — bridge pour toasts depuis les stores
 
 ## Styling
 

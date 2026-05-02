@@ -1,8 +1,13 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { useDragScroll } from '../../hooks/useDragScroll';
 import { hexToRgb } from '../../utils/color';
 import { getEntityMeta } from '../../utils/entityUtils';
+import EmptyState from '../ui/EmptyState';
+import Skeleton from '../ui/Skeleton';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
@@ -10,18 +15,43 @@ import { useArcStore }      from '../../stores/useArcStore';
 import { useNotesStore }    from '../../stores/useNotesStore';
 import { useVolumeStore }   from '../../stores/useVolumeStore';
 import { useVolumeFilter }  from '../../hooks/useVolumeFilter';
+import { useSaveIndicator } from '../../stores/useSaveIndicator';
 import { useProject }       from '../../db/ProjectContext';
+import { useStoreLoader }   from '../../hooks/useStoreLoader';
+import { reorderEvents }    from '../../api/client';
+import { toast }            from '../../lib/toast';
 import { BEATS }            from '../../data/beats_config';
 import { OUTCOMES }         from '../../data/outcome_config';
 import EventEditor from './EventEditor';
 import EventCard from './EventCard';
+import SortableEventCard from './SortableEventCard';
 import ArcStrip, { COL_W } from './ArcStrip';
 import SeriesTimeline from './SeriesTimeline';
 
+function ChapterDropZone({ chapterNum, isTargeted, children, t }) {
+  const { setNodeRef } = useDroppable({ id: `chapter-${chapterNum}` });
+  return (
+    <div ref={setNodeRef} className="p-3 space-y-2.5 min-h-[60px] transition-colors duration-150"
+      style={isTargeted ? { backgroundColor: 'rgba(63,81,181,0.1)', boxShadow: 'inset 0 0 0 1px rgba(99,102,241,0.3)', borderRadius: 8 } : undefined}>
+      {children}
+      {isTargeted && (
+        <div className="flex items-center gap-2 py-1 animate-pulse">
+          <div className="flex-1 h-0.5 rounded-full" style={{ backgroundColor: 'rgba(99,102,241,0.5)' }} />
+          <span className="text-[10px] font-bold" style={{ color: '#818cf8' }}>{t('dnd.dropHere')}</span>
+          <div className="flex-1 h-0.5 rounded-full" style={{ backgroundColor: 'rgba(99,102,241,0.5)' }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── TimelineBrowser ───────────────────────────────────────────────────────────
 export default function TimelineBrowser() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { projectId } = useProject();
+
+  useStoreLoader([useTimelineStore, useIncStore, useThreadStore, useArcStore, useNotesStore]);
 
   const allEvents    = useTimelineStore(s => s.events);
   const filterByVolume = useVolumeFilter();
@@ -59,6 +89,126 @@ export default function TimelineBrowser() {
 
   const beatMap = useMemo(() => new Map(BEATS.map(b => [b.id, b])), []);
   const dragScroll = useDragScroll();
+  const [activeId, setActiveId] = useState(null);
+  const reloadEvents = useTimelineStore(s => s._reload);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  );
+
+  const [hoverChapterNum, setHoverChapterNum] = useState(null);
+
+  const handleDragStart = useCallback(({ active }) => {
+    setActiveId(active.id);
+    setHoverChapterNum(null);
+  }, []);
+
+  const handleDragOver = useCallback(({ active, over }) => {
+    if (!over || !events) { setHoverChapterNum(null); return; }
+    const draggedEvt = events.find(e => e.id === active.id);
+    if (!draggedEvt) return;
+
+    // Find target chapter from over
+    let chapter = null;
+    const overEvt = events.find(e => e.id === over.id && e.id !== active.id);
+    if (overEvt) {
+      chapter = overEvt.chapter;
+    } else if (typeof over.id === 'string' && over.id.startsWith('chapter-')) {
+      chapter = Number(over.id.replace('chapter-', ''));
+    } else {
+      const ctr = over?.data?.current?.sortable?.containerId;
+      if (ctr?.startsWith('chapter-')) chapter = Number(ctr.replace('chapter-', ''));
+    }
+
+    // Only highlight if it's a different chapter
+    const target = (chapter != null && chapter !== draggedEvt.chapter) ? chapter : null;
+    setHoverChapterNum(prev => prev === target ? prev : target);
+  }, [events]);
+
+  const handleDragEnd = useCallback(async ({ active, over }) => {
+    setActiveId(null);
+    setHoverChapterNum(null);
+    if (!over || !events) return;
+
+    const draggedId = active.id;
+    const overId = over.id;
+    const draggedEvt = events.find(e => e.id === draggedId);
+    if (!draggedEvt) return;
+
+    // Determine target chapter
+    let targetChapter;
+    const overEvt = events.find(e => e.id === overId && e.id !== draggedId);
+    if (overEvt) {
+      targetChapter = overEvt.chapter;
+    } else if (typeof overId === 'string' && overId.startsWith('chapter-')) {
+      targetChapter = Number(overId.replace('chapter-', ''));
+    } else {
+      const container = over?.data?.current?.sortable?.containerId;
+      if (container && container.startsWith('chapter-')) {
+        targetChapter = Number(container.replace('chapter-', ''));
+      } else {
+        return;
+      }
+    }
+
+    // Guard: targetChapter must be a valid number
+    if (targetChapter == null || isNaN(targetChapter)) return;
+
+    const isCrossChapter = draggedEvt.chapter !== targetChapter;
+
+    // Stable sort helper: by sceneOrder, then by original DB position
+    const indexMap = new Map(events.map((e, i) => [e.id, i]));
+    const stableSort = (arr) =>
+      [...arr].sort((a, b) => (a.sceneOrder ?? 0) - (b.sceneOrder ?? 0) || (indexMap.get(a.id) ?? 0) - (indexMap.get(b.id) ?? 0));
+
+    const updates = [];
+
+    if (!isCrossChapter) {
+      // ── Same chapter: use arrayMove ──
+      const sorted = stableSort(events.filter(e => e.chapter === targetChapter));
+      const fromIdx = sorted.findIndex(e => e.id === draggedId);
+      const toIdx   = sorted.findIndex(e => e.id === overId);
+      if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
+
+      const reordered = arrayMove(sorted, fromIdx, toIdx);
+      reordered.forEach((e, i) => {
+        updates.push({ id: e.id, chapter: targetChapter, sceneOrder: i + 1 });
+      });
+    } else {
+      // ── Cross-chapter: remove from source, insert into target ──
+      const targetSorted = stableSort(events.filter(e => e.chapter === targetChapter));
+      const overIdx = overEvt ? targetSorted.findIndex(e => e.id === overId) : -1;
+      if (overIdx >= 0) {
+        targetSorted.splice(overIdx, 0, draggedEvt);
+      } else {
+        targetSorted.push(draggedEvt);
+      }
+      targetSorted.forEach((e, i) => {
+        updates.push({ id: e.id, chapter: targetChapter, sceneOrder: i + 1 });
+      });
+
+      // Source chapter: reorder without the dragged event
+      const sourceSorted = stableSort(
+        events.filter(e => e.chapter === draggedEvt.chapter && e.id !== draggedId)
+      );
+      sourceSorted.forEach((e, i) => {
+        updates.push({ id: e.id, chapter: draggedEvt.chapter, sceneOrder: i + 1 });
+      });
+    }
+
+    // Optimistic update + API call
+    useSaveIndicator.getState().markSaving();
+    try {
+      await reorderEvents(projectId, updates);
+      await reloadEvents();
+      const label = isCrossChapter
+        ? t('toast.reorderCrossChapter', { chapter: targetChapter })
+        : t('toast.reorderSameChapter');
+      toast(label);
+    } finally {
+      useSaveIndicator.getState().markSaved();
+    }
+  }, [events, projectId, reloadEvents]);
 
   // Chargement conditionnel de l'arc si pas encore en mémoire
   useEffect(() => {
@@ -143,9 +293,11 @@ export default function TimelineBrowser() {
     navigate(`/lore?tab=${tab}&search=${encodeURIComponent(meta?.name ?? '')}`);
   };
 
-  if (!events) return (
+  if (!events) return <Skeleton variant="list" />;
+
+  if (events.length === 0) return (
     <div className="h-full flex items-center justify-center">
-      <span className="text-slate-600 font-serif italic">Chargement…</span>
+      <EmptyState icon="📅" title="Aucun événement" hint="Ajoutez votre premier événement pour construire votre timeline." />
     </div>
   );
 
@@ -159,7 +311,7 @@ export default function TimelineBrowser() {
             Timeline <span style={{ color: '#3F51B5' }}>Narrative</span>
           </h1>
           <p className="text-sm text-slate-500 font-serif italic">
-            {chapters.length} chapitres · {events.length} événements
+            {chapters.length} {t('label.chapters').toLowerCase()} · {events.length} {t('label.events').toLowerCase()}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -168,8 +320,8 @@ export default function TimelineBrowser() {
             <div className="flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0"
               style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {[
-                { id: 'chapters', label: 'Chapitres' },
-                { id: 'series',   label: '📚 Série' },
+                { id: 'chapters', label: t('label.chapters') },
+                { id: 'series',   label: `📚 ${t('timeline.seriesTab')}` },
               ].map(v => (
                 <button key={v.id} onClick={() => setViewMode(v.id)}
                   className="px-3 py-1 rounded-md text-xs font-semibold transition-all"
@@ -192,9 +344,8 @@ export default function TimelineBrowser() {
                 color:  timeOrder === 'chronological' ? '#fbbf24' : '#475569',
                 border: `1px solid ${timeOrder === 'chronological' ? 'rgba(217,119,6,0.35)' : 'rgba(255,255,255,0.08)'}`,
               }}
-              title={timeOrder === 'narrative' ? 'Passer en ordre chronologique (repositionne les flashbacks)' : 'Revenir à l\'ordre narratif'}
             >
-              ↩ {timeOrder === 'chronological' ? 'Chrono' : 'Chrono'}
+              ↩ {t('timeline.chrono')}
             </button>
             <button
               onClick={() => setShowArc(v => !v)}
@@ -206,7 +357,7 @@ export default function TimelineBrowser() {
               }}
               title="Afficher / masquer l'arc émotionnel"
             >
-              ∿ Arc
+              ∿ {t('timeline.arc')}
             </button>
             <button
               onClick={() => setShowStc(v => !v)}
@@ -218,14 +369,14 @@ export default function TimelineBrowser() {
               }}
               title="Afficher / masquer les beats Save the Cat"
             >
-              🐱 STC
+              🐱 {t('timeline.stc')}
             </button>
             <button
               onClick={() => setEditorEvent(null)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
               style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
             >
-              + Ajouter
+              {t('btn.add')}
             </button>
           </>)}
         </div>
@@ -250,11 +401,11 @@ export default function TimelineBrowser() {
       >
         {/* Ligne 1 : label + toggle mode + dropdown personnage */}
         <div className="flex items-center gap-3 px-4 pt-2.5 pb-2">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Suivre par</span>
+          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.followBy')}</span>
           <div className="flex items-center gap-1">
             {[
-              { id: 'presence', label: 'Présence', icon: '👤' },
-              { id: 'pov',      label: 'POV',      icon: '👁' },
+              { id: 'presence', label: t('timeline.presence'), icon: '👤' },
+              { id: 'pov',      label: t('timeline.pov'),      icon: '👁' },
             ].map(({ id, label, icon }) => {
               const active = filterMode === id;
               return (
@@ -296,7 +447,7 @@ export default function TimelineBrowser() {
               ) : (
                 <>
                   <span className="text-slate-500">👤</span>
-                  Tous les personnages
+                  {t('timeline.allCharacters')}
                 </>
               )}
               <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
@@ -313,7 +464,7 @@ export default function TimelineBrowser() {
                   style={{ color: !focusedCharId ? '#818cf8' : '#64748b' }}
                 >
                   <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
-                  Tous les personnages
+                  {t('timeline.allCharacters')}
                   {!focusedCharId && <span className="ml-auto text-indigo-400 text-[10px]">✓</span>}
                 </button>
                 <div className="border-t border-white/5" />
@@ -340,7 +491,7 @@ export default function TimelineBrowser() {
         {/* Ligne 2 : filtre fil narratif */}
         {threads.length > 0 && (
           <div className="flex items-center gap-2 px-4 pb-1.5">
-            <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Fil</span>
+            <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.threads')}</span>
             <div className="flex items-center gap-1 flex-wrap">
               <button
                 onClick={() => setThreadFilter(null)}
@@ -350,7 +501,7 @@ export default function TimelineBrowser() {
                   color:           !threadFilter ? '#cbd5e1' : '#475569',
                 }}
               >
-                Tous
+                {t('review.filterAll', 'Tous')}
               </button>
               {threads.map(t => (
                 <button
@@ -373,7 +524,7 @@ export default function TimelineBrowser() {
 
         {/* Ligne 3 : filtre issue */}
         <div className="flex items-center gap-2 px-4 pb-2.5">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">Issue</span>
+          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.outcome')}</span>
           <div className="flex items-center gap-1 rounded-lg px-1.5 py-1" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <button
               onClick={() => setOutcomeFilter(null)}
@@ -383,7 +534,7 @@ export default function TimelineBrowser() {
                 color:           !outcomeFilter ? '#cbd5e1' : '#475569',
               }}
             >
-              Tous
+              {t('review.filterAll', 'Tous')}
             </button>
             {OUTCOMES.map(o => (
               <button
@@ -395,7 +546,7 @@ export default function TimelineBrowser() {
                   color:           outcomeFilter === o.id ? o.color : '#475569',
                   border:          outcomeFilter === o.id ? `1px solid ${o.color}40` : '1px solid transparent',
                 }}
-                title={o.label}
+                title={t(`outcome.${o.id}`, o.label)}
               >
                 {o.icon}
               </button>
@@ -437,7 +588,7 @@ export default function TimelineBrowser() {
         )}
 
         <div
-          ref={(el) => { dragScroll.ref.current = el; scrollRef.current = el; }} // eslint-disable-line react-hooks/immutability
+          ref={(el) => { dragScroll.ref.current = el; scrollRef.current = el; }}  
           className="h-full overflow-x-auto overflow-y-auto no-scrollbar"
           style={{ cursor: 'grab' }}
           onScroll={updateArrows}
@@ -450,6 +601,7 @@ export default function TimelineBrowser() {
           {showArc && (
             <ArcStrip chapters={chapters} arcPoints={arcPoints ?? []} />
           )}
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
         <div className="flex">
           {displayChapters.map(({ number, title, isPreStory }) => {
             const chEvts = timeOrder === 'chronological'
@@ -472,13 +624,13 @@ export default function TimelineBrowser() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-mono uppercase tracking-widest" style={{ color: isPreStory ? '#d97706' : '#64748b' }}>
-                        {isPreStory ? `Ère ancienne · ~${number}` : `Chapitre ${number}`}
+                        {isPreStory ? t('timeline.ancientEra', { n: number }) : t('timeline.chapter', { n: number })}
                       </p>
                       <p className="text-sm font-bold text-slate-300 leading-snug mt-1">
                         {title}
                       </p>
                       <p className="text-xs text-slate-600 mt-1">
-                        {chEvts.length} événement{chEvts.length > 1 ? 's' : ''}
+                        {chEvts.length} {t('label.events').toLowerCase()}
                         {timeOrder === 'chronological' && chEvts.some(e => e.isFlashback) && (
                           <span style={{ color: '#d97706' }}> · ↩ flashback</span>
                         )}
@@ -506,7 +658,7 @@ export default function TimelineBrowser() {
                       onBlur={e => setNote(number, e.target.value)}
                       onMouseDown={e => e.stopPropagation()}
                       onClick={e => e.stopPropagation()}
-                      placeholder="Notes libres…"
+                      placeholder={t('timeline.freeNotes')}
                       rows={3}
                       className="w-full mt-2 text-xs font-serif leading-relaxed resize-none rounded-lg outline-none"
                       style={{
@@ -520,7 +672,8 @@ export default function TimelineBrowser() {
                 </div>
 
                 {/* Événements */}
-                <div className="p-3 space-y-2.5">
+                <SortableContext id={`chapter-${number}`} items={chEvts.map(e => e.id)} strategy={verticalListSortingStrategy}>
+                <ChapterDropZone chapterNum={number} isTargeted={hoverChapterNum === number} t={t}>
                   {chEvts.filter(evt =>
                     (!outcomeFilter || evt.sceneOutcome === outcomeFilter) &&
                     (!threadFilter  || (evt.threadIds ?? []).includes(threadFilter))
@@ -535,10 +688,10 @@ export default function TimelineBrowser() {
                       ? volumes.find(v => v.id === evt.volumeId)
                       : null;
                     return (
-                      <div key={evt.id} className="relative">
+                      <SortableEventCard key={evt.id} id={evt.id}>
                         {timeOrder === 'chronological' && evt.isFlashback && (
                           <p className="text-[9px] font-bold uppercase tracking-wider mb-1 px-1" style={{ color: '#d97706' }}>
-                            ↩ narré au ch. {evt.chapter}
+                            ↩ {t('timeline.narratedAtCh', { ch: evt.chapter })}
                           </p>
                         )}
                         <EventCard
@@ -551,14 +704,24 @@ export default function TimelineBrowser() {
                           beat={showStc && evt.beatId ? beatMap.get(evt.beatId) : null}
                           volumeLabel={!activeVolumeId && evtVolume ? `T${evtVolume.number}` : null}
                         />
-                      </div>
+                      </SortableEventCard>
                     );
                   })}
-                </div>
+                </ChapterDropZone>
+                </SortableContext>
               </div>
             );
           })}
         </div>
+        {activeId && (
+          <DragOverlay>
+            <div className="rounded-xl p-3 text-sm font-bold text-slate-200 max-w-[260px] truncate"
+              style={{ backgroundColor: 'rgba(63,81,181,0.3)', border: '1px solid rgba(99,102,241,0.5)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+              {events?.find(e => e.id === activeId)?.title ?? ''}
+            </div>
+          </DragOverlay>
+        )}
+        </DndContext>
         </div>
         </div>
       </div>

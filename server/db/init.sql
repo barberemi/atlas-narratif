@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS timeline_events (
 -- ── Jonction événements ↔ entités ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS event_entities (
   event_id    TEXT NOT NULL,
-  project_id  TEXT NOT NULL,
+  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   entity_id   TEXT NOT NULL,
   entity_type TEXT NOT NULL CHECK (entity_type IN ('character','location','object')),
   PRIMARY KEY (event_id, project_id, entity_id, entity_type)
@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS incoherences (
 
 CREATE TABLE IF NOT EXISTS incoherence_links (
   incoherence_id TEXT NOT NULL,
-  project_id     TEXT NOT NULL,
+  project_id     TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   entity_id      TEXT NOT NULL,
   entity_type    TEXT NOT NULL,
   label          TEXT,
@@ -193,14 +193,14 @@ CREATE TABLE IF NOT EXISTS stc_chapters (
 
 CREATE TABLE IF NOT EXISTS stc_chapter_beats (
   chapter_id TEXT NOT NULL,
-  project_id TEXT NOT NULL,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   beat_id    TEXT NOT NULL,
   PRIMARY KEY (chapter_id, project_id, beat_id)
 );
 
 CREATE TABLE IF NOT EXISTS stc_chapter_entities (
   chapter_id  TEXT NOT NULL,
-  project_id  TEXT NOT NULL,
+  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   entity_id   TEXT NOT NULL,
   entity_type TEXT NOT NULL CHECK (entity_type IN ('character','location','object')),
   PRIMARY KEY (chapter_id, project_id, entity_id, entity_type)
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS groups (
 CREATE TABLE IF NOT EXISTS character_groups (
   character_id  TEXT NOT NULL,
   group_id      TEXT NOT NULL,
-  project_id    TEXT NOT NULL,
+  project_id    TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   role_in_group TEXT,
   PRIMARY KEY (character_id, group_id, project_id)
 );
@@ -314,3 +314,57 @@ CREATE TABLE IF NOT EXISTS hero_journey_entries (
   summary      TEXT,
   volume_id    TEXT
 );
+
+-- ── Migration : ajout ON DELETE CASCADE manquant sur les tables de jonction ──
+DO $$
+BEGIN
+  -- event_entities
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'event_entities_project_id_fkey' AND table_name = 'event_entities'
+  ) THEN
+    ALTER TABLE event_entities
+      ADD CONSTRAINT event_entities_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- incoherence_links
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'incoherence_links_project_id_fkey' AND table_name = 'incoherence_links'
+  ) THEN
+    ALTER TABLE incoherence_links
+      ADD CONSTRAINT incoherence_links_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- stc_chapter_beats
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'stc_chapter_beats_project_id_fkey' AND table_name = 'stc_chapter_beats'
+  ) THEN
+    ALTER TABLE stc_chapter_beats
+      ADD CONSTRAINT stc_chapter_beats_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- stc_chapter_entities
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'stc_chapter_entities_project_id_fkey' AND table_name = 'stc_chapter_entities'
+  ) THEN
+    ALTER TABLE stc_chapter_entities
+      ADD CONSTRAINT stc_chapter_entities_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+
+  -- character_groups
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'character_groups_project_id_fkey' AND table_name = 'character_groups'
+  ) THEN
+    ALTER TABLE character_groups
+      ADD CONSTRAINT character_groups_project_id_fkey
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+  END IF;
+END $$;

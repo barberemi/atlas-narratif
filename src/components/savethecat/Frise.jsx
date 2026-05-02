@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BEATS } from '../../data/beats_config';
 
 const FRISE_H   = 340;
@@ -8,6 +9,7 @@ const BEAT_SIZE = 28;
 const BEAT_STEP = 34;
 
 export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onHoverBeat }) {
+  const { t } = useTranslation();
   const [hoveredChapterNum, setHoveredChapterNum] = useState(null);
 
   const total = chapters.length;
@@ -43,9 +45,9 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
 
       {/* ── Zones de fond par acte ── */}
       {[
-        { from: 0,  to: 25,  label: 'Acte I',   color: 'rgba(99,102,241,0.04)' },
-        { from: 25, to: 75,  label: 'Acte II',  color: 'rgba(234,179,8,0.04)'  },
-        { from: 75, to: 100, label: 'Acte III', color: 'rgba(239,68,68,0.04)'  },
+        { from: 0,  to: 25,  label: t('stc.actI'),   color: 'rgba(99,102,241,0.04)' },
+        { from: 25, to: 75,  label: t('stc.actII'),  color: 'rgba(234,179,8,0.04)'  },
+        { from: 75, to: 100, label: t('stc.actIII'), color: 'rgba(239,68,68,0.04)'  },
       ].map(({ from, to, label, color }) => (
         <div
           key={label}
@@ -145,7 +147,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                           border: `1px solid ${alertBeatIds.has(beat.id) ? 'rgba(251,191,36,0.3)' : beat.color + '40'}`,
                         }}
                       >
-                        {beat.number}. {beat.label}
+                        {beat.number}. {t(`narrative:beats.${beat.id}.label`, beat.label)}
                       </span>
                     ))}
                   </div>
@@ -192,7 +194,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                       fontSize: 11,
                       zIndex: 10,
                     }}
-                    title={`${beat.number}. ${beat.label}${isAlert ? ' ⚠' : ''}`}
+                    title={`${beat.number}. ${t(`narrative:beats.${beat.id}.label`, beat.label)}${isAlert ? ' ⚠' : ''}`}
                     onMouseEnter={() => onHoverBeat(beat.id)}
                     onMouseLeave={() => onHoverBeat(null)}
                   >
@@ -233,7 +235,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
             key={`ideal-${beat.id}`}
             className="absolute cursor-default"
             style={{ left: `${beat.idealPercent}%`, top: BAR_TOP + BAR_H + 12, transform: 'translateX(-50%)' }}
-            title={`${beat.number}. ${beat.label} — idéal : ${beat.idealPercent}%`}
+            title={`${beat.number}. ${t(`narrative:beats.${beat.id}.label`, beat.label)} — ${t('stc.ideal')} : ${beat.idealPercent}%`}
             onMouseEnter={() => onHoverBeat(beat.id)}
             onMouseLeave={() => onHoverBeat(null)}
           >
@@ -286,7 +288,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
             transition: 'color 0.15s',
           }}
         >
-          {beat.label.split(' ').slice(0, 2).join(' ')}
+          {t(`narrative:beats.${beat.id}.label`, beat.label).split(' ').slice(0, 2).join(' ')}
         </div>
       ))}
     </div>

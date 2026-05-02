@@ -32,6 +32,9 @@ Outil d'analyse et de construction narrative pour auteurs. SPA React, 100% in-br
 | `/verify-email` | `VerifyEmailPage` | Écran "vérifiez votre boîte mail" |
 | `/forgot-password` | `ForgotPasswordPage` | Demande de réinitialisation mot de passe |
 | `/reset-password` | `ResetPasswordPage` | Saisie du nouveau mot de passe (token en query param) |
+| `/account` | `AccountPage` | Gestion du compte : infos, export données, suppression |
+| `/privacy` | `PrivacyPage` | Politique de confidentialité (RGPD) |
+| `/terms` | `TermsPage` | Conditions générales d'utilisation |
 
 Routes protégées par `<RequireProject>` → redirige vers `/` si aucun projet chargé.
 
@@ -96,12 +99,23 @@ src/
 - `ai/reports/` — rapports générés par ces agents
 - `ai/docs/` — cette documentation (générée pour le contexte IA)
 
-## Commandes utiles
+## Environnement de développement
+
+**Règle : aucune commande ne tourne en local. Tout passe par Docker via le Makefile.**
+
+Ne jamais utiliser `npm run ...`, `npx ...`, ou `node ...` directement. Utiliser les commandes `make` correspondantes qui exécutent tout dans les containers Docker.
+
 ```bash
-npm run dev      # Dev server (port 5173)
-npm run build    # Production build
-npm run lint     # ESLint
-docker compose up  # Prod via Docker
+make dev           # Stack dev complète (PostgreSQL + API + Frontend)
+make stop          # Arrêter la stack dev
+make logs          # Logs de tous les services
+make logs-s s=api  # Logs d'un service précis
+make dev-rebuild   # Rebuild après changement de dépendances
+make lint          # Linter (dans le container frontend)
+make test          # Tests (dans le container frontend)
+make build         # Build de production (dans le container frontend)
+make install       # npm install dans le container frontend
+make server-install # npm install dans le container API
 ```
 
 ## Migrations de schéma
@@ -114,31 +128,34 @@ Format suggéré : `'YYYY-MM-DD.N'` (date + numéro de révision du jour).
 
 ## Seed de test LOTR (données de démonstration)
 
-Le projet "Le Seigneur des Anneaux" sert de jeu de données de test. Il couvre les Tomes 1 et 2.
+Le projet "Le Seigneur des Anneaux" sert de jeu de données de test complet. Il couvre la trilogie entière (Tomes 1, 2 et 3).
 
 **Sources de données :**
 | Fichier | Contenu |
 |---------|---------|
-| `src/data/lotr_seed_data.js` | Lore T1, timeline T1, STC T1, plants T1, arcs T1, hero journey T1, `volumesDB` |
-| `src/data/lotr_t2_seed_data.js` | Tout le Tome 2 : personnages, lieux, événements, STC, plants cross-tomes, arcs, hero journey |
-| `src/db/seed.lotr.js` | Point d'entrée : fusionne T1 + T2, assigne les `volumeId` |
+| `src/data/lotr_seed_data.js` | Lore T1, timeline T1, STC T1, plants T1, arcs T1, hero journey T1 (Frodo), `volumesDB` (3 volumes) |
+| `src/data/lotr_t2_seed_data.js` | Tome 2 complet : personnages, lieux, objets (`t2Objects`), groupes (`t2GroupsDB`), événements, STC (ch 10-19), plants cross-tomes, arcs, hero journey (Aragorn), trajets carte (`t2FrodoJourney`, `t2AragornJourney`) |
+| `src/data/lotr_t3_seed_data.js` | Tome 3 complet : personnages (Denethor, Roi-Sorcier, Arachne, Grima, Bouche de Sauron), lieux (Minas Tirith, Pelennor, Cirith Ungol, Mont Destin, Havres Gris…), objets, événements (ch 20-28), STC, plants (résolution des ouverts T1/T2), arcs, hero journey (Sam), trajets carte |
+| `src/db/seed.lotr.js` | Point d'entrée : fusionne T1 + T2 + T3, assigne les `volumeId` |
 | `src/db/seed.generic.js` | Seeder générique réutilisable pour tout projet |
 
 **Règle : toute nouvelle fonctionnalité doit être illustrée dans le seed LOTR.**
 
 | Si tu ajoutes… | Mets à jour… |
 |----------------|-------------|
-| Une nouvelle table SQL | `seed.generic.js` (nouveau bloc d'INSERT) + données dans `lotr_seed_data.js` ou `lotr_t2_seed_data.js` |
+| Une nouvelle table SQL | `seed.generic.js` (nouveau bloc d'INSERT) + données dans le seed LOTR (T1, T2 ou T3 selon le tome concerné) |
 | Un nouveau champ dans une table existante | `seed.generic.js` (ajouter le champ dans l'INSERT concerné) + données exemple dans le seed LOTR |
-| Un nouveau store Zustand | Des données représentatives dans `lotr_seed_data.js` ou `lotr_t2_seed_data.js` |
-| Un nouveau tome / volume | Dupliquer le pattern de `lotr_t2_seed_data.js`, fusionner dans `seed.lotr.js` |
+| Un nouveau store Zustand | Des données représentatives dans le fichier seed du tome approprié |
+| Un nouveau tome / volume | Dupliquer le pattern de `lotr_t2_seed_data.js` / `lotr_t3_seed_data.js`, fusionner dans `seed.lotr.js` |
 
-**Structure des données T2 (`lotr_t2_seed_data.js`) :**
-- `t2Characters` / `t2Locations` → fusionnés dans `loreDB` via spread
-- `t2TimelineDB` → événements avec `volumeId: 'vol_deux_tours'`
-- `t2ChaptersDB` → chapitres STC avec `volumeId` (requis pour les stats par tome)
-- `t2PlantsDB` → plants avec `plantVolumeId` / `payoffVolumeId` pour les plants cross-tomes
-- `t2EventExtrasDB` → extras indexés par `event_id` (beatId, threadIds, POV, goal/conflict/outcome)
+**Structure des données par tome :**
+- `t2Characters` / `t2Locations` / `t2Objects` → fusionnés dans `loreDB` via spread
+- `t2GroupsDB` / `t3GroupsDB` → fusionnés dans `groupsDB`
+- `t2TimelineDB` / `t3TimelineDB` → événements avec `volumeId` (vol_deux_tours / vol_retour_roi)
+- `t2ChaptersDB` / `t3ChaptersDB` → chapitres STC avec `volumeId` (requis pour les stats par tome)
+- `t2PlantsDB` / `t3PlantsDB` → plants avec `plantVolumeId` / `payoffVolumeId` pour les plants cross-tomes
+- `t2EventExtrasDB` / `t3EventExtrasDB` → extras indexés par `event_id` (beatId, threadIds, POV, goal/conflict/outcome)
+- `t2FrodoJourney` / `t3FrodoJourney` etc. → trajets carte concaténés par personnage dans `seed.lotr.js`
 
 **Pour re-seeder** : supprimer le projet LOTR depuis la page d'accueil, puis cliquer "Charger".
 
@@ -177,6 +194,21 @@ Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gem
 
 Ne pas mettre à jour la doc si le changement est interne à un composant sans impact sur son interface (props, comportement visible) ni sur l'architecture.
 
+## Variables d'environnement
+
+**Règle : toute ajout ou modification de `process.env.*` ou `import.meta.env.*` dans le code doit être répercuté dans les fichiers `.env.example` correspondants.**
+
+| Fichier `.env.example` | Couvre | Variables |
+|------------------------|-------|-----------|
+| `.env.example` | Client Vite (racine) | `VITE_*` |
+| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM` |
+| `.env.prod.example` | Docker Compose (prod) | Toutes les variables serveur + `DOMAIN`, `ACME_EMAIL`, `POSTGRES_PASSWORD` |
+
+**Quand tu ajoutes une variable d'environnement :**
+1. Ajouter la variable dans le(s) `.env.example` concerné(s) avec un commentaire explicatif
+2. Si la variable est **obligatoire en prod**, ajouter une vérification de présence au démarrage (comme `BETTER_AUTH_SECRET` dans `auth.js`)
+3. Mettre à jour ce tableau dans `CLAUDE.md` si la variable introduit une nouvelle catégorie
+
 ## Tests
 
 **Règle : toute modification de la couche `src/db/` doit être couverte par un test.**
@@ -190,6 +222,25 @@ Ne pas mettre à jour la doc si le changement est interne à un composant sans i
 | Stores Zustand (`src/stores/`) | fichiers `.test.js` dans `src/stores/` |
 | Utilitaires (`src/utils/`) | fichiers `.test.js` dans `src/utils/` |
 
-Après avoir ajouté ou modifié des tests, lancer `npm run test:run` (ou `make test:run`) et corriger les échecs avant de considérer la tâche terminée.
+Après avoir ajouté ou modifié des tests, lancer `make test` et corriger les échecs avant de considérer la tâche terminée.
 
 Les composants React (`src/components/`, `src/pages/`) ne nécessitent pas de tests unitaires sauf si la logique est non triviale et extractible.
+
+## Tests E2E (Playwright)
+
+**Règle : toute nouvelle fonctionnalité visible par l'utilisateur doit s'accompagner d'un test E2E.**
+
+| Si tu ajoutes… | Test E2E à ajouter |
+|----------------|-------------------|
+| Nouvelle route / page | Smoke test dans `e2e/smoke.spec.js` (la page charge) |
+| Nouveau CRUD (créer/éditer/supprimer) | Tests créer + supprimer dans le fichier spec de la feature |
+| Nouveau filtre, toggle, ou interaction UI | Test dans le spec de la page concernée |
+| Nouveau flux multi-pages | Test dans `e2e/flows.spec.js` |
+
+**Conventions :**
+- Fichiers dans `e2e/`, un par feature (`lore.spec.js`, `timeline.spec.js`, etc.)
+- Import : `import { test, expect } from './fixtures.js'`
+- Locators : privilégier `getByRole()`, `getByText()`, `getByPlaceholder()` — inspecter le DOM via MCP Chrome si les locators ne matchent pas
+- Chaque test CRUD doit créer ses propres données et les nettoyer (pas dépendre de l'état d'un test précédent)
+- Lancer `make e2e` (Docker) et corriger les échecs avant de considérer la tâche terminée
+- `data-testid` : en ajouter uniquement quand les locators natifs (`getByRole`, `getByText`) sont insuffisants (inputs sans label, boutons ambigus, confirmations multi-étapes). Ne pas en mettre partout.

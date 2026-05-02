@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BEATS } from '../../data/beats_config';
 
 const BEAT_COUNT = BEATS.length;
@@ -49,7 +50,7 @@ function BeatCoverage({ covered, total }) {
 
 // ── Carte d'un tome ────────────────────────────────────────────────────────────
 
-function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned }) {
+function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned, t }) {
   const chapters = useMemo(() => {
     const seen = new Set();
     events.forEach(e => seen.add(e.chapter));
@@ -99,11 +100,11 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned }) {
       <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         {!isUnassigned && (
           <p className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: accentColor }}>
-            Tome {volume.number}
+            {t('volume.tome', { number: volume.number })}
           </p>
         )}
         <h3 className="text-base font-black text-slate-200 leading-tight">
-          {isUnassigned ? 'Non assigné' : volume.title}
+          {isUnassigned ? t('timeline.unassigned') : volume.title}
         </h3>
         {!isUnassigned && volume.description && (
           <p className="text-xs text-slate-500 font-serif italic mt-1 leading-snug line-clamp-2">
@@ -116,25 +117,25 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned }) {
       <div className="px-5 py-4 space-y-3 flex-1">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-0.5">Chapitres</p>
+            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-0.5">{t('label.chapters')}</p>
             <p className="text-xl font-black" style={{ color: accentColor }}>{chapters}</p>
           </div>
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-0.5">Événements</p>
+            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-0.5">{t('label.events')}</p>
             <p className="text-xl font-black text-slate-300">{events.length}</p>
           </div>
         </div>
 
         {/* Intensité arc */}
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1">Intensité moy.</p>
+          <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1">{t('timeline.avgIntensity')}</p>
           <IntensityBar value={avgIntensity != null ? Math.round(avgIntensity * 10) / 10 : null} />
         </div>
 
         {/* Beats STC */}
         {!isUnassigned && (
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1">Beats STC</p>
+            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1">{t('timeline.beatsSTC')}</p>
             <BeatCoverage covered={beatsHit} total={BEAT_COUNT} />
           </div>
         )}
@@ -142,7 +143,7 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned }) {
         {/* Mini heatmap de densité narrative */}
         {chapterDist.length > 0 && (
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1.5">Densité / chapitre</p>
+            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1.5">{t('timeline.densityPerChapter')}</p>
             <div className="flex items-end gap-0.5 h-6">
               {chapterDist.map(([ch, n]) => (
                 <div
@@ -175,7 +176,7 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned }) {
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.25)'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.15)'; }}
           >
-            Voir ce tome →
+            {t('timeline.viewVolume')}
           </button>
         </div>
       )}
@@ -186,6 +187,7 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned }) {
 // ── Composant principal ────────────────────────────────────────────────────────
 
 export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelectVolume }) {
+  const { t } = useTranslation();
   // Répartir les events par volumeId
   const eventsByVolume = useMemo(() => {
     const map = new Map();
@@ -214,7 +216,7 @@ export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelect
     return (
       <div className="flex items-center justify-center h-full">
         <p className="text-slate-600 italic text-sm">
-          Créez au moins 2 tomes via le sélecteur de tome pour afficher la vue série.
+          {t('timeline.seriesEmptyHint')}
         </p>
       </div>
     );
@@ -228,24 +230,24 @@ export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelect
         style={{ backgroundColor: 'rgba(63,81,181,0.06)', border: '1px solid rgba(99,102,241,0.12)' }}
       >
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest">Tomes</p>
+          <p className="text-[9px] text-slate-600 uppercase tracking-widest">{t('label.volumes')}</p>
           <p className="text-2xl font-black" style={{ color: '#818cf8' }}>{volumes.length}</p>
         </div>
         <div className="w-px h-8 bg-white/10" />
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest">Chapitres</p>
+          <p className="text-[9px] text-slate-600 uppercase tracking-widest">{t('label.chapters')}</p>
           <p className="text-2xl font-black text-slate-300">{totalChapters}</p>
         </div>
         <div className="w-px h-8 bg-white/10" />
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest">Événements</p>
+          <p className="text-[9px] text-slate-600 uppercase tracking-widest">{t('label.events')}</p>
           <p className="text-2xl font-black text-slate-300">{totalEvents}</p>
         </div>
         {unassigned.length > 0 && (
           <>
             <div className="w-px h-8 bg-white/10" />
             <p className="text-xs text-slate-500 italic">
-              {unassigned.length} événement{unassigned.length > 1 ? 's' : ''} sans tome assigné
+              {t('timeline.unassignedEvents', { count: unassigned.length })}
             </p>
           </>
         )}
@@ -260,6 +262,7 @@ export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelect
             events={eventsByVolume.get(v.id) ?? []}
             arcPoints={arcPoints ?? []}
             onSelect={onSelectVolume}
+            t={t}
           />
         ))}
         {unassigned.length > 0 && (
@@ -270,6 +273,7 @@ export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelect
             arcPoints={arcPoints ?? []}
             onSelect={() => {}}
             isUnassigned
+            t={t}
           />
         )}
       </div>

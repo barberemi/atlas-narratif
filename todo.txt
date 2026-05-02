@@ -1,0 +1,207 @@
+===============================================================================
+  ATLAS NARRATIF — Plan E2E Testing (Playwright)
+  49 passed, 0 fixme, 0 failed — via Docker (make e2e)
+===============================================================================
+
+## Phase 0 — Infrastructure Playwright
+[x] Installer Playwright dans le projet (via Docker / Makefile)
+[x] Configurer playwright.config.js (baseURL, timeout, retries)
+[x] Créer fixture global : seed projet LOTR avant chaque suite
+[x] Créer helper seedAndNavigate(page, route)
+[x] Ajouter commande `make e2e` dans le Makefile
+
+## Phase 1 — Smoke tests (toutes les routes chargent)
+  Fichier : e2e/smoke.spec.js
+[x] /dashboard → "Narrative Health" visible
+[x] /lore → "Frodo Baggins" visible
+[x] /timeline → Au moins 1 chapitre affiché
+[x] /map → Image carte visible
+[x] /savethecat → beats affichés
+[x] /arc → SVG chart visible
+[x] /plants → Liste ou empty state
+[x] /threads → contenu visible
+[x] /heros → stages visibles
+[x] /incoherences → severity visible
+[x] /relations → graph visible
+[x] /review → page visible
+
+## Phase 2 — Navigation & filtres
+  Fichier : e2e/navigation.spec.js
+[x] Nav globale : menus Write, World, Analyze → sous-routes visibles
+[x] Clic lien nav → navigation effective
+[x] Volume picker : affiche les 3 tomes LOTR
+[x] Volume picker : sélectionner T1 → picker affiche "Volume 1"
+[x] Global search : Ctrl+K ouvre la recherche
+[x] Global search : taper "Gandalf" → résultats
+[x] Global search : clic résultat → navigation /lore
+[x] Project picker : affiche le projet LOTR
+[x] Langue : clic FR → labels français
+[x] Langue : clic EN → labels anglais
+
+## Phase 3 — CRUD Lore
+  Fichier : e2e/lore.spec.js
+[x] Créer un personnage : + Add → nom → Create characters → carte visible
+[x] Editer un personnage : clic Frodo → modifier description → Save changes → persistence
+[x] Supprimer un personnage : créer → Delete characters → reload → disparu
+[x] Créer un lieu : Tab Locations → + Add → nom → Create locations
+[x] Créer un objet : Tab Objects → + Add → nom → Create objects
+[x] Recherche : taper "Gandalf" → filtre → vider → retour complet
+[x] Créer un groupe : Tab Groups → + Add → nom → Create group
+[x] Tags (aliases) : taper + Enter → chip visible → clic ✕ → chip supprimé → Save changes
+
+## Phase 4 — CRUD Timeline
+  Fichier : e2e/timeline.spec.js
+[x] Créer un événement : + Add → EVENT TITLE → Create event → reload → visible
+[x] Editer un événement : Edit button → modifier titre → Save changes → reload → vérifié
+[x] Supprimer un événement : créer → Edit → Delete event → reload → disparu
+[x] Toggle arc strip
+[x] Drag & drop intra-chapitre (keyboard : Space → ArrowDown → Space)
+[x] Notes de chapitre : ouvrir → écrire → fermer
+[x] Filtres par personnage : All characters → Gandalf → vérifier sélection
+
+## Phase 5 — CRUD Plants, Threads, Hero Journey
+  Fichiers : e2e/plants.spec.js, e2e/threads.spec.js, e2e/hero-journey.spec.js
+[x] Plants : créer (+ Setup → label → Save changes) / supprimer (× button)
+[x] Threads : créer (+ New thread → nom → Create thread) / supprimer (✕ Delete)
+[x] Hero Journey : remplir étape → save
+[x] Hero Journey : supprimer étape
+
+## Phase 6 — Map & Save the Cat
+  Fichiers : e2e/map.spec.js, e2e/savethecat.spec.js
+[x] Map : carte visible avec lieux
+[x] Map : trajet personnage affiché
+[x] STC : beats affichés (Opening Image, Final Image)
+[x] STC : événements assignés aux beats
+[x] Map placer un lieu : edit mode → retirer Bree → clic carte → replacer → exit edit
+[x] Map upload image (testé dans le flow projet vide)
+
+## Phase 7 — Arc émotionnel & Character Arc
+  Fichier : e2e/arc.spec.js
+[x] Arc global : SVG avec points affichés
+[x] Arc global : clic Ch.1 → slider intensité 3→7 → bouton reflète la valeur → restore
+[x] Tab personnages : clic Character arcs → clic Global arc
+
+## Phase 8 — Dashboard & Incoherences
+  Fichiers : e2e/dashboard.spec.js, e2e/incoherences.spec.js
+[x] Dashboard stats : Overview, Characters, Locations, Objects, Events, Beats STC
+[x] Dashboard navigation : clic "Open" → navigation
+[x] Dashboard recommendations : "TO DO NOW" visible
+[x] Dashboard Series View : Fellowship, Two Towers, Return visibles
+[x] Incoherences : severity visible
+[x] Incoherences : filtrer par severity
+[x] Incoherences : toggle résolu
+
+## Phase 9 — Flux complets cross-routes
+  Fichier : e2e/flows.spec.js
+[x] Dashboard → STC via bouton Open
+[x] Créer perso /lore → naviguer /timeline → retrouver dans /lore
+[x] Volume filtre : sélectionner T1 → dashboard montre stats T1
+[x] Refresh page (F5) → données rechargent
+
+## Phase 10 — Edge cases & robustesse
+  Fichier : e2e/edge-cases.spec.js
+[x] Ctrl+K fonctionne depuis /lore
+[x] Ctrl+K fonctionne depuis /timeline
+[x] Ctrl+K fonctionne depuis /map
+[x] Refresh /dashboard → recharge
+[x] Refresh /lore → recharge
+[x] Refresh /map → recharge
+[x] Projet vide : Build → empty states lore/timeline/plants/threads + upload map image
+[x] Données longues : nom 200 chars → carte ne casse pas le layout
+[x] Suppression cascade : créer lieu → search → delete → confirm → "No results" → timeline OK
+
+===============================================================================
+  MODE COOPÉRATIF + MODÉRATION PUBLIQUE
+  Multi-auteurs, rôles, invitations, vue publique, suggestions
+===============================================================================
+
+## Phase 1 — Fondations (DB + middleware)
+[ ] Migration SQL `server/db/migrations/002_collaboration.sql`
+    - ALTER projects ADD visibility TEXT NOT NULL DEFAULT 'private'
+    - CREATE TABLE project_members (project_id, user_id, role CHECK owner/editor/viewer, joined_at)
+    - CREATE TABLE project_invitations (id, project_id, email, role, invited_by, expires_at, accepted_at)
+    - CREATE TABLE suggestions (id, project_id, entity_type, entity_id, field, current_value, proposed_value, author_name, author_email, author_user_id, reason, status, reviewed_by, reviewed_at, review_comment)
+    - Rétrofill : INSERT project_members (owner) pour tous les projets existants avec user_id
+[ ] Middleware `server/src/middleware/requireProjectAccess.js`
+    - Hiérarchie : owner (3) > editor (2) > viewer (1)
+    - Lookup project_members pour users authentifiés
+    - Fallback projects.user_id pour backward compat
+    - Device anonyme : garde le comportement actuel
+    - Pose c.set('projectRole', role)
+[ ] Réécrire requireProjectOwner comme alias → requireProjectAccess('owner')
+[ ] Appliquer les rôles par verbe HTTP dans api.js
+    - GET → viewer, POST/PUT → editor, DELETE projet → owner, DELETE entité → editor
+    - Routes membres/invitations/settings → owner
+[ ] Mettre à jour getProjects() : UNION projets propres + partagés (JOIN project_members)
+[ ] INSERT auto project_members(owner) dans createProject() pour users authentifiés
+[ ] Tests : vérifier que les projets existants fonctionnent toujours (backward compat)
+
+## Phase 2 — Gestion des membres + invitations
+[ ] Routes API membres :
+    - GET /projects/:projectId/members (viewer)
+    - PUT /projects/:projectId/members/:userId/role (owner)
+    - DELETE /projects/:projectId/members/:userId (owner)
+    - POST /projects/:projectId/transfer-ownership (owner)
+[ ] Routes API invitations :
+    - GET /projects/:projectId/invitations (owner)
+    - POST /projects/:projectId/invitations (owner) → body: { email, role }
+    - DELETE /projects/:projectId/invitations/:id (owner)
+    - POST /api/invitations/accept (auth) → body: { token }
+    - POST /api/auth/accept-pending-invitations (auth) → auto-accept à la connexion
+[ ] Validators Zod : createInvitation, updateMemberRole, transferOwnership
+[ ] Extraire sendEmail + emailHtml de auth.js → server/src/email.js
+[ ] Email d'invitation : nom projet, invitant, rôle, CTA → /login?invitation={id}
+[ ] Auto-accept : à la connexion/inscription, accepter toutes les invitations matching email
+[ ] DB queries : getProjectMembers, addProjectMember, updateProjectMemberRole,
+    removeProjectMember, transferProjectOwnership, getProjectInvitations,
+    createInvitation, deleteInvitation, acceptInvitation, acceptPendingInvitationsForUser
+[ ] Store Zustand : src/stores/useMemberStore.js (members, invitations, actions CRUD)
+[ ] API client : fonctions membres/invitations dans src/api/client.js
+[ ] Page settings : src/pages/ProjectSettingsPage.jsx (onglets : Général, Membres, Visibilité, Modération)
+[ ] Composants :
+    - src/components/settings/MemberList.jsx (table + rôle + boutons)
+    - src/components/settings/InviteForm.jsx (email + sélecteur rôle)
+    - src/components/nav/RoleBadge.jsx (badge owner/editor/viewer dans TopNav)
+[ ] Route /settings dans App.jsx (derrière RequireProject)
+[ ] ProjectPicker : distinguer "Mes projets" / "Partagés avec moi" + afficher rôle
+[ ] TopNav : icône settings (visible si owner/editor)
+[ ] Hook useCanEdit() : désactiver édition si role === 'viewer'
+[ ] Tests : inviter collaborateur → il voit le projet → il peut éditer → viewer ne peut pas
+
+## Phase 3 — Visibilité publique + suggestions
+[ ] Routes publiques server/src/routes/public.js (monté AVANT requireIdentity)
+    - Middleware requirePublicProject : vérifie visibility = 'public'
+    - GET /public/projects/:projectId (métadonnées)
+    - GET /public/projects/:projectId/lore, events, stc, volumes, plants, threads, hero-journey, character-arcs
+    - POST /public/projects/:projectId/suggestions (rate limited 5/10min/IP)
+[ ] Routes modération (editor+) :
+    - GET /projects/:projectId/suggestions (filtre status)
+    - PUT /projects/:projectId/suggestions/:id/approve (approuver + appliquer)
+    - PUT /projects/:projectId/suggestions/:id/reject (rejeter + commentaire)
+[ ] Approval flow :
+    - Transaction : vérifier entité, UPDATE le champ ciblé, SET status='approved'
+    - Allowlist explicite de tables/champs modifiables (SUGGESTION_TARGETS) pour prévenir injection
+[ ] Validators Zod : createSuggestion, reviewSuggestion, projectSettings
+[ ] DB queries : createSuggestion, getSuggestions, approveSuggestion, rejectSuggestion,
+    updateProjectSettings, getProjectSettings
+[ ] Store : src/stores/useSuggestionStore.js (suggestions, pendingCount, filter, approve, reject)
+[ ] API client : fonctions publiques séparées (fetch sans credentials) + fonctions modération
+[ ] Page publique : src/pages/PublicProjectPage.jsx — route /p/:projectId (hors RequireProject)
+[ ] Composants publics :
+    - src/components/public/PublicLayout.jsx (layout lecture seule)
+    - src/components/public/SuggestButton.jsx (bouton sur chaque entité)
+    - src/components/public/SuggestionForm.jsx (modal : champ, valeur, nom/email/raison)
+[ ] Composants modération :
+    - src/components/moderation/SuggestionQueue.jsx (liste filtrable)
+    - src/components/moderation/SuggestionCard.jsx (diff current/proposed + approve/reject)
+[ ] Settings : onglet Visibilité (toggle public + lien partageable)
+[ ] TopNav : badge nombre suggestions en attente
+[ ] Tests : toggle public → visiter /p/:projectId incognito → soumettre suggestion → approuver
+
+## Phase 4 — Polish
+[ ] Notifications email pour nouvelles suggestions (batch, pas temps réel)
+[ ] Bouton "Copier le lien public" dans settings
+[ ] Renvoyer une invitation
+[ ] Tests E2E complets (Playwright) pour collaboration + modération
+[ ] Mise à jour CLAUDE.md (routes, stores, tables)
+[ ] Mise à jour ai/docs/ (data-layer.md, routes.md, components.md)

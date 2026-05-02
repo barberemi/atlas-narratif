@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
 import { getEntityInfo, getEntityMeta } from '../../utils/entityUtils';
 
 export default function IncPanel({ incPanelId, panelIncs = [], onClose, central, satellites, navigateTo }) {
+  const { t } = useTranslation();
   const panelEntity = incPanelId === central?.id ? central : satellites.find(s => s.id === incPanelId);
   const entityName  = panelEntity?.name ?? incPanelId;
 
@@ -19,7 +21,7 @@ export default function IncPanel({ incPanelId, panelIncs = [], onClose, central,
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 flex-shrink-0">
         <div>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest">Incohérences détectées</p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest">{t('inc.detectedTitle')}</p>
           <p className="text-sm font-bold text-white leading-tight mt-0.5">{entityName}</p>
         </div>
         <button
@@ -39,8 +41,8 @@ export default function IncPanel({ incPanelId, panelIncs = [], onClose, central,
               style={{ backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: cfg.color }}>{cfg.label}</span>
-                <span className="text-[10px] text-slate-500 shrink-0">{inc.type}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: cfg.color }}>{t(`severity.${inc.severity}`, cfg.label)}</span>
+                <span className="text-[10px] text-slate-500 shrink-0">{t(`incType.${inc.type}`, { defaultValue: inc.type })}</span>
               </div>
               <p className="text-xs font-semibold text-white leading-snug mb-2">{inc.title}</p>
               <p className="text-[11px] text-slate-400 leading-relaxed font-serif">{inc.explanation}</p>
@@ -61,9 +63,9 @@ export default function IncPanel({ incPanelId, panelIncs = [], onClose, central,
                           border:          `1px solid ${exists ? `rgba(${hexToRgb(info.color)},0.3)` : 'rgba(255,255,255,0.08)'}`,
                           cursor:          exists ? 'pointer' : 'default',
                         }}
-                        title={exists ? `Explorer ${link.label}` : 'Entité non référencée'}
+                        title={exists ? `Explorer ${info.name}` : 'Entité non référencée'}
                       >
-                        {info.icon} {link.label}
+                        {info.icon} {info.name}
                       </button>
                     );
                   })}

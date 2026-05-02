@@ -1,36 +1,38 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useLoreStore }     from '../stores/useLoreStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
+import { useStoreLoader }   from '../hooks/useStoreLoader';
 import EntityEditor from '../components/lore/EntityEditor';
 import EventEditor  from '../components/timeline/EventEditor';
 import { filterBySource, computeStats, extractChapters } from '../utils/reviewUtils';
 
 // ── Badge source ───────────────────────────────────────────────────────────────
 const SOURCE_LABELS = {
-  import:   { label: 'Importé',  color: '#64748b', bg: 'rgba(100,116,139,0.1)',  border: 'rgba(100,116,139,0.2)'  },
-  manual:   { label: 'Manuel',   color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)'  },
-  modified: { label: 'Modifié',  color: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)'  },
+  import:   { key: 'review.sourceImport',   fallback: 'Import\u00e9',  color: '#64748b', bg: 'rgba(100,116,139,0.1)',  border: 'rgba(100,116,139,0.2)'  },
+  manual:   { key: 'review.sourceManual',   fallback: 'Manuel',   color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)'  },
+  modified: { key: 'review.sourceModified', fallback: 'Modifi\u00e9',  color: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)'  },
 };
 
-function SourceBadge({ source }) {
+function SourceBadge({ source, t }) {
   const cfg = SOURCE_LABELS[source] ?? SOURCE_LABELS.import;
   return (
     <span
       className="text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0"
       style={{ color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
     >
-      {cfg.label}
+      {t(cfg.key, cfg.fallback)}
     </span>
   );
 }
 
 // ── Filtre source ──────────────────────────────────────────────────────────────
-const FILTERS = [
-  { id: 'all',      label: 'Tous' },
-  { id: 'import',   label: 'Importés' },
-  { id: 'manual',   label: 'Manuels' },
-  { id: 'modified', label: 'Modifiés' },
+const FILTER_IDS = [
+  { id: 'all',      key: 'review.filterAll',      fallback: 'Tous' },
+  { id: 'import',   key: 'review.filterImported',  fallback: 'Import\u00e9s' },
+  { id: 'manual',   key: 'review.filterManual',    fallback: 'Manuels' },
+  { id: 'modified', key: 'review.filterModified',  fallback: 'Modifi\u00e9s' },
 ];
 
 // ── Section entités ────────────────────────────────────────────────────────────
@@ -72,7 +74,7 @@ function Section({ title, count, items, renderItem, accent }) {
 }
 
 // ── Ligne d'entité ─────────────────────────────────────────────────────────────
-function EntityRow({ item, color, onEdit, children }) {
+function EntityRow({ item, color, onEdit, children, t }) {
   return (
     <div
       key={item.id}
@@ -86,12 +88,12 @@ function EntityRow({ item, color, onEdit, children }) {
       )}
       <span className="text-sm text-slate-300 flex-1 truncate font-medium">{item.name ?? item.title}</span>
       {children}
-      <SourceBadge source={item.source ?? 'import'} />
+      <SourceBadge source={item.source ?? 'import'} t={t} />
       <button
         onClick={() => onEdit(item)}
         className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded text-[11px] transition-opacity flex-shrink-0"
         style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
-        title="Modifier"
+        title={t('review.edit', 'Modifier')}
       >
         ✎
       </button>
@@ -101,7 +103,9 @@ function EntityRow({ item, color, onEdit, children }) {
 
 // ── ReviewPage ─────────────────────────────────────────────────────────────────
 export default function ReviewPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  useStoreLoader([useTimelineStore]);
 
   const characters = useLoreStore(s => s.characters);
   const locations  = useLoreStore(s => s.locations);
@@ -130,14 +134,14 @@ export default function ReviewPage() {
         {/* ── Header ── */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Import terminé</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{t('review.importDone', 'Import termin\u00e9')}</p>
             <h1 className="text-2xl font-black tracking-tight">
-              Révision du <span style={{ color: '#818cf8' }}>projet</span>
+              {t('review.titlePrefix', 'R\u00e9vision du')} <span style={{ color: '#818cf8' }}>{t('review.titleHighlight', 'projet')}</span>
             </h1>
             <p className="text-sm text-slate-500 font-serif italic mt-1">
-              {stats.characters} personnages · {stats.locations} lieux · {stats.objects} objets · {stats.events} événements
+              {stats.characters} {t('label.characters')} · {stats.locations} {t('label.locations')} · {stats.objects} {t('label.objects')} · {stats.events} {t('label.events')}
               {stats.modified > 0 && (
-                <span style={{ color: '#f59e0b' }}> · {stats.modified} modifiés/ajoutés</span>
+                <span style={{ color: '#f59e0b' }}> · {stats.modified} {t('review.modifiedAdded', 'modifi\u00e9s/ajout\u00e9s')}</span>
               )}
             </p>
           </div>
@@ -146,7 +150,7 @@ export default function ReviewPage() {
             className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-black transition-all duration-150"
             style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
           >
-            Dashboard →
+            {t('review.goToDashboard', 'Dashboard →')}
           </button>
         </div>
 
@@ -155,7 +159,7 @@ export default function ReviewPage() {
           className="flex gap-1 p-1 rounded-xl"
           style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
         >
-          {FILTERS.map(f => (
+          {FILTER_IDS.map(f => (
             <button
               key={f.id}
               onClick={() => setSourceFilter(f.id)}
@@ -166,7 +170,7 @@ export default function ReviewPage() {
                 border:          sourceFilter === f.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
               }}
             >
-              {f.label}
+              {t(f.key, f.fallback)}
               {f.id !== 'all' && (
                 <span className="ml-1 opacity-60">
                   ({[...characters, ...locations, ...objects, ...events].filter(i => (i.source ?? 'import') === f.id).length})
@@ -179,13 +183,13 @@ export default function ReviewPage() {
         {/* ── Message si filtre vide ── */}
         {totalFiltered === 0 && (
           <div className="text-center py-12 text-slate-600 font-serif italic text-sm">
-            Aucun élément avec ce filtre
+            {t('review.noFilterResult', 'Aucun \u00e9l\u00e9ment avec ce filtre')}
           </div>
         )}
 
         {/* ── Personnages ── */}
         <Section
-          title="Personnages"
+          title={t('label.characters')}
           count={filteredChars.length}
           accent="#818cf8"
           items={filteredChars}
@@ -195,6 +199,7 @@ export default function ReviewPage() {
               item={char}
               color={char.color}
               onEdit={() => setEditorState({ type: 'character', entity: char })}
+              t={t}
             >
             </EntityRow>
           )}
@@ -202,7 +207,7 @@ export default function ReviewPage() {
 
         {/* ── Lieux ── */}
         <Section
-          title="Lieux"
+          title={t('label.locations')}
           count={filteredLocs.length}
           accent="#60a5fa"
           items={filteredLocs}
@@ -212,6 +217,7 @@ export default function ReviewPage() {
               item={loc}
               color={null}
               onEdit={() => setEditorState({ type: 'location', entity: loc })}
+              t={t}
             >
               {loc.type && (
                 <span className="text-[11px] text-slate-600 truncate hidden sm:block">{loc.type}</span>
@@ -222,7 +228,7 @@ export default function ReviewPage() {
 
         {/* ── Objets ── */}
         <Section
-          title="Objets"
+          title={t('label.objects')}
           count={filteredObjs.length}
           accent="#a78bfa"
           items={filteredObjs}
@@ -232,6 +238,7 @@ export default function ReviewPage() {
               item={obj}
               color={null}
               onEdit={() => setEditorState({ type: 'object', entity: obj })}
+              t={t}
             >
               {obj.type && (
                 <span className="text-[11px] text-slate-600 truncate hidden sm:block">{obj.type}</span>
@@ -242,7 +249,7 @@ export default function ReviewPage() {
 
         {/* ── Événements ── */}
         <Section
-          title="Événements"
+          title={t('label.events')}
           count={filteredEvents.length}
           accent="#3F51B5"
           items={filteredEvents}
@@ -252,6 +259,7 @@ export default function ReviewPage() {
               item={{ ...evt, name: evt.title }}
               color={null}
               onEdit={() => setEditorState({ type: 'event', entity: evt })}
+              t={t}
             >
               <span className="text-[11px] text-slate-600 flex-shrink-0 hidden sm:block">
                 Ch.{evt.chapter}
@@ -266,7 +274,7 @@ export default function ReviewPage() {
           className="w-full py-3 rounded-xl text-sm font-black transition-all duration-200 mt-2"
           style={{ backgroundColor: 'rgba(63,81,181,0.18)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
         >
-          Commencer l'exploration →
+          {t('review.startExploring', 'Commencer l\'exploration \u2192')}
         </button>
 
       </div>

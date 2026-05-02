@@ -562,7 +562,15 @@ export const t2ChaptersDB = [
     number: 15,
     title: "La Porte Noire et l'Ithilien",
     summary: "Frodo réalise que la voie directe est impossible. Gollum propose Cirith Ungol. Sam s'y oppose. Rencontre avec Faramir — l'Anneau est à portée d'un homme de Gondor, et il choisit de ne pas le prendre. Contraste avec Boromir.",
-    beats: ['bad_guys', 'debate'],
+    beats: ['bad_guys'],
+    volumeId: 'vol_deux_tours',
+  },
+  {
+    id: 'ch_t2_06b',
+    number: 16,
+    title: "La Fenêtre sur l'Ouest",
+    summary: "Faramir capture Frodo et Sam en Ithilien. Il découvre l'existence de l'Anneau et est confronté à la même tentation que son frère Boromir. Mais là où Boromir a cédé, Faramir choisit de ne pas le prendre — prouvant qu'un homme de qualité peut résister. Gollum est capturé au bord de l'étang interdit, puis relâché par égard pour Frodo.",
+    beats: ['debate'],
     volumeId: 'vol_deux_tours',
   },
   {
@@ -597,14 +605,14 @@ export const t2PlantsDB = [
   {
     id: 'plant_t2_01',
     label: "Gollum annoncé par Gandalf en T1, guide en T2",
-    type: 'personnage',
+    type: 'character',
     plant_chapter_num: 2,
     plant_event_id: 'evt_004',
     payoff_chapter_num: 10,
     payoff_event_id: 'evt_t2_01',
     entity_id: 'char_gollum',
     entity_type: 'character',
-    status: 'closed',
+    status: 'resolved',
     notes: "Gandalf mentionne à Frodo que Gollum suivait la piste de l'Anneau depuis des siècles. Ce personnage-ombre, posé au chap. 2, devient le guide-pivot de tout le tome 2.",
     plantVolumeId: 'vol_communaute',
     payoffVolumeId: 'vol_deux_tours',
@@ -612,7 +620,7 @@ export const t2PlantsDB = [
   {
     id: 'plant_t2_02',
     label: "La Phiale de Galadriel — lumière dans les ténèbres",
-    type: 'objet',
+    type: 'object',
     plant_chapter_num: 8,
     plant_event_id: 'evt_023',
     payoff_chapter_num: null,
@@ -634,7 +642,7 @@ export const t2PlantsDB = [
     payoff_event_id: 'evt_t2_11',
     entity_id: 'char_saruman',
     entity_type: 'character',
-    status: 'closed',
+    status: 'resolved',
     notes: "L'emprisonnement de Gandalf à Isengard (T1) révèle que Saroumane a des agents partout. Son emprise sur Théoden est la conséquence directe de cette corruption — résolue quand Gandalf libère le roi.",
     plantVolumeId: 'vol_communaute',
     payoffVolumeId: 'vol_deux_tours',
@@ -642,14 +650,14 @@ export const t2PlantsDB = [
   {
     id: 'plant_t2_04',
     label: "Le Palantír d'Orthanc — vision de Sauron",
-    type: 'objet',
+    type: 'object',
     plant_chapter_num: 3,
     plant_event_id: 'evt_007',
     payoff_chapter_num: 19,
     payoff_event_id: 'evt_t2_15',
     entity_id: 'obj_palantir',
     entity_type: 'object',
-    status: 'closed',
+    status: 'resolved',
     notes: "La Pierre de Vision est posée dès l'emprisonnement de Gandalf à Orthanc. Sa révélation en T2 (Pippin le regarde, Sauron voit) accélère la guerre — et prépare l'arc de Minas Tirith en T3.",
     plantVolumeId: 'vol_communaute',
     payoffVolumeId: 'vol_deux_tours',
@@ -657,7 +665,7 @@ export const t2PlantsDB = [
   {
     id: 'plant_t2_05',
     label: "La pitié de Frodo pour Gollum",
-    type: 'thème',
+    type: 'theme',
     plant_chapter_num: 10,
     plant_event_id: 'evt_t2_01',
     payoff_chapter_num: null,
@@ -880,6 +888,45 @@ export const t2CharacterArcsDB = [
       { chapter_num: 19, value: 2,  note: 'Gollum reprend le dessus — le plan de trahison se précise' },
     ],
   },
+  // Éowyn — rébellion silencieuse
+  {
+    id: 'cax_eowyn_rebellion_t2',
+    characterId: 'char_eowyn',
+    label: 'Rébellion silencieuse',
+    color: '#F0ABFC',
+    points: [
+      { chapter_num: 14, value: 3, note: 'Prisonnière d\'un rôle assigné — gardienne du foyer d\'un roi mourant' },
+      { chapter_num: 14, value: 5, note: 'Rencontre Aragorn — aspire à plus, à la gloire et à la mort au combat' },
+      { chapter_num: 17, value: 4, note: 'Laissée à l\'arrière pendant la bataille du Gouffre' },
+      { chapter_num: 19, value: 6, note: 'La guerre approche — sa résolution de combattre grandit en secret' },
+    ],
+  },
+  // Merry — recherche d'identité
+  {
+    id: 'cax_merry_identity_t2',
+    characterId: 'char_merry',
+    label: 'Recherche d\'identité',
+    color: '#78716C',
+    points: [
+      { chapter_num: 12, value: 5, note: 'Prisonnier des Uruk-haï, perdu, sans repère — puis libéré par la forêt' },
+      { chapter_num: 12, value: 7, note: 'Alliance avec Sylvebarbe — Merry découvre qu\'il peut influencer des forces anciennes' },
+      { chapter_num: 18, value: 8, note: 'Destruction d\'Isengard — a contribué à réveiller les Ents, premier acte héroïque' },
+      { chapter_num: 19, value: 7, note: 'Retrouve Aragorn et Gandalf — reconnu comme acteur, pas spectateur' },
+    ],
+  },
+  // Pippin — passage à la maturité
+  {
+    id: 'cax_pippin_maturity_t2',
+    characterId: 'char_pippin',
+    label: 'Passage à la maturité',
+    color: '#A3A3A3',
+    points: [
+      { chapter_num: 12, value: 4, note: 'Captif des Uruk-haï — impuissant, terrifié, mais ne perd pas espoir' },
+      { chapter_num: 12, value: 6, note: 'Fangorn — s\'émerveille et prend conscience d\'un monde plus vaste' },
+      { chapter_num: 18, value: 7, note: 'A contribué à convaincre les Ents — sa naïveté devient un atout' },
+      { chapter_num: 19, value: 3, note: 'Regarde le Palantír — impulsivité aux conséquences désastreuses, leçon brutale' },
+    ],
+  },
 ];
 
 // ── Voyage du Héros — Aragorn (T2) ────────────────────────────────────────────
@@ -887,6 +934,7 @@ export const t2CharacterArcsDB = [
 export const t2HeroJourneyDB = [
   { stageKey: 'ordinary_world',     characterId: 'char_aragorn', chapterNum: 9,  summary: "Aragorn à Parth Galen après la mort de Boromir — guide sans Communauté, sans cap clair." },
   { stageKey: 'call_to_adventure',  characterId: 'char_aragorn', chapterNum: 13, summary: "Le retour de Gandalf le Blanc redéfinit la mission : aller à Edoras, rallier Rohan." },
+  { stageKey: 'refusal',            characterId: 'char_aragorn', chapterNum: 10, summary: "Aragorn doute de son héritage : l'ombre d'Isildur pèse sur lui. Peut-il revendiquer le trône sans répéter la faiblesse de son ancêtre ?" },
   { stageKey: 'mentor',             characterId: 'char_aragorn', chapterNum: 13, summary: "Gandalf le Blanc — plus sage, plus puissant — reprend son rôle de mentor et stratège." },
   { stageKey: 'threshold',          characterId: 'char_aragorn', chapterNum: 14, summary: "Edoras : Aragorn entre dans la salle d'un roi corrompu, sans certitude de succès." },
   { stageKey: 'tests',              characterId: 'char_aragorn', chapterNum: 14, summary: "Libérer Théoden, convaincre les Rohirrim, se préparer à une bataille sans espoir réel." },
@@ -896,4 +944,172 @@ export const t2HeroJourneyDB = [
   { stageKey: 'road_back',          characterId: 'char_aragorn', chapterNum: 18, summary: "Marche vers Isengard dévasté — la guerre n'est pas finie, mais un front est fermé." },
   { stageKey: 'resurrection',       characterId: 'char_aragorn', chapterNum: 19, summary: "Face à Saroumane dans sa tour : Aragorn résiste à la voix enchanteresse — identité prouvée." },
   { stageKey: 'return_with_elixir', characterId: 'char_aragorn', chapterNum: 19, summary: "Aragorn repart vers la guerre à venir — renforcé, reconnu, le roi en devenir s'affirme." },
+];
+
+// ── Objets T2 ────────────────────────────────────────────────────────────────
+
+export const t2Objects = [
+  {
+    id: 'obj_horn_helm',
+    name: 'Cor de Helm Poing-de-Marteau',
+    type: 'Artefact militaire',
+    description:
+      'Grand cor de guerre du Gouffre de Helm, nommé d\'après Helm Hammerhand, roi du Rohan légendaire. Son son résonne dans tout le gouffre et terrorise les ennemis. Théoden et Aragorn sonnent le cor à l\'aube lors de la charge finale — un moment de bravoure absolue.',
+    creator: 'Rohirrim (forgé pour Helm Hammerhand)',
+    createdIn: 'Gouffre de Helm — Rohan',
+    powers: ['Terreur des ennemis', 'Ralliement des défenseurs'],
+    currentHolder: 'Théoden',
+    holders: [
+      { id: 'char_theoden', name: 'Théoden', color: '#B45309' },
+      { id: 'char_aragorn', name: 'Aragorn', color: '#3F51B5' },
+    ],
+    status: 'active',
+  },
+  {
+    id: 'obj_ent_draught',
+    name: 'Breuvage des Ents',
+    type: 'Substance naturelle',
+    description:
+      'Breuvage mystérieux que Sylvebarbe donne à Merry et Pippin dans Fangorn. Tiré de sources profondes de la forêt, il fait grandir les hobbits de plusieurs centimètres — les rendant les plus grands hobbits de l\'histoire de la Comté. Un symbole de la puissance de la nature face à l\'industrie de Saroumane.',
+    creator: 'Ents de Fangorn',
+    createdIn: 'Forêt de Fangorn',
+    powers: ['Croissance physique', 'Vitalité accrue'],
+    currentHolder: null,
+    holders: [
+      { id: 'char_merry',  name: 'Meriadoc Brandebouc', color: '#78716C' },
+      { id: 'char_pippin', name: 'Peregrin Touque',      color: '#A3A3A3' },
+    ],
+    status: 'consumed',
+  },
+];
+
+// ── Groupes T2 ───────────────────────────────────────────────────────────────
+
+export const t2GroupsDB = [
+  {
+    id: 'grp_rohirrim',
+    name: 'Les Rohirrim',
+    type: 'Faction',
+    color: '#B45309',
+    description:
+      'Cavaliers de Rohan, peuple de la Marche, descendants d\'Eorl le Jeune. Seigneurs des chevaux de la Terre du Milieu. Leur cavalerie est la plus redoutée de l\'Ouest. Fidèles alliés du Gondor par le Serment d\'Eorl.',
+    homelandId: 'loc_edoras',
+    members: [
+      { characterId: 'char_theoden', roleInGroup: 'Roi' },
+      { characterId: 'char_eomer',   roleInGroup: 'Troisième Maréchal' },
+      { characterId: 'char_eowyn',   roleInGroup: 'Dame du Rohan' },
+    ],
+  },
+  {
+    id: 'grp_ents',
+    name: 'Les Ents de Fangorn',
+    type: 'Race',
+    color: '#16A34A',
+    description:
+      'Bergers des arbres, créatures les plus anciennes de la Terre du Milieu. Les Ents veillent sur les forêts depuis les premiers jours. Lents à la colère mais terrifiants une fois éveillés — leur marche sur Isengard est l\'un des retournements décisifs de la guerre.',
+    homelandId: 'loc_fangorn',
+    members: [
+      { characterId: 'char_treebeard', roleInGroup: 'Doyen' },
+    ],
+  },
+  {
+    id: 'grp_rangers_ithilien',
+    name: 'Les Rangers d\'Ithilien',
+    type: 'Faction',
+    color: '#6366F1',
+    description:
+      'Compagnie secrète de guerriers du Gondor patrouillant l\'Ithilien, dernière ligne de défense avant le Mordor. Commandés par Faramir, ils mènent des embuscades contre les armées de Sauron qui traversent leurs terres.',
+    homelandId: 'loc_ithilien',
+    members: [
+      { characterId: 'char_faramir', roleInGroup: 'Capitaine' },
+    ],
+  },
+];
+
+// ── Trajets carte T2 ────────────────────────────────────────────────────────
+
+export const t2FrodoJourney = [
+  {
+    id: 0, etape: 1, scene: 'emyn_muil',
+    lieu: 'Emyn Muil', sous_lieu: 'Collines rocheuses à l\'est de l\'Anduin',
+    chapitre: 'Les Deux Tours, III-1',
+    action: 'Frodo et Sam errent dans le labyrinthe de l\'Emyn Muil. Ils capturent Gollum qui les suit. Frodo le contraint par serment à les guider vers le Mordor.',
+    allies: ['char_sam', 'char_gollum'],
+    x: 66, y: 62,
+  },
+  {
+    id: 1, etape: 2, scene: 'marais_morts',
+    lieu: 'Marais des Morts', sous_lieu: 'Ancien champ de bataille de Dagorlad',
+    chapitre: 'Les Deux Tours, III-2',
+    action: 'Gollum guide les hobbits à travers les marais hantés. Les visages des morts tentent de les attirer. Un Nazgûl passe dans le ciel. L\'atmosphère de terreur s\'épaissit.',
+    allies: ['char_sam', 'char_gollum'],
+    x: 72, y: 60,
+  },
+  {
+    id: 2, etape: 3, scene: 'porte_noire',
+    lieu: 'Morannon — La Porte Noire', sous_lieu: 'Entrée principale du Mordor',
+    chapitre: 'Les Deux Tours, IV-3',
+    action: 'Frodo constate que la Porte Noire est infranchissable. Gollum propose un autre chemin : Cirith Ungol, « plus sûr » selon lui. Sam se méfie.',
+    allies: ['char_sam', 'char_gollum'],
+    x: 78, y: 58,
+  },
+  {
+    id: 3, etape: 4, scene: 'ithilien',
+    lieu: 'Ithilien', sous_lieu: 'Territoire des Rangers de Faramir',
+    chapitre: 'Les Deux Tours, IV-5',
+    action: 'Capturés par Faramir et ses Rangers. L\'Anneau est à portée d\'un homme de Gondor — et il choisit de ne pas le prendre. Gollum est capturé à l\'étang interdit.',
+    allies: ['char_sam', 'char_gollum'],
+    x: 72, y: 70,
+  },
+  {
+    id: 4, etape: 5, scene: 'carrefour',
+    lieu: 'Le Carrefour — route vers Cirith Ungol', sous_lieu: 'Au sud de l\'Ithilien',
+    chapitre: 'Les Deux Tours, IV-7',
+    action: 'Frodo, Sam et Gollum reprennent la route vers Cirith Ungol. L\'ombre de Minas Morgul plane. Le piège de Gollum se referme lentement.',
+    allies: ['char_sam', 'char_gollum'],
+    x: 75, y: 73,
+  },
+];
+
+export const t2AragornJourney = [
+  {
+    id: 0, etape: 1, scene: 'poursuite',
+    lieu: 'Plaines du Rohan', sous_lieu: 'Poursuite des Uruk-haï',
+    chapitre: 'Les Deux Tours, III-1',
+    action: 'Aragorn, Legolas et Gimli poursuivent les Uruk-haï qui ont capturé Merry et Pippin. Trois jours de course à travers les plaines de Rohan.',
+    allies: ['char_legolas', 'char_gimli'],
+    x: 55, y: 55,
+  },
+  {
+    id: 1, etape: 2, scene: 'fangorn',
+    lieu: 'Forêt de Fangorn', sous_lieu: 'Orée de la forêt',
+    chapitre: 'Les Deux Tours, III-5',
+    action: 'Entrée dans Fangorn à la recherche des hobbits. Rencontre stupéfiante : Gandalf, revenu de la mort en Gandalf le Blanc. Le cap change — direction Edoras.',
+    allies: ['char_legolas', 'char_gimli', 'char_gandalf'],
+    x: 48, y: 52,
+  },
+  {
+    id: 2, etape: 3, scene: 'edoras',
+    lieu: 'Edoras — Méduseld', sous_lieu: 'Salle dorée du roi Théoden',
+    chapitre: 'Les Deux Tours, III-6',
+    action: 'Gandalf libère Théoden de l\'emprise de Saroumane. Grima est banni. Rohan se réveille pour la guerre. Éowyn rencontre Aragorn.',
+    allies: ['char_gandalf', 'char_legolas', 'char_gimli', 'char_theoden'],
+    x: 47, y: 62,
+  },
+  {
+    id: 3, etape: 4, scene: 'gouffre_helm',
+    lieu: 'Gouffre de Helm', sous_lieu: 'Forteresse du Gouffre',
+    chapitre: 'Les Deux Tours, III-7',
+    action: 'Nuit du Gouffre de Helm. Dix mille Uruk-haï. La muraille explose. Tout semble perdu — mais Aragorn charge à l\'aube avec Théoden. Gandalf et Éomer arrivent. Victoire.',
+    allies: ['char_theoden', 'char_legolas', 'char_gimli'],
+    x: 44, y: 66,
+  },
+  {
+    id: 4, etape: 5, scene: 'isengard',
+    lieu: 'Isengard — Orthanc', sous_lieu: 'Tour de Saroumane, détruite par les Ents',
+    chapitre: 'Les Deux Tours, III-8/9',
+    action: 'Arrivée à Isengard dévasté par les Ents. Merry et Pippin retrouvés. Confrontation avec Saroumane. Le Palantír jeté. Pippin le regarde — Sauron voit.',
+    allies: ['char_gandalf', 'char_theoden', 'char_legolas', 'char_gimli', 'char_merry', 'char_pippin'],
+    x: 47, y: 56,
+  },
 ];

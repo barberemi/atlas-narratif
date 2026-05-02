@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { setGroupMemberRole } from '../../api/client';
 import { Field, Input, Textarea } from '../ui/FormFields';
 import SidePanel from '../ui/SidePanel';
 
@@ -27,12 +29,18 @@ function initData(group) {
 }
 
 export default function GroupEditor({ group, onClose }) {
+  const { t } = useTranslation();
   const isEdit = !!group;
 
   const saving      = useLoreStore(s => s.saving);
   const saveGroup   = useLoreStore(s => s.saveGroup);
   const removeGroup = useLoreStore(s => s.removeGroup);
   const locations   = useLoreStore(s => s.locations);
+  const characters  = useLoreStore(s => s.characters);
+  const _projectId  = useLoreStore(s => s._projectId);
+  const _reload     = useLoreStore(s => s._reload);
+
+  const members = isEdit ? (group.members ?? []) : [];
 
   const [data,          setData]          = useState(() => initData(group));
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -73,7 +81,7 @@ export default function GroupEditor({ group, onClose }) {
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
         <div>
           <p className="text-[10px] text-slate-500 uppercase tracking-widest">
-            {isEdit ? 'Modifier le groupe' : 'Nouveau groupe'}
+            {isEdit ? t('group.edit') : t('group.new')}
           </p>
           <h2 className="text-sm font-black text-white mt-0.5">
             Lore <span style={{ color: ACCENT }}>Browser</span>
@@ -89,7 +97,7 @@ export default function GroupEditor({ group, onClose }) {
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
         {/* Nom */}
-        <Field label="Nom *">
+        <Field label={`${t('label.name')} *`}>
           <Input
             accent={ACCENT}
             value={data.name}
@@ -100,7 +108,7 @@ export default function GroupEditor({ group, onClose }) {
         </Field>
 
         {/* Type — option C : suggestions + saisie libre */}
-        <Field label="Type">
+        <Field label={t('label.type')}>
           <Input
             accent={ACCENT}
             list="group-type-suggestions"
@@ -131,7 +139,7 @@ export default function GroupEditor({ group, onClose }) {
         </Field>
 
         {/* Couleur */}
-        <Field label="Couleur">
+        <Field label={t('label.color')}>
           <div className="flex flex-wrap gap-2 mt-1">
             {PALETTE.map(c => (
               <button
@@ -151,7 +159,7 @@ export default function GroupEditor({ group, onClose }) {
         </Field>
 
         {/* Description */}
-        <Field label="Description">
+        <Field label={t('label.description')}>
           <Textarea
             accent={ACCENT}
             rows={3}
@@ -162,14 +170,14 @@ export default function GroupEditor({ group, onClose }) {
         </Field>
 
         {/* Lieu d'origine */}
-        <Field label="Lieu d'origine">
+        <Field label={t('group.homeland')}>
           {selectedLoc && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               <span
                 className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
                 style={{ backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}
                 onClick={() => set('homelandId', null)}
-                title="Retirer"
+                title={t('btn.delete')}
               >
                 📍 {selectedLoc.name} <span style={{ opacity: 0.5 }}>✕</span>
               </span>
@@ -178,7 +186,7 @@ export default function GroupEditor({ group, onClose }) {
           <input
             value={locSearch}
             onChange={e => setLocSearch(e.target.value)}
-            placeholder="Rechercher un lieu…"
+            placeholder={t('group.searchLocation')}
             className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600 mb-1.5"
           />
           <div className="space-y-0.5 max-h-36 overflow-y-auto">
@@ -200,10 +208,39 @@ export default function GroupEditor({ group, onClose }) {
               );
             })}
             {filteredLocs.length === 0 && (
-              <p className="text-xs text-slate-600 text-center py-2 italic">Aucun lieu trouvé</p>
+              <p className="text-xs text-slate-600 text-center py-2 italic">{t('group.noLocationFound')}</p>
             )}
           </div>
         </Field>
+
+        {isEdit && members.length > 0 && (
+          <Field label={`${t('label.members')} (${members.length})`}>
+            <div className="space-y-1.5">
+              {members.map(m => {
+                const char = characters.find(c => c.id === m.characterId);
+                if (!char) return null;
+                return (
+                  <div key={m.characterId} className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: char.color }} />
+                    <span className="text-xs text-slate-300 w-24 truncate flex-shrink-0">{char.name.split(' ')[0]}</span>
+                    <input
+                      defaultValue={m.roleInGroup ?? ''}
+                      placeholder={t('group.rolePlaceholder')}
+                      className="flex-1 px-2 py-1 rounded text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600"
+                      onBlur={async (e) => {
+                        const val = e.target.value.trim() || null;
+                        if (val !== (m.roleInGroup ?? null)) {
+                          await setGroupMemberRole(group.id, m.characterId, val, _projectId);
+                          _reload();
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </Field>
+        )}
 
       </div>
 
@@ -219,7 +256,7 @@ export default function GroupEditor({ group, onClose }) {
             cursor:          canSave ? 'pointer' : 'not-allowed',
           }}
         >
-          {saving ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer le groupe'}
+          {saving ? t('btn.saving') : isEdit ? t('btn.save') : t('group.create')}
         </button>
 
         {isEdit && !confirmDelete && (
@@ -228,7 +265,7 @@ export default function GroupEditor({ group, onClose }) {
             className="w-full py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
             style={{ border: '1px solid rgba(255,255,255,0.05)' }}
           >
-            Supprimer ce groupe
+            {t('group.delete')}
           </button>
         )}
 
@@ -238,14 +275,14 @@ export default function GroupEditor({ group, onClose }) {
               onClick={() => setConfirmDelete(false)}
               className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
             >
-              Annuler
+              {t('btn.cancel')}
             </button>
             <button
               onClick={handleDelete}
               className="flex-1 py-2 rounded-lg text-xs font-black transition-all duration-150"
               style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.35)' }}
             >
-              Confirmer
+              {t('btn.confirm')}
             </button>
           </div>
         )}

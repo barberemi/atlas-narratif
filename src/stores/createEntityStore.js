@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useSaveIndicator } from './useSaveIndicator';
 
 /**
  * Factory pour un store d'entités avec le pattern load/save/remove/_reload.
@@ -21,10 +22,14 @@ export function createEntityStore({ initialState, fetchFn, insertFn, updateFn, d
       ...initialState,
       saving:     false,
       _projectId: null,
+      _loading:   false,
 
       load: async (projectId) => {
-        set({ _projectId: projectId });
-        set(await fetchFn(projectId));
+        const { _projectId, _loading } = get();
+        if (_loading || (_projectId === projectId && get()[Object.keys(initialState)[0]] !== null)) return;
+        set({ _projectId: projectId, _loading: true });
+        try { set(await fetchFn(projectId)); }
+        finally { set({ _loading: false }); }
       },
 
       _reload,
@@ -33,12 +38,14 @@ export function createEntityStore({ initialState, fetchFn, insertFn, updateFn, d
         const { _projectId } = get();
         if (!_projectId) return;
         set({ saving: true });
+        useSaveIndicator.getState().markSaving();
         try {
           if (id) await updateFn(id, data, _projectId);
           else    await insertFn(data, _projectId);
           await _reload();
         } finally {
           set({ saving: false });
+          useSaveIndicator.getState().markSaved();
         }
       },
 
@@ -46,15 +53,18 @@ export function createEntityStore({ initialState, fetchFn, insertFn, updateFn, d
         const { _projectId } = get();
         if (!_projectId) return;
         set({ saving: true });
+        useSaveIndicator.getState().markSaving();
         try {
-          await deleteFn(id, _projectId);
+          const snapshot = await deleteFn(id, _projectId);
           await _reload();
+          return snapshot;
         } finally {
           set({ saving: false });
+          useSaveIndicator.getState().markSaved();
         }
       },
 
-      reset: () => set({ ...initialState, saving: false, _projectId: null }),
+      reset: () => set({ ...initialState, saving: false, _projectId: null, _loading: false }),
     };
   });
 }

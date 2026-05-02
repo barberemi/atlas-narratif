@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTourStore } from '../../stores/useTourStore';
 import { TOUR_STEPS } from '../../data/tour_steps';
@@ -16,6 +17,7 @@ function getTargetRect(dataKey, maxH = Infinity) {
 }
 
 export default function GuidedTour() {
+  const { t } = useTranslation();
   const active    = useTourStore(s => s.active);
   const stepIndex = useTourStore(s => s.stepIndex);
   const next      = useTourStore(s => s.next);
@@ -183,13 +185,13 @@ export default function GuidedTour() {
             >
               {stepIndex + 1} / {TOUR_STEPS.length}
             </span>
-            <p className="text-sm font-black text-slate-100">{step.title}</p>
+            <p className="text-sm font-black text-slate-100">{t(`narrative:tour.steps.${step.dataKey?.replace(/-/g, '_')}.title`, step.title)}</p>
           </div>
           <button onClick={stop} className="text-slate-600 hover:text-slate-400 transition-colors text-lg leading-none flex-shrink-0">×</button>
         </div>
 
         <p className="text-xs text-slate-400 leading-relaxed font-serif italic mb-4">
-          {step.description}
+          {t(`narrative:tour.steps.${step.dataKey?.replace(/-/g, '_')}.desc`, step.description)}
         </p>
 
         {/* Barre de progression */}
@@ -205,15 +207,15 @@ export default function GuidedTour() {
             <button onClick={prev}
               className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
               style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#64748b', border: '1px solid rgba(255,255,255,0.08)' }}>
-              ← Préc.
+              {t('tour.prev')}
             </button>
           )}
           <div className="flex-1" />
-          <button onClick={stop} className="text-xs text-slate-700 hover:text-slate-500 transition-colors">Passer</button>
+          <button onClick={stop} className="text-xs text-slate-700 hover:text-slate-500 transition-colors">{t('tour.skip')}</button>
           <button onClick={next}
             className="px-4 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
             style={{ backgroundColor: 'rgba(63,81,181,0.25)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.4)' }}>
-            {isLast ? 'Terminer ✓' : 'Suivant →'}
+            {isLast ? t('tour.finish') : t('tour.next')}
           </button>
         </div>
       </div>

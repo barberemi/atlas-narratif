@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useVolumeStore } from '../../stores/useVolumeStore';
 
 export default function VolumePicker() {
+  const { t } = useTranslation();
   const volumes        = useVolumeStore(s => s.volumes) ?? [];
   const activeVolumeId = useVolumeStore(s => s.activeVolumeId);
   const setActiveVolume = useVolumeStore(s => s.setActiveVolume);
@@ -19,23 +21,19 @@ export default function VolumePicker() {
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-        setConfirmDel(null);
-        setAdding(false);
-        setEditingId(null);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const close = () => { setOpen(false); setConfirmDel(null); setAdding(false); setEditingId(null); };
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) close(); };
+    const handleKey = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => { document.removeEventListener('mousedown', handleClick); document.removeEventListener('keydown', handleKey); };
   }, [open]);
 
   // Label du bouton déclencheur
   const activeVolume = volumes.find(v => v.id === activeVolumeId);
   const triggerLabel = activeVolumeId
-    ? (activeVolume ? `Tome ${activeVolume.number}` : 'Tome ?')
-    : volumes.length > 0 ? 'Série' : null;
+    ? (activeVolume ? t('volume.tome', { number: activeVolume.number }) : `${t('volume.tome', { number: '?' })}`)
+    : volumes.length > 0 ? t('volume.series') : null;
 
   // Pas de volumes et pas en train d'ajouter → affiche juste le "+" discret
   const showTrigger = volumes.length > 0 || null;
@@ -105,7 +103,7 @@ export default function VolumePicker() {
           }}
           onMouseEnter={e => { if (!open) { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'; } }}
           onMouseLeave={e => { if (!open) { e.currentTarget.style.color = '#475569'; e.currentTarget.style.backgroundColor = 'transparent'; } }}
-          title="Créer des tomes (série)"
+          title={t('volume.createVolumes')}
         >
           <span style={{ fontSize: 10 }}>📚</span>
           <span style={{ fontSize: 9 }}>+</span>
@@ -133,7 +131,7 @@ export default function VolumePicker() {
                 onMouseLeave={e => { if (activeVolumeId) e.currentTarget.style.backgroundColor = 'transparent'; }}
               >
                 {!activeVolumeId && <span style={{ fontSize: 9 }}>✓</span>}
-                <span>Toute la série</span>
+                <span>{t('volume.allSeries')}</span>
               </button>
             )}
 
@@ -160,16 +158,16 @@ export default function VolumePicker() {
                         onChange={e => setFormTitle(e.target.value)}
                         className="flex-1 text-xs bg-transparent outline-none border-b"
                         style={{ color: '#cbd5e1', borderColor: 'rgba(99,102,241,0.5)' }}
-                        placeholder="Titre du tome…"
+                        placeholder={t('volume.titlePlaceholder')}
                       />
                       <button type="submit" className="text-[9px] text-indigo-400 font-black px-1">✓</button>
                       <button type="button" onClick={() => setEditingId(null)} className="text-[9px] text-slate-600 px-1">✕</button>
                     </form>
                   ) : isDel ? (
                     <div className="flex items-center gap-1 w-full">
-                      <span className="text-[9px] text-red-400 flex-1">Supprimer ?</span>
-                      <button onClick={() => { removeVolume(v.id); setConfirmDel(null); }} className="text-[9px] font-black text-red-400 hover:text-red-300 px-1">Oui</button>
-                      <button onClick={() => setConfirmDel(null)} className="text-[9px] text-slate-600 hover:text-slate-400 px-1">Non</button>
+                      <span className="text-[9px] text-red-400 flex-1">{t('volume.confirmDelete')}</span>
+                      <button onClick={() => { removeVolume(v.id); setConfirmDel(null); }} className="text-[9px] font-black text-red-400 hover:text-red-300 px-1">{t('volume.yes')}</button>
+                      <button onClick={() => setConfirmDel(null)} className="text-[9px] text-slate-600 hover:text-slate-400 px-1">{t('volume.no')}</button>
                     </div>
                   ) : (
                     <>
@@ -187,12 +185,12 @@ export default function VolumePicker() {
                       <button
                         onClick={() => handleStartEdit(v)}
                         className="opacity-0 group-hover:opacity-100 text-[10px] text-slate-600 hover:text-slate-300 transition-all w-5 h-5 flex items-center justify-center rounded"
-                        title="Renommer"
+                        title={t('volume.rename')}
                       >✎</button>
                       <button
                         onClick={() => { setConfirmDel(v.id); setEditingId(null); }}
                         className="opacity-0 group-hover:opacity-100 text-[10px] text-slate-600 hover:text-red-400 transition-all w-5 h-5 flex items-center justify-center rounded"
-                        title="Supprimer ce tome"
+                        title={t('volume.deleteVolume')}
                       >🗑</button>
                     </>
                   )}
@@ -212,7 +210,7 @@ export default function VolumePicker() {
                   onChange={e => setFormTitle(e.target.value)}
                   className="flex-1 text-xs bg-transparent outline-none border-b"
                   style={{ color: '#cbd5e1', borderColor: 'rgba(99,102,241,0.5)' }}
-                  placeholder="Titre du tome…"
+                  placeholder={t('volume.titlePlaceholder')}
                 />
                 <button type="submit" className="text-[9px] text-indigo-400 font-black px-1">✓</button>
                 <button type="button" onClick={() => setAdding(false)} className="text-[9px] text-slate-600 px-1">✕</button>
@@ -226,7 +224,7 @@ export default function VolumePicker() {
                 onMouseLeave={e => { e.currentTarget.style.color = '#475569'; }}
               >
                 <span>+</span>
-                <span>Ajouter un tome</span>
+                <span>{t('volume.addVolume')}</span>
               </button>
             )}
           </div>

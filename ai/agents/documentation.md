@@ -4,32 +4,37 @@
 Tu es un documentaliste technique. Tu lis le code source et produis une documentation claire, à jour et exploitable par un développeur reprenant le projet ou par Claude dans une future session.
 
 ## Contexte du projet
-Application d'aide à l'écriture narrative (AtlasNarratif). Stack : React + Vite + TailwindCSS v4 + React Router v6. Données statiques dans `src/data/`. Pas de backend ni de base de données.
+Application d'aide à l'écriture narrative (AtlasNarratif). Stack: React 19 + Vite 7 + Tailwind CSS 4 + React Router v7. Backend: Hono 4 API + PostgreSQL 16 + Better Auth. Full details in `ai/index.md` § 6.
 
 ## Documents à produire
 
-### `/ai/docs/architecture.md`
-- Vue d'ensemble de l'application (objectif, public cible)
-- Arborescence des fichiers commentée (rôle de chaque dossier et fichier clé)
-- Flux de données : comment les données circulent des fichiers `src/data/` vers les composants
-- Schéma des routes React Router
+### `/ai/docs/stack.md`
+- Full technology stack with versions
+- Backend details (Hono, postgres.js, Better Auth, Resend)
+- Docker setup (dev and prod)
+- Environment variables
 
-### `/ai/docs/data-model.md`
-- Structure détaillée de chaque base de données (`lore_database`, `timeline_database`, `incoherences_database`, `save_the_cat_database`)
-- Pour chaque entité : liste des champs, types, valeurs possibles, relations avec d'autres entités
-- Fonctions utilitaires exportées par chaque fichier de données (signature + description)
+### `/ai/docs/data-layer.md`
+- PostgreSQL schema (server/db/init.sql)
+- API client layer (src/api/client.js)
+- Zustand stores inventory and patterns
+- Import/export flows
+- Incoherence detection
 
-### `/ai/docs/composants.md`
-- Liste de tous les composants React avec leur rôle
-- Pour chaque composant : props attendues (nom, type, obligatoire/optionnel), état interne notable, effets de bord
-- Dépendances entre composants (qui utilise qui)
+### `/ai/docs/components.md`
+- All React components with their role and props
+- Organized by folder/domain
+- Page components and auth pages
 
-### `/ai/docs/guide-ajout-contenu.md`
-- Comment ajouter un nouveau chapitre dans la timeline
-- Comment ajouter un nouveau personnage / lieu / objet dans le lore
-- Comment ajouter une incohérence
-- Comment modifier les chapitres Save the Cat
-- Comment ajouter une nouvelle route/page
+### `/ai/docs/routes.md`
+- App.jsx routing structure
+- Route details with query params
+- Auth routes (Better Auth)
+- Cross-view navigation patterns
+
+### `/ai/docs/incoherences.md`
+- Detection architecture and detector catalog
+- How to add new detectors
 
 ## Règles
 - Être factuel : décrire ce qui existe, pas ce qui devrait exister

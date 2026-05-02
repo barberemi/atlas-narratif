@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
+import { restoreCharacter, restoreLocation, restoreObject } from '../../api/client';
+import { useUndoableDelete } from '../../hooks/useUndoableDelete';
 import { Field, Input, Textarea } from '../ui/FormFields';
 import SidePanel from '../ui/SidePanel';
 
 // ── Config par type ────────────────────────────────────────────────────────────
 const TYPE_CONFIG = {
-  character: { label: 'Personnage', accent: '#818cf8', saveAction: 'saveCharacter', removeAction: 'removeCharacter' },
-  location:  { label: 'Lieu',       accent: '#60a5fa', saveAction: 'saveLocation',  removeAction: 'removeLocation'  },
-  object:    { label: 'Objet',      accent: '#a78bfa', saveAction: 'saveObject',    removeAction: 'removeObject'    },
+  character: { labelKey: 'label.characters', accent: '#818cf8', saveAction: 'saveCharacter', removeAction: 'removeCharacter' },
+  location:  { labelKey: 'label.locations',  accent: '#60a5fa', saveAction: 'saveLocation',  removeAction: 'removeLocation'  },
+  object:    { labelKey: 'label.objects',    accent: '#a78bfa', saveAction: 'saveObject',    removeAction: 'removeObject'    },
 };
 
 const PRESET_COLORS = [
@@ -17,7 +20,7 @@ const PRESET_COLORS = [
 ];
 
 // ── Saisie de tags (Enter / virgule pour ajouter) ──────────────────────────────
-function TagInput({ value, onChange, placeholder }) {
+function TagInput({ value, onChange, placeholder, testId }) {
   const [input, setInput] = useState('');
 
   const add = () => {
@@ -53,19 +56,20 @@ function TagInput({ value, onChange, placeholder }) {
         onBlur={add}
         placeholder={value.length === 0 ? placeholder : ''}
         className="bg-transparent text-xs text-slate-300 outline-none placeholder-slate-600 min-w-24 flex-1"
+        {...(testId ? { 'data-testid': testId } : {})}
       />
     </div>
   );
 }
 
 // ── Champs spécifiques au type ─────────────────────────────────────────────────
-function CharacterFields({ data, set, accent }) {
+function CharacterFields({ data, set, accent, t }) {
   const events = useTimelineStore(s => s.events) ?? [];
   const groups = useLoreStore(s => s.groups) ?? [];
 
   return (
     <>
-      <Field label="Couleur">
+      <Field label={t('label.color')}>
         <div className="flex flex-wrap gap-1.5 mt-1">
           {PRESET_COLORS.map(c => (
             <button
@@ -82,26 +86,33 @@ function CharacterFields({ data, set, accent }) {
         </div>
       </Field>
 
-      <Field label="Origine">
-        <Input accent={accent} value={data.origin ?? ''} onChange={e => set('origin', e.target.value)} placeholder="Lieu de naissance ou d'origine…" />
+      <Field label={t('label.origin')}>
+        <Input accent={accent} value={data.origin ?? ''} onChange={e => set('origin', e.target.value)} />
       </Field>
 
-      <Field label="Alias">
+      <Field label={t('label.aliases')}>
         <TagInput
           value={data.aliases ?? []}
           onChange={v => set('aliases', v)}
-          placeholder="Entrez un alias puis Entrée…"
           accent={accent}
+          testId="tag-aliases"
         />
       </Field>
 
-      <Field label="Description">
-        <Textarea accent={accent} value={data.description ?? ''} onChange={e => set('description', e.target.value)} placeholder="Présentation du personnage…" />
+      <Field label={t('label.affiliations')}>
+        <TagInput value={data.affiliations ?? []} onChange={v => set('affiliations', v)} testId="tag-affiliations" />
       </Field>
 
-      {/* Groupes d'appartenance */}
+      <Field label={t('label.traits')}>
+        <TagInput value={data.traits ?? []} onChange={v => set('traits', v)} testId="tag-traits" />
+      </Field>
+
+      <Field label={t('label.description')}>
+        <Textarea accent={accent} value={data.description ?? ''} onChange={e => set('description', e.target.value)} />
+      </Field>
+
       {groups.length > 0 && (
-        <Field label="Groupes d'appartenance">
+        <Field label={t('label.groups')}>
           <div className="flex flex-wrap gap-1.5">
             {groups.map(g => {
               const active = (data.groupIds ?? []).includes(g.id);
@@ -134,7 +145,7 @@ function CharacterFields({ data, set, accent }) {
         </Field>
       )}
 
-      <Field label="Décède lors de l'événement">
+      <Field label={t('entity.deathEvent')}>
         <select
           value={data.deathEventId ?? ''}
           onChange={e => set('deathEventId', e.target.value === '' ? null : e.target.value)}
@@ -143,7 +154,7 @@ function CharacterFields({ data, set, accent }) {
           onFocus={e => { e.currentTarget.style.borderColor = `${accent}80`; }}
           onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
         >
-          <option value="">— Vivant —</option>
+          <option value="">— {t('entity.alive')} —</option>
           {events.map(evt => (
             <option key={evt.id} value={evt.id}>
               Ch.{evt.chapter} — {evt.title}
@@ -155,7 +166,7 @@ function CharacterFields({ data, set, accent }) {
   );
 }
 
-function LocationFields({ data, set, accent }) {
+function LocationFields({ data, set, accent, t }) {
   const characters  = useLoreStore(s => s.characters);
   const [charSearch, setCharSearch] = useState('');
 
@@ -177,30 +188,30 @@ function LocationFields({ data, set, accent }) {
     <>
       <div className="flex gap-3">
         <div className="flex-1">
-          <Field label="Type">
-            <Input accent={accent} value={data.type ?? ''} onChange={e => set('type', e.target.value)} placeholder="Ville, Forêt, Donjon…" />
+          <Field label={t('label.type')}>
+            <Input accent={accent} value={data.type ?? ''} onChange={e => set('type', e.target.value)} />
           </Field>
         </div>
         <div className="flex-1">
-          <Field label="Régime">
-            <Input accent={accent} value={data.regime ?? ''} onChange={e => set('regime', e.target.value)} placeholder="Royaume, République…" />
+          <Field label={t('label.regime')}>
+            <Input accent={accent} value={data.regime ?? ''} onChange={e => set('regime', e.target.value)} />
           </Field>
         </div>
       </div>
 
-      <Field label="Description">
-        <Textarea accent={accent} value={data.description ?? ''} onChange={e => set('description', e.target.value)} placeholder="Description du lieu…" />
+      <Field label={t('label.description')}>
+        <Textarea accent={accent} value={data.description ?? ''} onChange={e => set('description', e.target.value)} />
       </Field>
 
-      <Field label="Habitants (noms)">
-        <TagInput value={data.inhabitants ?? []} onChange={v => set('inhabitants', v)} placeholder="Nom d'un habitant… puis Entrée" accent={accent} />
+      <Field label={t('label.inhabitants')}>
+        <TagInput value={data.inhabitants ?? []} onChange={v => set('inhabitants', v)} accent={accent} />
       </Field>
 
-      <Field label="Lieux clés">
-        <TagInput value={data.keyPlaces ?? []} onChange={v => set('keyPlaces', v)} placeholder="Grande Salle, Tour nord… puis Entrée" accent={accent} />
+      <Field label={t('label.keyPlaces')}>
+        <TagInput value={data.keyPlaces ?? []} onChange={v => set('keyPlaces', v)} accent={accent} />
       </Field>
 
-      <Field label={`Personnages passés par ici (${(data.visitedBy ?? []).length})`}>
+      <Field label={`${t('entity.visitedBy')} (${(data.visitedBy ?? []).length})`}>
         {/* Chips sélectionnés */}
         {(data.visitedBy ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
@@ -210,7 +221,7 @@ function LocationFields({ data, set, accent }) {
                 className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
                 style={{ backgroundColor: `${c.color}20`, color: c.color, border: `1px solid ${c.color}50` }}
                 onClick={() => toggleVisitedBy(c)}
-                title="Retirer"
+                title={t('eventEditor.remove')}
               >
                 {c.name.split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
               </span>
@@ -220,7 +231,7 @@ function LocationFields({ data, set, accent }) {
         <input
           value={charSearch}
           onChange={e => setCharSearch(e.target.value)}
-          placeholder="Rechercher un personnage…"
+          placeholder={t('search.placeholder')}
           className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600 mb-1.5"
         />
         <div className="space-y-0.5 max-h-40 overflow-y-auto">
@@ -248,7 +259,7 @@ function LocationFields({ data, set, accent }) {
   );
 }
 
-function ObjectFields({ data, set, accent }) {
+function ObjectFields({ data, set, accent, t }) {
   const characters   = useLoreStore(s => s.characters);
   const [charSearch, setCharSearch] = useState('');
 
@@ -265,14 +276,18 @@ function ObjectFields({ data, set, accent }) {
 
   return (
     <>
-      <Field label="Type">
-        <Input accent={accent} value={data.type ?? ''} onChange={e => set('type', e.target.value)} placeholder="Arme, Artefact, Bijou…" />
+      <Field label={t('label.type')}>
+        <Input accent={accent} value={data.type ?? ''} onChange={e => set('type', e.target.value)} />
       </Field>
-      <Field label="Créateur">
-        <Input accent={accent} value={data.creator ?? ''} onChange={e => set('creator', e.target.value)} placeholder="Nom du créateur…" />
+      <Field label={t('label.creator')}>
+        <Input accent={accent} value={data.creator ?? ''} onChange={e => set('creator', e.target.value)} />
       </Field>
 
-      <Field label="Détenteur actuel">
+      <Field label={t('label.powers')}>
+        <TagInput value={data.powers ?? []} onChange={v => set('powers', v)} />
+      </Field>
+
+      <Field label={t('label.holder')}>
         {/* Chip du personnage sélectionné */}
         {data.currentHolder && (() => {
           const char = characters.find(c => c.name === data.currentHolder);
@@ -283,7 +298,7 @@ function ObjectFields({ data, set, accent }) {
                 className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
                 style={{ backgroundColor: `${color}20`, color, border: `1px solid ${color}50` }}
                 onClick={() => set('currentHolder', '')}
-                title="Retirer"
+                title={t('eventEditor.remove')}
               >
                 {data.currentHolder.split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
               </span>
@@ -293,7 +308,7 @@ function ObjectFields({ data, set, accent }) {
         <input
           value={charSearch}
           onChange={e => setCharSearch(e.target.value)}
-          placeholder="Rechercher un personnage…"
+          placeholder={t('search.placeholder')}
           className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600 mb-1.5"
         />
         <div className="space-y-0.5 max-h-40 overflow-y-auto">
@@ -318,11 +333,11 @@ function ObjectFields({ data, set, accent }) {
         </div>
       </Field>
 
-      <Field label="Description">
-        <Textarea accent={accent} value={data.description ?? ''} onChange={e => set('description', e.target.value)} placeholder="Description de l'objet…" />
+      <Field label={t('label.description')}>
+        <Textarea accent={accent} value={data.description ?? ''} onChange={e => set('description', e.target.value)} />
       </Field>
 
-      <Field label="Statut">
+      <Field label={t('label.status')}>
         <select
           value={data.status ?? 'active'}
           onChange={e => set('status', e.target.value)}
@@ -331,14 +346,14 @@ function ObjectFields({ data, set, accent }) {
           onFocus={e => { e.currentTarget.style.borderColor = `${accent}80`; }}
           onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
         >
-          <option value="active">Actif</option>
-          <option value="lost">Perdu</option>
-          <option value="destroyed">Détruit</option>
+          <option value="active">{t('entity.active')}</option>
+          <option value="lost">{t('entity.lost')}</option>
+          <option value="destroyed">{t('entity.destroyed')}</option>
         </select>
       </Field>
 
       {(data.status === 'lost' || data.status === 'destroyed') && (
-        <Field label="Depuis le chapitre">
+        <Field label={t('entity.sinceChapter')}>
           <Input
             accent={accent}
             type="number"
@@ -362,14 +377,16 @@ function initData(entityType, entity, groups = []) {
     }
     return base;
   }
-  if (entityType === 'character') return { name: '', color: '#818cf8', origin: '', aliases: [], description: '', deathEventId: null, groupIds: [] };
+  if (entityType === 'character') return { name: '', color: '#818cf8', origin: '', aliases: [], affiliations: [], traits: [], description: '', deathEventId: null, groupIds: [] };
   if (entityType === 'location')  return { name: '', type: '', regime: '', description: '', inhabitants: [], visitedBy: [], keyPlaces: [] };
-  return { name: '', type: '', creator: '', currentHolder: '', description: '', status: 'active', statusChangedAtChapter: null };
+  return { name: '', type: '', creator: '', powers: [], currentHolder: '', description: '', status: 'active', statusChangedAtChapter: null };
 }
 
 // ── EntityEditor ───────────────────────────────────────────────────────────────
 export default function EntityEditor({ entity, entityType, onClose }) {
+  const { t } = useTranslation();
   const cfg    = TYPE_CONFIG[entityType];
+  const label  = t(cfg.labelKey);
   const isEdit = !!entity;
 
   const saving        = useLoreStore(s => s.saving);
@@ -381,8 +398,11 @@ export default function EntityEditor({ entity, entityType, onClose }) {
   const removeObject    = useLoreStore(s => s.removeObject);
   const groups          = useLoreStore(s => s.groups) ?? [];
 
-  const saveAction   = entityType === 'character' ? saveCharacter : entityType === 'location' ? saveLocation : saveObject;
-  const removeAction = entityType === 'character' ? removeCharacter : entityType === 'location' ? removeLocation : removeObject;
+  const saveAction    = entityType === 'character' ? saveCharacter : entityType === 'location' ? saveLocation : saveObject;
+  const removeAction  = entityType === 'character' ? removeCharacter : entityType === 'location' ? removeLocation : removeObject;
+  const restoreAction = entityType === 'character' ? restoreCharacter : entityType === 'location' ? restoreLocation : restoreObject;
+  const _reload       = useLoreStore(s => s._reload);
+  const undoableDelete = useUndoableDelete();
 
   const [data,          setData]          = useState(() => initData(entityType, entity, groups));
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -400,8 +420,14 @@ export default function EntityEditor({ entity, entityType, onClose }) {
     onClose();
   };
 
+  const _projectId = useLoreStore(s => s._projectId);
   const handleDelete = async () => {
-    await removeAction(entity.id);
+    await undoableDelete({
+      deleteFn:  () => removeAction(entity.id),
+      restoreFn: (snapshot) => restoreAction(snapshot, _projectId),
+      reloadFn:  _reload,
+      label:     t('toast.deleted', { type: label, name: entity.name }),
+    });
     onClose();
   };
 
@@ -413,7 +439,7 @@ export default function EntityEditor({ entity, entityType, onClose }) {
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
           <div>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest">
-              {isEdit ? `Modifier le ${cfg.label.toLowerCase()}` : `Nouveau ${cfg.label.toLowerCase()}`}
+              {isEdit ? `${label} — ${t('btn.save').toLowerCase()}` : `${label} — ${t('btn.create').toLowerCase()}`}
             </p>
             <h2 className="text-sm font-black text-white mt-0.5">
               Lore <span style={{ color: cfg.accent }}>Browser</span>
@@ -428,20 +454,20 @@ export default function EntityEditor({ entity, entityType, onClose }) {
         {/* Corps scrollable */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Nom (commun à tous les types) */}
-          <Field label="Nom *">
+          <Field label={`${t('label.name')} *`}>
             <Input
               accent={cfg.accent}
               value={data.name ?? ''}
               onChange={e => set('name', e.target.value)}
-              placeholder={`Nom du ${cfg.label.toLowerCase()}…`}
+              placeholder={`${t('label.name')}…`}
               autoFocus
             />
           </Field>
 
           {/* Champs spécifiques au type */}
-          {entityType === 'character' && <CharacterFields data={data} set={set} accent={cfg.accent} characterId={entity?.id} />}
-          {entityType === 'location'  && <LocationFields  data={data} set={set} accent={cfg.accent} />}
-          {entityType === 'object'    && <ObjectFields    data={data} set={set} accent={cfg.accent} />}
+          {entityType === 'character' && <CharacterFields data={data} set={set} accent={cfg.accent} characterId={entity?.id} t={t} />}
+          {entityType === 'location'  && <LocationFields  data={data} set={set} accent={cfg.accent} t={t} />}
+          {entityType === 'object'    && <ObjectFields    data={data} set={set} accent={cfg.accent} t={t} />}
         </div>
 
         {/* Footer */}
@@ -456,16 +482,17 @@ export default function EntityEditor({ entity, entityType, onClose }) {
               cursor:          canSave ? 'pointer'   : 'not-allowed',
             }}
           >
-            {saving ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : `Créer le ${cfg.label.toLowerCase()}`}
+            {saving ? t('btn.saving') : isEdit ? t('btn.save') : `${t('btn.create')} ${label.toLowerCase()}`}
           </button>
 
           {isEdit && !confirmDelete && (
             <button
               onClick={() => setConfirmDelete(true)}
+              data-testid="delete-entity"
               className="w-full py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
               style={{ border: '1px solid rgba(255,255,255,0.05)' }}
             >
-              Supprimer ce {cfg.label.toLowerCase()}
+              {t('btn.delete')} {label.toLowerCase()}
             </button>
           )}
 
@@ -475,14 +502,15 @@ export default function EntityEditor({ entity, entityType, onClose }) {
                 onClick={() => setConfirmDelete(false)}
                 className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
               >
-                Annuler
+                {t('btn.cancel')}
               </button>
               <button
                 onClick={handleDelete}
+                data-testid="confirm-delete"
                 className="flex-1 py-2 rounded-lg text-xs font-black transition-all duration-150"
                 style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.35)' }}
               >
-                Confirmer la suppression
+                {t('btn.confirm')}
               </button>
             </div>
           )}

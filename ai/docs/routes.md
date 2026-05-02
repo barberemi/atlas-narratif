@@ -4,32 +4,43 @@
 
 ```
 <ProjectProvider>          ← projet actif context (pas de DbProvider)
-  <AppLayout>              ← layout + TopNav + GlobalSearch
-    <Routes>
-      /                    ← HomePage (pas de guard)
-      /review              ← RequireProject
-      /dashboard           ← RequireProject
-      /map                 ← RequireProject
-      /lore                ← RequireProject
-      /relations           ← RequireProject
-      /timeline            ← RequireProject
-      /savethecat          ← RequireProject
-      /arc                 ← RequireProject
-      /plants              ← RequireProject
-      /threads             ← RequireProject
-      /heros               ← RequireProject
-      /incoherences        ← RequireProject
-      /login               ← public
-      /register            ← public
-      /verify-email        ← public
-      /forgot-password     ← public
-      /reset-password      ← public
-    </Routes>
-  </AppLayout>
+  <Toaster />              ← sonner toasts
+  <ErrorBoundary>
+    <AppLayout>            ← layout + TopNav + Footer + GlobalSearch + GuidedTour + WelcomeModal
+      <Suspense fallback={<Skeleton />}>
+        <Routes>
+          /                    ← HomePage (pas de guard)
+          /review              ← RequireProject
+          /dashboard           ← RequireProject
+          /map                 ← RequireProject
+          /lore                ← RequireProject
+          /relations           ← RequireProject
+          /timeline            ← RequireProject
+          /savethecat          ← RequireProject
+          /arc                 ← RequireProject
+          /plants              ← RequireProject
+          /threads             ← RequireProject
+          /heros               ← RequireProject
+          /incoherences        ← RequireProject
+          /account             ← RequireProject
+          /login               ← public
+          /register            ← public
+          /verify-email        ← public
+          /forgot-password     ← public
+          /reset-password      ← public
+          /privacy             ← public
+          /terms               ← public
+          *                    ← NotFoundPage
+        </Routes>
+      </Suspense>
+    </AppLayout>
+  </ErrorBoundary>
 </ProjectProvider>
 ```
 
 `<RequireProject>` : si `projects.length === 0`, redirige vers `/`.
+
+Toutes les pages (sauf HomePage, TopNav, Footer, GlobalSearch) sont chargées en **lazy** via `React.lazy()`.
 
 ## Routes détaillées
 
@@ -56,10 +67,11 @@ Stats générales du projet. Navigation sortante :
 - → `/lore?tab=locations&search=X`
 - → `/relations?entity=X`
 
+Affiche le `WelcomeModal` au premier chargement d'un nouveau projet.
+
 ### `/map` — AtlasMapView
 
 Carte interactive + trajets personnages. Navigation sortante :
-- clic personnage → `/lore?tab=characters&search=X`
 - clic lieu → `/lore?tab=locations&search=X`
 
 ### `/lore` — LoreBrowser
@@ -74,7 +86,7 @@ Navigation interne : clic nœud → update `?entity=`
 
 ### `/timeline` — TimelineBrowser
 
-Pas de navigation sortante directe.
+Drag-and-drop pour réordonnancer les événements (intra et inter-chapitre).
 
 ### `/savethecat` — SaveTheCat
 
@@ -103,6 +115,14 @@ Navigation sortante :
 - clic character/object → `/relations?entity=X`
 - clic location → `/lore?tab=locations&search=X`
 
+### `/account` — AccountPage
+
+Gestion du compte : informations personnelles, export des données, suppression du compte.
+
+### `*` — NotFoundPage
+
+Page 404 avec lien retour vers l'accueil.
+
 ## Routes auth (Better Auth)
 
 | Route | Composant | Description |
@@ -112,6 +132,13 @@ Navigation sortante :
 | `/verify-email` | `VerifyEmailPage` | Écran "vérifiez votre boîte mail" |
 | `/forgot-password` | `ForgotPasswordPage` | Demande de reset password |
 | `/reset-password` | `ResetPasswordPage` | Saisie du nouveau mot de passe (token en query param) |
+
+## Routes légales
+
+| Route | Composant | Description |
+|-------|-----------|-------------|
+| `/privacy` | `PrivacyPage` | Politique de confidentialité (RGPD) |
+| `/terms` | `TermsPage` | Conditions générales d'utilisation |
 
 Client auth : `src/lib/authClient.js` (Better Auth React, `baseURL = VITE_API_URL`, `basePath = '/auth'`)
 
@@ -124,6 +151,14 @@ Au logout, `reloadProjects()` est appelé automatiquement dans `AppLayout` (via 
 - La navigation est gérée dans les **route wrappers** de `App.jsx`, pas dans les composants feuilles
 - Les composants exposent des callbacks (`onEntityClick`, `onCharacterClick`…)
 - Les query params transmettent l'état de navigation (tab actif, entité sélectionnée, filtre)
+
+## Tour guidé
+
+- `GuidedTour` + `WelcomeModal` montés dans `AppLayout`
+- `WelcomeModal` affiché sur `/dashboard` pour les nouveaux projets (localStorage `atlas_tour_seen_${projectId}`)
+- `useTourStore` contrôle l'état (active, stepIndex)
+- Étapes définies dans `src/data/tour_steps.js` — navigation entre routes automatique
+- Bouton `?` dans `TopNav` pour relancer le tour
 
 ## GlobalSearch (Ctrl+K / Cmd+K)
 

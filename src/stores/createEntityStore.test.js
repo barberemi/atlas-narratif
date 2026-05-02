@@ -167,6 +167,21 @@ describe('remove()', () => {
     await useStore.getState().remove('char_1');
     expect(useStore.getState().saving).toBe(false);
   });
+
+  it('retourne le résultat de deleteFn pour undo', async () => {
+    const snapshot = { entity: { id: 'char_1' }, eventEntities: [] };
+    const deleteFn = vi.fn().mockResolvedValue(snapshot);
+    const useStore = createEntityStore({
+      initialState: { items: null },
+      fetchFn: vi.fn().mockResolvedValue({}),
+      insertFn: vi.fn(),
+      updateFn: vi.fn(),
+      deleteFn,
+    });
+    await useStore.getState().load(PROJECT_ID);
+    const result = await useStore.getState().remove('char_1');
+    expect(result).toEqual(snapshot);
+  });
 });
 
 // ── reset() ───────────────────────────────────────────────────────────────────
