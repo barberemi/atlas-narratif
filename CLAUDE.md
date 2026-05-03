@@ -201,8 +201,8 @@ Ne pas mettre à jour la doc si le changement est interne à un composant sans i
 | Fichier `.env.example` | Couvre | Variables |
 |------------------------|-------|-----------|
 | `.env.example` | Client Vite (racine) | `VITE_*` |
-| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM` |
-| `.env.prod.example` | Docker Compose (prod) | Toutes les variables serveur + `DOMAIN`, `ACME_EMAIL`, `POSTGRES_PASSWORD` |
+| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM`, `ATLAS_ENCRYPTION_KEY` |
+| `.env.prod.example` | Docker Compose (prod) | Toutes les variables serveur + `DOMAIN`, `ACME_EMAIL`, `POSTGRES_PASSWORD`, `ATLAS_ENCRYPTION_KEY` |
 
 **Quand tu ajoutes une variable d'environnement :**
 1. Ajouter la variable dans le(s) `.env.example` concerné(s) avec un commentaire explicatif

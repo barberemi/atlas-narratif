@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS projects (
 );
 -- Migration pour les instances existantes
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS device_id TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS encryption_key_enc TEXT;
 
 -- ── Volumes (tomes d'une série) ───────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS volumes (

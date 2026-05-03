@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import sql from './db.js';
 import { auth } from './auth.js';
 import { migrate } from './migrate.js';
+import { isEncryptionEnabled } from './crypto.js';
 
 const app = new Hono();
 
@@ -76,6 +77,7 @@ await migrate().catch(err => {
 const server = serve({ fetch: app.fetch, port }, () => {
   console.log(`API Atlas Narratif → http://localhost:${port}`);
   console.log('DB  → connectée');
+  console.log(`ENC → ${isEncryptionEnabled() ? 'activé (AES-256-GCM)' : 'désactivé (données en clair)'}`);
 });
 
 // ── Graceful shutdown ────────────────────────────────────────────────────────

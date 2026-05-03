@@ -44,7 +44,7 @@ test:
 
 ## Tests serveur (dans le container API)
 server-test:
-	$(DC) exec api sh -c 'node --test src/**/*.test.js'
+	$(DC) exec api sh -c 'node --test src/*.test.js src/**/*.test.js'
 
 ## Tests E2E Playwright (dans le container e2e)
 e2e:
