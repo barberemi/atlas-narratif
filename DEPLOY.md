@@ -81,6 +81,11 @@ POSTGRES_PASSWORD=un-mot-de-passe-long-et-random
 # Better Auth (obligatoire, min 32 chars)
 BETTER_AUTH_SECRET=une-chaine-random-min-32-chars
 
+# Chiffrement au repos (recommandé)
+# Chiffre les données narratives en base (AES-256-GCM)
+# ⚠ CONSERVER CETTE CLÉ — sans elle, les données chiffrées sont irrécupérables
+ATLAS_ENCRYPTION_KEY=une-cle-base64-32-bytes
+
 # Traefik Dashboard — optionnel
 # ⚠ Doubler chaque $ du hash → $2y → $$2y
 TRAEFIK_DASHBOARD_AUTH=admin:$$2y$$05$$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -96,7 +101,7 @@ GOOGLE_CLIENT_SECRET=
 
 Générer des secrets aléatoires :
 ```bash
-# Secret Better Auth / Postgres :
+# Secret Better Auth / Postgres / Encryption :
 openssl rand -base64 32
 
 # Credentials dashboard Traefik :

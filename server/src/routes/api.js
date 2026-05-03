@@ -11,6 +11,7 @@ import { bodyLimit } from 'hono/body-limit';
 import * as q from '../db-queries.js';
 import { seedProject } from '../seed.js';
 import sql from '../db.js';
+import { encrypt, createProjectDek } from '../crypto.js';
 import { requireIdentity, signDeviceId } from '../middleware/requireIdentity.js';
 import { requireProjectOwner } from '../middleware/requireProjectOwner.js';
 import * as v from '../validators.js';
@@ -790,11 +791,15 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
       VALUES (${newId}, ${project.name}, ${project.description ?? null}, ${project.mapImage ?? null}, ${userId ?? null}, ${deviceId ?? null})
     `;
 
+    // Créer une DEK pour chiffrer les données importées (dans la même transaction)
+    const dek = await createProjectDek(newId, tx);
+    const enc = (v) => encrypt(v, dek);
+
     // 2. volumes
     for (const r of volumes) {
       await tx`
         INSERT INTO volumes (id, project_id, number, title, description)
-        VALUES (${r.id}, ${newId}, ${r.number}, ${r.title ?? null}, ${r.description ?? null})
+        VALUES (${r.id}, ${newId}, ${r.number}, ${enc(r.title ?? null)}, ${enc(r.description ?? null)})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -804,14 +809,14 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
       await tx`
         INSERT INTO characters (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id)
         VALUES (
-          ${r.id}, ${newId}, ${r.name},
-          ${r.aliases ?? []},
-          ${fromExtra(r, 'race', 'race', null)},
-          ${r.role ?? null},
-          ${r.affiliations ?? []},
-          ${r.traits ?? []},
-          ${fromExtra(r, 'origin', 'origin', null)},
-          ${r.description ?? null},
+          ${r.id}, ${newId}, ${enc(r.name)},
+          ${enc(r.aliases ?? [])},
+          ${enc(fromExtra(r, 'race', 'race', null))},
+          ${enc(r.role ?? null)},
+          ${enc(r.affiliations ?? [])},
+          ${enc(r.traits ?? [])},
+          ${enc(fromExtra(r, 'origin', 'origin', null))},
+          ${enc(r.description ?? null)},
           ${r.color ?? null},
           ${r.journey_key ?? null},
           ${r.death_event_id ?? null}
@@ -825,14 +830,14 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
       await tx`
         INSERT INTO locations (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places)
         VALUES (
-          ${r.id}, ${newId}, ${r.name},
-          ${r.type ?? null},
-          ${fromExtra(r, 'regime', 'regime', null)},
-          ${r.description ?? null},
+          ${r.id}, ${newId}, ${enc(r.name)},
+          ${enc(r.type ?? null)},
+          ${enc(fromExtra(r, 'regime', 'regime', null))},
+          ${enc(r.description ?? null)},
           ${r.coordinates ?? null},
-          ${fromExtra(r, 'inhabitants', 'inhabitants', [])},
-          ${fromExtra(r, 'visited_by', 'visitedBy', [])},
-          ${fromExtra(r, 'key_places', 'keyPlaces', [])}
+          ${enc(fromExtra(r, 'inhabitants', 'inhabitants', []))},
+          ${enc(fromExtra(r, 'visited_by', 'visitedBy', []))},
+          ${enc(fromExtra(r, 'key_places', 'keyPlaces', []))}
         )
         ON CONFLICT DO NOTHING
       `;
@@ -843,15 +848,15 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
       await tx`
         INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, powers, holders, created_in, inscription, status, status_changed_at_chapter)
         VALUES (
-          ${r.id}, ${newId}, ${r.name},
-          ${r.type ?? null},
-          ${r.description ?? null},
-          ${r.creator ?? null},
-          ${r.current_holder ?? null},
-          ${r.powers ?? []},
+          ${r.id}, ${newId}, ${enc(r.name)},
+          ${enc(r.type ?? null)},
+          ${enc(r.description ?? null)},
+          ${enc(r.creator ?? null)},
+          ${enc(r.current_holder ?? null)},
+          ${enc(r.powers ?? [])},
           ${r.holders ?? []},
           ${r.created_in ?? null},
-          ${r.inscription ?? null},
+          ${enc(r.inscription ?? null)},
           ${r.status ?? null},
           ${r.status_changed_at_chapter ?? null}
         )
@@ -866,17 +871,17 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
         VALUES (
           ${r.id}, ${newId},
           ${r.chapter_num ?? null},
-          ${r.chapter_title ?? null},
-          ${r.title ?? null},
-          ${r.description ?? null},
+          ${enc(r.chapter_title ?? null)},
+          ${enc(r.title ?? null)},
+          ${enc(r.description ?? null)},
           ${r.location_id ?? null},
           ${fromExtra(r, 'beat_id', 'beatId', null)},
           ${r.pov_character_id ?? null},
           ${fromExtra(r, 'thread_ids', 'threadIds', [])},
           ${r.scene_order ?? null},
-          ${fromExtra(r, 'scene_goal', 'goal', null)},
-          ${fromExtra(r, 'scene_conflict', 'conflict', null)},
-          ${fromExtra(r, 'scene_outcome', 'outcome', null)},
+          ${enc(fromExtra(r, 'scene_goal', 'goal', null))},
+          ${enc(fromExtra(r, 'scene_conflict', 'conflict', null))},
+          ${enc(fromExtra(r, 'scene_outcome', 'outcome', null))},
           ${r.volume_id ?? null},
           ${r.is_flashback ?? false},
           ${r.story_chapter_ref ?? null}
@@ -902,10 +907,10 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
           ${r.id}, ${newId},
           ${r.type ?? null},
           ${r.severity ?? null},
-          ${r.title ?? null},
-          ${r.explanation ?? null},
+          ${enc(r.title ?? null)},
+          ${enc(r.explanation ?? null)},
           ${r.resolved ?? false},
-          ${r.resolution_note ?? null}
+          ${enc(r.resolution_note ?? null)}
         )
         ON CONFLICT DO NOTHING
       `;
@@ -915,7 +920,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of incoherenceLinks) {
       await tx`
         INSERT INTO incoherence_links (incoherence_id, project_id, entity_id, entity_type, label)
-        VALUES (${r.incoherence_id}, ${newId}, ${r.entity_id}, ${r.entity_type}, ${r.label ?? null})
+        VALUES (${r.incoherence_id}, ${newId}, ${r.entity_id}, ${r.entity_type}, ${enc(r.label ?? null)})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -924,7 +929,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of stcChapters) {
       await tx`
         INSERT INTO stc_chapters (id, project_id, number, title, summary, volume_id)
-        VALUES (${r.id}, ${newId}, ${r.number}, ${r.title ?? null}, ${r.summary ?? null}, ${r.volume_id ?? null})
+        VALUES (${r.id}, ${newId}, ${r.number}, ${enc(r.title ?? null)}, ${enc(r.summary ?? null)}, ${r.volume_id ?? null})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -951,7 +956,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of characterJourneys) {
       await tx`
         INSERT INTO character_journeys (project_id, char_key, step_index, data)
-        VALUES (${newId}, ${r.char_key}, ${r.step_index}, ${r.data ?? {}})
+        VALUES (${newId}, ${r.char_key}, ${r.step_index}, ${enc(r.data ?? {}) ?? r.data ?? {}})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -960,7 +965,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of groups) {
       await tx`
         INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
-        VALUES (${r.id}, ${newId}, ${r.name}, ${r.type ?? null}, ${r.color ?? null}, ${r.description ?? null}, ${r.homeland_id ?? null})
+        VALUES (${r.id}, ${newId}, ${enc(r.name)}, ${r.type ?? null}, ${r.color ?? null}, ${enc(r.description ?? null)}, ${r.homeland_id ?? null})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -980,7 +985,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
         INSERT INTO plant_payoffs (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id, entity_id, entity_type, status, notes, plant_volume_id, payoff_volume_id)
         VALUES (
           ${r.id}, ${newId},
-          ${r.label ?? null},
+          ${enc(r.label ?? null)},
           ${r.type ?? null},
           ${r.plant_chapter_num ?? null},
           ${r.plant_event_id ?? null},
@@ -989,7 +994,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
           ${r.entity_id ?? null},
           ${r.entity_type ?? null},
           ${r.status ?? null},
-          ${r.notes ?? null},
+          ${enc(r.notes ?? null)},
           ${r.plant_volume_id ?? null},
           ${r.payoff_volume_id ?? null}
         )
@@ -1001,7 +1006,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of arcPoints) {
       await tx`
         INSERT INTO arc_points (project_id, chapter_number, intensity, note)
-        VALUES (${newId}, ${r.chapter_number}, ${r.intensity ?? null}, ${r.note ?? null})
+        Values (${newId}, ${r.chapter_number}, ${r.intensity ?? null}, ${enc(r.note ?? null)})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -1010,7 +1015,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of narrativeThreads) {
       await tx`
         INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
-        VALUES (${r.id}, ${newId}, ${r.name}, ${r.color ?? null}, ${r.role ?? null}, ${r.description ?? null}, ${r.sort_order ?? null})
+        VALUES (${r.id}, ${newId}, ${enc(r.name)}, ${r.color ?? null}, ${r.role ?? null}, ${enc(r.description ?? null)}, ${r.sort_order ?? null})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -1019,7 +1024,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of characterArcAxes) {
       await tx`
         INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
-        VALUES (${r.id}, ${newId}, ${r.character_id}, ${r.label ?? null}, ${r.color ?? null})
+        Values (${r.id}, ${newId}, ${r.character_id}, ${enc(r.label ?? null)}, ${r.color ?? null})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -1028,7 +1033,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of characterArcPoints) {
       await tx`
         INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
-        VALUES (${newId}, ${r.axis_id}, ${r.chapter_num}, ${r.value ?? null}, ${r.note ?? null})
+        VALUES (${newId}, ${r.axis_id}, ${r.chapter_num}, ${r.value ?? null}, ${enc(r.note ?? null)})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -1037,7 +1042,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     for (const r of heroJourneyEntries) {
       await tx`
         INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
-        VALUES (${r.id}, ${newId}, ${r.stage_key}, ${r.character_id ?? null}, ${r.chapter_num ?? null}, ${r.summary ?? null}, ${r.volume_id ?? null})
+        VALUES (${r.id}, ${newId}, ${r.stage_key}, ${r.character_id ?? null}, ${r.chapter_num ?? null}, ${enc(r.summary ?? null)}, ${r.volume_id ?? null})
         ON CONFLICT DO NOTHING
       `;
     }

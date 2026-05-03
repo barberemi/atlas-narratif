@@ -8,6 +8,7 @@
 
 import { randomUUID } from 'crypto';
 import sql from './db.js';
+import { encrypt, decrypt, getProjectDek } from './crypto.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -36,30 +37,33 @@ function parseJ(value, fallback) {
 // ── Volumes ───────────────────────────────────────────────────────────────────
 
 export async function getVolumes(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT * FROM volumes WHERE project_id = ${projectId} ORDER BY number
   `;
   return rows.map(r => ({
     id:          r.id,
     number:      r.number,
-    title:       r.title,
-    description: r.description ?? null,
+    title:       decrypt(r.title, dek),
+    description: decrypt(r.description, dek) ?? null,
   }));
 }
 
 export async function insertVolume(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('vol', projectId);
   await sql`
     INSERT INTO volumes (id, project_id, number, title, description)
-    VALUES (${id}, ${projectId}, ${data.number}, ${data.title}, ${data.description ?? null})
+    VALUES (${id}, ${projectId}, ${data.number}, ${encrypt(data.title, dek)}, ${encrypt(data.description ?? null, dek)})
   `;
   return id;
 }
 
 export async function updateVolume(volumeId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE volumes
-    SET number = ${data.number}, title = ${data.title}, description = ${data.description ?? null}
+    SET number = ${data.number}, title = ${encrypt(data.title, dek)}, description = ${encrypt(data.description ?? null, dek)}
     WHERE id = ${volumeId} AND project_id = ${projectId}
   `;
 }
@@ -104,57 +108,62 @@ export async function restoreVolume(snapshot, projectId) {
 // ── Personnages ───────────────────────────────────────────────────────────────
 
 export async function getCharacters(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
-    SELECT * FROM characters WHERE project_id = ${projectId} ORDER BY LOWER(name)
+    SELECT * FROM characters WHERE project_id = ${projectId} ORDER BY id
   `;
   return rows.map(r => ({
     id:           r.id,
-    name:         r.name,
-    aliases:      parseJ(r.aliases, []),
-    origin:       r.origin,
-    description:  r.description,
+    name:         decrypt(r.name, dek),
+    aliases:      parseJ(decrypt(r.aliases, dek), []),
+    origin:       decrypt(r.origin, dek),
+    description:  decrypt(r.description, dek),
     color:        r.color,
     journeyKey:   r.journey_key,
-    race:         r.race         ?? null,
-    role:         r.role         ?? null,
-    affiliations: parseJ(r.affiliations, []),
-    traits:       parseJ(r.traits, []),
+    race:         decrypt(r.race, dek)         ?? null,
+    role:         decrypt(r.role, dek)         ?? null,
+    affiliations: parseJ(decrypt(r.affiliations, dek), []),
+    traits:       parseJ(decrypt(r.traits, dek), []),
     deathEventId: r.death_event_id ?? null,
     source:       r.source ?? 'import',
-  }));
+  })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
 export async function findCharacterByName(search, projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
-    SELECT * FROM characters
-    WHERE project_id = ${projectId}
-      AND (name ILIKE ${'%' + search + '%'} OR aliases::text ILIKE ${'%' + search + '%'})
-    LIMIT 1
+    SELECT * FROM characters WHERE project_id = ${projectId}
   `;
-  if (!rows.length) return null;
-  const r = rows[0];
+  const lower = search.toLowerCase();
+  const r = rows.find(row => {
+    const name = (decrypt(row.name, dek) ?? '').toLowerCase();
+    const aliases = parseJ(decrypt(row.aliases, dek), []);
+    return name.includes(lower) || aliases.some(a => String(a).toLowerCase().includes(lower));
+  });
+  if (!r) return null;
   return {
     id:      r.id,
-    name:    r.name,
-    aliases: parseJ(r.aliases, []),
+    name:    decrypt(r.name, dek),
+    aliases: parseJ(decrypt(r.aliases, dek), []),
   };
 }
 
 export async function insertCharacter(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('char', projectId);
   await sql`
     INSERT INTO characters
       (id, project_id, name, aliases, race, role, affiliations, traits,
        origin, description, color, death_event_id, source)
     VALUES (
-      ${id}, ${projectId}, ${data.name},
-      ${data.aliases ?? []},
-      ${data.race        ?? null},
-      ${data.role        ?? null},
-      ${data.affiliations ?? []},
-      ${data.traits       ?? []},
-      ${data.origin      ?? null},
-      ${data.description ?? null},
+      ${id}, ${projectId}, ${encrypt(data.name, dek)},
+      ${encrypt(data.aliases ?? [], dek)},
+      ${encrypt(data.race        ?? null, dek)},
+      ${encrypt(data.role        ?? null, dek)},
+      ${encrypt(data.affiliations ?? [], dek)},
+      ${encrypt(data.traits       ?? [], dek)},
+      ${encrypt(data.origin      ?? null, dek)},
+      ${encrypt(data.description ?? null, dek)},
       ${data.color       ?? '#64748b'},
       ${data.deathEventId ?? null},
       'manual'
@@ -164,16 +173,17 @@ export async function insertCharacter(data, projectId) {
 }
 
 export async function updateCharacter(charId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE characters SET
-      name         = ${data.name},
-      aliases      = ${data.aliases ?? []},
-      race         = ${data.race        ?? null},
-      role         = ${data.role        ?? null},
-      affiliations = ${data.affiliations ?? []},
-      traits       = ${data.traits       ?? []},
-      origin       = ${data.origin      ?? null},
-      description  = ${data.description ?? null},
+      name         = ${encrypt(data.name, dek)},
+      aliases      = ${encrypt(data.aliases ?? [], dek)},
+      race         = ${encrypt(data.race        ?? null, dek)},
+      role         = ${encrypt(data.role        ?? null, dek)},
+      affiliations = ${encrypt(data.affiliations ?? [], dek)},
+      traits       = ${encrypt(data.traits       ?? [], dek)},
+      origin       = ${encrypt(data.origin      ?? null, dek)},
+      description  = ${encrypt(data.description ?? null, dek)},
       color        = ${data.color       ?? '#64748b'},
       death_event_id = ${data.deathEventId ?? null},
       ${sql.unsafe(SOURCE_CASE)}
@@ -234,36 +244,38 @@ export async function restoreCharacter(snapshot, projectId) {
 // ── Lieux ─────────────────────────────────────────────────────────────────────
 
 export async function getLocations(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
-    SELECT * FROM locations WHERE project_id = ${projectId} ORDER BY LOWER(name)
+    SELECT * FROM locations WHERE project_id = ${projectId} ORDER BY id
   `;
   return rows.map(r => ({
     id:          r.id,
-    name:        r.name,
-    type:        r.type,
-    regime:      r.regime,
-    description: r.description,
+    name:        decrypt(r.name, dek),
+    type:        decrypt(r.type, dek),
+    regime:      decrypt(r.regime, dek),
+    description: decrypt(r.description, dek),
     coordinates: parseJ(r.coordinates, null),
-    inhabitants: parseJ(r.inhabitants, []),
-    visitedBy:   parseJ(r.visited_by, []),
-    keyPlaces:   parseJ(r.key_places, []),
+    inhabitants: parseJ(decrypt(r.inhabitants, dek), []),
+    visitedBy:   parseJ(decrypt(r.visited_by, dek), []),
+    keyPlaces:   parseJ(decrypt(r.key_places, dek), []),
     source:      r.source ?? 'import',
-  }));
+  })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
 export async function insertLocation(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('loc', projectId);
   await sql`
     INSERT INTO locations
       (id, project_id, name, type, regime, description, inhabitants, visited_by, key_places, source)
     VALUES (
-      ${id}, ${projectId}, ${data.name},
-      ${data.type        ?? null},
-      ${data.regime      ?? null},
-      ${data.description ?? null},
-      ${data.inhabitants ?? []},
-      ${data.visitedBy   ?? []},
-      ${data.keyPlaces   ?? []},
+      ${id}, ${projectId}, ${encrypt(data.name, dek)},
+      ${encrypt(data.type        ?? null, dek)},
+      ${encrypt(data.regime      ?? null, dek)},
+      ${encrypt(data.description ?? null, dek)},
+      ${encrypt(data.inhabitants ?? [], dek)},
+      ${encrypt(data.visitedBy   ?? [], dek)},
+      ${encrypt(data.keyPlaces   ?? [], dek)},
       'manual'
     )
   `;
@@ -271,15 +283,16 @@ export async function insertLocation(data, projectId) {
 }
 
 export async function updateLocation(locId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE locations SET
-      name        = ${data.name},
-      type        = ${data.type        ?? null},
-      regime      = ${data.regime      ?? null},
-      description = ${data.description ?? null},
-      inhabitants = ${data.inhabitants ?? []},
-      visited_by  = ${data.visitedBy   ?? []},
-      key_places  = ${data.keyPlaces   ?? []},
+      name        = ${encrypt(data.name, dek)},
+      type        = ${encrypt(data.type        ?? null, dek)},
+      regime      = ${encrypt(data.regime      ?? null, dek)},
+      description = ${encrypt(data.description ?? null, dek)},
+      inhabitants = ${encrypt(data.inhabitants ?? [], dek)},
+      visited_by  = ${encrypt(data.visitedBy   ?? [], dek)},
+      key_places  = ${encrypt(data.keyPlaces   ?? [], dek)},
       ${sql.unsafe(SOURCE_CASE)}
     WHERE id = ${locId} AND project_id = ${projectId}
   `;
@@ -312,42 +325,44 @@ export async function restoreLocation(snapshot, projectId) {
 // ── Objets ────────────────────────────────────────────────────────────────────
 
 export async function getObjects(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
-    SELECT * FROM objects WHERE project_id = ${projectId} ORDER BY LOWER(name)
+    SELECT * FROM objects WHERE project_id = ${projectId} ORDER BY id
   `;
   return rows.map(r => ({
     id:                     r.id,
-    name:                   r.name,
-    type:                   r.type,
-    description:            r.description,
-    creator:                r.creator,
-    currentHolder:          r.current_holder,
-    powers:                 parseJ(r.powers, []),
+    name:                   decrypt(r.name, dek),
+    type:                   decrypt(r.type, dek),
+    description:            decrypt(r.description, dek),
+    creator:                decrypt(r.creator, dek),
+    currentHolder:          decrypt(r.current_holder, dek),
+    powers:                 parseJ(decrypt(r.powers, dek), []),
     holders:                parseJ(r.holders, []),
     createdIn:              r.created_in ?? null,
-    inscription:            r.inscription ?? null,
+    inscription:            decrypt(r.inscription, dek) ?? null,
     status:                 r.status ?? 'active',
     statusChangedAtChapter: r.status_changed_at_chapter ?? null,
     source:                 r.source ?? 'import',
-  }));
+  })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
 export async function insertObject(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('obj', projectId);
   await sql`
     INSERT INTO objects
       (id, project_id, name, type, description, creator, current_holder,
        powers, holders, created_in, inscription, status, status_changed_at_chapter, source)
     VALUES (
-      ${id}, ${projectId}, ${data.name},
-      ${data.type           ?? null},
-      ${data.description    ?? null},
-      ${data.creator        ?? null},
-      ${data.currentHolder  ?? null},
-      ${data.powers   ?? []},
+      ${id}, ${projectId}, ${encrypt(data.name, dek)},
+      ${encrypt(data.type           ?? null, dek)},
+      ${encrypt(data.description    ?? null, dek)},
+      ${encrypt(data.creator        ?? null, dek)},
+      ${encrypt(data.currentHolder  ?? null, dek)},
+      ${encrypt(data.powers   ?? [], dek)},
       ${data.holders  ?? []},
       ${data.createdIn      ?? null},
-      ${data.inscription    ?? null},
+      ${encrypt(data.inscription    ?? null, dek)},
       ${data.status         ?? 'active'},
       ${data.statusChangedAtChapter ?? null},
       'manual'
@@ -357,17 +372,18 @@ export async function insertObject(data, projectId) {
 }
 
 export async function updateObject(objId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE objects SET
-      name                    = ${data.name},
-      type                    = ${data.type          ?? null},
-      description             = ${data.description   ?? null},
-      creator                 = ${data.creator        ?? null},
-      current_holder          = ${data.currentHolder ?? null},
-      powers                  = ${data.powers   ?? []},
+      name                    = ${encrypt(data.name, dek)},
+      type                    = ${encrypt(data.type          ?? null, dek)},
+      description             = ${encrypt(data.description   ?? null, dek)},
+      creator                 = ${encrypt(data.creator        ?? null, dek)},
+      current_holder          = ${encrypt(data.currentHolder ?? null, dek)},
+      powers                  = ${encrypt(data.powers   ?? [], dek)},
       holders                 = ${data.holders  ?? []},
       created_in              = ${data.createdIn     ?? null},
-      inscription             = ${data.inscription   ?? null},
+      inscription             = ${encrypt(data.inscription   ?? null, dek)},
       status                  = ${data.status        ?? 'active'},
       status_changed_at_chapter = ${data.statusChangedAtChapter ?? null},
       ${sql.unsafe(SOURCE_CASE)}
@@ -403,6 +419,7 @@ export async function restoreObject(snapshot, projectId) {
 // ── Timeline ──────────────────────────────────────────────────────────────────
 
 export async function getTimelineEvents(projectId) {
+  const dek = await getProjectDek(projectId);
   const evtRows = await sql`
     SELECT * FROM timeline_events WHERE project_id = ${projectId}
     ORDER BY chapter_num, scene_order, id
@@ -420,16 +437,16 @@ export async function getTimelineEvents(projectId) {
   return evtRows.map(r => ({
     id:             r.id,
     chapter:        r.chapter_num,
-    chapterTitle:   r.chapter_title,
-    title:          r.title,
-    description:    r.description,
+    chapterTitle:   decrypt(r.chapter_title, dek),
+    title:          decrypt(r.title, dek),
+    description:    decrypt(r.description, dek),
     locationId:     r.location_id,
     beatId:         r.beat_id         ?? null,
     povCharacterId: r.pov_character_id ?? null,
     sceneOrder:     r.scene_order     ?? 0,
-    sceneGoal:      r.scene_goal      ?? null,
-    sceneConflict:  r.scene_conflict  ?? null,
-    sceneOutcome:   r.scene_outcome   ?? null,
+    sceneGoal:      decrypt(r.scene_goal, dek)      ?? null,
+    sceneConflict:  decrypt(r.scene_conflict, dek)  ?? null,
+    sceneOutcome:   decrypt(r.scene_outcome, dek)   ?? null,
     entities:       entitiesByEvent[r.id] ?? [],
     threadIds:      parseJ(r.thread_ids, []),
     source:         r.source ?? 'import',
@@ -440,12 +457,17 @@ export async function getTimelineEvents(projectId) {
 }
 
 export async function getChapters(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
-    SELECT DISTINCT chapter_num AS number, chapter_title AS title
+    SELECT chapter_num AS number, chapter_title AS title
     FROM timeline_events WHERE project_id = ${projectId}
     ORDER BY chapter_num
   `;
-  return rows;
+  const seen = new Map();
+  for (const r of rows) {
+    if (!seen.has(r.number)) seen.set(r.number, { number: r.number, title: decrypt(r.title, dek) });
+  }
+  return [...seen.values()];
 }
 
 export async function insertTimelineEvent(data, projectId) {
@@ -456,21 +478,22 @@ export async function insertTimelineEvent(data, projectId) {
   `;
   const sceneOrder = data.sceneOrder ?? (Number(max_order) + 1);
 
+  const dek = await getProjectDek(projectId);
   await sql`
     INSERT INTO timeline_events
       (id, project_id, chapter_num, chapter_title, title, description, location_id, beat_id,
        pov_character_id, scene_order, scene_goal, scene_conflict, scene_outcome,
        thread_ids, volume_id, is_flashback, story_chapter_ref, source)
     VALUES (
-      ${id}, ${projectId}, ${data.chapter}, ${data.chapterTitle}, ${data.title},
-      ${data.description    ?? null},
+      ${id}, ${projectId}, ${data.chapter}, ${encrypt(data.chapterTitle, dek)}, ${encrypt(data.title, dek)},
+      ${encrypt(data.description    ?? null, dek)},
       ${data.locationId     ?? null},
       ${data.beatId         ?? null},
       ${data.povCharacterId ?? null},
       ${sceneOrder},
-      ${data.sceneGoal      ?? null},
-      ${data.sceneConflict  ?? null},
-      ${data.sceneOutcome   ?? null},
+      ${encrypt(data.sceneGoal      ?? null, dek)},
+      ${encrypt(data.sceneConflict  ?? null, dek)},
+      ${encrypt(data.sceneOutcome   ?? null, dek)},
       ${data.threadIds      ?? []},
       ${data.volumeId       ?? null},
       ${data.isFlashback    ?? false},
@@ -491,19 +514,20 @@ export async function insertTimelineEvent(data, projectId) {
 }
 
 export async function updateTimelineEvent(eventId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE timeline_events SET
       chapter_num      = ${data.chapter},
-      chapter_title    = ${data.chapterTitle},
-      title            = ${data.title},
-      description      = ${data.description    ?? null},
+      chapter_title    = ${encrypt(data.chapterTitle, dek)},
+      title            = ${encrypt(data.title, dek)},
+      description      = ${encrypt(data.description    ?? null, dek)},
       location_id      = ${data.locationId     ?? null},
       beat_id          = ${data.beatId         ?? null},
       pov_character_id = ${data.povCharacterId ?? null},
       scene_order      = ${data.sceneOrder     ?? 0},
-      scene_goal       = ${data.sceneGoal      ?? null},
-      scene_conflict   = ${data.sceneConflict  ?? null},
-      scene_outcome    = ${data.sceneOutcome   ?? null},
+      scene_goal       = ${encrypt(data.sceneGoal      ?? null, dek)},
+      scene_conflict   = ${encrypt(data.sceneConflict  ?? null, dek)},
+      scene_outcome    = ${encrypt(data.sceneOutcome   ?? null, dek)},
       thread_ids       = ${data.threadIds      ?? []},
       volume_id        = ${data.volumeId       ?? null},
       is_flashback     = ${data.isFlashback    ?? false},
@@ -583,15 +607,16 @@ export async function getIncoherences(projectId) {
     });
   }
 
+  const dek = await getProjectDek(projectId);
   return incRows.map(r => ({
     id:             r.id,
     type:           r.type,
     severity:       r.severity,
-    title:          r.title,
-    explanation:    r.explanation,
+    title:          decrypt(r.title, dek),
+    explanation:    decrypt(r.explanation, dek),
     resolved:       r.resolved,
-    resolutionNote: r.resolution_note ?? null,
-    links:          linksByInc[r.id] ?? [],
+    resolutionNote: decrypt(r.resolution_note, dek) ?? null,
+    links:          (linksByInc[r.id] ?? []).map(l => ({ ...l, label: decrypt(l.label, dek) })),
   }));
 }
 
@@ -618,15 +643,16 @@ export async function deleteScanIncoherences(projectId) {
 }
 
 export async function insertScannedIncoherence(inc, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     INSERT INTO incoherences (id, project_id, type, severity, title, explanation, resolved)
-    VALUES (${inc.id}, ${projectId}, ${inc.type}, ${inc.severity}, ${inc.title}, ${inc.explanation}, false)
+    VALUES (${inc.id}, ${projectId}, ${inc.type}, ${inc.severity}, ${encrypt(inc.title, dek)}, ${encrypt(inc.explanation, dek)}, false)
     ON CONFLICT (id, project_id) DO NOTHING
   `;
   for (const link of (inc.links ?? [])) {
     await sql`
       INSERT INTO incoherence_links (incoherence_id, project_id, entity_id, entity_type, label)
-      VALUES (${inc.id}, ${projectId}, ${link.entityId}, ${link.entityType}, ${link.label})
+      VALUES (${inc.id}, ${projectId}, ${link.entityId}, ${link.entityType}, ${encrypt(link.label, dek)})
       ON CONFLICT DO NOTHING
     `;
   }
@@ -639,8 +665,9 @@ export async function setIncoherenceResolved(incId, resolved, projectId) {
 }
 
 export async function setResolutionNote(incId, note, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
-    UPDATE incoherences SET resolution_note = ${note || null} WHERE id = ${incId} AND project_id = ${projectId}
+    UPDATE incoherences SET resolution_note = ${encrypt(note || null, dek)} WHERE id = ${incId} AND project_id = ${projectId}
   `;
 }
 
@@ -669,11 +696,12 @@ export async function getStcChapters(projectId) {
     entitiesByChapter[e.chapter_id].push({ id: e.entity_id, entityType: e.entity_type });
   }
 
+  const dek = await getProjectDek(projectId);
   return chRows.map(r => ({
     id:       r.id,
     number:   r.number,
-    title:    r.title,
-    summary:  r.summary,
+    title:    decrypt(r.title, dek),
+    summary:  decrypt(r.summary, dek),
     beats:    beatsByChapter[r.id]    ?? [],
     entities: entitiesByChapter[r.id] ?? [],
     volumeId: r.volume_id ?? null,
@@ -681,10 +709,11 @@ export async function getStcChapters(projectId) {
 }
 
 export async function insertStcChapter({ number, title, summary, beats, entities, volumeId }, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('ch', projectId);
   await sql`
     INSERT INTO stc_chapters (id, project_id, number, title, summary, volume_id)
-    VALUES (${id}, ${projectId}, ${number}, ${title}, ${summary ?? null}, ${volumeId ?? null})
+    VALUES (${id}, ${projectId}, ${number}, ${encrypt(title, dek)}, ${encrypt(summary ?? null, dek)}, ${volumeId ?? null})
   `;
   for (const beatId of (beats ?? [])) {
     await sql`
@@ -704,8 +733,9 @@ export async function insertStcChapter({ number, title, summary, beats, entities
 }
 
 export async function updateStcChapter(chapterId, { number, title, summary, beats, entities }, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
-    UPDATE stc_chapters SET number = ${number}, title = ${title}, summary = ${summary ?? null}
+    UPDATE stc_chapters SET number = ${number}, title = ${encrypt(title, dek)}, summary = ${encrypt(summary ?? null, dek)}
     WHERE id = ${chapterId} AND project_id = ${projectId}
   `;
   await sql`DELETE FROM stc_chapter_beats WHERE chapter_id = ${chapterId} AND project_id = ${projectId}`;
@@ -768,6 +798,7 @@ export async function restoreStcChapter(snapshot, projectId) {
 // ── Arc émotionnel ────────────────────────────────────────────────────────────
 
 export async function getArcPoints(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT chapter_number, intensity, note, volume_id
     FROM arc_points WHERE project_id = ${projectId}
@@ -776,7 +807,7 @@ export async function getArcPoints(projectId) {
   return rows.map(r => ({
     chapterNumber: r.chapter_number,
     intensity:     r.intensity,
-    note:          r.note,
+    note:          decrypt(r.note, dek),
     volumeId:      r.volume_id ?? null,
   }));
 }
@@ -792,17 +823,19 @@ export async function upsertArcPoint(projectId, chapterNumber, intensity) {
 // ── Notes libres par chapitre ─────────────────────────────────────────────────
 
 export async function getChapterNotes(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT chapter_num, content FROM chapter_notes WHERE project_id = ${projectId}
   `;
-  return Object.fromEntries(rows.map(r => [r.chapter_num, r.content]));
+  return Object.fromEntries(rows.map(r => [r.chapter_num, decrypt(r.content, dek)]));
 }
 
 export async function setChapterNote(projectId, chapterNum, content) {
+  const dek = await getProjectDek(projectId);
   await sql`
     INSERT INTO chapter_notes (project_id, chapter_num, content)
-    VALUES (${projectId}, ${chapterNum}, ${content})
-    ON CONFLICT (project_id, chapter_num) DO UPDATE SET content = ${content}
+    VALUES (${projectId}, ${chapterNum}, ${encrypt(content, dek)})
+    ON CONFLICT (project_id, chapter_num) DO UPDATE SET content = ${encrypt(content, dek)}
   `;
 }
 
@@ -823,12 +856,17 @@ export async function getProjects({ userId, deviceId } = {}) {
   } else {
     return [];
   }
-  return rows.map(r => ({
-    id:          r.id,
-    name:        r.name,
-    description: r.description,
-    createdAt:   r.created_at,
-  }));
+  const results = [];
+  for (const r of rows) {
+    const dek = await getProjectDek(r.id);
+    results.push({
+      id:          r.id,
+      name:        decrypt(r.name, dek),
+      description: decrypt(r.description, dek),
+      createdAt:   r.created_at,
+    });
+  }
+  return results;
 }
 
 export async function createProject({ name, description }, { userId, deviceId } = {}) {
@@ -843,6 +881,9 @@ export async function createProject({ name, description }, { userId, deviceId } 
     INSERT INTO projects (id, name, description, user_id, device_id)
     VALUES (${id}, ${name.trim()}, ${description?.trim() ?? null}, ${userId ?? null}, ${deviceId ?? null})
   `;
+  // Génère et stocke une DEK pour le nouveau projet
+  const { createProjectDek } = await import('./crypto.js');
+  await createProjectDek(id);
   return id;
 }
 
@@ -855,6 +896,8 @@ export async function deleteProject(projectId, { userId, deviceId } = {}) {
     const res = await sql`DELETE FROM projects WHERE id = ${projectId} AND device_id = ${deviceId} AND user_id IS NULL`;
     if (res.count === 0) throw new Error('Projet introuvable ou non autorisé');
   }
+  const { evictProjectDek } = await import('./crypto.js');
+  evictProjectDek(projectId);
 }
 
 export async function claimProjectsForUser(userId, deviceId) {
@@ -865,12 +908,14 @@ export async function claimProjectsForUser(userId, deviceId) {
 }
 
 export async function getProjectMapImage(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`SELECT map_image FROM projects WHERE id = ${projectId}`;
-  return rows[0]?.map_image ?? null;
+  return decrypt(rows[0]?.map_image, dek) ?? null;
 }
 
 export async function setProjectMapImage(projectId, base64) {
-  await sql`UPDATE projects SET map_image = ${base64} WHERE id = ${projectId}`;
+  const dek = await getProjectDek(projectId);
+  await sql`UPDATE projects SET map_image = ${encrypt(base64, dek)} WHERE id = ${projectId}`;
 }
 
 // ── Coordonnées de lieux ───────────────────────────────────────────────────────
@@ -885,27 +930,30 @@ export async function setLocationCoordinates(locId, projectId, coords) {
 // ── Trajets personnages ────────────────────────────────────────────────────────
 
 export async function saveJourney(projectId, charKey, steps) {
+  const dek = await getProjectDek(projectId);
   await sql`
     DELETE FROM character_journeys WHERE project_id = ${projectId} AND char_key = ${charKey}
   `;
   for (let i = 0; i < steps.length; i++) {
     await sql`
       INSERT INTO character_journeys (project_id, char_key, step_index, data)
-      VALUES (${projectId}, ${charKey}, ${i}, ${steps[i]})
+      VALUES (${projectId}, ${charKey}, ${i}, ${encrypt(steps[i], dek) ?? steps[i]})
     `;
   }
 }
 
 export async function getJourney(charKey, projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT data FROM character_journeys
     WHERE project_id = ${projectId} AND char_key = ${charKey}
     ORDER BY step_index
   `;
-  return rows.map(r => parseJ(r.data, r.data));
+  return rows.map(r => parseJ(decrypt(r.data, dek), r.data));
 }
 
 export async function getAllJourneys(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT char_key, data FROM character_journeys
     WHERE project_id = ${projectId}
@@ -914,7 +962,7 @@ export async function getAllJourneys(projectId) {
   const result = {};
   for (const r of rows) {
     if (!result[r.char_key]) result[r.char_key] = [];
-    result[r.char_key].push(parseJ(r.data, r.data));
+    result[r.char_key].push(parseJ(decrypt(r.data, dek), r.data));
   }
   return result;
 }
@@ -934,13 +982,14 @@ export async function getLoreData(projectId) {
 // ── Plant / Payoff ────────────────────────────────────────────────────────────
 
 export async function getPlants(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT * FROM plant_payoffs WHERE project_id = ${projectId}
     ORDER BY plant_chapter_num NULLS LAST, id
   `;
   return rows.map(r => ({
     id:               r.id,
-    label:            r.label,
+    label:            decrypt(r.label, dek),
     type:             r.type             ?? 'information',
     plantChapterNum:  r.plant_chapter_num  ?? null,
     plantEventId:     r.plant_event_id     ?? null,
@@ -951,11 +1000,12 @@ export async function getPlants(projectId) {
     entityId:         r.entity_id          ?? null,
     entityType:       r.entity_type        ?? null,
     status:           r.status             ?? 'open',
-    notes:            r.notes              ?? null,
+    notes:            decrypt(r.notes, dek)              ?? null,
   }));
 }
 
 export async function insertPlant(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('plant', projectId);
   await sql`
     INSERT INTO plant_payoffs
@@ -963,22 +1013,23 @@ export async function insertPlant(data, projectId) {
        plant_volume_id, payoff_chapter_num, payoff_event_id, payoff_volume_id,
        entity_id, entity_type, status, notes)
     VALUES (
-      ${id}, ${projectId}, ${data.label}, ${data.type ?? 'information'},
+      ${id}, ${projectId}, ${encrypt(data.label, dek)}, ${data.type ?? 'information'},
       ${data.plantChapterNum  ?? null}, ${data.plantEventId    ?? null},
       ${data.plantVolumeId    ?? null},
       ${data.payoffChapterNum ?? null}, ${data.payoffEventId   ?? null},
       ${data.payoffVolumeId   ?? null},
       ${data.entityId         ?? null}, ${data.entityType      ?? null},
-      ${data.status           ?? 'open'}, ${data.notes         ?? null}
+      ${data.status           ?? 'open'}, ${encrypt(data.notes ?? null, dek)}
     )
   `;
   return id;
 }
 
 export async function updatePlant(plantId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE plant_payoffs SET
-      label             = ${data.label},
+      label             = ${encrypt(data.label, dek)},
       type              = ${data.type             ?? 'information'},
       plant_chapter_num = ${data.plantChapterNum  ?? null},
       plant_event_id    = ${data.plantEventId     ?? null},
@@ -989,7 +1040,7 @@ export async function updatePlant(plantId, data, projectId) {
       entity_id         = ${data.entityId         ?? null},
       entity_type       = ${data.entityType       ?? null},
       status            = ${data.status           ?? 'open'},
-      notes             = ${data.notes            ?? null}
+      notes             = ${encrypt(data.notes            ?? null, dek)}
     WHERE id = ${plantId} AND project_id = ${projectId}
   `;
 }
@@ -1017,8 +1068,9 @@ export async function restorePlant(snapshot, projectId) {
 // ── Groupes d'appartenance ─────────────────────────────────────────────────────
 
 export async function getGroups(projectId) {
+  const dek = await getProjectDek(projectId);
   const groupRows = await sql`
-    SELECT * FROM groups WHERE project_id = ${projectId} ORDER BY LOWER(name)
+    SELECT * FROM groups WHERE project_id = ${projectId} ORDER BY id
   `;
   const memberRows = await sql`
     SELECT * FROM character_groups WHERE project_id = ${projectId}
@@ -1032,24 +1084,25 @@ export async function getGroups(projectId) {
 
   return groupRows.map(r => ({
     id:          r.id,
-    name:        r.name,
+    name:        decrypt(r.name, dek),
     type:        r.type        ?? 'autre',
     color:       r.color       ?? '#64748B',
-    description: r.description ?? null,
+    description: decrypt(r.description, dek) ?? null,
     homelandId:  r.homeland_id ?? null,
     members:     membersByGroup[r.id] ?? [],
-  }));
+  })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
 
 export async function insertGroup(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('grp', projectId);
   await sql`
     INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
     VALUES (
-      ${id}, ${projectId}, ${data.name},
+      ${id}, ${projectId}, ${encrypt(data.name, dek)},
       ${data.type        ?? 'autre'},
       ${data.color       ?? '#64748B'},
-      ${data.description ?? null},
+      ${encrypt(data.description ?? null, dek)},
       ${data.homelandId  ?? null}
     )
   `;
@@ -1057,12 +1110,13 @@ export async function insertGroup(data, projectId) {
 }
 
 export async function updateGroup(groupId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE groups SET
-      name        = ${data.name},
+      name        = ${encrypt(data.name, dek)},
       type        = ${data.type        ?? 'autre'},
       color       = ${data.color       ?? '#64748B'},
-      description = ${data.description ?? null},
+      description = ${encrypt(data.description ?? null, dek)},
       homeland_id = ${data.homelandId  ?? null}
     WHERE id = ${groupId} AND project_id = ${projectId}
   `;
@@ -1112,29 +1166,31 @@ export async function setCharacterGroups(characterId, groupIds, projectId) {
 // ── Fils narratifs ─────────────────────────────────────────────────────────────
 
 export async function getThreads(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT * FROM narrative_threads WHERE project_id = ${projectId}
     ORDER BY sort_order, id
   `;
   return rows.map(r => ({
     id:          r.id,
-    name:        r.name,
+    name:        decrypt(r.name, dek),
     color:       r.color       ?? '#3F51B5',
     role:        r.role        ?? 'subplot',
-    description: r.description ?? null,
+    description: decrypt(r.description, dek) ?? null,
     sortOrder:   r.sort_order  ?? 0,
   }));
 }
 
 export async function insertThread(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('thread', projectId);
   await sql`
     INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
     VALUES (
-      ${id}, ${projectId}, ${data.name},
+      ${id}, ${projectId}, ${encrypt(data.name, dek)},
       ${data.color       ?? '#3F51B5'},
       ${data.role        ?? 'subplot'},
-      ${data.description ?? null},
+      ${encrypt(data.description ?? null, dek)},
       ${data.sortOrder   ?? 0}
     )
   `;
@@ -1142,12 +1198,13 @@ export async function insertThread(data, projectId) {
 }
 
 export async function updateThread(threadId, data, projectId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     UPDATE narrative_threads SET
-      name        = ${data.name},
+      name        = ${encrypt(data.name, dek)},
       color       = ${data.color       ?? '#3F51B5'},
       role        = ${data.role        ?? 'subplot'},
-      description = ${data.description ?? null},
+      description = ${encrypt(data.description ?? null, dek)},
       sort_order  = ${data.sortOrder   ?? 0}
     WHERE id = ${threadId} AND project_id = ${projectId}
   `;
@@ -1200,37 +1257,42 @@ export async function restoreThread(snapshot, projectId) {
 // ── Arc des personnages ────────────────────────────────────────────────────────
 
 export async function getCharacterAxes(characterId, projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT * FROM character_arc_axes
     WHERE project_id = ${projectId} AND character_id = ${characterId}
-    ORDER BY label
+    ORDER BY id
   `;
-  return rows.map(r => ({ id: r.id, characterId: r.character_id, label: r.label, color: r.color }));
+  return rows.map(r => ({ id: r.id, characterId: r.character_id, label: decrypt(r.label, dek), color: r.color }))
+    .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
 }
 
 export async function getAllProjectAxisLabels(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
-    SELECT DISTINCT label FROM character_arc_axes
+    SELECT label FROM character_arc_axes
     WHERE project_id = ${projectId}
-    ORDER BY label
   `;
-  return rows.map(r => r.label);
+  const labels = [...new Set(rows.map(r => decrypt(r.label, dek)))];
+  return labels.sort();
 }
 
 export async function getAllCharacterAxes(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT * FROM character_arc_axes
     WHERE project_id = ${projectId}
-    ORDER BY character_id, label
+    ORDER BY character_id, id
   `;
-  return rows.map(r => ({ id: r.id, characterId: r.character_id, label: r.label, color: r.color }));
+  return rows.map(r => ({ id: r.id, characterId: r.character_id, label: decrypt(r.label, dek), color: r.color }));
 }
 
 export async function insertCharacterAxis(data, projectId) {
+  const dek = await getProjectDek(projectId);
   const id = makeId('cax', projectId);
   await sql`
     INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
-    VALUES (${id}, ${projectId}, ${data.characterId}, ${data.label}, ${data.color ?? '#64748b'})
+    VALUES (${id}, ${projectId}, ${data.characterId}, ${encrypt(data.label, dek)}, ${data.color ?? '#64748b'})
   `;
   return id;
 }
@@ -1259,15 +1321,17 @@ export async function restoreCharacterAxis(snapshot, projectId) {
 }
 
 export async function upsertCharacterArcPoint(projectId, axisId, chapterNum, value, note, volumeId) {
+  const dek = await getProjectDek(projectId);
   await sql`
     INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note, volume_id)
-    VALUES (${projectId}, ${axisId}, ${chapterNum}, ${value}, ${note ?? null}, ${volumeId ?? null})
+    VALUES (${projectId}, ${axisId}, ${chapterNum}, ${value}, ${encrypt(note ?? null, dek)}, ${volumeId ?? null})
     ON CONFLICT (project_id, axis_id, chapter_num)
-    DO UPDATE SET value = ${value}, note = ${note ?? null}, volume_id = ${volumeId ?? null}
+    DO UPDATE SET value = ${value}, note = ${encrypt(note ?? null, dek)}, volume_id = ${volumeId ?? null}
   `;
 }
 
 export async function getCharacterArcPoints(axisId, projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT chapter_num, value, note, volume_id FROM character_arc_points
     WHERE project_id = ${projectId} AND axis_id = ${axisId}
@@ -1276,12 +1340,13 @@ export async function getCharacterArcPoints(axisId, projectId) {
   return rows.map(r => ({
     chapterNum: r.chapter_num,
     value:      r.value,
-    note:       r.note,
+    note:       decrypt(r.note, dek),
     volumeId:   r.volume_id ?? null,
   }));
 }
 
 export async function getAllCharacterArcPoints(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT axis_id, chapter_num, value, note, volume_id FROM character_arc_points
     WHERE project_id = ${projectId}
@@ -1291,7 +1356,7 @@ export async function getAllCharacterArcPoints(projectId) {
     axisId:     r.axis_id,
     chapterNum: r.chapter_num,
     value:      r.value,
-    note:       r.note,
+    note:       decrypt(r.note, dek),
     volumeId:   r.volume_id ?? null,
   }));
 }
@@ -1299,6 +1364,7 @@ export async function getAllCharacterArcPoints(projectId) {
 // ── Voyage du Héros ───────────────────────────────────────────────────────────
 
 export async function getHeroJourneyEntries(projectId) {
+  const dek = await getProjectDek(projectId);
   const rows = await sql`
     SELECT id, stage_key, character_id, chapter_num, summary, volume_id
     FROM hero_journey_entries
@@ -1310,7 +1376,7 @@ export async function getHeroJourneyEntries(projectId) {
     stageKey:    r.stage_key,
     characterId: r.character_id ?? null,
     chapterNum:  r.chapter_num  ?? null,
-    summary:     r.summary      ?? null,
+    summary:     decrypt(r.summary, dek)      ?? null,
     volumeId:    r.volume_id    ?? null,
   }));
 }
@@ -1330,11 +1396,12 @@ export async function saveHeroJourneyEntry({ stageKey, characterId, chapterNum, 
     LIMIT 1
   `;
 
+  const dek = await getProjectDek(projectId);
   if (existing.length > 0) {
     const id = existing[0].id;
     await sql`
       UPDATE hero_journey_entries
-      SET chapter_num = ${chapterNum ?? null}, summary = ${summary ?? null}
+      SET chapter_num = ${chapterNum ?? null}, summary = ${encrypt(summary ?? null, dek)}
       WHERE id = ${id} AND project_id = ${projectId}
     `;
     return id;
@@ -1346,7 +1413,7 @@ export async function saveHeroJourneyEntry({ stageKey, characterId, chapterNum, 
       (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
     VALUES (
       ${id}, ${projectId}, ${stageKey},
-      ${characterId ?? null}, ${chapterNum ?? null}, ${summary ?? null}, ${volumeId ?? null}
+      ${characterId ?? null}, ${chapterNum ?? null}, ${encrypt(summary ?? null, dek)}, ${volumeId ?? null}
     )
   `;
   return id;
@@ -1369,6 +1436,7 @@ export async function restoreHeroJourneyEntry(snapshot, projectId) {
 }
 
 export async function exportProject(projectId) {
+  const dek = await getProjectDek(projectId);
   const [proj] = await sql`SELECT id, name, description, map_image, created_at FROM projects WHERE id = ${projectId}`;
   if (!proj) throw new Error(`Projet introuvable : ${projectId}`);
 
@@ -1384,9 +1452,9 @@ export async function exportProject(projectId) {
     heroJourneyEntries,
   ] = await Promise.all([
     sql`SELECT * FROM volumes                WHERE project_id = ${projectId} ORDER BY number`,
-    sql`SELECT * FROM characters             WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
-    sql`SELECT * FROM locations              WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
-    sql`SELECT * FROM objects                WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
+    sql`SELECT * FROM characters             WHERE project_id = ${projectId} ORDER BY id`,
+    sql`SELECT * FROM locations              WHERE project_id = ${projectId} ORDER BY id`,
+    sql`SELECT * FROM objects                WHERE project_id = ${projectId} ORDER BY id`,
     sql`SELECT * FROM timeline_events        WHERE project_id = ${projectId} ORDER BY chapter_num, id`,
     sql`SELECT * FROM event_entities         WHERE project_id = ${projectId}`,
     sql`SELECT * FROM incoherences           WHERE project_id = ${projectId}`,
@@ -1395,29 +1463,43 @@ export async function exportProject(projectId) {
     sql`SELECT * FROM stc_chapter_beats      WHERE project_id = ${projectId}`,
     sql`SELECT * FROM stc_chapter_entities   WHERE project_id = ${projectId}`,
     sql`SELECT * FROM character_journeys     WHERE project_id = ${projectId} ORDER BY char_key, step_index`,
-    sql`SELECT * FROM groups                 WHERE project_id = ${projectId} ORDER BY LOWER(name)`,
+    sql`SELECT * FROM groups                 WHERE project_id = ${projectId} ORDER BY id`,
     sql`SELECT * FROM character_groups       WHERE project_id = ${projectId}`,
     sql`SELECT * FROM plant_payoffs          WHERE project_id = ${projectId}`,
     sql`SELECT * FROM arc_points             WHERE project_id = ${projectId} ORDER BY chapter_number`,
     sql`SELECT * FROM narrative_threads      WHERE project_id = ${projectId} ORDER BY sort_order`,
-    sql`SELECT * FROM character_arc_axes     WHERE project_id = ${projectId} ORDER BY character_id, label`,
+    sql`SELECT * FROM character_arc_axes     WHERE project_id = ${projectId} ORDER BY character_id, id`,
     sql`SELECT * FROM character_arc_points   WHERE project_id = ${projectId} ORDER BY axis_id, chapter_num`,
     sql`SELECT * FROM hero_journey_entries   WHERE project_id = ${projectId} ORDER BY stage_key`,
   ]);
 
+  // Décrypte les champs sensibles pour l'export (doit être en clair dans le JSON)
+  const d  = (v) => decrypt(v, dek);
+  const dj = (v) => { const r = decrypt(v, dek); if (typeof r === 'string') { try { return JSON.parse(r); } catch { /* plaintext JSONB */ } } return r; };
+
   return {
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    project: { id: proj.id, name: proj.name, description: proj.description, mapImage: proj.map_image, createdAt: proj.created_at },
-    volumes, characters, locations, objects,
-    timelineEvents, eventEntities,
-    incoherences, incoherenceLinks,
-    stcChapters, stcChapterBeats, stcChapterEntities,
-    characterJourneys,
-    groups, characterGroups,
-    plantPayoffs, arcPoints, narrativeThreads,
-    characterArcAxes, characterArcPoints,
-    heroJourneyEntries,
+    project: { id: proj.id, name: d(proj.name), description: d(proj.description), mapImage: d(proj.map_image), createdAt: proj.created_at },
+    volumes: volumes.map(r => ({ ...r, title: d(r.title), description: d(r.description) })),
+    characters: characters.map(r => ({ ...r, name: d(r.name), aliases: dj(r.aliases), race: d(r.race), role: d(r.role), origin: d(r.origin), description: d(r.description), affiliations: dj(r.affiliations), traits: dj(r.traits) })),
+    locations: locations.map(r => ({ ...r, name: d(r.name), type: d(r.type), regime: d(r.regime), description: d(r.description), inhabitants: dj(r.inhabitants), visited_by: dj(r.visited_by), key_places: dj(r.key_places) })),
+    objects: objects.map(r => ({ ...r, name: d(r.name), type: d(r.type), description: d(r.description), creator: d(r.creator), current_holder: d(r.current_holder), powers: dj(r.powers), inscription: d(r.inscription) })),
+    timelineEvents: timelineEvents.map(r => ({ ...r, title: d(r.title), description: d(r.description), chapter_title: d(r.chapter_title), scene_goal: d(r.scene_goal), scene_conflict: d(r.scene_conflict), scene_outcome: d(r.scene_outcome) })),
+    eventEntities,
+    incoherences: incoherences.map(r => ({ ...r, title: d(r.title), explanation: d(r.explanation), resolution_note: d(r.resolution_note) })),
+    incoherenceLinks: incoherenceLinks.map(r => ({ ...r, label: d(r.label) })),
+    stcChapters: stcChapters.map(r => ({ ...r, title: d(r.title), summary: d(r.summary) })),
+    stcChapterBeats, stcChapterEntities,
+    characterJourneys: characterJourneys.map(r => ({ ...r, data: dj(r.data) })),
+    groups: groups.map(r => ({ ...r, name: d(r.name), description: d(r.description) })),
+    characterGroups,
+    plantPayoffs: plantPayoffs.map(r => ({ ...r, label: d(r.label), notes: d(r.notes) })),
+    arcPoints: arcPoints.map(r => ({ ...r, note: d(r.note) })),
+    narrativeThreads: narrativeThreads.map(r => ({ ...r, name: d(r.name), description: d(r.description) })),
+    characterArcAxes: characterArcAxes.map(r => ({ ...r, label: d(r.label) })),
+    characterArcPoints: characterArcPoints.map(r => ({ ...r, note: d(r.note) })),
+    heroJourneyEntries: heroJourneyEntries.map(r => ({ ...r, summary: d(r.summary) })),
   };
 }
 

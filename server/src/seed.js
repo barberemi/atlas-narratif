@@ -9,6 +9,7 @@
  */
 
 import sql from './db.js';
+import { encrypt, createProjectDek, getProjectDek } from './crypto.js';
 
 export async function seedProject(meta, data, { onProgress, userId, deviceId } = {}) {
   // Pour les projets de démo (id fixe comme 'lotr'), créer une copie par user/device
@@ -49,11 +50,12 @@ async function _seedJourneysIfMissing(projectId, journeys) {
   if (!journeys.length) return;
   const [cnt] = await sql`SELECT COUNT(*) AS n FROM character_journeys WHERE project_id = ${projectId}`;
   if (Number(cnt.n) > 0) return;
+  const dek = await getProjectDek(projectId);
   for (const { key, data } of journeys) {
     for (let i = 0; i < data.length; i++) {
       await sql`
         INSERT INTO character_journeys (project_id, char_key, step_index, data)
-        VALUES (${projectId}, ${key}, ${i}, ${data[i]})
+        VALUES (${projectId}, ${key}, ${i}, ${encrypt(data[i], dek) ?? data[i]})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -88,12 +90,16 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   // ── Projet ──────────────────────────────────────────────────────────────────
   await tx`INSERT INTO projects (id, name, description, user_id, device_id) VALUES (${projectId}, ${meta.name}, ${meta.description ?? null}, ${userId ?? null}, ${deviceId ?? null})`;
 
+  // Créer une DEK pour le chiffrement du projet (dans la même transaction)
+  const dek = await createProjectDek(projectId, tx);
+  const e = (v) => encrypt(v, dek);
+
   // ── Volumes ─────────────────────────────────────────────────────────────────
   report('Volumes…');
   for (const v of volumesDB) {
     await tx`
       INSERT INTO volumes (id, project_id, number, title, description)
-      VALUES (${v.id}, ${projectId}, ${v.number}, ${v.title}, ${v.description ?? null})
+      VALUES (${v.id}, ${projectId}, ${v.number}, ${e(v.title)}, ${e(v.description ?? null)})
       ON CONFLICT DO NOTHING
     `;
     done++;
@@ -106,10 +112,10 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
       INSERT INTO characters
         (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id)
       VALUES (
-        ${c.id}, ${projectId}, ${c.name},
-        ${c.aliases ?? []}, ${c.race ?? null}, ${c.role ?? null},
-        ${c.affiliation ?? c.affiliations ?? []}, ${c.traits ?? []},
-        ${c.origin ?? null}, ${c.description ?? null},
+        ${c.id}, ${projectId}, ${e(c.name)},
+        ${e(c.aliases ?? [])}, ${e(c.race ?? null)}, ${e(c.role ?? null)},
+        ${e(c.affiliation ?? c.affiliations ?? [])}, ${e(c.traits ?? [])},
+        ${e(c.origin ?? null)}, ${e(c.description ?? null)},
         ${c.color ?? '#64748b'}, ${c.journeyKey ?? null}, ${c.deathEventId ?? null}
       )
     `;
@@ -123,10 +129,10 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
       INSERT INTO locations
         (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places)
       VALUES (
-        ${l.id}, ${projectId}, ${l.name},
-        ${l.type ?? null}, ${l.regime ?? null}, ${l.description ?? null},
+        ${l.id}, ${projectId}, ${e(l.name)},
+        ${e(l.type ?? null)}, ${e(l.regime ?? null)}, ${e(l.description ?? null)},
         ${l.coordinates ?? null},
-        ${l.inhabitants ?? []}, ${l.visitedBy ?? []}, ${l.keyPlaces ?? []}
+        ${e(l.inhabitants ?? [])}, ${e(l.visitedBy ?? [])}, ${e(l.keyPlaces ?? [])}
       )
     `;
     done++;
@@ -140,10 +146,10 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
         (id, project_id, name, type, description, creator, current_holder,
          powers, holders, created_in, inscription, status, status_changed_at_chapter)
       VALUES (
-        ${o.id}, ${projectId}, ${o.name},
-        ${o.type ?? null}, ${o.description ?? null}, ${o.creator ?? null}, ${o.currentHolder ?? null},
-        ${o.powers ?? []}, ${o.holders ?? []},
-        ${o.createdIn ?? null}, ${o.inscription ?? null},
+        ${o.id}, ${projectId}, ${e(o.name)},
+        ${e(o.type ?? null)}, ${e(o.description ?? null)}, ${e(o.creator ?? null)}, ${e(o.currentHolder ?? null)},
+        ${e(o.powers ?? [])}, ${o.holders ?? []},
+        ${o.createdIn ?? null}, ${e(o.inscription ?? null)},
         ${o.status ?? 'active'}, ${o.statusChangedAtChapter ?? null}
       )
     `;
@@ -161,13 +167,13 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
          volume_id, is_flashback, story_chapter_ref)
       VALUES (
         ${evt.id}, ${projectId},
-        ${evt.chapter}, ${evt.chapterTitle ?? ''},
-        ${evt.title}, ${evt.description ?? null},
+        ${evt.chapter}, ${e(evt.chapterTitle ?? '')},
+        ${e(evt.title)}, ${e(evt.description ?? null)},
         ${evt.locationId ?? null}, ${ex.beatId ?? null},
         ${ex.povCharacterId ?? null},
         ${ex.threadIds ?? []},
         ${ex.sceneOrder ?? 0},
-        ${ex.sceneGoal ?? null}, ${ex.sceneConflict ?? null}, ${ex.sceneOutcome ?? null},
+        ${e(ex.sceneGoal ?? null)}, ${e(ex.sceneConflict ?? null)}, ${e(ex.sceneOutcome ?? null)},
         ${evt.volumeId ?? null},
         ${evt.isFlashback ?? false}, ${evt.storyChapterRef ?? null}
       )
@@ -188,12 +194,12 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const inc of incoherencesDB) {
     await tx`
       INSERT INTO incoherences (id, project_id, type, severity, title, explanation)
-      VALUES (${inc.id}, ${projectId}, ${inc.type}, ${inc.severity}, ${inc.title}, ${inc.explanation ?? null})
+      VALUES (${inc.id}, ${projectId}, ${inc.type}, ${inc.severity}, ${e(inc.title)}, ${e(inc.explanation ?? null)})
     `;
     for (const link of (inc.links ?? [])) {
       await tx`
         INSERT INTO incoherence_links (incoherence_id, project_id, entity_id, entity_type, label)
-        VALUES (${inc.id}, ${projectId}, ${link.entityId}, ${link.entityType}, ${link.label ?? null})
+        VALUES (${inc.id}, ${projectId}, ${link.entityId}, ${link.entityType}, ${e(link.label ?? null)})
         ON CONFLICT DO NOTHING
       `;
     }
@@ -205,7 +211,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const ch of chaptersDB) {
     await tx`
       INSERT INTO stc_chapters (id, project_id, number, title, summary, volume_id)
-      VALUES (${ch.id}, ${projectId}, ${ch.number}, ${ch.title}, ${ch.summary ?? null}, ${ch.volumeId ?? null})
+      VALUES (${ch.id}, ${projectId}, ${ch.number}, ${e(ch.title)}, ${e(ch.summary ?? null)}, ${ch.volumeId ?? null})
     `;
     for (const beatId of (ch.beats ?? [])) {
       await tx`
@@ -223,7 +229,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
     for (let i = 0; i < steps.length; i++) {
       await tx`
         INSERT INTO character_journeys (project_id, char_key, step_index, data)
-        VALUES (${projectId}, ${key}, ${i}, ${steps[i]})
+        VALUES (${projectId}, ${key}, ${i}, ${e(steps[i]) ?? steps[i]})
       `;
       done++;
     }
@@ -234,7 +240,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const g of groupsDB) {
     await tx`
       INSERT INTO groups (id, project_id, name, type, color, description, homeland_id)
-      VALUES (${g.id}, ${projectId}, ${g.name}, ${g.type ?? 'autre'}, ${g.color ?? '#64748B'}, ${g.description ?? null}, ${g.homelandId ?? null})
+      VALUES (${g.id}, ${projectId}, ${e(g.name)}, ${g.type ?? 'autre'}, ${g.color ?? '#64748B'}, ${e(g.description ?? null)}, ${g.homelandId ?? null})
       ON CONFLICT DO NOTHING
     `;
     for (const m of (g.members ?? [])) {
@@ -255,11 +261,11 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
         (id, project_id, label, type, plant_chapter_num, plant_event_id, payoff_chapter_num, payoff_event_id,
          entity_id, entity_type, status, notes, plant_volume_id, payoff_volume_id)
       VALUES (
-        ${p.id}, ${projectId}, ${p.label}, ${p.type ?? 'information'},
+        ${p.id}, ${projectId}, ${e(p.label)}, ${p.type ?? 'information'},
         ${p.plant_chapter_num ?? null}, ${p.plant_event_id ?? null},
         ${p.payoff_chapter_num ?? null}, ${p.payoff_event_id ?? null},
         ${p.entity_id ?? null}, ${p.entity_type ?? null},
-        ${p.status ?? 'open'}, ${p.notes ?? null},
+        ${p.status ?? 'open'}, ${e(p.notes ?? null)},
         ${p.plantVolumeId ?? null}, ${p.payoffVolumeId ?? null}
       )
       ON CONFLICT DO NOTHING
@@ -272,7 +278,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const pt of arcPointsDB) {
     await tx`
       INSERT INTO arc_points (project_id, chapter_number, intensity, note)
-      VALUES (${projectId}, ${pt.chapter_number}, ${pt.intensity}, ${pt.note ?? null})
+      VALUES (${projectId}, ${pt.chapter_number}, ${pt.intensity}, ${e(pt.note ?? null)})
       ON CONFLICT DO NOTHING
     `;
     done++;
@@ -283,7 +289,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const t of threadsDB) {
     await tx`
       INSERT INTO narrative_threads (id, project_id, name, color, role, description, sort_order)
-      VALUES (${t.id}, ${projectId}, ${t.name}, ${t.color ?? '#3F51B5'}, ${t.role ?? 'subplot'}, ${t.description ?? null}, ${t.sort_order ?? 0})
+      VALUES (${t.id}, ${projectId}, ${e(t.name)}, ${t.color ?? '#3F51B5'}, ${t.role ?? 'subplot'}, ${e(t.description ?? null)}, ${t.sort_order ?? 0})
       ON CONFLICT DO NOTHING
     `;
     done++;
@@ -294,13 +300,13 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const axis of characterArcsDB) {
     await tx`
       INSERT INTO character_arc_axes (id, project_id, character_id, label, color)
-      VALUES (${axis.id}, ${projectId}, ${axis.characterId}, ${axis.label}, ${axis.color ?? '#64748b'})
+      VALUES (${axis.id}, ${projectId}, ${axis.characterId}, ${e(axis.label)}, ${axis.color ?? '#64748b'})
       ON CONFLICT DO NOTHING
     `;
     for (const pt of (axis.points ?? [])) {
       await tx`
         INSERT INTO character_arc_points (project_id, axis_id, chapter_num, value, note)
-        VALUES (${projectId}, ${axis.id}, ${pt.chapter_num}, ${pt.value}, ${pt.note ?? null})
+        VALUES (${projectId}, ${axis.id}, ${pt.chapter_num}, ${pt.value}, ${e(pt.note ?? null)})
         ON CONFLICT DO NOTHING
       `;
       done++;
@@ -309,11 +315,11 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
 
   // ── Voyage du Héros ───────────────────────────────────────────────────────────
   report('Voyage du Héros…');
-  for (const e of heroJourneyDB) {
-    const id = `hj_${e.characterId}_${e.stageKey}`;
+  for (const hj of heroJourneyDB) {
+    const id = `hj_${hj.characterId}_${hj.stageKey}`;
     await tx`
       INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
-      VALUES (${id}, ${projectId}, ${e.stageKey}, ${e.characterId ?? null}, ${e.chapterNum ?? null}, ${e.summary ?? null}, ${e.volumeId ?? null})
+      VALUES (${id}, ${projectId}, ${hj.stageKey}, ${hj.characterId ?? null}, ${hj.chapterNum ?? null}, ${e(hj.summary ?? null)}, ${hj.volumeId ?? null})
       ON CONFLICT DO NOTHING
     `;
     done++;
@@ -321,7 +327,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
 
   // ── Image de carte ────────────────────────────────────────────────────────────
   if (meta.mapImage) {
-    await tx`UPDATE projects SET map_image = ${meta.mapImage} WHERE id = ${projectId}`;
+    await tx`UPDATE projects SET map_image = ${e(meta.mapImage)} WHERE id = ${projectId}`;
   }
 
   report('Finalisation…');
