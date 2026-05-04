@@ -88,12 +88,13 @@ test.describe('Navigation & filtres', () => {
   test('clic FR → labels français', async ({ page }) => {
     await page.goto('/dashboard');
     await page.getByRole('button', { name: 'FR' }).click();
-    await expect(page.getByText('Santé narrative')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('Santé narrative')).toBeVisible({ timeout: 15_000 });
   });
 
   test('clic EN → labels anglais', async ({ page }) => {
     await page.goto('/dashboard');
     await page.getByRole('button', { name: 'EN' }).click();
-    await expect(page.getByText('Narrative Health')).toBeVisible({ timeout: 5_000 });
+    // Le changement de langue déclenche un reseed LOTR complet (delete + seed API)
+    await expect(page.getByText('Narrative Health')).toBeVisible({ timeout: 15_000 });
   });
 });

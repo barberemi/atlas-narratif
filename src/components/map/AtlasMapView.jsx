@@ -602,6 +602,7 @@ export default function AtlasMapView({ onLocationClick }) {
           <div className="flex flex-col gap-1.5">
             {timelineKeys.map(key => {
               const char = CHARACTERS[key];
+              if (!char) return null;
               return (
                 <div key={key} className="flex items-center gap-2">
                   {timelineKeys.length > 1 && (

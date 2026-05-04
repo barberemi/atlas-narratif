@@ -68,10 +68,13 @@ export default function TimelineBrowser() {
 
   const [focusedCharId,  setFocusedCharId]  = useState(null);
   const [filterMode,     setFilterMode]     = useState('presence'); // 'presence' | 'pov'
+  const [filtersOpen,    setFiltersOpen]    = useState(false);
   const [outcomeFilter,  setOutcomeFilter]  = useState(null); // null = tous
   const [threadFilter,   setThreadFilter]   = useState(null); // null = tous
   const [charMenuOpen,  setCharMenuOpen]  = useState(false);
   const charMenuRef = useRef(null);
+  const [threadMenuOpen, setThreadMenuOpen] = useState(false);
+  const threadMenuRef = useRef(null);
   const [editorEvent,   setEditorEvent]   = useState(undefined); // undefined=fermé, null=créer, obj=éditer
   const [showArc,       setShowArc]       = useState(false);
   const [showStc,       setShowStc]       = useState(false);
@@ -275,6 +278,13 @@ export default function TimelineBrowser() {
     return () => document.removeEventListener('mousedown', handler);
   }, [charMenuOpen]);
 
+  useEffect(() => {
+    if (!threadMenuOpen) return;
+    const handler = (e) => { if (threadMenuRef.current && !threadMenuRef.current.contains(e.target)) setThreadMenuOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [threadMenuOpen]);
+
   const characters = useMemo(() => {
     if (!events) return [];
     const map = new Map();
@@ -317,7 +327,7 @@ export default function TimelineBrowser() {
         <div className="flex items-center gap-2">
           {/* Onglet Vue série */}
           {showSeriesTab && (
-            <div className="flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0"
+            <div className="hidden md:flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0"
               style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
               {[
                 { id: 'chapters', label: t('label.chapters') },
@@ -394,14 +404,34 @@ export default function TimelineBrowser() {
 
       {/* ── Vue chapitres : filtres + timeline horizontale ── */}
       {viewMode === 'chapters' && <>
+      {/* ── Toggle filtres mobile ── */}
+      {(() => {
+        const activeFilterCount = [focusedCharId, threadFilter, outcomeFilter].filter(Boolean).length;
+        return (
+          <button
+            onClick={() => setFiltersOpen(v => !v)}
+            className="md:hidden flex items-center gap-2 px-4 py-2 border-b border-white/5 flex-shrink-0 text-xs font-bold uppercase tracking-widest"
+            style={{ background: 'rgba(0,0,0,0.2)', color: activeFilterCount > 0 ? '#818cf8' : '#475569' }}
+          >
+            <span>🎛</span>
+            <span>{t('timeline.filters', 'Filtres')}</span>
+            {activeFilterCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black" style={{ backgroundColor: 'rgba(63,81,181,0.3)', color: '#818cf8' }}>
+                {activeFilterCount}
+              </span>
+            )}
+            <span className="ml-auto text-[10px]" style={{ color: '#475569' }}>{filtersOpen ? '▲' : '▼'}</span>
+          </button>
+        );
+      })()}
       <div
         data-tour="timeline-filters"
-        className="flex flex-col border-b border-white/5 flex-shrink-0"
+        className={`flex-col border-b border-white/5 flex-shrink-0 ${filtersOpen ? 'flex' : 'hidden'} md:flex`}
         style={{ background: 'rgba(0,0,0,0.2)' }}
       >
         {/* Ligne 1 : label + toggle mode + dropdown personnage */}
-        <div className="flex items-center gap-3 px-4 pt-2.5 pb-2">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.followBy')}</span>
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 px-4 pt-2.5 pb-2">
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.followBy')}</span>
           <div className="flex items-center gap-1">
             {[
               { id: 'presence', label: t('timeline.presence'), icon: '👤' },
@@ -426,7 +456,7 @@ export default function TimelineBrowser() {
               );
             })}
           </div>
-          <div className="w-px self-stretch" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
+          <div className="hidden md:block w-px self-stretch" style={{ backgroundColor: 'rgba(255,255,255,0.07)' }} />
           {/* Dropdown personnage */}
           <div className="relative" ref={charMenuRef}>
             <button
@@ -488,43 +518,74 @@ export default function TimelineBrowser() {
           </div>
         </div>
 
-        {/* Ligne 2 : filtre fil narratif */}
+        {/* Ligne 2 : filtre fil narratif (dropdown) */}
         {threads.length > 0 && (
           <div className="flex items-center gap-2 px-4 pb-1.5">
-            <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.threads')}</span>
-            <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.threads')}</span>
+            <div className="relative" ref={threadMenuRef}>
               <button
-                onClick={() => setThreadFilter(null)}
-                className="text-[10px] px-2 py-0.5 rounded font-bold transition-all duration-150"
+                onClick={() => setThreadMenuOpen(v => !v)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
                 style={{
-                  backgroundColor: !threadFilter ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color:           !threadFilter ? '#cbd5e1' : '#475569',
+                  backgroundColor: threadFilter ? (() => { const th = threads.find(th => th.id === threadFilter); return th ? `${th.color}15` : 'rgba(255,255,255,0.06)'; })() : 'rgba(255,255,255,0.06)',
+                  color:           threadFilter ? (() => { const th = threads.find(th => th.id === threadFilter); return th?.color ?? '#94a3b8'; })() : '#94a3b8',
+                  border:          threadFilter ? (() => { const th = threads.find(th => th.id === threadFilter); return th ? `1px solid ${th.color}40` : '1px solid rgba(255,255,255,0.1)'; })() : '1px solid rgba(255,255,255,0.1)',
+                  minWidth: 160,
                 }}
               >
-                {t('review.filterAll', 'Tous')}
+                {threadFilter ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: threads.find(th => th.id === threadFilter)?.color ?? '#94a3b8' }} />
+                    {threads.find(th => th.id === threadFilter)?.name ?? '—'}
+                  </>
+                ) : (
+                  <>
+                    <span className="text-slate-500">🧵</span>
+                    {t('review.filterAll', 'Tous')}
+                  </>
+                )}
+                <span className="ml-auto text-slate-600 text-[10px]">{threadMenuOpen ? '▲' : '▼'}</span>
               </button>
-              {threads.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setThreadFilter(prev => prev === t.id ? null : t.id)}
-                  className="flex items-center gap-1 text-[10px] px-2 py-1 rounded font-bold transition-all duration-150"
-                  style={{
-                    backgroundColor: threadFilter === t.id ? `${t.color}20` : 'transparent',
-                    color:           threadFilter === t.id ? t.color : '#475569',
-                    border:          threadFilter === t.id ? `1px solid ${t.color}40` : '1px solid transparent',
-                  }}
+
+              {threadMenuOpen && (
+                <div
+                  className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
+                  style={{ minWidth: 200, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: t.color, opacity: threadFilter === t.id ? 1 : 0.5 }} />
-                  {t.name}
-                </button>
-              ))}
+                  <button
+                    onClick={() => { setThreadFilter(null); setThreadMenuOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
+                    style={{ color: !threadFilter ? '#818cf8' : '#64748b' }}
+                  >
+                    <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
+                    {t('review.filterAll', 'Tous')}
+                    {!threadFilter && <span className="ml-auto text-indigo-400 text-[10px]">✓</span>}
+                  </button>
+                  <div className="border-t border-white/5" />
+                  {threads.map(th => {
+                    const isActive = threadFilter === th.id;
+                    return (
+                      <button
+                        key={th.id}
+                        onClick={() => { setThreadFilter(isActive ? null : th.id); setThreadMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
+                        style={{ color: isActive ? th.color : '#64748b' }}
+                      >
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: th.color }} />
+                        {th.name}
+                        {isActive && <span className="ml-auto text-[10px]" style={{ color: th.color }}>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* Ligne 3 : filtre issue */}
         <div className="flex items-center gap-2 px-4 pb-2.5">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.outcome')}</span>
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.outcome')}</span>
           <div className="flex items-center gap-1 rounded-lg px-1.5 py-1" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <button
               onClick={() => setOutcomeFilter(null)}

@@ -21,6 +21,7 @@
     "incoherences": "Inconsistencies",
     "search": "Search",
     "logout": "Log out",
+    "helpTour": "Guided tour",
     "login": "Log in"
   },
   "home": {
@@ -175,7 +176,7 @@
     "followBy": "Follow by",
     "presence": "Presence",
     "pov": "POV",
-    "allCharacters": "All characters",
+    "allCharacters": "All",
     "outcome": "Outcome",
     "chrono": "Chrono",
     "arc": "Arc",
@@ -579,7 +580,7 @@
     "addCoordsInLore": "Add coordinates from lore",
     "follow": "Follow",
     "select": "Select",
-    "allCharacters": "All characters",
+    "allCharacters": "All",
     "hideOnMap": "Hide on map",
     "showOnMap": "Show on map",
     "hideAll": "Hide all",

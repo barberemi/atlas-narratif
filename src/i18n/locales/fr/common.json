@@ -21,6 +21,7 @@
     "incoherences": "Incohérences",
     "search": "Rechercher",
     "logout": "Déconnexion",
+    "helpTour": "Visite guidée",
     "login": "Connexion"
   },
   "home": {
@@ -175,7 +176,7 @@
     "followBy": "Suivre par",
     "presence": "Présence",
     "pov": "POV",
-    "allCharacters": "Tous les personnages",
+    "allCharacters": "Tous",
     "outcome": "Issue",
     "chrono": "Chrono",
     "arc": "Arc",
@@ -561,7 +562,7 @@
     "addCoordsInLore": "Ajouter les coordonnées depuis le lore",
     "follow": "Suivre",
     "select": "Sélectionner",
-    "allCharacters": "Tous les personnages",
+    "allCharacters": "Tous",
     "hideOnMap": "Masquer sur la carte",
     "showOnMap": "Afficher sur la carte",
     "hideAll": "Tout masquer",
