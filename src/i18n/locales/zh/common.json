@@ -21,6 +21,7 @@
     "incoherences": "不一致",
     "search": "搜索",
     "logout": "退出登录",
+    "helpTour": "导览",
     "login": "登录"
   },
   "home": {
@@ -174,7 +175,7 @@
     "followBy": "追踪方式",
     "presence": "在场",
     "pov": "视角",
-    "allCharacters": "所有角色",
+    "allCharacters": "全部",
     "outcome": "结果",
     "chrono": "时序",
     "arc": "弧线",
@@ -578,7 +579,7 @@
     "addCoordsInLore": "从世界观添加坐标",
     "follow": "跟随",
     "select": "选择",
-    "allCharacters": "所有角色",
+    "allCharacters": "全部",
     "hideOnMap": "在地图上隐藏",
     "showOnMap": "在地图上显示",
     "hideAll": "全部隐藏",

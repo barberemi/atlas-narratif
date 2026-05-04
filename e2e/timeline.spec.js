@@ -85,20 +85,22 @@ test.describe('Phase 4 — CRUD Timeline', () => {
 
   test('filtre par personnage', async ({ page }) => {
     await page.goto('/timeline');
-    // Le compteur d'events est dans le header "62 events" ou similaire
-    const headerText = await page.getByText(/events/i).first().textContent();
-    // Cliquer le dropdown personnage
-    await page.getByRole('button', { name: /All characters/i }).click();
-    // Un menu déroulant s'ouvre avec les personnages — cliquer Gandalf
+    const filters = page.locator('[data-tour="timeline-filters"]');
+    // Le dropdown personnage a un minWidth:160 et contient ▼
+    const charDropdown = filters.locator('button', { hasText: '▼' }).first();
+    await charDropdown.click();
+    // Menu déroulant — cliquer Gandalf
     await page.getByRole('button', { name: /Gandalf the Grey/i }).first().click();
     await page.waitForTimeout(500);
-    // Le bouton doit maintenant afficher "Gandalf" au lieu de "All characters"
-    await expect(page.getByRole('button', { name: /Gandalf/i }).first()).toBeVisible();
-    // Remettre All characters
-    await page.getByRole('button', { name: /Gandalf/i }).first().click();
-    const allBtn = page.getByRole('button', { name: /All characters/i });
-    if (await allBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await allBtn.click();
+    // Le dropdown doit maintenant afficher "Gandalf"
+    await expect(filters.locator('button', { hasText: /Gandalf/ }).first()).toBeVisible();
+    // Remettre All — recliquer le dropdown puis sélectionner le premier item (All/Tous)
+    await filters.locator('button', { hasText: /Gandalf/ }).first().click();
+    await page.waitForTimeout(300);
+    // Le premier bouton du menu est "All/Tous" avec ✓
+    const allOption = page.locator('button', { hasText: '✓' }).first();
+    if (await allOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await allOption.click();
     }
   });
 

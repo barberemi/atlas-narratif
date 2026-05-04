@@ -31,8 +31,6 @@ export default function TopNav({ onSearchOpen }) {
   const tourActive   = useTourStore(s => s.active);
   const hasPageTour  = !tourActive && !!projectId && TOUR_STEPS.some(s => s.route === location.pathname && s.dataKey !== null);
 
-  const allMobileItems = NAV_GROUPS.flatMap(g => g.items.map(i => ({ ...i, groupKey: g.labelKey })));
-
   return (
     <>
       <nav
@@ -47,14 +45,14 @@ export default function TopNav({ onSearchOpen }) {
         </button>
 
         {hasProjects && (
-          <>
+          <div className="hidden md:flex items-center gap-1">
             <div className="w-px h-5 bg-white/10 mx-2 flex-shrink-0" />
             <ProjectPicker />
             <div className="w-px h-5 bg-white/10 mx-1 flex-shrink-0" />
             <VolumePicker />
-            <div className="hidden md:block"><SaveIndicator /></div>
+            <SaveIndicator />
             <div className="w-px h-5 bg-white/10 mx-2 flex-shrink-0" />
-          </>
+          </div>
         )}
 
         {hasProjects && NAV_GROUPS.map(group => (
@@ -79,15 +77,16 @@ export default function TopNav({ onSearchOpen }) {
           </button>
         )}
 
-        {/* ── Bouton tour ── */}
+        {/* ── Bouton tour (desktop) ── */}
         {hasPageTour && (
-          <Button
-            onClick={() => startAtRoute(location.pathname)}
-            size="sm" variant="ghost" title="Revoir la présentation de cette page" aria-label="Aide"
-            className="ml-auto flex-shrink-0"
-          >
-            ?
-          </Button>
+          <div className="hidden md:block ml-auto flex-shrink-0">
+            <Button
+              onClick={() => startAtRoute(location.pathname)}
+              size="sm" variant="ghost" title="Revoir la présentation de cette page" aria-label="Aide"
+            >
+              ?
+            </Button>
+          </div>
         )}
 
         {/* ── Sélecteur de langue ── */}
@@ -107,10 +106,10 @@ export default function TopNav({ onSearchOpen }) {
           ))}
         </div>
 
-        {/* ── Bouton utilisateur ── */}
+        {/* ── Bouton utilisateur (desktop) ── */}
         {user ? (
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Link to="/account" className="hidden md:block text-xs text-slate-500 truncate max-w-[140px] hover:text-slate-300 transition-colors">{user.name || user.email}</Link>
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            <Link to="/account" className="text-xs text-slate-500 truncate max-w-[140px] hover:text-slate-300 transition-colors">{user.name || user.email}</Link>
             <Button
               onClick={async () => { await authClient.signOut(); navigate('/'); }}
               size="sm" variant="ghost" title={t('nav.logout')}
@@ -119,18 +118,20 @@ export default function TopNav({ onSearchOpen }) {
             </Button>
           </div>
         ) : (
-          <Button
-            onClick={() => navigate('/login')}
-            size="sm" variant="secondary" className="flex-shrink-0"
-          >
-            {t('nav.login')}
-          </Button>
+          <div className="hidden md:block flex-shrink-0">
+            <Button
+              onClick={() => navigate('/login')}
+              size="sm" variant="secondary"
+            >
+              {t('nav.login')}
+            </Button>
+          </div>
         )}
 
         {hasProjects && (
           <button
             onClick={() => setMobileOpen(v => !v)}
-            className="md:hidden flex flex-col gap-1.5 p-2 rounded-lg transition-all"
+            className="md:hidden ml-auto flex flex-col gap-1.5 p-2 rounded-lg transition-all"
             style={{ color: mobileOpen ? '#818cf8' : '#475569' }}
             aria-label="Menu"
           >
@@ -142,27 +143,103 @@ export default function TopNav({ onSearchOpen }) {
       </nav>
 
       {mobileOpen && hasProjects && (
-        <div className="md:hidden flex-shrink-0 border-b border-white/10" style={{ backgroundColor: 'rgba(11,22,33,0.98)', zIndex: 49 }}>
-          <div className="px-3 py-2 flex flex-col gap-0.5">
-            {allMobileItems.map(({ path, labelKey, icon, groupKey }) => {
-              const isActive    = location.pathname === path;
-              const isWarning   = path === '/incoherences';
-              const activeColor = isWarning ? '#EF4444' : '#818cf8';
-              const activeBg    = isWarning ? 'rgba(239,68,68,0.1)' : 'rgba(63,81,181,0.15)';
-              return (
-                <NavLink
-                  key={path}
-                  to={path}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                  style={{ backgroundColor: isActive ? activeBg : 'transparent', color: isActive ? activeColor : '#64748b', textDecoration: 'none' }}
+        <div className="md:hidden flex-shrink-0 border-b border-white/10 overflow-y-auto" style={{ backgroundColor: 'rgba(11,22,33,0.98)', zIndex: 49, maxHeight: 'calc(100dvh - 48px)' }}>
+
+          {/* ── Projet & Tome ── */}
+          <div className="px-3 pt-2 pb-1 flex items-center gap-2">
+            <ProjectPicker />
+            <VolumePicker />
+          </div>
+
+          {/* ── Routes par groupe ── */}
+          <div className="px-3 py-1 flex flex-col gap-0.5">
+            {NAV_GROUPS.map((group, gi) => (
+              <div key={group.key}>
+                {gi > 0 && <div className="border-t border-white/10 my-1" />}
+                <div className="px-3 pt-1.5 pb-0.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
+                  {group.icon} {t(group.labelKey)}
+                </div>
+                {group.items.map(({ path, labelKey, icon }) => {
+                  const isActive    = location.pathname === path;
+                  const isWarning   = path === '/incoherences';
+                  const activeColor = isWarning ? '#EF4444' : '#818cf8';
+                  const activeBg    = isWarning ? 'rgba(239,68,68,0.1)' : 'rgba(63,81,181,0.15)';
+                  return (
+                    <NavLink
+                      key={path}
+                      to={path}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                      style={{ backgroundColor: isActive ? activeBg : 'transparent', color: isActive ? activeColor : '#64748b', textDecoration: 'none' }}
+                    >
+                      <span className="text-base">{icon}</span>
+                      <span>{t(labelKey)}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* ── Actions ── */}
+          <div className="border-t border-white/10 px-3 py-2 flex flex-col gap-1">
+            <button
+              onClick={() => { onSearchOpen(); setMobileOpen(false); }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ color: '#64748b' }}
+            >
+              <span className="text-base">🔍</span>
+              <span>{t('search.label')}</span>
+              <kbd className="ml-auto text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#475569' }}>⌘K</kbd>
+            </button>
+
+            {hasPageTour && (
+              <button
+                onClick={() => { startAtRoute(location.pathname); setMobileOpen(false); }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{ color: '#64748b' }}
+              >
+                <span className="text-base">❓</span>
+                <span>{t('nav.helpTour', 'Visite guidée')}</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-1 px-3 py-2">
+              {LANGS.map(({ code, label: langLabel }) => (
+                <button
+                  key={code}
+                  onClick={() => { i18n.changeLanguage(code); setMobileOpen(false); }}
+                  className="text-xs px-2.5 py-1 rounded-lg font-bold transition-all"
+                  style={{
+                    backgroundColor: i18n.language?.startsWith(code) ? 'rgba(63,81,181,0.2)' : 'rgba(255,255,255,0.04)',
+                    color: i18n.language?.startsWith(code) ? '#818cf8' : '#475569',
+                  }}
                 >
-                  <span className="text-base">{icon}</span>
-                  <span>{t(labelKey)}</span>
-                  {groupKey && <span className="ml-auto text-[10px] text-slate-700 font-normal">{t(groupKey)}</span>}
-                </NavLink>
-              );
-            })}
+                  {langLabel}
+                </button>
+              ))}
+            </div>
+
+            {user ? (
+              <NavLink
+                to="/account"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{ color: location.pathname === '/account' ? '#818cf8' : '#64748b', backgroundColor: location.pathname === '/account' ? 'rgba(63,81,181,0.15)' : 'transparent', textDecoration: 'none' }}
+              >
+                <span className="text-base">👤</span>
+                <span className="truncate">{user.name || user.email}</span>
+              </NavLink>
+            ) : (
+              <button
+                onClick={() => { navigate('/login'); setMobileOpen(false); }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{ color: '#64748b' }}
+              >
+                <span className="text-base">🔑</span>
+                <span>{t('nav.login')}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
