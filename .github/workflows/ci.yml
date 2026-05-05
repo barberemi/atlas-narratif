@@ -34,8 +34,16 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Tests
+      - name: Tests (frontend)
         run: npm run test:run
+
+      - name: Tests (server)
+        run: cd server && node --test src/*.test.js src/**/*.test.js
+        env:
+          DATABASE_URL: postgresql://localhost:5432/fake
+          BETTER_AUTH_SECRET: ci-test-secret-not-real-min-32-characters
+          BETTER_AUTH_URL: http://localhost:3001
+          FRONTEND_URL: http://localhost:5173
 
       - name: Build
         run: npm run build

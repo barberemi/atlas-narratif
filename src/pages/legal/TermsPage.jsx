@@ -19,7 +19,7 @@ export default function TermsPage() {
             <h2 className="text-base font-bold text-white mt-4">1. Objet</h2>
             <p>
               Les pr&eacute;sentes conditions g&eacute;n&eacute;rales r&eacute;gissent l&rsquo;utilisation du service Atlas Narratif,
-              outil d&rsquo;analyse et de construction narrative pour auteurs, accessible &agrave; l&rsquo;adresse [URL].
+              outil d&rsquo;analyse et de construction narrative pour auteurs, accessible &agrave; l&rsquo;adresse atlas-narratif.com.
             </p>
 
             <h2 className="text-base font-bold text-white mt-4">2. Description du service</h2>
@@ -42,7 +42,7 @@ export default function TermsPage() {
               Nous ne revendiquons aucun droit sur vos cr&eacute;ations.
             </p>
             <p>
-              Le code source, le design et la marque Atlas Narratif sont la propri&eacute;t&eacute; de [NOM / RAISON SOCIALE].
+              Le code source, le design et la marque Atlas Narratif sont la propri&eacute;t&eacute; de Barb&eacute; R&eacute;mi.
             </p>
 
             <h2 className="text-base font-bold text-white mt-4">5. Obligations de l&rsquo;utilisateur</h2>
@@ -76,7 +76,7 @@ export default function TermsPage() {
             <h2 className="text-base font-bold text-white mt-4">9. Droit applicable</h2>
             <p>
               Les pr&eacute;sentes CGU sont soumises au droit fran&ccedil;ais.
-              Tout litige sera port&eacute; devant les juridictions comp&eacute;tentes de [VILLE].
+              Tout litige sera port&eacute; devant les juridictions comp&eacute;tentes de Lyon.
             </p>
           </section>
 

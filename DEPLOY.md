@@ -173,12 +173,7 @@ Rien à faire manuellement.
 - [ ] **HSTS** : vérifier que `Strict-Transport-Security` est bien présent dans les headers de réponse (`curl -sI https://<DOMAIN>`) — le header est activé par défaut dans `nginx.prod.conf`
 - [ ] **Rotation credentials** : révoquer et régénérer les clés Google OAuth / Resend si elles ont été partagées
 - [ ] **CSP** : tester que la carte (tuiles OSM), les fonts et les styles inline fonctionnent — ajuster `Content-Security-Policy` dans `nginx.prod.conf` si besoin
-- [ ] **Pages légales (RGPD)** :
-
-| Fichier | Placeholders à remplacer |
-|---------|-------------------------|
-| `src/pages/legal/PrivacyPage.jsx` | `[NOM / RAISON SOCIALE]`, `[ADRESSE]`, `[EMAIL]`, `[HÉBERGEUR]` |
-| `src/pages/legal/TermsPage.jsx` | `[NOM / RAISON SOCIALE]`, `[URL]`, `[VILLE]` |
+- [x] **Pages légales (RGPD)** : placeholders remplis (Barbé Rémi, Lyon, atlas-narratif.com, OVHcloud)
 
 ### 1.11 Backup automatique quotidien (cron)
 

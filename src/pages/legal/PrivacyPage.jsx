@@ -19,15 +19,15 @@ export default function PrivacyPage() {
             <h2 className="text-base font-bold text-white mt-4">1. Responsable du traitement</h2>
             <p>
               Le responsable du traitement des donn&eacute;es personnelles collect&eacute;es via Atlas Narratif est
-              [NOM / RAISON SOCIALE], [ADRESSE], contact : [EMAIL].
+              Barb&eacute; R&eacute;mi, Lyon (France), contact : barbe.remi25[at]gmail[dot]com.
             </p>
 
             <h2 className="text-base font-bold text-white mt-4">2. Donn&eacute;es collect&eacute;es</h2>
-            <p>Nous collectons les donn&eacute;es suivantes :</p>
+            <p>Les donn&eacute;es suivantes sont stock&eacute;es lorsque vous utilisez le service :</p>
             <ul className="list-disc pl-5 flex flex-col gap-1">
-              <li><strong>Donn&eacute;es de compte</strong> : nom, adresse email, mot de passe (hash&eacute;).</li>
-              <li><strong>Donn&eacute;es de projet</strong> : manuscrits, personnages, lieux, objets, notes et toute donn&eacute;e saisie dans l&rsquo;application.</li>
-              <li><strong>Donn&eacute;es techniques</strong> : identifiant de session, identifiant d&rsquo;appareil (deviceId), adresse IP (logs serveur).</li>
+              <li><strong>Donn&eacute;es de compte</strong> : nom et adresse email (fournis &agrave; l&rsquo;inscription). Votre mot de passe est hash&eacute; — nous n&rsquo;y avons pas acc&egrave;s en clair.</li>
+              <li><strong>Donn&eacute;es de projet</strong> : les contenus que vous saisissez dans l&rsquo;application (personnages, lieux, objets, notes, etc.). Aucune donn&eacute;e n&rsquo;est collect&eacute;e automatiquement depuis vos fichiers.</li>
+              <li><strong>Donn&eacute;es techniques</strong> : identifiant de session et adresse IP (logs serveur), n&eacute;cessaires au fonctionnement de l&rsquo;authentification. Aucun outil d&rsquo;analytics ou de tracking n&rsquo;est utilis&eacute;.</li>
             </ul>
 
             <h2 className="text-base font-bold text-white mt-4">3. Base l&eacute;gale et finalit&eacute;s</h2>
@@ -43,7 +43,15 @@ export default function PrivacyPage() {
               En cas de suppression de compte, toutes vos donn&eacute;es sont effac&eacute;es imm&eacute;diatement et de mani&egrave;re irr&eacute;versible.
             </p>
 
-            <h2 className="text-base font-bold text-white mt-4">5. Vos droits</h2>
+            <h2 className="text-base font-bold text-white mt-4">5. S&eacute;curit&eacute; des donn&eacute;es</h2>
+            <p>
+              Vos donn&eacute;es narratives (manuscrits, personnages, lieux, objets, notes) sont
+              chiffr&eacute;es au repos en base de donn&eacute;es (AES-256-GCM). Chaque projet dispose
+              de sa propre cl&eacute; de chiffrement. Les mots de passe sont hash&eacute;s et ne sont
+              jamais stock&eacute;s en clair. Les communications sont prot&eacute;g&eacute;es par HTTPS (TLS).
+            </p>
+
+            <h2 className="text-base font-bold text-white mt-4">6. Vos droits</h2>
             <p>Conform&eacute;ment au RGPD, vous disposez des droits suivants :</p>
             <ul className="list-disc pl-5 flex flex-col gap-1">
               <li><strong>Acc&egrave;s</strong> : obtenir une copie de vos donn&eacute;es.</li>
@@ -54,24 +62,24 @@ export default function PrivacyPage() {
             </ul>
             <p>
               Ces droits sont exerc&cedil;ables directement depuis la page <Link to="/account" className="text-indigo-400 hover:underline">Mon compte</Link> ou
-              par email &agrave; [EMAIL].
+              par email &agrave; barbe.remi25[at]gmail[dot]com.
             </p>
 
-            <h2 className="text-base font-bold text-white mt-4">6. Sous-traitants</h2>
+            <h2 className="text-base font-bold text-white mt-4">7. Sous-traitants</h2>
             <p>
               Vos donn&eacute;es peuvent &ecirc;tre trait&eacute;es par les sous-traitants suivants :
-              h&eacute;bergeur du serveur ([H&Eacute;BERGEUR]), service d&rsquo;envoi d&rsquo;emails transactionnels (Resend).
+              h&eacute;bergeur du serveur (OVHcloud, 2 rue Kellermann, 59100 Roubaix), service d&rsquo;envoi d&rsquo;emails transactionnels (Resend).
             </p>
 
-            <h2 className="text-base font-bold text-white mt-4">7. Cookies</h2>
+            <h2 className="text-base font-bold text-white mt-4">8. Cookies</h2>
             <p>
               Atlas Narratif utilise uniquement des cookies de session essentiels au fonctionnement
               de l&rsquo;authentification. Aucun cookie publicitaire ou de tracking n&rsquo;est utilis&eacute;.
             </p>
 
-            <h2 className="text-base font-bold text-white mt-4">8. Contact</h2>
+            <h2 className="text-base font-bold text-white mt-4">9. Contact</h2>
             <p>
-              Pour toute question relative &agrave; la protection de vos donn&eacute;es : [EMAIL].
+              Pour toute question relative &agrave; la protection de vos donn&eacute;es : barbe.remi25[at]gmail[dot]com.
               Vous pouvez &eacute;galement introduire une r&eacute;clamation aupr&egrave;s de la CNIL (www.cnil.fr).
             </p>
           </section>
