@@ -26,24 +26,22 @@ jobs:
             echo "── Backup base de données ──"
             mkdir -p backups
             docker compose -f docker-compose.prod.yml --env-file .env.prod \
-              exec -T postgres pg_dump -U atlas atlas \
+              exec -T postgres pg_dump --clean --if-exists -U atlas atlas \
               | gzip > backups/atlas_$(date +%Y%m%d_%H%M%S)_pre-deploy.sql.gz
 
             echo "── Pull du code ──"
             git pull origin main
 
-            echo "── Build et redémarrage ──"
-            docker compose -f docker-compose.prod.yml --env-file .env.prod \
-              up -d --build --remove-orphans
+            echo "── Build des images (services toujours en ligne) ──"
+            docker compose -f docker-compose.prod.yml --env-file .env.prod build
 
-            echo "── Health check ──"
-            sleep 5
-            curl -sf https://${{ secrets.DOMAIN }}/api/health \
-              || (echo "Health check échoué — rollback..." && \
-                  docker compose -f docker-compose.prod.yml --env-file .env.prod \
-                    restart api && exit 1)
+            echo "── Blue-green swap API ──"
+            make -C /srv/atlas-narratif _bg-swap s=api healthurl=http://localhost:3001/health
+
+            echo "── Blue-green swap Frontend ──"
+            make -C /srv/atlas-narratif _bg-swap s=frontend healthurl=http://localhost:80/
 
             echo "── Nettoyage images orphelines ──"
             docker image prune -f
 
-            echo "✓ Déploiement terminé"
+            echo "✓ Déploiement zero-downtime terminé"

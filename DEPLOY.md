@@ -105,7 +105,7 @@ Générer des secrets aléatoires :
 openssl rand -base64 32
 
 # Credentials dashboard Traefik :
-docker run --rm httpd:2-alpine htpasswd -nBb admin "$(openssl rand -base64 16)"
+docker run --rm httpd:2-alpine htpasswd -nBb admin "mon-mot-de-passe"
 # → Copier la sortie dans TRAEFIK_DASHBOARD_AUTH en doublant les $
 ```
 
@@ -189,43 +189,49 @@ crontab -e
 
 Une fois le setup initial terminé, chaque push sur `main` déclenche un déploiement automatique.
 
-### 2.1 Flux automatisé
+### 2.1 Flux automatisé (blue-green, zero downtime)
 
 ```
 git push → CI (lint + tests + build + e2e) → merge main → deploy.yml :
-  1. Backup pg_dump
+  1. Backup pg_dump (--clean --if-exists)
   2. git pull
-  3. make prod-up (rebuild)
-  4. Health check
-  5. docker image prune
+  3. docker compose build (images only — services toujours en ligne)
+  4. Blue-green swap API (scale up → healthcheck → remove old)
+  5. Blue-green swap Frontend (idem)
+  6. docker image prune
 ```
+
+**Zero interruption de service** : les nouvelles images sont buildées pendant que les anciens containers servent le trafic. Ensuite, pour chaque service, un nouveau container démarre à côté de l'ancien. Traefik load-balance entre les deux. Une fois le nouveau healthy, l'ancien est supprimé. Aucune requête n'est perdue.
 
 Le workflow `.github/workflows/deploy.yml` se déclenche **uniquement** quand le CI (`.github/workflows/ci.yml`) passe avec succès sur `main`.
 
-### 2.2 Déploiement manuel (si besoin)
+### 2.2 Déploiement manuel
 
 Sur le VPS :
 
 ```bash
 cd /srv/atlas-narratif
 make prod-backup
-make prod-deploy
+make prod-deploy       # git pull + build + blue-green swap + prune
 ```
 
-`make prod-deploy` enchaîne automatiquement : `git pull` → `rebuild` → `health check` → `prune`.
+Pour des modifications faites directement sur le VPS (sans git pull) :
+
+```bash
+make prod-swap          # build + blue-green swap (sans git pull ni prune)
+```
 
 ### 2.3 Commandes utiles au quotidien
 
 | Commande | Action |
 |----------|--------|
-| `make prod-ps` | État des services |
-| `make prod-logs` | Logs de toute la stack |
-| `make prod-logs-s s=api` | Logs d'un service |
-| `make prod-restart s=api` | Redémarrer un service |
+| `make prod-deploy` | Déploiement blue-green (pull + build + swap + prune) |
+| `make prod-swap` | Swap blue-green rapide (build + swap, sans pull) |
+| `make prod-logs` | Logs de toute la stack (`make prod-logs s=api` pour un service) |
 | `make prod-health` | Health check de l'API |
 | `make prod-backup` | Backup BDD (gzip dans `backups/`) |
 | `make prod-restore f=backups/atlas_XXX.sql.gz` | Restaurer un backup |
-| `make prod-up` | Rebuild + restart complet |
+| `make prod-up` | Premier lancement ou restart complet (avec interruption) |
 | `make prod-down` | Arrêter la stack (volumes conservés) |
 
 ### 2.4 Rollback

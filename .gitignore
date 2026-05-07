@@ -42,3 +42,5 @@ e2e/.auth/
 .env
 server/.env
 *.env.local
+.env.prod
+backups/*

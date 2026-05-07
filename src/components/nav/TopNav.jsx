@@ -128,70 +128,74 @@ export default function TopNav({ onSearchOpen }) {
           </div>
         )}
 
-        {hasProjects && (
-          <button
-            onClick={() => setMobileOpen(v => !v)}
-            className="md:hidden ml-auto flex flex-col gap-1.5 p-2 rounded-lg transition-all"
-            style={{ color: mobileOpen ? '#818cf8' : '#475569' }}
-            aria-label="Menu"
-          >
-            <span className="block w-5 h-0.5 rounded-full transition-all" style={{ backgroundColor: 'currentColor', transform: mobileOpen ? 'translateY(8px) rotate(45deg)' : 'none' }} />
-            <span className="block w-5 h-0.5 rounded-full transition-all" style={{ backgroundColor: 'currentColor', opacity: mobileOpen ? 0 : 1 }} />
-            <span className="block w-5 h-0.5 rounded-full transition-all" style={{ backgroundColor: 'currentColor', transform: mobileOpen ? 'translateY(-8px) rotate(-45deg)' : 'none' }} />
-          </button>
-        )}
+        <button
+          onClick={() => setMobileOpen(v => !v)}
+          className="md:hidden ml-auto flex flex-col gap-1.5 p-2 rounded-lg transition-all"
+          style={{ color: mobileOpen ? '#818cf8' : '#475569' }}
+          aria-label="Menu"
+        >
+          <span className="block w-5 h-0.5 rounded-full transition-all" style={{ backgroundColor: 'currentColor', transform: mobileOpen ? 'translateY(8px) rotate(45deg)' : 'none' }} />
+          <span className="block w-5 h-0.5 rounded-full transition-all" style={{ backgroundColor: 'currentColor', opacity: mobileOpen ? 0 : 1 }} />
+          <span className="block w-5 h-0.5 rounded-full transition-all" style={{ backgroundColor: 'currentColor', transform: mobileOpen ? 'translateY(-8px) rotate(-45deg)' : 'none' }} />
+        </button>
       </nav>
 
-      {mobileOpen && hasProjects && (
+      {mobileOpen && (
         <div className="md:hidden flex-shrink-0 border-b border-white/10 overflow-y-auto" style={{ backgroundColor: 'rgba(11,22,33,0.98)', zIndex: 49, maxHeight: 'calc(100dvh - 48px)' }}>
 
-          {/* ── Projet & Tome ── */}
-          <div className="px-3 pt-2 pb-1 flex items-center gap-2">
-            <ProjectPicker />
-            <VolumePicker />
-          </div>
-
-          {/* ── Routes par groupe ── */}
-          <div className="px-3 py-1 flex flex-col gap-0.5">
-            {NAV_GROUPS.map((group, gi) => (
-              <div key={group.key}>
-                {gi > 0 && <div className="border-t border-white/10 my-1" />}
-                <div className="px-3 pt-1.5 pb-0.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
-                  {group.icon} {t(group.labelKey)}
-                </div>
-                {group.items.map(({ path, labelKey, icon }) => {
-                  const isActive    = location.pathname === path;
-                  const isWarning   = path === '/incoherences';
-                  const activeColor = isWarning ? '#EF4444' : '#818cf8';
-                  const activeBg    = isWarning ? 'rgba(239,68,68,0.1)' : 'rgba(63,81,181,0.15)';
-                  return (
-                    <NavLink
-                      key={path}
-                      to={path}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                      style={{ backgroundColor: isActive ? activeBg : 'transparent', color: isActive ? activeColor : '#64748b', textDecoration: 'none' }}
-                    >
-                      <span className="text-base">{icon}</span>
-                      <span>{t(labelKey)}</span>
-                    </NavLink>
-                  );
-                })}
+          {hasProjects && (
+            <>
+              {/* ── Projet & Tome ── */}
+              <div className="px-3 pt-2 pb-1 flex items-center gap-2">
+                <ProjectPicker />
+                <VolumePicker />
               </div>
-            ))}
-          </div>
 
-          {/* ── Actions ── */}
+              {/* ── Routes par groupe ── */}
+              <div className="px-3 py-1 flex flex-col gap-0.5">
+                {NAV_GROUPS.map((group, gi) => (
+                  <div key={group.key}>
+                    {gi > 0 && <div className="border-t border-white/10 my-1" />}
+                    <div className="px-3 pt-1.5 pb-0.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: '#475569' }}>
+                      {group.icon} {t(group.labelKey)}
+                    </div>
+                    {group.items.map(({ path, labelKey, icon }) => {
+                      const isActive    = location.pathname === path;
+                      const isWarning   = path === '/incoherences';
+                      const activeColor = isWarning ? '#EF4444' : '#818cf8';
+                      const activeBg    = isWarning ? 'rgba(239,68,68,0.1)' : 'rgba(63,81,181,0.15)';
+                      return (
+                        <NavLink
+                          key={path}
+                          to={path}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                          style={{ backgroundColor: isActive ? activeBg : 'transparent', color: isActive ? activeColor : '#64748b', textDecoration: 'none' }}
+                        >
+                          <span className="text-base">{icon}</span>
+                          <span>{t(labelKey)}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ── Actions (toujours visibles) ── */}
           <div className="border-t border-white/10 px-3 py-2 flex flex-col gap-1">
-            <button
-              onClick={() => { onSearchOpen(); setMobileOpen(false); }}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
-              style={{ color: '#64748b' }}
-            >
-              <span className="text-base">🔍</span>
-              <span>{t('search.label')}</span>
-              <kbd className="ml-auto text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#475569' }}>⌘K</kbd>
-            </button>
+            {hasProjects && (
+              <button
+                onClick={() => { onSearchOpen(); setMobileOpen(false); }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{ color: '#64748b' }}
+              >
+                <span className="text-base">🔍</span>
+                <span>{t('search.label')}</span>
+                <kbd className="ml-auto text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#475569' }}>⌘K</kbd>
+              </button>
+            )}
 
             {hasPageTour && (
               <button

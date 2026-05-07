@@ -81,7 +81,7 @@ server-add: ## Ajouter un package API (p=…)
 
 ##@ 🔥 Production
 
-prod-up: ## Build + démarrer la stack prod
+prod-up: ## Build + démarrer la stack prod complète (premier lancement ou après prod-down)
 	@echo "🔥 Démarrage de la stack prod…"
 	$(DC_PROD) up -d --build
 
@@ -89,50 +89,61 @@ prod-down: ## Arrêter la stack prod
 	@echo "🛑 Arrêt de la stack prod…"
 	$(DC_PROD) down
 
-prod-deploy: ## Déploiement complet (pull → build → health → prune)
-	@echo ""
-	@echo "🚀 \033[1mDéploiement Atlas Narratif\033[0m"
-	@echo "\033[2m───────────────────────────────\033[0m"
-	@echo ""
-	@echo "📥 Pull du code…"
-	git pull origin main
-	@echo ""
-	@echo "🔨 Build et redémarrage…"
-	$(DC_PROD) up -d --build --remove-orphans
-	@echo ""
-	@echo "⏳ Health check…"
-	@sleep 5
-	@$(DC_PROD) exec api wget -qO- http://localhost:3001/api/health > /dev/null \
-		&& echo "✅ API OK" \
-		|| (echo "❌ Health check échoué" && exit 1)
-	@echo ""
-	@echo "🧹 Nettoyage images orphelines…"
-	docker image prune -f
-	@echo ""
-	@echo "\033[32m\033[1m✅ Déploiement terminé\033[0m"
-	@echo ""
-
 prod-ps: ## État des services
 	$(DC_PROD) ps
 
 prod-logs: ## Logs de la stack prod
-	$(DC_PROD) logs -f
-
-prod-logs-s: ## Logs d'un service prod (s=…)
 	$(DC_PROD) logs -f $(s)
 
-prod-restart: ## Redémarrer un service (s=…)
-	$(DC_PROD) restart $(s)
+## Déploiement blue-green zero downtime : pull + build + swap
+prod-deploy:
+	@echo "── Pull du code ──"
+	git pull origin main
+	@echo "── Build des images (services toujours en ligne) ──"
+	$(DC_PROD) build
+	@$(MAKE) _bg-swap s=api healthurl=http://127.0.0.1:3001/health
+	@$(MAKE) _bg-swap s=frontend healthurl=http://127.0.0.1:80/
+	@echo "── Nettoyage images orphelines ──"
+	docker image prune -f
+	@echo "✓ Déploiement zero-downtime terminé"
+
+## Swap blue-green rapide (sans git pull) — pour modifs directes sur le VPS
+prod-swap:
+	@echo "── Build des images ──"
+	$(DC_PROD) build
+	@$(MAKE) _bg-swap s=api healthurl=http://127.0.0.1:3001/health
+	@$(MAKE) _bg-swap s=frontend healthurl=http://127.0.0.1:80/
+	@echo "✓ Swap terminé"
+
+## Blue-green swap interne
+_bg-swap:
+	@echo "── [$(s)] Scale up (ancien + nouveau) ──"
+	@old_id=$$($(DC_PROD) ps -q $(s)); \
+	$(DC_PROD) up -d --no-build --no-deps --scale $(s)=2 --no-recreate; \
+	echo "── [$(s)] Attente healthcheck nouveau container (max 60s) ──"; \
+	new_id=$$($(DC_PROD) ps -q $(s) | grep -v "$$old_id"); \
+	for i in $$(seq 1 30); do \
+		docker exec $$new_id wget -qO- $(healthurl) > /dev/null 2>&1 && break; \
+		[ $$i -eq 30 ] && echo "✗ [$(s)] Healthcheck échoué" && exit 1; \
+		sleep 2; \
+	done; \
+	echo "✓ [$(s)] Nouveau container healthy"; \
+        echo "── [$(s)] Attente routage Traefik (10s) ──"; \
+        sleep 10; \
+	echo "── [$(s)] Suppression ancien container ──"; \
+	docker stop $$old_id && docker rm $$old_id; \
+	$(DC_PROD) up -d --no-build --no-deps --scale $(s)=1 --no-recreate; \
+	echo "✓ [$(s)] Swap terminé"
 
 prod-health: ## Health check de l'API
-	@$(DC_PROD) exec api wget -qO- http://localhost:3001/api/health \
+	@$(DC_PROD) exec -T api wget -qO- http://127.0.0.1:3001/api/health \
 		&& echo "✅ API OK" \
 		|| (echo "❌ API KO" && exit 1)
 
 prod-backup: ## Backup de la base PostgreSQL
 	@mkdir -p backups
 	docker exec $$($(DC_PROD) ps -q postgres) \
-		pg_dump -U atlas atlas | gzip > backups/atlas_$$(date +%Y%m%d_%H%M%S).sql.gz
+		pg_dump --clean --if-exists -U atlas atlas | gzip > backups/atlas_$$(date +%Y%m%d_%H%M%S).sql.gz
 	@echo "✅ Backup sauvegardé dans backups/"
 
 prod-restore: ## Restaurer un backup (f=…)
@@ -140,4 +151,4 @@ prod-restore: ## Restaurer un backup (f=…)
 	gunzip -c "$(f)" | docker exec -i $$($(DC_PROD) ps -q postgres) psql -U atlas atlas
 	@echo "✅ Restauration terminée depuis $(f)"
 
-.PHONY: help dev stop logs logs-s dev-rebuild lint lint-do test server-test e2e e2e-file build install server-install server-add add prod-up prod-down prod-ps prod-logs prod-logs-s prod-restart prod-deploy prod-health prod-backup prod-restore
+.PHONY: dev stop logs logs-s dev-rebuild lint lint-do test server-test e2e e2e-file build install server-install server-add add prod-up prod-down prod-logs prod-deploy prod-swap _bg-swap prod-health prod-backup prod-restore

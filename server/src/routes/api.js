@@ -58,6 +58,17 @@ api.post('/device/register', async (c) => {
   }
 });
 
+// ── Health check (avant requireIdentity pour accès sans auth) ───────────────
+api.get('/health', async (c) => {
+  try {
+    await sql`SELECT 1`;
+    return c.json({ status: 'ok', db: 'connected' });
+  } catch {
+    return c.json({ status: 'error', db: 'unavailable' }, 500);
+  }
+});
+
+
 // ── Middlewares globaux ──────────────────────────────────────────────────────
 api.use('*', requireIdentity);
 api.use('/projects/:projectId/*', requireProjectOwner);
