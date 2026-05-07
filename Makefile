@@ -79,76 +79,72 @@ add: ## Ajouter un package frontend (p=…)
 server-add: ## Ajouter un package API (p=…)
 	$(DC) exec api npm install $(p)
 
-##@ 🔥 Production
+##@ 🔥 Production (Docker Swarm)
 
-prod-up: ## Build + démarrer la stack prod complète (premier lancement ou après prod-down)
-	@echo "🔥 Démarrage de la stack prod…"
-	$(DC_PROD) up -d --build
+STACK = atlas
 
-prod-down: ## Arrêter la stack prod
-	@echo "🛑 Arrêt de la stack prod…"
-	$(DC_PROD) down
+prod-up: ## Build + déployer la stack Swarm
+	@echo "🔥 Build des images…"
+	$(DC_PROD) build
+	@echo "🚀 Déploiement Swarm…"
+	@set -a; . ./.env.prod; set +a; \
+	docker stack deploy -c docker-compose.prod.yml $(STACK)
+	@echo "✅ Stack déployée"
+
+prod-down: ## Supprimer la stack Swarm
+	@echo "🛑 Suppression de la stack…"
+	docker stack rm $(STACK)
+
+prod-deploy: ## Déploiement zero downtime (pull + build + rolling update)
+	@echo "📥 Pull du code…"
+	git pull origin main
+	@TAG=$$(date +%s); \
+	echo "🔨 Build des images (tag: $$TAG)…"; \
+	$(DC_PROD) build; \
+	docker tag atlas-narratif-api:latest atlas-narratif-api:$$TAG; \
+	docker tag atlas-narratif-frontend:latest atlas-narratif-frontend:$$TAG; \
+	echo "🚀 Rolling update API…"; \
+	docker service update --image atlas-narratif-api:$$TAG --detach=false $(STACK)_api; \
+	echo "🚀 Rolling update Frontend…"; \
+	docker service update --image atlas-narratif-frontend:$$TAG --detach=false $(STACK)_frontend
+	@echo "🧹 Nettoyage images orphelines…"
+	docker image prune -f
+	@echo "✅ Déploiement terminé"
+
+prod-swap: ## Swap rapide (sans git pull) — pour modifs directes sur le VPS
+	@TAG=$$(date +%s); \
+	echo "🔨 Build des images (tag: $$TAG)…"; \
+	$(DC_PROD) build; \
+	docker tag atlas-narratif-api:latest atlas-narratif-api:$$TAG; \
+	docker tag atlas-narratif-frontend:latest atlas-narratif-frontend:$$TAG; \
+	echo "🚀 Rolling update API…"; \
+	docker service update --image atlas-narratif-api:$$TAG --detach=false $(STACK)_api; \
+	echo "🚀 Rolling update Frontend…"; \
+	docker service update --image atlas-narratif-frontend:$$TAG --detach=false $(STACK)_frontend
+	@echo "✅ Swap terminé"
 
 prod-ps: ## État des services
-	$(DC_PROD) ps
+	docker stack services $(STACK)
 
-prod-logs: ## Logs de la stack prod
-	$(DC_PROD) logs -f $(s)
-
-## Déploiement blue-green zero downtime : pull + build + swap
-prod-deploy:
-	@echo "── Pull du code ──"
-	git pull origin main
-	@echo "── Build des images (services toujours en ligne) ──"
-	$(DC_PROD) build
-	@$(MAKE) _bg-swap s=api healthurl=http://127.0.0.1:3001/health
-	@$(MAKE) _bg-swap s=frontend healthurl=http://127.0.0.1:80/
-	@echo "── Nettoyage images orphelines ──"
-	docker image prune -f
-	@echo "✓ Déploiement zero-downtime terminé"
-
-## Swap blue-green rapide (sans git pull) — pour modifs directes sur le VPS
-prod-swap:
-	@echo "── Build des images ──"
-	$(DC_PROD) build
-	@$(MAKE) _bg-swap s=api healthurl=http://127.0.0.1:3001/health
-	@$(MAKE) _bg-swap s=frontend healthurl=http://127.0.0.1:80/
-	@echo "✓ Swap terminé"
-
-## Blue-green swap interne
-_bg-swap:
-	@echo "── [$(s)] Scale up (ancien + nouveau) ──"
-	@old_id=$$($(DC_PROD) ps -q $(s)); \
-	$(DC_PROD) up -d --no-build --no-deps --scale $(s)=2 --no-recreate; \
-	echo "── [$(s)] Attente healthcheck nouveau container (max 60s) ──"; \
-	new_id=$$($(DC_PROD) ps -q $(s) | grep -v "$$old_id"); \
-	for i in $$(seq 1 30); do \
-		docker exec $$new_id wget -qO- $(healthurl) > /dev/null 2>&1 && break; \
-		[ $$i -eq 30 ] && echo "✗ [$(s)] Healthcheck échoué" && exit 1; \
-		sleep 2; \
-	done; \
-	echo "✓ [$(s)] Nouveau container healthy"; \
-        echo "── [$(s)] Attente routage Traefik (10s) ──"; \
-        sleep 10; \
-	echo "── [$(s)] Suppression ancien container ──"; \
-	docker stop $$old_id && docker rm $$old_id; \
-	$(DC_PROD) up -d --no-build --no-deps --scale $(s)=1 --no-recreate; \
-	echo "✓ [$(s)] Swap terminé"
+prod-logs: ## Logs d'un service (ex: make prod-logs s=api)
+	@test -n "$(s)" || (echo "Usage: make prod-logs s=api|frontend|postgres|traefik" && exit 1)
+	docker service logs $(STACK)_$(s) -f
 
 prod-health: ## Health check de l'API
-	@$(DC_PROD) exec -T api wget -qO- http://127.0.0.1:3001/api/health \
+	@docker exec $$(docker ps -q -f name=$(STACK)_api) \
+		wget -qO- http://127.0.0.1:3001/health \
 		&& echo "✅ API OK" \
 		|| (echo "❌ API KO" && exit 1)
 
 prod-backup: ## Backup de la base PostgreSQL
 	@mkdir -p backups
-	docker exec $$($(DC_PROD) ps -q postgres) \
+	docker exec $$(docker ps -q -f name=$(STACK)_postgres) \
 		pg_dump --clean --if-exists -U atlas atlas | gzip > backups/atlas_$$(date +%Y%m%d_%H%M%S).sql.gz
 	@echo "✅ Backup sauvegardé dans backups/"
 
 prod-restore: ## Restaurer un backup (f=…)
 	@test -f "$(f)" || (echo "Usage: make prod-restore f=backups/atlas_XXXXXXXX.sql.gz" && exit 1)
-	gunzip -c "$(f)" | docker exec -i $$($(DC_PROD) ps -q postgres) psql -U atlas atlas
+	gunzip -c "$(f)" | docker exec -i $$(docker ps -q -f name=$(STACK)_postgres) psql -U atlas atlas
 	@echo "✅ Restauration terminée depuis $(f)"
 
-.PHONY: dev stop logs logs-s dev-rebuild lint lint-do test server-test e2e e2e-file build install server-install server-add add prod-up prod-down prod-logs prod-deploy prod-swap _bg-swap prod-health prod-backup prod-restore
+.PHONY: help dev stop logs logs-s dev-rebuild lint lint-do test server-test e2e e2e-file build install server-install server-add add prod-up prod-down prod-ps prod-logs prod-deploy prod-swap prod-health prod-backup prod-restore

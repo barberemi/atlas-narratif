@@ -53,12 +53,12 @@ cat ~/.ssh/github_actions
 
 Dans GitHub → **Settings → Secrets and variables → Actions → New repository secret** :
 
-| Secret | Valeur |
-|---|---|
-| `VPS_HOST` | IP ou domaine du VPS |
-| `VPS_USER` | user SSH (ex: `deploy`) |
+| Secret | Valeur                                          |
+|---|-------------------------------------------------|
+| `VPS_HOST` | IP ou domaine du VPS                            |
+| `VPS_USER` | user SSH (ex: `truc`)                           |
 | `VPS_SSH_KEY` | contenu de `~/.ssh/github_actions` (clé privée) |
-| `DOMAIN` | ton domaine (ex: `atlas.monsite.fr`) |
+| `DOMAIN` | ton domaine (ex: `atlas-narratif.com`)          |
 
 ### 1.6 Cloner le repo et configurer l'environnement
 
@@ -119,7 +119,7 @@ Internet → Traefik (ports 80/443) → Nginx (port 80 interne) → API (port 30
                                    fichiers statiques React
 ```
 
-**Traefik v3.4** est le point d'entrée réseau. Il gère :
+**Traefik v3.3** (mode Swarm) est le point d'entrée réseau. Il gère :
 - **HTTPS automatique** via Let's Encrypt (HTTP challenge)
 - **Redirection HTTP → HTTPS** automatique
 - **Routage dynamique** via les labels Docker (pas de fichier de config externe)
@@ -142,7 +142,15 @@ Si `TRAEFIK_DASHBOARD_AUTH` est vide dans `.env.prod`, le dashboard reste inacce
 
 > Référence Traefik : https://doc.traefik.io/traefik/getting-started/docker/
 
-### 1.8 Premier lancement
+### 1.8 Initialiser Docker Swarm
+
+```bash
+docker swarm init
+```
+
+Le VPS devient un manager Swarm à un seul nœud. C'est tout.
+
+### 1.9 Premier lancement
 
 ```bash
 cd /srv/atlas-narratif
@@ -151,7 +159,7 @@ make prod-up
 
 Vérifier que tout tourne :
 ```bash
-make prod-ps
+make prod-ps        # tous les services en 1/1
 make prod-health
 ```
 
@@ -189,19 +197,18 @@ crontab -e
 
 Une fois le setup initial terminé, chaque push sur `main` déclenche un déploiement automatique.
 
-### 2.1 Flux automatisé (blue-green, zero downtime)
+### 2.1 Flux automatisé (Swarm, near-zero downtime)
 
 ```
 git push → CI (lint + tests + build + e2e) → merge main → deploy.yml :
   1. Backup pg_dump (--clean --if-exists)
   2. git pull
-  3. docker compose build (images only — services toujours en ligne)
-  4. Blue-green swap API (scale up → healthcheck → remove old)
-  5. Blue-green swap Frontend (idem)
-  6. docker image prune
+  3. docker compose build (images — services toujours en ligne)
+  4. docker service update (rolling update par service, 2 replicas)
+  5. docker image prune
 ```
 
-**Zero interruption de service** : les nouvelles images sont buildées pendant que les anciens containers servent le trafic. Ensuite, pour chaque service, un nouveau container démarre à côté de l'ancien. Traefik load-balance entre les deux. Une fois le nouveau healthy, l'ancien est supprimé. Aucune requête n'est perdue.
+**Near-zero downtime** : chaque service a 2 replicas. Swarm met à jour un replica à la fois (`parallelism: 1, order: stop-first`), l'autre continue de servir. Quelques requêtes peuvent voir une erreur de 2-3s pendant le swap.
 
 Le workflow `.github/workflows/deploy.yml` se déclenche **uniquement** quand le CI (`.github/workflows/ci.yml`) passe avec succès sur `main`.
 
@@ -212,27 +219,42 @@ Sur le VPS :
 ```bash
 cd /srv/atlas-narratif
 make prod-backup
-make prod-deploy       # git pull + build + blue-green swap + prune
+make prod-deploy       # git pull + build + rolling update + prune
 ```
 
 Pour des modifications faites directement sur le VPS (sans git pull) :
 
 ```bash
-make prod-swap          # build + blue-green swap (sans git pull ni prune)
+make prod-swap          # build + rolling update (sans git pull ni prune)
 ```
 
-### 2.3 Commandes utiles au quotidien
+### 2.3 Quand utiliser `make prod-up` (stack deploy complet)
+
+`make prod-deploy` et `make prod-swap` ne mettent à jour que l'API et le frontend. Si tu modifies la config de **Traefik** ou **PostgreSQL** (dans `docker-compose.prod.yml`), il faut un redéploiement complet de la stack :
+
+```bash
+set -a; . ./.env.prod; set +a; docker stack deploy -c docker-compose.prod.yml atlas
+```
+
+Cas nécessitant un stack deploy complet :
+- Changement de version Traefik ou PostgreSQL
+- Modification des labels/commandes Traefik
+- Modification des limites mémoire/CPU
+- Modification des variables d'environnement dans `.env.prod`
+
+### 2.4 Commandes utiles au quotidien
 
 | Commande | Action |
 |----------|--------|
-| `make prod-deploy` | Déploiement blue-green (pull + build + swap + prune) |
-| `make prod-swap` | Swap blue-green rapide (build + swap, sans pull) |
-| `make prod-logs` | Logs de toute la stack (`make prod-logs s=api` pour un service) |
+| `make prod-deploy` | Déploiement near-zero downtime (pull + build + rolling update + prune) |
+| `make prod-swap` | Swap rapide (build + rolling update, sans pull) |
+| `make prod-up` | Build + stack deploy complet (Traefik/Postgres inclus) |
+| `make prod-ps` | État des services Swarm |
+| `make prod-logs s=api` | Logs d'un service |
 | `make prod-health` | Health check de l'API |
 | `make prod-backup` | Backup BDD (gzip dans `backups/`) |
 | `make prod-restore f=backups/atlas_XXX.sql.gz` | Restaurer un backup |
-| `make prod-up` | Premier lancement ou restart complet (avec interruption) |
-| `make prod-down` | Arrêter la stack (volumes conservés) |
+| `make prod-down` | Supprimer la stack (volumes conservés) |
 
 ### 2.4 Rollback
 
@@ -244,18 +266,34 @@ cd /srv/atlas-narratif
 git log --oneline -5           # identifier le bon commit
 git checkout <commit-hash>
 
-# 2. Rebuild
+# 2. Rebuild + redéployer
 make prod-up
 
 # 3. Si besoin, restaurer la BDD
 make prod-restore f=backups/atlas_XXXXXXXX_pre-deploy.sql.gz
 ```
 
-### 2.5 Dangers — ne jamais faire en prod
+### 2.5 Migration depuis Docker Compose (one-shot)
+
+Si la stack tourne encore en mode Docker Compose :
+
+```bash
+make prod-backup                  # sauvegarder la BDD
+docker compose -f docker-compose.prod.yml --env-file .env.prod down   # arrêter compose
+docker swarm init                 # activer Swarm
+git pull origin main              # récupérer les fichiers Swarm
+make prod-up                      # déployer en mode Swarm
+make prod-ps                      # vérifier : tous en 1/1
+make prod-health                  # vérifier : API OK
+```
+
+Les volumes (`postgres_data`, `letsencrypt`) persistent. Aucune donnée perdue.
+
+### 2.6 Dangers — ne jamais faire en prod
 
 ```bash
 # ⚠ Supprime la base de données :
-docker compose down -v
+docker stack rm atlas && docker volume rm atlas_postgres_data
 
 # ⚠ Supprime les volumes inutilisés (dont potentiellement les certifs TLS) :
 docker system prune -v

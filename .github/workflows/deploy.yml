@@ -25,8 +25,8 @@ jobs:
 
             echo "── Backup base de données ──"
             mkdir -p backups
-            docker compose -f docker-compose.prod.yml --env-file .env.prod \
-              exec -T postgres pg_dump --clean --if-exists -U atlas atlas \
+            docker exec $(docker ps -q -f name=atlas_postgres) \
+              pg_dump --clean --if-exists -U atlas atlas \
               | gzip > backups/atlas_$(date +%Y%m%d_%H%M%S)_pre-deploy.sql.gz
 
             echo "── Pull du code ──"
@@ -35,13 +35,17 @@ jobs:
             echo "── Build des images (services toujours en ligne) ──"
             docker compose -f docker-compose.prod.yml --env-file .env.prod build
 
-            echo "── Blue-green swap API ──"
-            make -C /srv/atlas-narratif _bg-swap s=api healthurl=http://localhost:3001/health
+            TAG=$(date +%s)
+            docker tag atlas-narratif-api:latest atlas-narratif-api:$TAG
+            docker tag atlas-narratif-frontend:latest atlas-narratif-frontend:$TAG
 
-            echo "── Blue-green swap Frontend ──"
-            make -C /srv/atlas-narratif _bg-swap s=frontend healthurl=http://localhost:80/
+            echo "── Rolling update API ──"
+            docker service update --image atlas-narratif-api:$TAG --detach=false atlas_api
+
+            echo "── Rolling update Frontend ──"
+            docker service update --image atlas-narratif-frontend:$TAG --detach=false atlas_frontend
 
             echo "── Nettoyage images orphelines ──"
             docker image prune -f
 
-            echo "✓ Déploiement zero-downtime terminé"
+            echo "✓ Déploiement terminé"
