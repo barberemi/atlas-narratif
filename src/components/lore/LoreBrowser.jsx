@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
 import { useVolumeStore } from '../../stores/useVolumeStore';
@@ -34,12 +34,18 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
   const activeVolume = activeVolumeId ? (volumes ?? []).find(v => v.id === activeVolumeId) : null;
   const [activeTab,    setActiveTab]    = useState(initialTab);
   const [search,       setSearch]       = useState(initialSearch);
+  const tabNavRef = useRef(null);
+  const [tabCanScroll, setTabCanScroll] = useState(false);
   // undefined = fermé, null = création, objet = édition
   const [editorEntity,  setEditorEntity]  = useState(undefined);
   const [groupEditorGrp, setGroupEditorGrp] = useState(undefined); // undefined=fermé, null=création, obj=édition
 
   useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
   useEffect(() => { setSearch(initialSearch); }, [initialSearch]);
+  useEffect(() => {
+    const el = tabNavRef.current;
+    if (el) setTabCanScroll(el.scrollWidth > el.clientWidth);
+  });
 
   const handleCharacterClick = (charName) => {
     setActiveTab('characters');
@@ -117,30 +123,43 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
       {/* ── Tabs + Search ── */}
       <div className="px-6 pt-4 pb-0 flex flex-col gap-4 flex-shrink-0">
         {/* Tabs */}
-        <nav className="flex gap-1 border-b border-white/10">
-          {TABS.map((tab) => {
-            const isActive = tab.key === activeTab;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => { setActiveTab(tab.key); setSearch(''); }}
-                className="px-4 py-2.5 text-sm font-bold transition-all duration-200 relative"
-                style={{ color: isActive ? '#fff' : '#475569' }}
-              >
-                {tab.label}
-                <span
-                  className="ml-2 text-xs font-mono"
-                  style={{ color: isActive ? '#818cf8' : '#1e293b' }}
+        <div className="relative">
+          <nav
+            ref={tabNavRef}
+            className="flex gap-1 border-b border-white/10 overflow-x-auto no-scrollbar"
+            onScroll={() => {
+              const el = tabNavRef.current;
+              if (el) setTabCanScroll(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+            }}
+          >
+            {TABS.map((tab) => {
+              const isActive = tab.key === activeTab;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => { setActiveTab(tab.key); setSearch(''); }}
+                  className="px-4 py-2.5 text-sm font-bold transition-all duration-200 relative flex-shrink-0 whitespace-nowrap"
+                  style={{ color: isActive ? '#fff' : '#475569' }}
                 >
-                  {tab.data.length}
-                </span>
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#3F51B5]" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
+                  {tab.label}
+                  <span
+                    className="ml-2 text-xs font-mono"
+                    style={{ color: isActive ? '#818cf8' : '#1e293b' }}
+                  >
+                    {tab.data.length}
+                  </span>
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#3F51B5]" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+          {tabCanScroll && (
+            <div className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none"
+              style={{ background: 'linear-gradient(to right, transparent, #0B1621)' }} />
+          )}
+        </div>
 
         {/* Barre de recherche */}
         <div className="relative">

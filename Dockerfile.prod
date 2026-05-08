@@ -1,12 +1,15 @@
 # Étape 1 : build
 FROM node:20.20-alpine AS builder
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm ci
 COPY . .
 # VITE_API_URL vide → URLs relatives, nginx proxifie /api/ et /auth/ vers l'API
 ARG VITE_API_URL=""
+ARG VITE_CRISP_WEBSITE_ID=""
 ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_CRISP_WEBSITE_ID=$VITE_CRISP_WEBSITE_ID
 RUN npm run build
 
 # Étape 2 : serve avec nginx

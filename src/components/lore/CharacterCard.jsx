@@ -64,7 +64,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
               style={{ color: memoriesOpen ? '#fbbf24' : '#92680a' }}
             >
               <span className="text-[10px] font-bold tracking-wider uppercase" style={{ color: 'inherit' }}>
-                ↩ {flashbacks.length} mémoire{flashbacks.length > 1 ? 's' : ''}
+                {t('timeline.memoryCount', { count: flashbacks.length })}
               </span>
               <span className="ml-auto text-[9px]" style={{ color: 'rgba(217,119,6,0.5)' }}>
                 {memoriesOpen ? '▲' : '▼'}
@@ -75,7 +75,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
               <div className="mt-2 space-y-1.5">
                 {flashbacks.map(evt => {
                   const ref = evt.storyChapterRef;
-                  const posLabel = ref == null ? '?' : ref < 1 ? `Ère ancienne (~${ref})` : `Ch. ${ref}`;
+                  const posLabel = ref == null ? '?' : ref < 1 ? t('timeline.ancientEra', { n: ref }) : t('timeline.chapter', { n: ref });
                   return (
                     <div
                       key={evt.id}
@@ -86,7 +86,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
                         {posLabel}
                       </p>
                       <p className="text-[11px] font-semibold text-slate-300 leading-snug">{evt.title}</p>
-                      <p className="text-[9px] text-slate-600">narré ch. {evt.chapter}</p>
+                      <p className="text-[9px] text-slate-600">{t('timeline.narratedAtCh', { ch: evt.chapter })}</p>
                     </div>
                   );
                 })}

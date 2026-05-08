@@ -76,7 +76,7 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
   return (
     <div
       className="px-6 py-5 flex flex-col gap-4"
-      style={{ borderTop: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(5,10,18,0.97)' }}
+      style={{ borderTop: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(11,22,33,0.97)' }}
     >
       <div className="flex items-center justify-between">
         <div>
@@ -127,8 +127,8 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
 
           {charDropOpen && (
             <div
-              className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
-              style={{ minWidth: 200, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+              className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
+              style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
             >
               {characters.map(c => (
                 <button

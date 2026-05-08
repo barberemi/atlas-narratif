@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function PrivacyPage() {
+  const { t } = useTranslation();
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#0B1621] text-slate-200">
+      <title>Politique de confidentialité — AtlasNarratif</title>
+      <meta name="description" content="Découvrez comment AtlasNarratif collecte, utilise et protège vos données personnelles conformément au RGPD." />
+      <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/privacy" />
       <nav className="flex-shrink-0 flex items-center px-4 border-b border-white/10"
         style={{ height: 48, backgroundColor: 'rgba(11,22,33,0.97)' }}>
         <Link to="/" className="text-sm font-black tracking-tight transition-opacity duration-150 hover:opacity-70">
@@ -12,7 +17,7 @@ export default function PrivacyPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-10">
         <div className="max-w-2xl mx-auto flex flex-col gap-6">
-          <h1 className="text-2xl font-black text-white tracking-tight">Politique de confidentialit&eacute;</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">{t('account.privacyPolicy')}</h1>
           <p className="text-xs text-slate-500">Derni&egrave;re mise &agrave; jour : avril 2026</p>
 
           <section className="flex flex-col gap-3 text-sm text-slate-400 leading-relaxed">
@@ -72,9 +77,19 @@ export default function PrivacyPage() {
             </p>
 
             <h2 className="text-base font-bold text-white mt-4">8. Cookies</h2>
-            <p>
-              Atlas Narratif utilise uniquement des cookies de session essentiels au fonctionnement
-              de l&rsquo;authentification. Aucun cookie publicitaire ou de tracking n&rsquo;est utilis&eacute;.
+            <p>Atlas Narratif utilise les cookies suivants :</p>
+            <ul className="list-disc pl-5 flex flex-col gap-1 mt-1">
+              <li><strong className="text-white">Cookies essentiels</strong> : session d&rsquo;authentification et pr&eacute;f&eacute;rences
+                (langue, projet actif). Toujours actifs, n&eacute;cessaires au fonctionnement du service.</li>
+              <li><strong className="text-white">Cookies fonctionnels</strong> : widget de chat d&rsquo;assistance Crisp. Charg&eacute;
+                uniquement apr&egrave;s votre consentement. Crisp peut d&eacute;poser des cookies pour maintenir
+                la session de chat (<a href="https://crisp.chat/en/privacy/" target="_blank"
+                rel="noopener noreferrer" className="text-indigo-400 hover:underline">politique
+                de confidentialit&eacute; de Crisp</a>).</li>
+            </ul>
+            <p className="mt-1">
+              Vous pouvez modifier votre choix de consentement &agrave; tout moment via le bouton cookie
+              en bas &agrave; gauche de l&rsquo;&eacute;cran.
             </p>
 
             <h2 className="text-base font-bold text-white mt-4">9. Contact</h2>

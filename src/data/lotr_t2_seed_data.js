@@ -104,7 +104,7 @@ export const t2Locations = [
     regime: 'Terres sauvages',
     description:
       'Labyrinthe de collines rocheuses et de falaises sur la rive est de l\'Anduin, au sud des Chutes de Rauros. Un terrain d\'une hostilité extrême — rochers glissants, précipices dissimulés, orientations impossibles. C\'est ici que Frodo et Sam capturent Gollum qui les suit depuis la Lothlórien.',
-    coordinates: { x: 66, y: 62 },
+    coordinates: { x: 62, y: 50 },
     inhabitants: [],
     keyPlaces: ['Les Parois d\'Emyn Muil', 'La Rive de l\'Anduin'],
     visitedBy: [
@@ -120,7 +120,7 @@ export const t2Locations = [
     regime: 'Terres de Sauron (influence)',
     description:
       'Vaste zone marécageuse à l\'est de l\'Emyn Muil, anciennement le champ de bataille de Dagorlad où les armées des peuples libres affrontèrent Sauron. Les visages des morts des deux camps y flottent encore sous les eaux noires — des illusions ou de vraies âmes, nul ne le sait. Y regarder est mortellement dangereux.',
-    coordinates: { x: 72, y: 60 },
+    coordinates: { x: 65, y: 57 },
     inhabitants: ['Esprits des morts de Dagorlad'],
     keyPlaces: ['Les Feux des Morts', 'Les Roseaux noirs'],
     visitedBy: [
@@ -136,7 +136,7 @@ export const t2Locations = [
     regime: 'Domaine des Ents',
     description:
       'La plus ancienne forêt de la Terre du Milieu, vestige de l\'ère où les arbres couvraient le monde entier. Peuplée d\'arbres qui voient et parfois agissent. C\'est ici que Merry et Pippin, fuyant les Uruk-haï, rencontrent Sylvebarbe. C\'est aussi ici qu\'Aragorn, Legolas et Gimli retrouvent Gandalf, revenu en Blanc.',
-    coordinates: { x: 48, y: 52 },
+    coordinates: { x: 52, y: 48 },
     inhabitants: ['Ents', 'Arbres-fantômes (Huorns)'],
     keyPlaces: ['L\'Antre de Sylvebarbe', 'Le Lieu de l\'Ent-moot'],
     visitedBy: [
@@ -156,7 +156,7 @@ export const t2Locations = [
     regime: 'Royaume de Rohan',
     description:
       'Capitale du Rohan, bâtie sur une colline isolée au cœur des plaines. La grande salle de Méduseld (l\'Or-Maison) en est le cœur. Quand Gandalf, Aragorn, Legolas et Gimli y arrivent, Théoden est un vieillard brisé sous l\'emprise de Grima Langue-de-Serpent. La libération de Théoden marque le réveil de tout Rohan.',
-    coordinates: { x: 47, y: 62 },
+    coordinates: { x: 58, y: 59 },
     inhabitants: ['Rohirrim', 'Théoden', 'Éowyn', 'Grima Langue-de-Serpent'],
     keyPlaces: ['Méduseld (La Grande Salle)', 'Les Écuries royales', 'Le Tumulus de Théodred'],
     visitedBy: [
@@ -176,7 +176,7 @@ export const t2Locations = [
     regime: 'Défense de Rohan',
     description:
       'Forteresse de Rohan encastrée dans une gorge rocheuse — réputée imprenable depuis des siècles. La nuit de la Bataille du Gouffre de Helm, dix mille Uruk-haï de Saroumane l\'assiègent. Gandalf arrive à l\'aube avec Éomer et ses cavaliers pour renverser le sort de la bataille.',
-    coordinates: { x: 44, y: 66 },
+    coordinates: { x: 55, y: 58 },
     inhabitants: ['Rohirrim', 'Réfugiés de Rohan'],
     keyPlaces: ['La Décharge (le mur-barrage)', 'La Caverne du Glissingol', 'La Porte Principale'],
     visitedBy: [
@@ -195,7 +195,7 @@ export const t2Locations = [
     regime: 'Territoire disputé (Gondor vs Mordor)',
     description:
       'Région orientale du Gondor, longtemps abandonnée face à la pression de Mordor mais patrouillée par les Rangers de Faramir. Malgré la guerre, c\'est un pays d\'une beauté sauvage — fontaines claires, herbes parfumées, ruines d\'une civilisation millénaire. C\'est ici que Faramir capture Frodo et Sam.',
-    coordinates: { x: 72, y: 70 },
+    coordinates: { x: 69, y: 63 },
     inhabitants: ['Rangers d\'Ithilien (Faramir)', 'Nazgûl (passages)'],
     keyPlaces: ['La Fenêtre sur l\'Occident (Henneth Annûn)', 'Les Bois d\'Ithilien'],
     visitedBy: [
@@ -1035,7 +1035,7 @@ export const t2FrodoJourney = [
     chapitre: 'Les Deux Tours, III-1',
     action: 'Frodo et Sam errent dans le labyrinthe de l\'Emyn Muil. Ils capturent Gollum qui les suit. Frodo le contraint par serment à les guider vers le Mordor.',
     allies: ['char_sam', 'char_gollum'],
-    x: 66, y: 62,
+    x: 62, y: 50,
   },
   {
     id: 1, etape: 2, scene: 'marais_morts',
@@ -1043,7 +1043,7 @@ export const t2FrodoJourney = [
     chapitre: 'Les Deux Tours, III-2',
     action: 'Gollum guide les hobbits à travers les marais hantés. Les visages des morts tentent de les attirer. Un Nazgûl passe dans le ciel. L\'atmosphère de terreur s\'épaissit.',
     allies: ['char_sam', 'char_gollum'],
-    x: 72, y: 60,
+    x: 65, y: 57,
   },
   {
     id: 2, etape: 3, scene: 'porte_noire',
@@ -1051,7 +1051,7 @@ export const t2FrodoJourney = [
     chapitre: 'Les Deux Tours, IV-3',
     action: 'Frodo constate que la Porte Noire est infranchissable. Gollum propose un autre chemin : Cirith Ungol, « plus sûr » selon lui. Sam se méfie.',
     allies: ['char_sam', 'char_gollum'],
-    x: 78, y: 58,
+    x: 70, y: 56,
   },
   {
     id: 3, etape: 4, scene: 'ithilien',
@@ -1059,7 +1059,7 @@ export const t2FrodoJourney = [
     chapitre: 'Les Deux Tours, IV-5',
     action: 'Capturés par Faramir et ses Rangers. L\'Anneau est à portée d\'un homme de Gondor — et il choisit de ne pas le prendre. Gollum est capturé à l\'étang interdit.',
     allies: ['char_sam', 'char_gollum'],
-    x: 72, y: 70,
+    x: 69, y: 63,
   },
   {
     id: 4, etape: 5, scene: 'carrefour',
@@ -1067,7 +1067,7 @@ export const t2FrodoJourney = [
     chapitre: 'Les Deux Tours, IV-7',
     action: 'Frodo, Sam et Gollum reprennent la route vers Cirith Ungol. L\'ombre de Minas Morgul plane. Le piège de Gollum se referme lentement.',
     allies: ['char_sam', 'char_gollum'],
-    x: 75, y: 73,
+    x: 71, y: 65,
   },
 ];
 
@@ -1078,7 +1078,7 @@ export const t2AragornJourney = [
     chapitre: 'Les Deux Tours, III-1',
     action: 'Aragorn, Legolas et Gimli poursuivent les Uruk-haï qui ont capturé Merry et Pippin. Trois jours de course à travers les plaines de Rohan.',
     allies: ['char_legolas', 'char_gimli'],
-    x: 55, y: 55,
+    x: 56, y: 52,
   },
   {
     id: 1, etape: 2, scene: 'fangorn',
@@ -1086,7 +1086,7 @@ export const t2AragornJourney = [
     chapitre: 'Les Deux Tours, III-5',
     action: 'Entrée dans Fangorn à la recherche des hobbits. Rencontre stupéfiante : Gandalf, revenu de la mort en Gandalf le Blanc. Le cap change — direction Edoras.',
     allies: ['char_legolas', 'char_gimli', 'char_gandalf'],
-    x: 48, y: 52,
+    x: 52, y: 48,
   },
   {
     id: 2, etape: 3, scene: 'edoras',
@@ -1094,7 +1094,7 @@ export const t2AragornJourney = [
     chapitre: 'Les Deux Tours, III-6',
     action: 'Gandalf libère Théoden de l\'emprise de Saroumane. Grima est banni. Rohan se réveille pour la guerre. Éowyn rencontre Aragorn.',
     allies: ['char_gandalf', 'char_legolas', 'char_gimli', 'char_theoden'],
-    x: 47, y: 62,
+    x: 58, y: 59,
   },
   {
     id: 3, etape: 4, scene: 'gouffre_helm',
@@ -1102,7 +1102,7 @@ export const t2AragornJourney = [
     chapitre: 'Les Deux Tours, III-7',
     action: 'Nuit du Gouffre de Helm. Dix mille Uruk-haï. La muraille explose. Tout semble perdu — mais Aragorn charge à l\'aube avec Théoden. Gandalf et Éomer arrivent. Victoire.',
     allies: ['char_theoden', 'char_legolas', 'char_gimli'],
-    x: 44, y: 66,
+    x: 55, y: 58,
   },
   {
     id: 4, etape: 5, scene: 'isengard',
@@ -1110,6 +1110,6 @@ export const t2AragornJourney = [
     chapitre: 'Les Deux Tours, III-8/9',
     action: 'Arrivée à Isengard dévasté par les Ents. Merry et Pippin retrouvés. Confrontation avec Saroumane. Le Palantír jeté. Pippin le regarde — Sauron voit.',
     allies: ['char_gandalf', 'char_theoden', 'char_legolas', 'char_gimli', 'char_merry', 'char_pippin'],
-    x: 47, y: 56,
+    x: 46, y: 53,
   },
 ];

@@ -31,7 +31,7 @@ async function globalSetup() {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
 
-  // Marquer le tour comme vu dans localStorage pour le projectId actif
+  // Marquer le tour comme vu + accepter les cookies pour ne pas bloquer les tests
   await page.evaluate(() => {
     const keys = Object.keys(localStorage);
     const projectKey = keys.find(k => k === 'atlas_active_project');
@@ -41,11 +41,12 @@ async function globalSetup() {
     }
     // Marquer tous les projets LOTR comme vus
     keys.filter(k => k.startsWith('atlas_tour_seen_')).length || (() => {
-      // Si on n'a pas de clé tour, on set pour tout projectId commençant par lotr
       if (projectId?.startsWith('lotr')) {
         localStorage.setItem(`atlas_tour_seen_${projectId}`, '1');
       }
     })();
+    // Accepter les cookies pour éviter que le bandeau bloque les autres tests
+    localStorage.setItem('atlas_cookie_consent', JSON.stringify({ accepted: true, timestamp: Date.now() }));
   });
 
   await context.storageState({ path: STORAGE_PATH });

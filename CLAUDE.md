@@ -1,11 +1,12 @@
 # Atlas Narratif — Contexte IA
 
-Outil d'analyse et de construction narrative pour auteurs. SPA React, 100% in-browser.
+Outil d'analyse et de construction narrative pour auteurs. SPA React + API Hono + PostgreSQL.
 
 ## Stack (résumé)
 - **React 19** + **React Router v7** + **Vite 7**
 - **Zustand 5** — state management (un store par domaine)
-- **PGlite 0.4** — PostgreSQL in-browser via WASM + OPFS (persistance locale)
+- **PostgreSQL 16** — base de données serveur (Hono API + Better Auth)
+- **PGlite 0.4** — (legacy) utilisé uniquement pour le seed LOTR et les calculs purs (`computeAlerts`)
 - **Anthropic SDK** — analyse IA de manuscrits (claude-sonnet / opus / haiku)
 - **Tailwind CSS 4** — dark theme, couleur principale `#3F51B5` (indigo)
 
@@ -43,7 +44,7 @@ Auth client : `src/lib/authClient.js` (better-auth/react, baseURL = `VITE_API_UR
 → Détails : `ai/docs/routes.md`
 
 ## Couche données
-**Architecture** : `PGlite (WASM worker)` → `DbContext` (React context) → `stores Zustand` → composants
+**Architecture** : `API Hono (serveur)` → `PostgreSQL 16` → `src/api/client.js` (fetch) → `stores Zustand` → composants
 
 **Stores** (src/stores/) :
 - `useVolumeStore` — volumes (tomes) + `activeVolumeId` (filtre global de tome)
@@ -77,11 +78,11 @@ src/
 │   ├── savethecat/      # SaveTheCat, BeatRow, Frise
 │   ├── search/          # GlobalSearch (Ctrl+K)
 │   ├── timeline/        # TimelineBrowser, EventCard, ArcStrip
-│   ├── ui/              # Button, DarkCard, SidePanel, SourceBadge…
+│   ├── ui/              # Button, CookieConsent, DarkCard, SidePanel, SourceBadge…
 │   └── upload/          # FilePicker (drag-drop)
 ├── pages/               # EmotionalArc, ReviewPage
 ├── stores/              # Zustand stores (1 fichier par domaine)
-├── db/                  # PGlite : schema, queries, import, export, contexts
+├── db/                  # Legacy PGlite + seed LOTR + utilitaires de calcul
 ├── hooks/               # Custom React hooks
 └── utils/               # entityUtils, etc.
 ```
@@ -200,7 +201,7 @@ Ne pas mettre à jour la doc si le changement est interne à un composant sans i
 
 | Fichier `.env.example` | Couvre | Variables |
 |------------------------|-------|-----------|
-| `.env.example` | Client Vite (racine) | `VITE_*` |
+| `.env.example` | Client Vite (racine) | `VITE_*`, `VITE_CRISP_WEBSITE_ID` |
 | `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM`, `ATLAS_ENCRYPTION_KEY` |
 | `.env.prod.example` | Docker Compose (prod) | Toutes les variables serveur + `DOMAIN`, `ACME_EMAIL`, `POSTGRES_PASSWORD`, `ATLAS_ENCRYPTION_KEY` |
 

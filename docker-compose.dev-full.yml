@@ -44,6 +44,7 @@ services:
     command: sh -c "npm install --silent && npm run dev -- --host"
     environment:
       VITE_API_URL: http://localhost:3001
+      VITE_CRISP_WEBSITE_ID: ${VITE_CRISP_WEBSITE_ID:-}
     ports:
       - "5173:5173"
     volumes:

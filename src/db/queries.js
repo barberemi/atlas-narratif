@@ -756,17 +756,15 @@ export function computeAlerts(chapters, beats) {
     const actualPct = ((ch.number - 1 + 0.5) / total) * 100;
     const diff      = actualPct - beat.idealPercent;
     if (Math.abs(diff) > beat.tolerance) {
-      const direction = diff > 0 ? 'tard' : 'tôt';
+      const direction = diff > 0 ? 'late' : 'early';
       const severity  = Math.abs(diff) > beat.tolerance * 2 ? 'critical' : 'warning';
       const rawMsg    = diff > 0 ? beat.alertMessages.too_late : beat.alertMessages.too_early;
-      const message   = rawMsg
-        || `"${beat.label}" arrive trop ${direction} (${Math.round(actualPct)}% au lieu de ${beat.idealPercent}%).`;
       alerts.push({
         type: 'position', severity, beat,
         actualPct: Math.round(actualPct * 10) / 10,
         idealPct: beat.idealPercent,
         diff: Math.round(diff * 10) / 10,
-        direction, chapterTitle: ch.title, chapterNumber: ch.number, message,
+        direction, chapterTitle: ch.title, chapterNumber: ch.number, message: rawMsg ?? null,
       });
     }
   }
@@ -1045,17 +1043,15 @@ export function computeAlertsFromEvents(beatEventMap, totalChapters, beats) {
     const actualPct = ((event.chapter - 1 + 0.5) / totalChapters) * 100;
     const diff      = actualPct - beat.idealPercent;
     if (Math.abs(diff) > beat.tolerance) {
-      const direction = diff > 0 ? 'tard' : 'tôt';
+      const direction = diff > 0 ? 'late' : 'early';
       const severity  = Math.abs(diff) > beat.tolerance * 2 ? 'critical' : 'warning';
       const rawMsg    = diff > 0 ? beat.alertMessages.too_late : beat.alertMessages.too_early;
-      const message   = rawMsg
-        || `"${beat.label}" arrive trop ${direction} (${Math.round(actualPct)}% au lieu de ${beat.idealPercent}%).`;
       alerts.push({
         type: 'position', severity, beat,
         actualPct: Math.round(actualPct * 10) / 10,
         idealPct: beat.idealPercent,
         diff: Math.round(diff * 10) / 10,
-        direction, chapterTitle: event.title, chapterNumber: event.chapter, message,
+        direction, chapterTitle: event.title, chapterNumber: event.chapter, message: rawMsg ?? null,
       });
     }
   }

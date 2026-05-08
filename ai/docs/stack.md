@@ -122,6 +122,11 @@ RESEND_API_KEY=            # optionnel
 EMAIL_FROM=...
 ```
 
+### .env (client Vite)
+```
+VITE_CRISP_WEBSITE_ID=...   # optionnel — ID du widget Crisp (chat support)
+```
+
 ### .env.prod (prod — voir .env.prod.example)
 ```
 DOMAIN=atlas.tondomain.com

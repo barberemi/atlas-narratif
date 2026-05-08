@@ -1,0 +1,32 @@
+# Atlas Narratif
+
+> Online tool for narrative structuring and analysis, designed for novel writers.
+
+Atlas Narratif helps authors organize, visualize, and verify the consistency of their manuscripts. Data is stored in a secure PostgreSQL database with encryption at rest.
+
+## Key features
+
+- Narrative timeline: organize events by chapter, drag-and-drop, filter by volume
+- Lore management: character, location, and object sheets with cross-references
+- Save the Cat: 15-beat structure with per-chapter progress tracking
+- Hero's Journey: Joseph Campbell's 12 stages applied to your manuscript
+- Emotional arc: intensity curve per chapter with graphical visualization
+- Inconsistency detection: automatic spotting of contradictions (dates, locations, attributes)
+- Relationship graph: interactive visualization of links between entities
+- Interactive map: character journeys on a map with waypoints
+- Plants and payoffs: tracking of narrative setups and their resolution
+- Narrative threads: subplot management and progression tracking
+- Multi-volume support: global filtering by volume, cross-volume plants
+- AI import: manuscript analysis via prompts compatible with ChatGPT, Gemini, Claude
+
+## Public pages
+
+- / : homepage, create or import a project
+- /login : sign in
+- /register : sign up
+- /privacy : privacy policy (GDPR)
+- /terms : terms and conditions
+
+## Contact
+
+Developed by Remi Barbe.

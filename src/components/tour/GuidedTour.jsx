@@ -12,6 +12,7 @@ function getTargetRect(dataKey, maxH = Infinity) {
   const el = document.querySelector(`[data-tour="${dataKey}"]`);
   if (!el) return null;
   const r = el.getBoundingClientRect();
+  if (r.width === 0 && r.height === 0) return null; // élément caché (display:none, collapsed…)
   const h = Math.min(r.height, maxH);
   return { x: r.left - PAD, y: r.top - PAD, w: r.width + PAD * 2, h: h + PAD * 2 };
 }
@@ -68,14 +69,23 @@ export default function GuidedTour() {
       else   { rafRef.current = requestAnimationFrame(measure); }
     };
 
+    let retries = 0;
+    const MAX_RETRIES = 30; // ~500ms de tentatives avant abandon
+
     const attempt = () => {
       const s = stepRef.current;
       if (!s?.dataKey) { setRect(null); setReady(true); return; }
       const el = document.querySelector(`[data-tour="${s.dataKey}"]`);
-      if (!el) { rafRef.current = requestAnimationFrame(attempt); return; }
+      const r = el?.getBoundingClientRect();
+      const visible = el && r && (r.width > 0 || r.height > 0);
+
+      if (!visible) {
+        if (++retries > MAX_RETRIES) { setRect(null); setReady(true); return; } // élément caché → tooltip sans spotlight
+        rafRef.current = requestAnimationFrame(attempt);
+        return;
+      }
 
       // Si l'élément est hors du viewport, scroller vers lui puis mesurer
-      const r = el.getBoundingClientRect();
       const inView = r.top >= 0 && r.bottom <= window.innerHeight;
       if (!inView) {
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

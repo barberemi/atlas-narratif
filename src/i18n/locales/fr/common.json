@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "AtlasNarratif",
-    "tagline": "Architecte de cohérence narrative",
+    "h1Prefix": "Structurez votre roman avec",
     "exported": "Exporté depuis Atlas Narratif le {{date}}"
   },
   "nav": {
@@ -47,7 +47,16 @@
     "creating": "Création en cours…",
     "demoSending": "Envoi au serveur…",
     "demoReloading": "Changement de langue…",
-    "back": "← Retour"
+    "back": "← Retour",
+    "featureTimelineTitle": "Créez votre timeline narrative en quelques clics",
+    "featureTimelineDesc": "Organisez vos événements chapitre par chapitre. Glissez-déposez pour réordonner, filtrez par tome, visualisez l'arc émotionnel.",
+    "featureCharactersTitle": "Gérez vos personnages et leurs arcs",
+    "featureCharactersDesc": "Fiches personnages, graphe de relations et arcs émotionnels pour suivre l'évolution de chacun.",
+    "featureIncoherencesTitle": "Détectez les incohérences automatiquement",
+    "featureIncoherencesDesc": "Plus de 12 détecteurs analysent vos données et signalent contradictions, doublons et oublis.",
+    "featureFrameworksTitle": "Compatible Save the Cat et Voyage du Héros",
+    "featureFrameworksDesc": "Structurez avec les 15 beats de Save the Cat ou les 12 étapes du Voyage du Héros.",
+    "featuresLabel": "Fonctionnalités"
   },
   "label": {
     "characters": "Personnages",
@@ -195,7 +204,9 @@
     "densityPerChapter": "Densité / chapitre",
     "viewVolume": "Voir ce tome →",
     "seriesEmptyHint": "Créez au moins 2 tomes via le sélecteur de tome pour afficher la vue série.",
-    "unassignedEvents": "{{count}} événement(s) sans tome assigné"
+    "unassignedEvents": "{{count}} événement(s) sans tome assigné",
+    "memoryCount_one": "↩ {{count}} mémoire",
+    "memoryCount_other": "↩ {{count}} mémoires"
   },
   "dnd": {
     "dropHere": "Déposer ici",
@@ -230,7 +241,9 @@
     "actIII": "Acte III",
     "editEvent": "Modifier cet événement",
     "createEventForBeat": "Créer un événement pour ce beat",
-    "showExamples": "Voir des exemples"
+    "showExamples": "Voir des exemples",
+    "alertFallbackLate": "\"{{label}}\" arrive trop tard ({{actual}}% au lieu de {{ideal}}%).",
+    "alertFallbackEarly": "\"{{label}}\" arrive trop tôt ({{actual}}% au lieu de {{ideal}}%)."
   },
   "inc": {
     "allSeverities": "Toutes les sévérités",
@@ -576,7 +589,10 @@
     "chooseCharacter": "Choisir un personnage…",
     "noSteps": "Aucune étape",
     "addLocation": "+ Ajouter un lieu",
-    "noLocalizedLocations": "Aucun lieu localisé"
+    "noLocalizedLocations": "Aucun lieu localisé",
+    "povLegend": "POV principal",
+    "presenceLegend": "Présent dans la scène",
+    "selectedEvent": "Événement sélectionné"
   },
   "graph": {
     "title": "Atlas Relations",
@@ -807,6 +823,15 @@
     "loginRequired": "Connectez-vous pour accéder à votre compte",
     "privacyPolicy": "Politique de confidentialité",
     "privacy": "Confidentialité",
-    "terms": "Conditions d'utilisation"
+    "terms": "Conditions d'utilisation",
+    "termsPageTitle": "Conditions générales d'utilisation"
+  },
+  "cookie": {
+    "title": "Je suis un cookie !",
+    "message": "On m'utilise avec mes copains pour le chat d'assistance et l'amélioration du service, mais on voulait vous demander avant.",
+    "accept": "OK pour moi",
+    "refuse": "Non merci",
+    "privacyLink": "En savoir plus",
+    "settings": "Paramètres des cookies"
   }
 }

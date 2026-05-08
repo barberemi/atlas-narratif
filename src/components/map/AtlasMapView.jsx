@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import MapCanvas from './MapCanvas';
-import JourneyTimeline from './JourneyTimeline';
+import JourneyMatrix from './JourneyMatrix';
 import JourneyEditor from './JourneyEditor';
 import { hexToRgb } from '../../utils/color';
 import Skeleton from '../ui/Skeleton';
 import { useMapStore }      from '../../stores/useMapStore';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
+import { useVolumeStore }    from '../../stores/useVolumeStore';
 import { useStoreLoader }   from '../../hooks/useStoreLoader';
 
 function ControlButton({ active, onClick, children, title }) {
@@ -46,6 +47,7 @@ export default function AtlasMapView({ onLocationClick }) {
   const allChars        = useLoreStore(s => s.characters);
   const allLocations    = useLoreStore(s => s.locations);
   const events          = useTimelineStore(s => s.events);
+  const activeVolumeId  = useVolumeStore(s => s.activeVolumeId);
 
   // ── Mode édition carte ────────────────────────────────────────────────────
   const [editMode,   setEditMode]   = useState(false);
@@ -137,6 +139,7 @@ export default function AtlasMapView({ onLocationClick }) {
   const [visible,         setVisible]         = useState({});
   const [linked,          setLinked]          = useState(false);
   const [selected,        setSelected]        = useState(new Set());
+  const [selectedEvent,   setSelectedEvent]   = useState(null);
   const [charDropOpen,    setCharDropOpen]    = useState(false);
   const charDropRef = useRef(null);
 
@@ -276,24 +279,46 @@ export default function AtlasMapView({ onLocationClick }) {
     setFocused(key);
   };
 
-  const handleStepChange = (charKey, newStep) => {
+
+  // Sync matrice → carte : cliquer un dot déplace le personnage sur la carte
+  const handleEventSelect = (event) => {
+    setSelectedEvent(event);
+    const newSteps = { ...steps };
+    const targetChapter = event.chapter;
+
+    // En mode lié : placer tous les personnages visibles au chapitre le plus proche
     if (linked && selected.size > 1) {
-      const targetChapter = CHARACTERS[charKey].journey[newStep]?.chapterNum;
-      const synced = { ...steps };
-      selected.forEach(key => {
-        if (key === charKey) {
-          synced[key] = newStep;
-        } else if (targetChapter != null) {
-          const match = CHARACTERS[key].journey.findIndex(s => s.chapterNum === targetChapter);
-          synced[key] = match !== -1 ? match : Math.min(newStep, CHARACTERS[key].journey.length - 1);
-        } else {
-          synced[key] = Math.min(newStep, CHARACTERS[key].journey.length - 1);
+      for (const key of selected) {
+        const char = CHARACTERS[key];
+        if (!char || !visible[key]) continue;
+        // Chercher un événement exact dans ce chapitre
+        const exact = char.journey.findIndex(s => s.eventId === event.id);
+        if (exact !== -1) { newSteps[key] = exact; continue; }
+        // Sinon, chercher le chapitre le plus proche
+        const sameChapter = char.journey.findIndex(s => s.chapterNum === targetChapter);
+        if (sameChapter !== -1) { newSteps[key] = sameChapter; continue; }
+        // Sinon, le chapitre précédent le plus proche
+        let closest = -1;
+        for (let i = char.journey.length - 1; i >= 0; i--) {
+          if (char.journey[i].chapterNum <= targetChapter) { closest = i; break; }
         }
-      });
-      setSteps(synced);
+        if (closest !== -1) { newSteps[key] = closest; continue; }
+        // Sinon, le premier chapitre suivant
+        const next = char.journey.findIndex(s => s.chapterNum > targetChapter);
+        if (next !== -1) newSteps[key] = next;
+      }
     } else {
-      setSteps(prev => ({ ...prev, [charKey]: newStep }));
+      // Mode normal : ne déplacer que les personnages présents dans l'événement
+      for (const entity of (event.entities ?? []).filter(e => e.entityType === 'character')) {
+        const key = allChars.find(c => c.id === entity.id)?.journeyKey ?? entity.id;
+        const char = CHARACTERS[key];
+        if (!char || !visible[key]) continue;
+        const stepIdx = char.journey.findIndex(s => s.eventId === event.id);
+        if (stepIdx !== -1) newSteps[key] = stepIdx;
+      }
     }
+
+    setSteps(newSteps);
   };
 
   const toggleVisible = (charKey) => {
@@ -319,8 +344,6 @@ export default function AtlasMapView({ onLocationClick }) {
         deathStepIndex,
       };
     });
-
-  const timelineKeys = linked && selected.size > 1 ? [...selected] : (focused ? [focused] : []);
 
   return (
     <div className="w-full bg-[#0B1621] text-slate-200">
@@ -401,7 +424,7 @@ export default function AtlasMapView({ onLocationClick }) {
       {/* ── Sélecteur de personnages ── */}
       <div
         className="px-4 py-2 border-b border-white/10 flex items-center gap-3"
-        style={{ backgroundColor: 'rgba(5,10,18,0.97)' }}
+        style={{ backgroundColor: 'rgba(11,22,33,0.97)' }}
       >
         <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('map.follow')}</span>
         <div className="relative" ref={charDropRef}>
@@ -447,8 +470,8 @@ export default function AtlasMapView({ onLocationClick }) {
           {/* Dropdown */}
           {charDropOpen && (
             <div
-              className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
-              style={{ minWidth: 220, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+              className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
+              style={{ minWidth: 220, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
             >
               {charKeys.map(key => {
                 const char       = CHARACTERS[key];
@@ -543,7 +566,11 @@ export default function AtlasMapView({ onLocationClick }) {
       )}
 
       {/* ── Corps : Carte ── */}
-      <div className="w-full h-[60vh] relative">
+      <div className="px-6 md:px-16">
+      <div
+        className="w-full relative z-0 overflow-hidden rounded-lg"
+        style={{ aspectRatio: '1126 / 845', maxHeight: '70vh' }}
+      >
         <MapCanvas
           characters={mapCharacters}
           locations={locations}
@@ -585,43 +612,36 @@ export default function AtlasMapView({ onLocationClick }) {
           </div>
         )}
       </div>
+      </div>
 
-      {/* ── Footer : timelines ── */}
-      {timelineKeys.length > 0 && (
-        <footer
-          data-tour="map-journeys"
-          className="px-6 pt-8 pb-4 flex flex-col gap-4"
-          style={{ backgroundColor: 'rgba(5,10,18,0.97)' }}
-        >
-          <div>
-            <h2 className="text-sm font-black tracking-tight text-slate-200">{t('map.characterJourneys')}</h2>
-            <p className="text-xs text-slate-500 font-serif italic mt-0.5">
-              {t('map.journeysHint')}
+      {/* ── Événement sélectionné ── */}
+      {selectedEvent && (
+        <div className="px-6 py-3 flex-shrink-0" style={{ backgroundColor: 'rgba(11,22,33,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">
+            {t('map.selectedEvent', 'Événement sélectionné')}
+          </p>
+          <p className="text-xs text-slate-500">
+            {t('timeline.chapter', { n: selectedEvent.chapter })}
+            {selectedEvent.povCharacterId ? ` · ${allChars.find(c => c.id === selectedEvent.povCharacterId)?.name ?? ''}` : ''}
+          </p>
+          <p className="text-sm font-black text-slate-200 mt-0.5">{selectedEvent.title}</p>
+          {selectedEvent.description && (
+            <p className="text-xs text-slate-400 font-serif italic mt-0.5 leading-relaxed line-clamp-2">
+              « {selectedEvent.description} »
             </p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            {timelineKeys.map(key => {
-              const char = CHARACTERS[key];
-              if (!char) return null;
-              return (
-                <div key={key} className="flex items-center gap-2">
-                  {timelineKeys.length > 1 && (
-                    <>
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: char.color }} />
-                      <span className="text-[10px] w-20 truncate flex-shrink-0" style={{ color: char.color }}>{char.label}</span>
-                    </>
-                  )}
-                  <JourneyTimeline
-                    journey={char.journey}
-                    currentStep={steps[key] ?? 0}
-                    onStepChange={step => handleStepChange(key, step)}
-                    color={char.color}
-                    showLabels
-                  />
-                </div>
-              );
-            })}
-          </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Footer : matrice personnages × chapitres ── */}
+      {events?.length > 0 && (
+        <footer data-tour="map-journeys">
+          <JourneyMatrix
+            events={events}
+            characters={allChars.filter(c => visible[c.journeyKey ?? c.id])}
+            activeVolumeId={activeVolumeId}
+            onEventSelect={handleEventSelect}
+          />
         </footer>
       )}
 

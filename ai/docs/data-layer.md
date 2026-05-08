@@ -189,6 +189,7 @@ Certains stores ont une logique trop spécifique pour la factory et utilisent Zu
 | `journeyUtils.js` | Calcul auto des trajets (`computeAutoJourneys`) |
 | `reviewUtils.js` | Données de la page review |
 | `exportMarkdown.js` | Export projet en Markdown |
+| `crisp.js` | `loadCrisp(websiteId)` / `unloadCrisp()` — chargement dynamique du chat Crisp |
 
 ## Flux d'import IA
 

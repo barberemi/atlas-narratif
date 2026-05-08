@@ -119,7 +119,7 @@ describe('location', () => {
 
 describe('locationCoordinates', () => {
   it('accepts coordinates', () => {
-    ok(v.locationCoordinates, { coordinates: { lat: 10, lng: 20 } });
+    ok(v.locationCoordinates, { coordinates: { x: 10, y: 20 } });
   });
 
   it('accepts null coordinates', () => {
