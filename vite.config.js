@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// @vitest/globals → pas besoin d'importer describe/it/expect dans chaque test
-
 export default defineConfig({
   plugins: [react()],
 

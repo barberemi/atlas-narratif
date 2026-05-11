@@ -97,6 +97,9 @@ EMAIL_FROM=noreply@monsite.fr
 # Google OAuth — optionnel
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+
+# Crisp (chat widget) — optionnel
+VITE_CRISP_WEBSITE_ID=
 ```
 
 Générer des secrets aléatoires :

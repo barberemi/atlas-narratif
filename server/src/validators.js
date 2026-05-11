@@ -74,7 +74,7 @@ export const location = z.object({
 }).strip();
 
 export const locationCoordinates = z.object({
-  coordinates: z.object({ lat: z.number(), lng: z.number() }).nullable(),
+  coordinates: z.object({ x: z.number(), y: z.number() }).nullable(),
 }).strict();
 
 // ── Objects ──────────────────────────────────────────────────────────────────

@@ -31,6 +31,9 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#0B1621] text-slate-200">
+      <title>Connexion — AtlasNarratif</title>
+      <meta name="description" content="Connectez-vous à votre espace AtlasNarratif pour accéder à vos projets d'écriture narrative." />
+      <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/login" />
       <nav className="flex-shrink-0 flex items-center px-4 border-b border-white/10"
         style={{ height: 48, backgroundColor: 'rgba(11,22,33,0.97)' }}>
         <Link to="/" className="text-sm font-black tracking-tight transition-opacity duration-150 hover:opacity-70">

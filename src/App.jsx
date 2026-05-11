@@ -11,6 +11,8 @@ import GuidedTour   from './components/tour/GuidedTour';
 import WelcomeModal from './components/tour/WelcomeModal';
 import { shouldShowWelcome } from './components/tour/tourUtils';
 import TourPageButton from './components/tour/TourPageButton';
+import CookieConsent from './components/ui/CookieConsent';
+import { loadCrisp } from './utils/crisp';
 import { useLotrReseed } from './hooks/useLotrReseed';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
 const LoreBrowser          = lazy(() => import('./components/lore/LoreBrowser'));
@@ -33,6 +35,7 @@ const PrivacyPage          = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage            = lazy(() => import('./pages/legal/TermsPage'));
 const AccountPage          = lazy(() => import('./pages/AccountPage'));
 const NotFoundPage         = lazy(() => import('./pages/NotFoundPage'));
+import FeaturesShowcase from './components/home/FeaturesShowcase';
 import { getEntityMeta } from './utils/entityUtils';
 import { ProjectProvider, useProject } from './db/ProjectContext';
 import GlobalSearch  from './components/search/GlobalSearch';
@@ -279,17 +282,34 @@ function HomePage() {
 
   return (
     <>
+      <title>AtlasNarratif — Outil d'analyse narrative pour auteurs</title>
+      <meta name="description" content="AtlasNarratif aide les auteurs à construire et analyser leurs histoires : timeline, carte, personnages, incohérences et arcs narratifs. Structurez votre roman avec Save the Cat ou le Voyage du Héros." />
+      <meta property="og:title" content="AtlasNarratif — Outil d'analyse narrative pour auteurs" />
+      <meta property="og:description" content="Construisez et analysez vos histoires : timeline, carte, personnages, incohérences et arcs narratifs." />
+      <meta property="og:url" content="https://DOMAIN_PLACEHOLDER/" />
+      <meta property="og:image" content="https://DOMAIN_PLACEHOLDER/og-image.png" />
+      <meta name="twitter:title" content="AtlasNarratif — Outil d'analyse narrative pour auteurs" />
+      <meta name="twitter:description" content="Construisez et analysez vos histoires : timeline, carte, personnages, incohérences et arcs narratifs." />
+      <meta name="twitter:image" content="https://DOMAIN_PLACEHOLDER/og-image.png" />
+      <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "Mes données restent-elles privées ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Vos données narratives sont stockées dans une base PostgreSQL sécurisée. Les mots de passe sont hashés et les données sensibles sont chiffrées au repos (AES-256-GCM). Aucun outil d'analytics ou de tracking n'est utilisé." } },
+          { "@type": "Question", "name": "Quels outils narratifs sont disponibles ?", "acceptedAnswer": { "@type": "Answer", "text": "AtlasNarratif propose une timeline interactive, un graphe de relations, une carte des lieux, la structure Save the Cat (15 beats), le Voyage du Héros (12 étapes), un arc émotionnel, un détecteur d'incohérences, un tracker d'amorces narratives et la gestion de fils narratifs." } },
+          { "@type": "Question", "name": "Puis-je importer un manuscrit existant ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Générez un prompt d'analyse avec AtlasNarratif, envoyez-le à votre IA favorite (ChatGPT, Gemini, Claude), puis importez le résultat JSON pour extraire automatiquement la timeline, les personnages et les lieux." } },
+          { "@type": "Question", "name": "AtlasNarratif supporte-t-il les séries en plusieurs tomes ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Le support multi-tomes permet de filtrer par volume, de suivre les amorces narratives entre les tomes et de visualiser les arcs sur l'ensemble de la série." } },
+        ],
+      }) }} />
     <div className="h-full overflow-y-auto no-scrollbar">
       <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-10">
 
         {/* ── Header ── */}
         <header className="text-center">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-3">
-            Atlas<span className="text-[#3F51B5] drop-shadow-[0_0_20px_rgba(63,81,181,0.4)]">Narratif</span>
+          <h1 className="text-3xl md:text-5xl font-black tracking-tighter mb-3">
+            {t('app.h1Prefix')} <span className="text-[#3F51B5] drop-shadow-[0_0_20px_rgba(63,81,181,0.4)]">AtlasNarratif</span>
           </h1>
-          <p className="text-slate-500 font-serif italic opacity-80">
-            {t('app.tagline')}
-          </p>
         </header>
 
         {/* ── Étape 0 : choix du flux ── */}
@@ -305,7 +325,13 @@ function HomePage() {
                 className="flex flex-col gap-3 p-6 rounded-2xl text-left transition-all duration-200 hover:scale-[1.02]"
                 style={{ backgroundColor: 'rgba(63,81,181,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}
               >
-                <span className="text-3xl">✍️</span>
+                <svg viewBox="0 0 64 64" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M44 4 L54 14 L22 46 L8 50 L12 36 Z" fill="rgba(63,81,181,0.15)" stroke="#3F51B5" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                  <line x1="38" y1="10" x2="48" y2="20" stroke="#3F51B5" strokeWidth="1.5" opacity="0.4" />
+                  <line x1="12" y1="36" x2="22" y2="46" stroke="#3F51B5" strokeWidth="1.5" opacity="0.4" />
+                  <path d="M8 50 L12 36 L22 46 Z" fill="rgba(63,81,181,0.3)" />
+                  <line x1="8" y1="58" x2="56" y2="58" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
                 <div>
                   <p className="text-sm font-black text-slate-200">{t('home.buildTitle')}</p>
                   <p className="text-xs text-slate-500 mt-1 font-serif italic">
@@ -321,7 +347,16 @@ function HomePage() {
                 className="flex flex-col gap-3 p-6 rounded-2xl text-left transition-all duration-200 hover:scale-[1.02]"
                 style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}
               >
-                <span className="text-3xl">📖</span>
+                <svg viewBox="0 0 64 64" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 12 Q8 8, 12 8 L30 8 Q32 8, 32 10 L32 52 Q32 50, 30 50 L12 50 Q8 50, 8 46 Z" fill="rgba(63,81,181,0.1)" stroke="#3F51B5" strokeWidth="1.5" />
+                  <path d="M56 12 Q56 8, 52 8 L34 8 Q32 8, 32 10 L32 52 Q32 50, 34 50 L52 50 Q56 50, 56 46 Z" fill="rgba(63,81,181,0.15)" stroke="#3F51B5" strokeWidth="1.5" />
+                  <line x1="18" y1="18" x2="26" y2="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="18" y1="24" x2="24" y2="24" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="18" y1="30" x2="26" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="38" y1="18" x2="48" y2="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="38" y1="24" x2="46" y2="24" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="38" y1="30" x2="48" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
                 <div>
                   <p className="text-sm font-black text-slate-200">{t('home.analyzeTitle')}</p>
                   <p className="text-xs text-slate-500 mt-1 font-serif italic">
@@ -669,6 +704,15 @@ function HomePage() {
           </div>
         )}
 
+        {/* ── Séparateur ── */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 border-t border-white/5" />
+          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{t('home.featuresLabel', 'Fonctionnalités')}</span>
+          <div className="flex-1 border-t border-white/5" />
+        </div>
+
+        {/* ── Features showcase ── */}
+        <FeaturesShowcase />
 
       </div>
     </div>
@@ -692,6 +736,7 @@ function AppLayout() {
   const hasProjects = !loading && projects.length > 0;
   const { data: session } = authClient.useSession();
   const { reseeding } = useLotrReseed();
+  const [openCookieBanner, setOpenCookieBanner] = useState(null);
   const navigate = useNavigate();
 
   // Recharge les projets uniquement quand la session change réellement (pas au mount)
@@ -772,13 +817,14 @@ function AppLayout() {
         </Suspense>
         </ErrorBoundary>
       </div>
-      <Footer />
+      <Footer onCookieClick={openCookieBanner} />
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
       <GuidedTour />
       <TourPageButton />
+      <CookieConsent hasAuthBar={!session?.user && !loading && projects.length > 0} onReady={setOpenCookieBanner} />
       {showWelcome && <WelcomeModal projectId={projectId} onClose={() => setShowWelcome(false)} />}
       {!session?.user && !loading && projects.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-4 px-6 py-3"
+        <div className="fixed bottom-0 left-0 right-0 z-20 flex items-center justify-between gap-4 px-6 py-3"
           style={{ backgroundColor: 'rgba(17,24,39,0.97)', borderTop: '1px solid rgba(234,179,8,0.25)' }}>
           <span className="text-xs" style={{ color: '#fbbf24' }}>
             {t('auth.cookieWarning')}
@@ -799,6 +845,14 @@ function AppLayout() {
 }
 
 export default function App() {
+  // Charger Crisp sur toutes les pages si le consentement est accepté
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('atlas_cookie_consent');
+      if (raw && JSON.parse(raw).accepted) loadCrisp(import.meta.env.VITE_CRISP_WEBSITE_ID);
+    } catch { /* JSON invalide — ignorer */ }
+  }, []);
+
   return (
     <ErrorBoundary>
       <Toaster position="bottom-right" theme="dark" richColors closeButton />

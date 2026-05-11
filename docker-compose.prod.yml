@@ -60,6 +60,7 @@ services:
       dockerfile: Dockerfile.prod
       args:
         VITE_API_URL: ""
+        VITE_CRISP_WEBSITE_ID: ${VITE_CRISP_WEBSITE_ID:-}
     environment:
       DOMAIN: ${DOMAIN}
     healthcheck:

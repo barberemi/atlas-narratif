@@ -7,23 +7,13 @@
     <meta name="description" content="AtlasNarratif aide les auteurs à construire et analyser leurs histoires : timeline, carte, personnages, incohérences et arcs narratifs. Structurez votre roman avec Save the Cat ou le Voyage du Héros." />
     <meta name="theme-color" content="#0B1621" />
 
-    <!-- Open Graph -->
+    <!-- Open Graph (valeurs par défaut, surchargées page par page via React 19) -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="AtlasNarratif — Outil d'analyse narrative pour auteurs" />
-    <meta property="og:description" content="Construisez et analysez vos histoires : timeline, carte, personnages, incohérences et arcs narratifs." />
-    <meta property="og:image" content="https://DOMAIN_PLACEHOLDER/og-image.png" />
-    <meta property="og:url" content="https://DOMAIN_PLACEHOLDER/" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:site_name" content="AtlasNarratif" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="AtlasNarratif — Outil d'analyse narrative pour auteurs" />
-    <meta name="twitter:description" content="Construisez et analysez vos histoires : timeline, carte, personnages, incohérences et arcs narratifs." />
-    <meta name="twitter:image" content="https://DOMAIN_PLACEHOLDER/og-image.png" />
-
-    <!-- Canonical -->
-    <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -36,30 +26,48 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "AtlasNarratif",
-      "url": "https://DOMAIN_PLACEHOLDER/",
-      "description": "Outil d'analyse et de construction narrative pour auteurs. Timeline, carte, personnages, incohérences et arcs narratifs.",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Web",
-      "inLanguage": "fr",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "AtlasNarratif"
-      },
-      "featureList": [
-        "Analyse narrative",
-        "Timeline interactive",
-        "Carte des lieux",
-        "Graphe de relations",
-        "Détection d'incohérences",
-        "Save the Cat",
-        "Voyage du Héros"
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://DOMAIN_PLACEHOLDER/#app",
+          "name": "AtlasNarratif",
+          "url": "https://DOMAIN_PLACEHOLDER/",
+          "description": "Outil d'analyse et de construction narrative pour auteurs. Timeline, carte, personnages, incohérences et arcs narratifs.",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Web",
+          "inLanguage": "fr",
+          "screenshot": "https://DOMAIN_PLACEHOLDER/og-image.png",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "creator": { "@id": "https://DOMAIN_PLACEHOLDER/#org" },
+          "featureList": [
+            "Analyse narrative",
+            "Timeline interactive",
+            "Carte des lieux",
+            "Graphe de relations",
+            "Détection d'incohérences",
+            "Save the Cat",
+            "Voyage du Héros",
+            "Arc émotionnel",
+            "Amorces et payoffs",
+            "Fils narratifs",
+            "Support multi-tomes"
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://DOMAIN_PLACEHOLDER/#org",
+          "name": "AtlasNarratif",
+          "url": "https://DOMAIN_PLACEHOLDER/",
+          "logo": "https://DOMAIN_PLACEHOLDER/favicon.svg",
+          "founder": {
+            "@type": "Person",
+            "name": "Rémi Barbé"
+          }
+        }
       ]
     }
     </script>

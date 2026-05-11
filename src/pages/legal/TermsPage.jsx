@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function TermsPage() {
+  const { t } = useTranslation();
   return (
     <div className="h-screen overflow-hidden flex flex-col bg-[#0B1621] text-slate-200">
+      <title>Conditions générales d'utilisation — AtlasNarratif</title>
+      <meta name="description" content="Consultez les conditions générales d'utilisation d'AtlasNarratif, l'outil d'analyse narrative pour auteurs." />
+      <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/terms" />
       <nav className="flex-shrink-0 flex items-center px-4 border-b border-white/10"
         style={{ height: 48, backgroundColor: 'rgba(11,22,33,0.97)' }}>
         <Link to="/" className="text-sm font-black tracking-tight transition-opacity duration-150 hover:opacity-70">
@@ -12,7 +17,7 @@ export default function TermsPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-10">
         <div className="max-w-2xl mx-auto flex flex-col gap-6">
-          <h1 className="text-2xl font-black text-white tracking-tight">Conditions g&eacute;n&eacute;rales d&rsquo;utilisation</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">{t('account.termsPageTitle')}</h1>
           <p className="text-xs text-slate-500">Derni&egrave;re mise &agrave; jour : avril 2026</p>
 
           <section className="flex flex-col gap-3 text-sm text-slate-400 leading-relaxed">

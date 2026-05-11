@@ -1,40 +1,83 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import lotrMapImage from '../../assets/ouest_terre_du_milieu.jpg';
 
 /**
- * Carte multi-personnages.
- * Reçoit un tableau `characters`, chacun avec :
- *   { journey, currentStep, color, name }
- * Reçoit un tableau `locations` avec : { id, name, coordinates: { x, y } }
- * Reçoit `mapSrc` : data URL de la carte custom (ou null → fallback carte LOTR)
- * Les étapes peuvent avoir x/y à null (lieu non localisé) — gérées proprement.
+ * Carte multi-personnages avec object-contain.
+ * Les coordonnées sont stockées en % de l'image (0-100).
+ * La transformation contain convertit ces % vers le conteneur à l'affichage.
  */
 export default function MapCanvas({ characters, locations = [], onLocationClick, mapSrc = null, editMode = false, onMapClick, onPinRemove }) {
   const activeSrc = mapSrc ?? lotrMapImage;
   const [hoveredLoc, setHoveredLoc] = useState(null);
+  const containerRef = useRef(null);
+  const imgRef = useRef(null);
+  const [t, setT] = useState(null);
+
+  const recompute = useCallback(() => {
+    const c = containerRef.current;
+    const img = imgRef.current;
+    if (!c || !img || !img.naturalWidth) return;
+    const cW = c.clientWidth, cH = c.clientHeight;
+    const iW = img.naturalWidth, iH = img.naturalHeight;
+    const cRatio = cW / cH, iRatio = iW / iH;
+    let rW, rH, oX, oY;
+    if (iRatio > cRatio) {
+      rW = cW; rH = cW / iRatio; oX = 0; oY = (cH - rH) / 2;
+    } else {
+      rH = cH; rW = cH * iRatio; oX = (cW - rW) / 2; oY = 0;
+    }
+    setT({
+      x: (pct) => (oX + (pct / 100) * rW) / cW * 100,
+      y: (pct) => (oY + (pct / 100) * rH) / cH * 100,
+      ix: (pct) => ((pct / 100) * cW - oX) / rW * 100,
+      iy: (pct) => ((pct / 100) * cH - oY) / rH * 100,
+    });
+  }, []);
+
+  useEffect(() => {
+    recompute();
+    window.addEventListener('resize', recompute);
+    return () => window.removeEventListener('resize', recompute);
+  }, [recompute]);
+
+  const tx = (v) => t ? t.x(v) : v;
+  const ty = (v) => t ? t.y(v) : v;
 
   const handleContainerClick = (e) => {
     if (!editMode || !onMapClick) return;
-    // Ignorer les clics sur les pins existants
     if (e.target.closest('button[data-pin]')) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = +((e.clientX - rect.left) / rect.width * 100).toFixed(2);
-    const y = +((e.clientY - rect.top)  / rect.height * 100).toFixed(2);
-    onMapClick(x, y);
+    const cx = (e.clientX - rect.left) / rect.width * 100;
+    const cy = (e.clientY - rect.top) / rect.height * 100;
+    if (t) {
+      const imgX = t.ix(cx), imgY = t.iy(cy);
+      if (imgX < 0 || imgX > 100 || imgY < 0 || imgY > 100) return;
+      onMapClick(+imgX.toFixed(2), +imgY.toFixed(2));
+    } else {
+      onMapClick(+cx.toFixed(2), +cy.toFixed(2));
+    }
   };
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-stone-950"
+      ref={containerRef}
+      className="relative w-full h-full overflow-hidden bg-[#0B1621]"
       style={{ cursor: editMode ? 'crosshair' : 'default' }}
       onClick={handleContainerClick}
     >
-      {/* Carte de fond */}
+      {/* Fond blurred de la carte (visible autour du contain) */}
+      <div
+        className="absolute inset-0 scale-110 blur-2xl opacity-30"
+        style={{ backgroundImage: `url(${activeSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      />
+      {/* Carte principale */}
       <img
+        ref={imgRef}
         src={activeSrc}
         alt="Carte"
-        className="absolute inset-0 w-full h-full object-cover select-none"
+        className="absolute inset-0 w-full h-full object-contain select-none"
         draggable={false}
+        onLoad={recompute}
       />
 
       {/* SVG overlay — tracés de tous les personnages */}
@@ -81,7 +124,7 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
               {segments.map((seg, si) => seg.points.length > 1 && (
                 <polyline
                   key={si}
-                  points={seg.points.map(s => `${s.x},${s.y}`).join(' ')}
+                  points={seg.points.map(s => `${tx(s.x)},${ty(s.y)}`).join(' ')}
                   fill="none"
                   stroke={seg.isFlash ? '#d97706' : color}
                   strokeWidth={seg.isFlash ? '0.22' : '0.3'}
@@ -96,8 +139,8 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
               {visitedWithCoords.slice(0, -1).map((step, i) => (
                 <circle
                   key={i}
-                  cx={step.x}
-                  cy={step.y}
+                  cx={tx(step.x)}
+                  cy={ty(step.y)}
                   r="0.6"
                   fill={step.isFlashback ? '#d97706' : color}
                   fillOpacity={step.isFlashback ? '0.35' : '0.55'}
@@ -126,8 +169,8 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
             onMouseLeave={() => setHoveredLoc(null)}
             className="absolute z-20 flex flex-col items-center"
             style={{
-              left: `${x}%`,
-              top: `${y}%`,
+              left: `${tx(x)}%`,
+              top: `${ty(y)}%`,
               transform: 'translate(-50%, -100%)',
               cursor: 'pointer',
               background: 'none',
@@ -193,8 +236,8 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
             key={name}
             className="absolute pointer-events-none z-10"
             style={{
-              left: `${lastLocalized.x}%`,
-              top:  `${lastLocalized.y}%`,
+              left: `${tx(lastLocalized.x)}%`,
+              top:  `${ty(lastLocalized.y)}%`,
               transform: 'translate(-50%, -50%)',
               transition: 'left 0.9s cubic-bezier(0.4, 0, 0.2, 1), top 0.9s cubic-bezier(0.4, 0, 0.2, 1)',
               opacity: isMissing ? 0.45 : 1,

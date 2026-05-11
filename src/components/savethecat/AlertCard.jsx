@@ -7,7 +7,12 @@ export default function AlertCard({ alert, isHovered, onHover }) {
 
   const alertType = isMissing ? 'missing' : (alert.diff > 0 ? 'too_late' : 'too_early');
   const messageKey = `narrative:beats.${alert.beat.id}.alert_${alertType}`;
-  const message = t(messageKey, alert.message);
+  const beatLabel = t(`narrative:beats.${alert.beat.id}.label`, alert.beat.label);
+  const fallback = alert.message
+    ?? t(alert.direction === 'late' ? 'stc.alertFallbackLate' : 'stc.alertFallbackEarly', {
+      label: beatLabel, actual: alert.actualPct, ideal: alert.idealPct,
+    });
+  const message = t(messageKey, fallback);
 
   return (
     <div

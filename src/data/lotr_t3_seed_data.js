@@ -101,7 +101,7 @@ export const t3Locations = [
     regime: 'Intendance du Gondor (Denethor II)',
     description:
       'Capitale du Gondor, bâtie en sept cercles de pierre blanche contre le flanc du Mindolluin. La Tour Blanche d\'Ecthelion domine le septième cercle. Dernier rempart contre Mordor. Le siège de Minas Tirith est l\'un des moments les plus critiques de la Guerre de l\'Anneau — la cité résiste grâce à Gandalf et aux cavaliers du Rohan.',
-    coordinates: { x: 65, y: 75 },
+    coordinates: { x: 65, y: 74 },
     inhabitants: ['Gondoriens', 'Denethor', 'Faramir', 'Gandalf (temporaire)', 'Pippin (temporaire)'],
     visitedBy: [
       { id: 'char_gandalf', name: 'Gandalf', color: '#F5F5DC' },
@@ -117,7 +117,7 @@ export const t3Locations = [
     regime: 'Gondor (défenses extérieures)',
     description:
       'Vaste plaine herbeuse entre Minas Tirith et l\'Anduin. C\'est ici que se joue la plus grande bataille de la Guerre de l\'Anneau. La charge des Rohirrim à l\'aube, la mort de Théoden, le combat d\'Éowyn contre le Roi-Sorcier, et l\'arrivée d\'Aragorn avec les navires noirs retournent le sort de la guerre.',
-    coordinates: { x: 64, y: 77 },
+    coordinates: { x: 66, y: 72 },
     inhabitants: [],
     visitedBy: [
       { id: 'char_theoden', name: 'Théoden', color: '#B45309' },
@@ -134,7 +134,7 @@ export const t3Locations = [
     regime: 'Mordor (tenu par les Orques)',
     description:
       'Col dans les Ephel Dúath (Monts de l\'Ombre), passage secret vers le Mordor. L\'antre d\'Arachne surplombe l\'escalier. Une tour orque garde le col. C\'est le chemin que Gollum propose à Frodo — sachant qu\'Arachne l\'attend. Sam devra infiltrer la tour seul pour sauver Frodo capturé.',
-    coordinates: { x: 78, y: 75 },
+    coordinates: { x: 76, y: 66 },
     inhabitants: ['Arachne', 'Orques de la tour'],
     visitedBy: [
       { id: 'char_frodo', name: 'Frodo', color: '#10B981' },
@@ -150,7 +150,7 @@ export const t3Locations = [
     regime: 'Mordor (domaine de Sauron)',
     description:
       'Volcan actif au cœur du Mordor, lieu où Sauron forgea l\'Anneau Unique au Second Âge. Les Crevasses du Destin (Sammath Naur), à flanc de montagne, sont le seul endroit où l\'Anneau peut être détruit. Destination finale de toute la Quête.',
-    coordinates: { x: 85, y: 80 },
+    coordinates: { x: 76, y: 65 },
     inhabitants: [],
     visitedBy: [
       { id: 'char_frodo', name: 'Frodo', color: '#10B981' },
@@ -166,7 +166,7 @@ export const t3Locations = [
     regime: 'Aucun (terre maudite)',
     description:
       'Passage souterrain sous les Montagnes Blanches, hanté par les spectres des Hommes des Montagnes qui avaient juré allégeance à Isildur puis l\'avaient trahi. Maudits à ne pas trouver le repos tant que leur serment ne serait pas honoré. Aragorn, héritier d\'Isildur, les convoque et leur offre de racheter leur parjure.',
-    coordinates: { x: 52, y: 72 },
+    coordinates: { x: 53, y: 66 },
     inhabitants: ['Armée des Morts (spectres)'],
     visitedBy: [
       { id: 'char_aragorn', name: 'Aragorn', color: '#3F51B5' },
@@ -182,7 +182,7 @@ export const t3Locations = [
     regime: 'Mordor (quartier général du Roi-Sorcier)',
     description:
       'Autrefois Minas Ithil, Tour de la Lune, avant-poste du Gondor. Capturée par les Nazgûl, elle est devenue un lieu de terreur — lumière verdâtre, air empoisonné, pont mort. C\'est d\'ici que part l\'armée du Roi-Sorcier pour assiéger Minas Tirith. Frodo et Sam la contournent pour atteindre les escaliers de Cirith Ungol.',
-    coordinates: { x: 76, y: 73 },
+    coordinates: { x: 73, y: 68 },
     inhabitants: ['Roi-Sorcier', 'Nazgûl', 'Armées de Morgul'],
     visitedBy: [
       { id: 'char_frodo', name: 'Frodo', color: '#10B981' },
@@ -198,7 +198,7 @@ export const t3Locations = [
     regime: 'Domaine de Círdan le Charpentier',
     description:
       'Derniers ports elfiques de la Terre du Milieu, dans le Golfe de Lhûn à l\'ouest de l\'Ériador. C\'est d\'ici que les Elfes — et les Porteurs de l\'Anneau invités par les Valar — prennent le bateau vers Valinor, les Terres Immortelles. Frodo, Gandalf, Bilbo, Galadriel et Elrond y embarquent. Le dernier adieu.',
-    coordinates: { x: 5, y: 20 },
+    coordinates: { x: 16, y: 30 },
     inhabitants: ['Elfes de Círdan'],
     visitedBy: [
       { id: 'char_frodo', name: 'Frodo', color: '#10B981' },
@@ -1111,7 +1111,7 @@ export const t3FrodoJourney = [
     chapitre: 'Le Retour du Roi, VI-1',
     action: 'Frodo, Sam et Gollum contournent Minas Morgul dans la terreur. La cité irradie une lumière verdâtre. L\'armée du Roi-Sorcier en sort pour marcher sur le Gondor.',
     allies: ['char_sam', 'char_gollum'],
-    x: 76, y: 73,
+    x: 73, y: 68,
   },
   {
     id: 1, etape: 2, scene: 'escaliers',
@@ -1119,7 +1119,7 @@ export const t3FrodoJourney = [
     chapitre: 'Le Retour du Roi, VI-1',
     action: 'Montée interminable dans l\'obscurité. Frodo s\'affaiblit. Gollum prépare sa trahison. Sam sent le piège mais ne peut rien prouver.',
     allies: ['char_sam', 'char_gollum'],
-    x: 77, y: 74,
+    x: 74, y: 67,
   },
   {
     id: 2, etape: 3, scene: 'antre_arachne',
@@ -1127,7 +1127,7 @@ export const t3FrodoJourney = [
     chapitre: 'Le Retour du Roi, VI-2',
     action: 'Gollum mène Frodo dans le tunnel d\'Arachne. L\'araignée attaque. Frodo est empoisonné. Sam utilise la Phiale et Dard pour la repousser.',
     allies: ['char_sam'],
-    x: 78, y: 75,
+    x: 76, y: 66,
   },
   {
     id: 3, etape: 4, scene: 'tour_ungol',
@@ -1135,7 +1135,7 @@ export const t3FrodoJourney = [
     chapitre: 'Le Retour du Roi, VI-3',
     action: 'Frodo est capturé par les Orques. Sam infiltre la tour seul et le sauve. Ils se déguisent en Orques et s\'enfuient.',
     allies: ['char_sam'],
-    x: 79, y: 76,
+    x: 77, y: 66,
   },
   {
     id: 4, etape: 5, scene: 'gorgoroth',
@@ -1143,7 +1143,7 @@ export const t3FrodoJourney = [
     chapitre: 'Le Retour du Roi, VI-4',
     action: 'Traversée du plateau désolé du Mordor. Plus d\'eau, plus de nourriture. Sam porte Frodo sur les dernières pentes de la Montagne du Destin.',
     allies: ['char_sam'],
-    x: 82, y: 78,
+    x: 77, y: 65,
   },
   {
     id: 5, etape: 6, scene: 'mont_destin',
@@ -1151,7 +1151,7 @@ export const t3FrodoJourney = [
     chapitre: 'Le Retour du Roi, VI-4',
     action: 'Frodo cède à l\'Anneau : « L\'Anneau est à moi. » Gollum le lui arrache et tombe dans la lave. L\'Anneau est détruit. Les Aigles sauvent les hobbits.',
     allies: ['char_sam'],
-    x: 85, y: 80,
+    x: 76, y: 65,
   },
 ];
 
@@ -1162,7 +1162,7 @@ export const t3AragornJourney = [
     chapitre: 'Le Retour du Roi, V-2',
     action: 'Aragorn invoque l\'Armée des Morts sous la montagne. Legolas et Gimli l\'accompagnent. Même le nain tremble devant les spectres.',
     allies: ['char_legolas', 'char_gimli'],
-    x: 52, y: 72,
+    x: 53, y: 66,
   },
   {
     id: 1, etape: 2, scene: 'pelargir',
@@ -1170,7 +1170,7 @@ export const t3AragornJourney = [
     chapitre: 'Le Retour du Roi, V-2',
     action: 'Aragorn et l\'Armée des Morts prennent les navires des Corsaires d\'Umbar à Pelargir. Les morts terrifient les pirates qui fuient.',
     allies: ['char_legolas', 'char_gimli'],
-    x: 58, y: 82,
+    x: 58, y: 74,
   },
   {
     id: 2, etape: 3, scene: 'pelennor',
@@ -1178,7 +1178,7 @@ export const t3AragornJourney = [
     chapitre: 'Le Retour du Roi, V-6',
     action: 'Aragorn débarque des navires noirs avec les Rangers et l\'Armée des Morts. La bannière d\'Elendil se déploie. La bataille tourne. L\'Armée des Morts est libérée de sa malédiction.',
     allies: ['char_legolas', 'char_gimli'],
-    x: 64, y: 77,
+    x: 66, y: 72,
   },
   {
     id: 3, etape: 4, scene: 'minas_tirith',
@@ -1186,7 +1186,7 @@ export const t3AragornJourney = [
     chapitre: 'Le Retour du Roi, V-8',
     action: 'Aragorn entre à Minas Tirith — non par la grande porte, mais par les Maisons de Guérison, pour soigner Éowyn, Faramir et Merry. « Les mains du roi sont des mains de guérisseur. »',
     allies: ['char_gandalf'],
-    x: 65, y: 75,
+    x: 65, y: 74,
   },
   {
     id: 4, etape: 5, scene: 'porte_noire',
@@ -1194,7 +1194,7 @@ export const t3AragornJourney = [
     chapitre: 'Le Retour du Roi, V-10',
     action: 'Aragorn mène l\'armée devant la Porte Noire — diversion pour Frodo. Pourparler avec la Bouche de Sauron. La bataille éclate. Sauron s\'effondre quand l\'Anneau est détruit.',
     allies: ['char_gandalf', 'char_legolas', 'char_gimli', 'char_pippin', 'char_merry'],
-    x: 78, y: 58,
+    x: 70, y: 56,
   },
   {
     id: 5, etape: 6, scene: 'couronnement',
@@ -1202,7 +1202,7 @@ export const t3AragornJourney = [
     chapitre: 'Le Retour du Roi, VI-5',
     action: 'Aragorn est couronné Roi Elessar Telcontar. Gandalf pose la Couronne Ailée. Arwen arrive. Le Quatrième Âge commence.',
     allies: ['char_gandalf', 'char_frodo', 'char_sam', 'char_merry', 'char_pippin'],
-    x: 65, y: 75,
+    x: 65, y: 74,
   },
 ];
 
@@ -1213,7 +1213,7 @@ export const t3SamJourney = [
     chapitre: 'Le Retour du Roi, VI-1',
     action: 'Sam suit Frodo dans les escaliers. Il sait que Gollum les trahira mais Frodo refuse de l\'écouter. Sam veille.',
     allies: ['char_frodo', 'char_gollum'],
-    x: 77, y: 74,
+    x: 74, y: 67,
   },
   {
     id: 1, etape: 2, scene: 'arachne_sam',
@@ -1221,7 +1221,7 @@ export const t3SamJourney = [
     chapitre: 'Le Retour du Roi, VI-2',
     action: 'Frodo empoisonné. Sam brandit la Phiale de Galadriel et Dard. Il repousse Arachne. Croyant Frodo mort, il prend l\'Anneau et décide de continuer la Quête seul.',
     allies: [],
-    x: 78, y: 75,
+    x: 76, y: 66,
   },
   {
     id: 2, etape: 3, scene: 'tour_sam',
@@ -1229,7 +1229,7 @@ export const t3SamJourney = [
     chapitre: 'Le Retour du Roi, VI-3',
     action: 'Sam, portant l\'Anneau, infiltre la tour seul. Les Orques se sont entre-tués. Il trouve Frodo et le libère. Il lui rend l\'Anneau — le seul à l\'avoir jamais fait volontairement.',
     allies: ['char_frodo'],
-    x: 79, y: 76,
+    x: 77, y: 66,
   },
   {
     id: 3, etape: 4, scene: 'gorgoroth_sam',
@@ -1237,7 +1237,7 @@ export const t3SamJourney = [
     chapitre: 'Le Retour du Roi, VI-4',
     action: '« Je ne peux pas le porter pour vous, mais je peux vous porter. » Sam soulève Frodo sur son dos et gravit la Montagne du Destin.',
     allies: ['char_frodo'],
-    x: 82, y: 78,
+    x: 77, y: 65,
   },
   {
     id: 4, etape: 5, scene: 'mont_destin_sam',
@@ -1245,7 +1245,7 @@ export const t3SamJourney = [
     chapitre: 'Le Retour du Roi, VI-4',
     action: 'Sam assiste impuissant quand Frodo cède à l\'Anneau. Gollum intervient et tombe dans la lave. L\'Anneau est détruit. Les Aigles les sauvent.',
     allies: ['char_frodo'],
-    x: 85, y: 80,
+    x: 76, y: 65,
   },
   {
     id: 5, etape: 6, scene: 'havres_gris_sam',
@@ -1253,6 +1253,6 @@ export const t3SamJourney = [
     chapitre: 'Le Retour du Roi, VI-9',
     action: 'Sam accompagne Frodo aux Havres Gris. Il dit adieu à son maître. Le Navire Blanc disparaît. Sam rentre chez lui : « Eh bien, j\'y suis. »',
     allies: ['char_merry', 'char_pippin'],
-    x: 5, y: 20,
+    x: 16, y: 30,
   },
 ];

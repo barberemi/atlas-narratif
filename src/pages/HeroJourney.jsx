@@ -315,8 +315,8 @@ export default function HeroJourney() {
                   </button>
                   {charMenuOpen && (
                     <div
-                      className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
-                      style={{ minWidth: 220, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+                      className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
+                      style={{ minWidth: 220, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
                     >
                       <button
                         onClick={() => { setHeroCharId(''); setCharMenuOpen(false); }}

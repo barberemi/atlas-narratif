@@ -6,6 +6,16 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://DOMAIN_PLACEHOLDER/login</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://DOMAIN_PLACEHOLDER/register</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://DOMAIN_PLACEHOLDER/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

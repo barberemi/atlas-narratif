@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "AtlasNarrative",
-    "tagline": "Narrative coherence architect",
+    "h1Prefix": "Structure your novel with",
     "exported": "Exported from Atlas Narrative on {{date}}"
   },
   "nav": {
@@ -47,7 +47,16 @@
     "creating": "Creating…",
     "demoSending": "Sending to server…",
     "demoReloading": "Switching demo language…",
-    "back": "← Back"
+    "back": "← Back",
+    "featureTimelineTitle": "Create your narrative timeline in a few clicks",
+    "featureTimelineDesc": "Organize events chapter by chapter. Drag and drop to reorder, filter by volume, visualize the emotional arc.",
+    "featureCharactersTitle": "Manage your characters and their arcs",
+    "featureCharactersDesc": "Character sheets, relationship graph, and emotional arcs to track each character's evolution.",
+    "featureIncoherencesTitle": "Detect inconsistencies automatically",
+    "featureIncoherencesDesc": "Over 12 detectors analyze your data and flag contradictions, duplicates, and oversights.",
+    "featureFrameworksTitle": "Compatible with Save the Cat and the Hero's Journey",
+    "featureFrameworksDesc": "Structure with Save the Cat's 15 beats or the Hero's Journey's 12 stages.",
+    "featuresLabel": "Features"
   },
   "label": {
     "characters": "Characters",
@@ -195,7 +204,9 @@
     "densityPerChapter": "Density / chapter",
     "viewVolume": "View this volume →",
     "seriesEmptyHint": "Create at least 2 volumes via the volume selector to display the series view.",
-    "unassignedEvents": "{{count}} event(s) without assigned volume"
+    "unassignedEvents": "{{count}} event(s) without assigned volume",
+    "memoryCount_one": "↩ {{count}} memory",
+    "memoryCount_other": "↩ {{count}} memories"
   },
   "dnd": {
     "dropHere": "Drop here",
@@ -230,7 +241,9 @@
     "actIII": "Act III",
     "editEvent": "Edit this event",
     "createEventForBeat": "Create an event for this beat",
-    "showExamples": "Show examples"
+    "showExamples": "Show examples",
+    "alertFallbackLate": "\"{{label}}\" comes too late ({{actual}}% instead of {{ideal}}%).",
+    "alertFallbackEarly": "\"{{label}}\" comes too early ({{actual}}% instead of {{ideal}}%)."
   },
   "inc": {
     "allSeverities": "All severities",
@@ -594,7 +607,10 @@
     "chooseCharacter": "Choose a character…",
     "noSteps": "No steps",
     "addLocation": "+ Add location",
-    "noLocalizedLocations": "No localized locations"
+    "noLocalizedLocations": "No localized locations",
+    "povLegend": "Main POV",
+    "presenceLegend": "Present in the scene",
+    "selectedEvent": "Selected event"
   },
   "graph": {
     "title": "Atlas Relations",
@@ -825,6 +841,15 @@
     "loginRequired": "Log in to access your account",
     "privacyPolicy": "Privacy policy",
     "privacy": "Privacy",
-    "terms": "Terms of service"
+    "terms": "Terms of service",
+    "termsPageTitle": "Terms and Conditions"
+  },
+  "cookie": {
+    "title": "I'm a cookie!",
+    "message": "My friends and I are used for the support chat and to improve the service, but we wanted to ask you first.",
+    "accept": "Sounds good",
+    "refuse": "No thanks",
+    "privacyLink": "Learn more",
+    "settings": "Cookie settings"
   }
 }

@@ -261,11 +261,11 @@ export default function TimelineBrowser() {
     for (const e of events) {
       const num = (e.isFlashback && e.storyChapterRef != null) ? e.storyChapterRef : e.chapter;
       if (!seen.has(num)) {
-        seen.set(num, { number: num, title: num < 1 ? 'Ère ancienne' : e.chapterTitle, isPreStory: num < 1 });
+        seen.set(num, { number: num, title: num < 1 ? t('timeline.ancientEra', { n: num }) : e.chapterTitle, isPreStory: num < 1 });
       }
     }
     return [...seen.values()].sort((a, b) => a.number - b.number);
-  }, [events]);
+  }, [events, t]);
 
   const displayChapters = timeOrder === 'chronological' ? chronoChapters : chapters;
 
@@ -485,8 +485,8 @@ export default function TimelineBrowser() {
 
             {charMenuOpen && (
               <div
-                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
-                style={{ minWidth: 200, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
+                style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
               >
                 <button
                   onClick={() => { setFocusedCharId(null); setCharMenuOpen(false); }}
@@ -549,8 +549,8 @@ export default function TimelineBrowser() {
 
               {threadMenuOpen && (
                 <div
-                  className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
-                  style={{ minWidth: 200, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+                  className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
+                  style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
                 >
                   <button
                     onClick={() => { setThreadFilter(null); setThreadMenuOpen(false); }}

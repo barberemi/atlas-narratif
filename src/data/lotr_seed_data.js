@@ -270,7 +270,7 @@ export const loreDB = {
       regime: 'Société hobbit semi-autonome',
       description:
         'Territoire agricole verdoyant de l\'Eriador, habité exclusivement par des Hobbits. La Comté ignore délibérément le reste du monde — c\'est à la fois sa force (préservation de l\'innocence) et sa faiblesse. Le départ de Frodo marque la fin de cet âge d\'or.',
-      coordinates: { x: 17, y: 25 },
+      coordinates: { x: 34, y: 33 },
       inhabitants: ['Hobbits (Sacquet, Gamegie, Brandebouc, Touque)'],
       keyPlaces: ['Cul-de-Sac', 'Grand Smials', 'Pays de Bouc', 'Michel Delbing'],
       visitedBy: [
@@ -288,7 +288,7 @@ export const loreDB = {
       regime: 'Ville indépendante',
       description:
         'L\'un des derniers bourgs habités de l\'Ériador, à la croisée de deux routes importantes. Bree est rare : elle accueille à la fois des Hommes et des Hobbits. L\'Auberge du Poney Fringant en est le cœur social — et un relais d\'information pour les Rôdeurs.',
-      coordinates: { x: 28, y: 28 },
+      coordinates: { x: 43, y: 33 },
       inhabitants: ['Hommes', 'Hobbits'],
       keyPlaces: ['L\'Auberge du Poney Fringant', 'La Porte de l\'Ouest'],
       visitedBy: [
@@ -306,7 +306,7 @@ export const loreDB = {
       regime: 'Terres maudites',
       description:
         'Collines parsemées de tumulus anciens, anciens lieux de sépulture des rois d\'Arnor. Des esprits maléfiques — les Galagals (Barrow-wights) — y ont été envoyés par le Roi-Sorcier pour hanter les tombes. Lieu de danger extrême pour les voyageurs égarés.',
-      coordinates: { x: 22, y: 32 },
+      coordinates: { x: 38, y: 32 },
       inhabitants: ['Galagals (Barrow-wights)'],
       keyPlaces: ['Les Tumulus', 'La Colline du Roi'],
       visitedBy: [
@@ -324,7 +324,7 @@ export const loreDB = {
       regime: 'Ruine abandonnée',
       description:
         'Sommet isolé portant les ruines d\'une ancienne tour de garde du Royaume d\'Arnor. Elle abritait autrefois l\'un des Palantíri. Lieu stratégique dominant les plaines alentour — et donc point de rendez-vous des Nazgûl qui surveillent les routes.',
-      coordinates: { x: 37, y: 30 },
+      coordinates: { x: 47, y: 31 },
       inhabitants: [],
       keyPlaces: ['La Tour en ruines', 'Le Sommet dégagé'],
       visitedBy: [
@@ -342,7 +342,7 @@ export const loreDB = {
       regime: 'Frontière de Fondcombe',
       description:
         'Le gué sur la rivière Bruinen (Loudwater) qui marque la frontière des terres protégées de Fondcombe. Elrond peut commander aux eaux du Bruinen. Ce pouvoir fut utilisé pour créer le déluge qui emporta les Nazgûl lors de la fuite de Frodo.',
-      coordinates: { x: 47, y: 25 },
+      coordinates: { x: 49, y: 25 },
       inhabitants: [],
       keyPlaces: ['Le Gué', 'La Rive Est (Fondcombe)'],
       visitedBy: [
@@ -361,7 +361,7 @@ export const loreDB = {
       regime: 'Seigneurie Elfe (Elrond)',
       description:
         'Fondée par Elrond à la fin du Second Âge. Nichée dans une vallée secrète de l\'Ériador, protégée par les eaux du Bruinen et la puissance de Vilya. Fondcombe est un havre de paix, de savoir et de soin. C\'est ici que se tient le Conseil qui décide du destin de l\'Anneau.',
-      coordinates: { x: 51, y: 22 },
+      coordinates: { x: 51, y: 24 },
       inhabitants: ['Elfes Noldor', 'Demi-Elfes', 'Rôdeurs (parfois)'],
       keyPlaces: ['La Grande Salle', 'Les Salles de Guérison', 'La Bibliothèque d\'Elrond'],
       visitedBy: [
@@ -385,7 +385,7 @@ export const loreDB = {
       regime: 'Domination de Saroumane',
       description:
         'Ancienne forteresse des rois du Gondor, cédée aux soins de Saroumane. Il en a fait un centre industriel et militaire, rasant les forêts pour alimenter ses forges. La tour d\'Orthanc en est le cœur — un monolithe noir indestructible où Gandalf fut emprisonné.',
-      coordinates: { x: 47, y: 56 },
+      coordinates: { x: 46, y: 53 },
       inhabitants: ['Saroumane', 'Orques d\'Isengard', 'Uruk-Haï'],
       keyPlaces: ['La Tour d\'Orthanc', 'Les Forges', 'L\'Anneau d\'Isengard'],
       visitedBy: [
@@ -400,7 +400,7 @@ export const loreDB = {
       regime: 'Nature hostile (influence de Saroumane)',
       description:
         'L\'un des trois cols des Montagnes Brumeuses permettant de passer à l\'Est. Caradhras — la Montagne Rouge — est réputée pour son caractère malveillant. Lors de la tentative de passage de la Communauté, une tempête de neige extraordinaire bloqua le chemin.',
-      coordinates: { x: 55, y: 30 },
+      coordinates: { x: 50, y: 31 },
       inhabitants: [],
       keyPlaces: ['Le Sommet glacé', 'Les Flancs rocheux'],
       visitedBy: [
@@ -422,7 +422,7 @@ export const loreDB = {
       regime: 'Domination des Orques et du Balrog',
       description:
         'Khazad-dûm — la plus grande et la plus ancienne des cités naines, creusée dans les Montagnes Brumeuses. Abandonnée après que les Nains libérèrent accidentellement le Balrog (Fléau de Durin) en creusant trop profond. Les mines restent d\'une grandeur écrasante, même envahies par l\'obscurité.',
-      coordinates: { x: 57, y: 40 },
+      coordinates: { x: 51, y: 44 },
       inhabitants: ['Orques', 'Trolls des Cavernes', 'Le Balrog (Fléau de Durin)'],
       keyPlaces: ['La Porte de Durin', 'La Salle de Mazarbul', 'Le Pont de Khazad-dûm'],
       visitedBy: [
@@ -444,7 +444,7 @@ export const loreDB = {
       regime: 'Seigneurie de Galadriel et Celeborn',
       description:
         'La Forêt d\'Or, dernier grand domaine elfe de la Terre du Milieu. Ses arbres Mallorn aux feuilles dorées et ses flets (plateformes) dans les hauteurs créent un monde hors du temps. La puissance de Nenya la protège de Sauron. Frodo y verra dans le Miroir de Galadriel les possibles du futur.',
-      coordinates: { x: 63, y: 48 },
+      coordinates: { x: 55, y: 42 },
       inhabitants: ['Elfes du Lothlórien (Galadhrim)', 'Galadriel', 'Celeborn'],
       keyPlaces: ['Caras Galadhon', 'Le Miroir de Galadriel', 'Les Prés de Cerin Amroth'],
       visitedBy: [
@@ -467,7 +467,7 @@ export const loreDB = {
       regime: 'Terres sauvages (rive du Grand Fleuve)',
       description:
         'Prairie sur la rive ouest du Grand Fleuve (Anduin), au pied des Chutes de Rauros. Amon Hen (Colline du Regard) domine le site. C\'est ici que la Communauté éclate : Boromir succombe à l\'Anneau, Frodo fuit seul, Merry et Pippin sont capturés par les Uruk-Haï.',
-      coordinates: { x: 62, y: 58 },
+      coordinates: { x: 59, y: 49 },
       inhabitants: [],
       keyPlaces: ['Les Chutes de Rauros', 'Le Siège du Regard', 'La Rive de départ'],
       visitedBy: [
@@ -488,7 +488,7 @@ export const loreDB = {
       regime: 'Domaine de Sauron',
       description:
         'Terres noires à l\'est des Monts de l\'Ombre. Au cœur de Mordor se dresse l\'Orodruin, la Montagne du Destin, dont les feux permirent à Sauron de forger l\'Anneau Unique au Second Âge. Destination finale de la Quête.',
-      coordinates: { x: 88, y: 82 },
+      coordinates: { x: 76, y: 65 },
       inhabitants: ['Orques', 'Nazgûl', 'Trolls'],
       keyPlaces: ['La Montagne du Destin (Orodruin)', 'Barad-dûr', 'Les Cracks of Doom'],
       visitedBy: [],
@@ -1267,7 +1267,7 @@ export const aragornJourney = [
     lieu: "La Comté", sous_lieu: "Hobbitebourg, Pays hobbit",
     chapitre: "La Communauté de l'Anneau, I-2",
     action: "Grands-Pas surveille secrètement la Comté depuis les marges. Mandaté par Gandalf, il protège les hobbits qui ignorent encore leur destin et la nature de l'objet qu'ils transportent.",
-    allies: [], x: 17, y: 25,
+    allies: [], x: 34, y: 33,
   },
   {
     id: 1, etape: 2, scene: "bree",
@@ -1275,7 +1275,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, I-9/10",
     action: "Aragorn se révèle aux hobbits sous son nom de Grands-Pas. Il prend la tête du groupe, les convainc de le suivre et propose de les guider jusqu'à Fondcombe à travers les terres sauvages.",
     allies: ["Frodo Sacquet", "Samsagace Gamegie", "Meriadoc Brandebouc", "Peregrin Touque"],
-    x: 28, y: 28,
+    x: 43, y: 33,
   },
   {
     id: 2, etape: 3, scene: "hauts_galgals",
@@ -1283,7 +1283,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, I-8",
     action: "Traversée des terres hantées par les Galagals (Barrow-wights). Nuits de veille au milieu des tumulus. Aragorn maintient le groupe en sécurité malgré le danger des anciennes malédictions.",
     allies: ["Frodo", "Sam", "Merry", "Pippin"],
-    x: 22, y: 32,
+    x: 38, y: 32,
   },
   {
     id: 3, etape: 4, scene: "amon_sul",
@@ -1291,7 +1291,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, I-11",
     action: "Attaque nocturne des Neuf Cavaliers Noirs. Frodo cède à la tentation et enfile l'Anneau, révélant sa position. Il est poignardé par une lame de Morgul. Aragorn repousse les Nazgûl à la lumière des torches.",
     allies: ["Frodo (grièvement blessé)", "Sam", "Merry", "Pippin"],
-    x: 37, y: 30,
+    x: 47, y: 31,
   },
   {
     id: 4, etape: 5, scene: "gue_bruinen",
@@ -1299,7 +1299,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, I-12",
     action: "Course désespérée vers Fondcombe. Glorfindel confie sa monture elfique à Frodo. Les flots du Bruinen, invoqués par Elrond, emportent les Cavaliers Noirs dans les eaux déchaînées.",
     allies: ["Frodo (semi-inconscient)", "Glorfindel", "Sam", "Merry", "Pippin"],
-    x: 47, y: 25,
+    x: 49, y: 25,
   },
   {
     id: 5, etape: 6, scene: "fondcombe",
@@ -1307,7 +1307,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, II-1/3",
     action: "Conseil d'Elrond. Aragorn dévoile Andúril, reforgée des fragments de Narsil. La Communauté de l'Anneau est constituée — neuf marcheurs face aux Neuf Cavaliers. Le destin de la Terre du Milieu est en jeu.",
     allies: ["Frodo", "Gandalf le Gris", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin", "Elrond"],
-    x: 51, y: 22,
+    x: 51, y: 24,
   },
   {
     id: 6, etape: 7, scene: "moria",
@@ -1315,7 +1315,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, II-4/5",
     action: "Traversée des mines souterraines de l'ancien royaume nain. Combat dans la Salle de Mazarbul. Au Pont de Khazad-dûm, Gandalf affronte le Balrog : « Vous ne passerez pas ! » Il tombe dans l'abîme. Aragorn prend la tête de la Communauté.",
     allies: ["Frodo", "Sam", "Merry", "Pippin", "Legolas", "Gimli", "Boromir"],
-    x: 57, y: 40,
+    x: 51, y: 44,
   },
   {
     id: 7, etape: 8, scene: "lothlorien",
@@ -1323,7 +1323,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, II-6/8",
     action: "Refuge dans la Forêt d'Or des Elfes. Galadriel sonde chaque membre de la Communauté. Elle leur offre des dons précieux. Aragorn reçoit le fourreau d'Andúril, ouvrage de Galadriel elle-même, symbole de l'héritier d'Isildur.",
     allies: ["Frodo", "Sam", "Merry", "Pippin", "Legolas", "Gimli", "Boromir", "Galadriel", "Celeborn"],
-    x: 63, y: 48,
+    x: 55, y: 42,
   },
   {
     id: 8, etape: 9, scene: "parth_galen",
@@ -1331,7 +1331,7 @@ export const aragornJourney = [
     chapitre: "La Communauté de l'Anneau, II-10",
     action: "Boromir cède à la corruption de l'Anneau et tente de le ravir à Frodo. Attaque massive des Uruk-Haï de Saroumane. Aragorn combat vaillamment. Boromir est mortellement blessé. Il lui rend hommage en serment de fidélité. Frodo et Sam fuient seuls. La Communauté se brise à jamais.",
     allies: ["Frodo (fuite solitaire)", "Sam", "Merry (capturé)", "Pippin (capturé)", "Legolas", "Gimli", "Boromir (mort au combat)"],
-    x: 62, y: 58,
+    x: 59, y: 49,
   },
 ];
 
@@ -1342,7 +1342,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, I-1/2",
     action: "Frodo hérite de l'Anneau Unique lors du départ de Bilbo. Gandalf lui révèle des années plus tard la vraie nature de l'objet. Frodo comprend qu'il ne peut rester chez lui — l'Anneau met la Comté en danger. Il décide de partir vers Fondcombe.",
     allies: ["Samsagace Gamegie"],
-    x: 17, y: 25,
+    x: 34, y: 33,
   },
   {
     id: 1, etape: 2, scene: "hauts_galgals",
@@ -1350,7 +1350,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, I-6/7",
     action: "Les hobbits s'aventurent dans la Vieille Forêt. Frodo est attiré dans un tumulus par un Galagal (Barrow-wight). Il résiste à la terreur, appelle Tom Bombadil. Celui-ci les libère et leur offre des armes des Hommes de l'Ouest.",
     allies: ["Sam", "Merry", "Pippin", "Tom Bombadil"],
-    x: 21, y: 31,
+    x: 36, y: 32,
   },
   {
     id: 2, etape: 3, scene: "bree",
@@ -1358,7 +1358,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, I-9/10",
     action: "Frodo attend Gandalf qui n'arrive pas. Il rencontre Grands-Pas (Aragorn). En enfilant accidentellement l'Anneau dans la salle commune, il révèle sa présence aux espions de Sauron. Grands-Pas les prend en charge.",
     allies: ["Sam", "Merry", "Pippin", "Aragorn (Grands-Pas)"],
-    x: 28, y: 28,
+    x: 43, y: 33,
   },
   {
     id: 3, etape: 4, scene: "amon_sul",
@@ -1366,7 +1366,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, I-11",
     action: "Guet nocturne au sommet de la tour en ruines. Frodo cède à la tentation et enfile l'Anneau — entrant dans le monde des Ombres. Le Roi-Sorcier lui plante une lame de Morgul dans l'épaule. Il résiste à l'obscurité, mais le poison s'infiltre.",
     allies: ["Sam", "Merry", "Pippin", "Aragorn"],
-    x: 37, y: 30,
+    x: 47, y: 31,
   },
   {
     id: 4, etape: 5, scene: "gue_bruinen",
@@ -1374,7 +1374,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, I-12",
     action: "Frodo, à demi-mort du venin de Morgul, est mis en selle sur Asfaloth, la monture de Glorfindel. Il galope vers le gué, les Neuf à ses trousses. Il défie le Roi-Sorcier : « Je vous défie ! » Les flots engloutissent les Nazgûl.",
     allies: ["Glorfindel", "Sam", "Aragorn"],
-    x: 47, y: 25,
+    x: 49, y: 25,
   },
   {
     id: 5, etape: 6, scene: "fondcombe",
@@ -1382,7 +1382,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, II-1/3",
     action: "Frodo est soigné par Elrond. Après sa guérison, il assiste au Conseil d'Elrond. Face à la querelle des races, il prend seul la parole : « Je prendrai l'Anneau, bien que je ne sache pas le chemin. » Il devient le Porteur officiel.",
     allies: ["Gandalf", "Aragorn", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin", "Elrond", "Bilbo"],
-    x: 51, y: 22,
+    x: 51, y: 24,
   },
   {
     id: 6, etape: 7, scene: "caradhras",
@@ -1390,7 +1390,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, II-3",
     action: "La Communauté tente le col de Caradhras. Blizzard déchaîné par Saroumane. Frodo trébuche dans la neige, l'Anneau lui glisse au cou — Boromir le ramasse et le contemple une seconde de trop, avant de le rendre. Premier signe du danger.",
     allies: ["Sam", "Gandalf", "Aragorn", "Legolas", "Gimli", "Boromir", "Merry", "Pippin"],
-    x: 55, y: 30,
+    x: 50, y: 31,
   },
   {
     id: 7, etape: 8, scene: "moria",
@@ -1398,7 +1398,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, II-4/5",
     action: "Dans les mines, Frodo est transpercé par la lance d'un Troll des Cavernes — sauvé par sa cotte de mailles en mithril, don de Bilbo. Il assiste à la chute de Gandalf au Pont de Khazad-dûm. Le monde bascule pour lui.",
     allies: ["Sam", "Aragorn", "Legolas", "Gimli", "Boromir", "Merry", "Pippin"],
-    x: 57, y: 40,
+    x: 51, y: 44,
   },
   {
     id: 8, etape: 9, scene: "lothlorien",
@@ -1406,7 +1406,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, II-6/8",
     action: "Dans le Lothlórien, Frodo regarde dans le Miroir de Galadriel. Il voit la Comté ravagée, l'Œil de Sauron, le feu de l'Anneau. Il offre l'Anneau à Galadriel. Elle refuse : « Je resterai Galadriel. » Il comprend qu'il doit porter ce fardeau seul.",
     allies: ["Sam", "Aragorn", "Legolas", "Gimli", "Boromir", "Merry", "Pippin", "Galadriel"],
-    x: 63, y: 48,
+    x: 55, y: 42,
   },
   {
     id: 9, etape: 10, scene: "parth_galen",
@@ -1414,7 +1414,7 @@ export const frodoJourney = [
     chapitre: "La Communauté de l'Anneau, II-10",
     action: "Boromir tente de prendre l'Anneau de force. Frodo l'enfile et fuit. Seul, invisible dans le monde des Ombres, il voit l'Œil de Sauron se poser sur lui. Il choisit de traverser le fleuve avec Sam pour continuer seul vers le Mordor.",
     allies: ["Sam (seul fidèle)"],
-    x: 64, y: 60,
+    x: 60, y: 50,
   },
 ];
 
@@ -1425,7 +1425,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, I-1/2",
     action: "Gandalf révèle à Frodo la véritable nature de l'Anneau Unique. Il lui remet la lettre de Bilbo et lui ordonne de quitter la Comté sans délai, en direction de Fondcombe. Il part lui-même chercher des certitudes dans les archives du Gondor.",
     allies: ["Frodo Sacquet", "Bilbo Sacquet (déjà parti)"],
-    x: 17, y: 25,
+    x: 34, y: 33,
   },
   {
     id: 1, etape: 2, scene: "isengard",
@@ -1433,7 +1433,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, II-2 (récit rétrospectif)",
     action: "Gandalf se rend à Isengard pour informer Saroumane. Mais le chef de l'Ordre des Istari a trahi : il s'est allié à Sauron. Gandalf est fait prisonnier et retenu captif au sommet de la tour d'Orthanc, isolé du reste du monde.",
     allies: [],
-    x: 47, y: 56,
+    x: 46, y: 53,
   },
   {
     id: 2, etape: 3, scene: "gwaihir",
@@ -1441,7 +1441,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, II-2 (récit rétrospectif)",
     action: "Gwaihir le Seigneur des Vents, le Grand Aigle, répond à l'appel de Gandalf. Il l'emporte des hauteurs d'Orthanc à travers les cimes des Montagnes Brumeuses. Gandalf échappe à la captivité et file vers Fondcombe.",
     allies: ["Gwaihir (Grand Aigle)"],
-    x: 52, y: 32,
+    x: 50, y: 33,
   },
   {
     id: 3, etape: 4, scene: "fondcombe",
@@ -1449,7 +1449,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, II-1/3",
     action: "Gandalf arrive à Fondcombe en avance sur les hobbits. Au Conseil d'Elrond, il expose l'histoire complète de l'Anneau Unique, la trahison de Saroumane et le danger imminent. Il est désigné guide de la Communauté des Neuf.",
     allies: ["Elrond", "Frodo", "Aragorn", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin"],
-    x: 51, y: 22,
+    x: 51, y: 24,
   },
   {
     id: 4, etape: 5, scene: "caradhras",
@@ -1457,7 +1457,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, II-3",
     action: "La Communauté tente de franchir les Montagnes par le Col de Caradhras. Saroumane déchaîne un blizzard magique pour les bloquer. Gandalf lutte contre la tempête avec des flammes, mais la montagne est infranchissable. Demi-tour forcé.",
     allies: ["Frodo", "Aragorn", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin"],
-    x: 55, y: 30,
+    x: 50, y: 31,
   },
   {
     id: 5, etape: 6, scene: "moria",
@@ -1465,7 +1465,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, II-4",
     action: "Contrainte de contourner les montagnes, la Communauté entre dans les mines de Moria. Gandalf ouvre la Porte de Durin : « Dis 'ami' et entre ». Il guide le groupe dans les ténèbres du royaume nain abandonné, affrontant ombres et présences maléfiques.",
     allies: ["Frodo", "Aragorn", "Legolas", "Gimli", "Boromir", "Sam", "Merry", "Pippin"],
-    x: 57, y: 40,
+    x: 51, y: 44,
   },
   {
     id: 6, etape: 7, scene: "khazad_dum",
@@ -1473,7 +1473,7 @@ export const gandalfJourney = [
     chapitre: "La Communauté de l'Anneau, II-5",
     action: "Le Balrog — Fléau de Durin — surgit des profondeurs. Gandalf se plante sur le pont étroit : « Je suis le serviteur du Feu Secret... Vous ne passerez pas ! » Le pont s'effondre. Le Balrog l'entraîne dans l'abîme. Gandalf le Gris disparaît dans les ténèbres.",
     allies: ["Le Balrog (adversaire)"],
-    x: 58, y: 43,
+    x: 52, y: 45,
   },
 ];
 

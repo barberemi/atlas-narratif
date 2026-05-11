@@ -4,7 +4,11 @@
 User-agent: *
 Disallow: /
 Allow: /$
+Allow: /login
+Allow: /register
 Allow: /privacy
 Allow: /terms
+
+Llms-txt: https://DOMAIN_PLACEHOLDER/llms.txt
 
 Sitemap: https://DOMAIN_PLACEHOLDER/sitemap.xml

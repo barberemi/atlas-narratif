@@ -43,12 +43,20 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
   const [severityFilter, setSeverityFilter] = useState(initialFilter);
   const [typeFilter,     setTypeFilter]     = useState('all');
   const [entityFilter,   setEntityFilter]   = useState(null); // { entityId, entityType, label }
+  const sevNavRef = useRef(null);
+  const [sevCanScroll, setSevCanScroll] = useState(false);
   const [editorState,    setEditorState]    = useState(null);
   const [showCatalog,    setShowCatalog]    = useState(false);
   const [typeDropOpen,   setTypeDropOpen]   = useState(false);
   const typeDropRef = useRef(null);
 
   useEffect(() => { setSeverityFilter(initialFilter); }, [initialFilter]);
+
+  // Détecter si le nav sévérité déborde au montage / resize
+  useEffect(() => {
+    const el = sevNavRef.current;
+    if (el) setSevCanScroll(el.scrollWidth > el.clientWidth);
+  });
 
   useEffect(() => {
     if (!typeDropOpen) return;
@@ -178,34 +186,46 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
       <div data-tour="inc-severity" className="px-6 pt-4 pb-3 flex flex-col gap-3 flex-shrink-0">
 
         {/* Sévérité */}
-        <nav className="flex gap-1 border-b border-white/10">
-          {SEVERITY_KEYS.map(opt => {
-            const isActive = severityFilter === opt.key;
-            const cfg      = opt.key !== 'all' ? SEVERITY_CONFIG[opt.key] : null;
-            return (
-              <button
-                key={opt.key}
-                onClick={() => setSeverityFilter(opt.key)}
-                className="px-4 py-2.5 text-sm font-bold transition-all duration-200 relative"
-                style={{ color: isActive ? (cfg?.color ?? '#fff') : '#475569' }}
-              >
-                {t(opt.labelKey)}
-                <span
-                  className="ml-2 text-xs font-mono"
-                  style={{ color: isActive ? (cfg?.color ?? '#818cf8') : '#1e293b' }}
+        <div className="relative">
+          <nav className="flex gap-1 border-b border-white/10 overflow-x-auto no-scrollbar"
+            ref={sevNavRef}
+            onScroll={() => {
+              const el = sevNavRef.current;
+              if (el) setSevCanScroll(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
+            }}
+          >
+            {SEVERITY_KEYS.map(opt => {
+              const isActive = severityFilter === opt.key;
+              const cfg      = opt.key !== 'all' ? SEVERITY_CONFIG[opt.key] : null;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setSeverityFilter(opt.key)}
+                  className="px-4 py-2.5 text-sm font-bold transition-all duration-200 relative flex-shrink-0 whitespace-nowrap"
+                  style={{ color: isActive ? (cfg?.color ?? '#fff') : '#475569' }}
                 >
-                  {counts[opt.key]}
-                </span>
-                {isActive && (
+                  {t(opt.labelKey)}
                   <span
-                    className="absolute bottom-0 left-0 right-0 h-0.5"
-                    style={{ backgroundColor: cfg?.color ?? '#3F51B5' }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </nav>
+                    className="ml-2 text-xs font-mono"
+                    style={{ color: isActive ? (cfg?.color ?? '#818cf8') : '#1e293b' }}
+                  >
+                    {counts[opt.key]}
+                  </span>
+                  {isActive && (
+                    <span
+                      className="absolute bottom-0 left-0 right-0 h-0.5"
+                      style={{ backgroundColor: cfg?.color ?? '#3F51B5' }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+          {sevCanScroll && (
+            <div className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none"
+              style={{ background: 'linear-gradient(to right, transparent, #0B1621)' }} />
+          )}
+        </div>
 
         {/* Type + filtre entité actif */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -229,7 +249,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
 
             {typeDropOpen && (
               <div
-                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden overflow-y-auto"
+                className="absolute left-0 top-full mt-1 z-50 rounded-xl overflow-hidden overflow-y-auto"
                 style={{ minWidth: 240, maxHeight: 320, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
               >
                 {[

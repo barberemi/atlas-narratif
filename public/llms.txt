@@ -1,0 +1,37 @@
+# Atlas Narratif
+
+> Outil en ligne de structuration et d'analyse narrative pour auteurs de romans.
+
+Atlas Narratif aide les auteurs a organiser, visualiser et verifier la coherence de leurs manuscrits. Donnees stockees dans une base PostgreSQL securisee avec chiffrement au repos.
+
+## Fonctionnalites principales
+
+- Timeline narrative : organisation des evenements par chapitre, drag-and-drop, filtrage par tome
+- Gestion du lore : fiches personnages, lieux et objets avec relations croisees
+- Save the Cat : structure en 15 beats avec suivi de progression par chapitre
+- Voyage du Heros : 12 etapes de Joseph Campbell appliquees au manuscrit
+- Arc emotionnel : courbe d'intensite par chapitre avec visualisation graphique
+- Detection d'incoherences : reperage automatique des contradictions (dates, lieux, attributs)
+- Graphe de relations : visualisation interactive des liens entre entites
+- Carte interactive : trajets des personnages sur une carte avec etapes
+- Plants et payoffs : suivi des amorces narratives et de leur resolution
+- Fils narratifs : gestion des subplots et de leur progression
+- Support multi-tomes : filtrage global par volume, plants cross-tomes
+- Import IA : analyse de manuscrit via prompt compatible ChatGPT, Gemini, Claude
+
+## Pages publiques
+
+- / : accueil, creation ou import de projet
+- /login : connexion
+- /register : inscription
+- /privacy : politique de confidentialite (RGPD)
+- /terms : conditions generales d'utilisation
+
+## Autres langues
+
+- English: /llms-en.txt
+- 中文: /llms-zh.txt
+
+## Contact
+
+Projet developpe par Remi Barbe.

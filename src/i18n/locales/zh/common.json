@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "叙事图谱",
-    "tagline": "叙事连贯性架构师",
+    "h1Prefix": "用以下工具构建您的小说",
     "exported": "由叙事图谱导出，日期：{{date}}"
   },
   "nav": {
@@ -47,7 +47,16 @@
     "creating": "创建中……",
     "demoSending": "发送至服务器……",
     "demoReloading": "切换演示语言……",
-    "back": "← 返回"
+    "back": "← 返回",
+    "featureTimelineTitle": "几步创建叙事时间线",
+    "featureTimelineDesc": "按章节组织事件，拖拽排序，按卷筛选，可视化情感弧线。",
+    "featureCharactersTitle": "管理角色及其成长弧线",
+    "featureCharactersDesc": "角色档案、关系图谱和情感弧线，追踪每个角色的成长变化。",
+    "featureIncoherencesTitle": "自动检测不一致之处",
+    "featureIncoherencesDesc": "超过12种检测器分析数据，标记矛盾、重复和遗漏。",
+    "featureFrameworksTitle": "兼容救猫咪与英雄之旅",
+    "featureFrameworksDesc": "使用救猫咪的15节拍或英雄之旅的12阶段来构建故事。",
+    "featuresLabel": "功能特性"
   },
   "label": {
     "characters": "角色",
@@ -194,7 +203,8 @@
     "densityPerChapter": "每章密度",
     "viewVolume": "查看此卷 →",
     "seriesEmptyHint": "通过卷册选择器创建至少2个卷册以显示系列视图。",
-    "unassignedEvents": "{{count}}个事件未分配卷册"
+    "unassignedEvents": "{{count}}个事件未分配卷册",
+    "memoryCount": "↩ {{count}}段回忆"
   },
   "dnd": {
     "dropHere": "放置于此",
@@ -229,7 +239,9 @@
     "actIII": "第三幕",
     "editEvent": "编辑此事件",
     "createEventForBeat": "为此节拍创建事件",
-    "showExamples": "查看示例"
+    "showExamples": "查看示例",
+    "alertFallbackLate": "\"{{label}}\"出现太晚（{{actual}}%，理想为{{ideal}}%）。",
+    "alertFallbackEarly": "\"{{label}}\"出现太早（{{actual}}%，理想为{{ideal}}%）。"
   },
   "inc": {
     "allSeverities": "所有严重程度",
@@ -593,7 +605,10 @@
     "chooseCharacter": "选择角色……",
     "noSteps": "无步骤",
     "addLocation": "+ 添加地点",
-    "noLocalizedLocations": "无已定位的地点"
+    "noLocalizedLocations": "无已定位的地点",
+    "povLegend": "主视角",
+    "presenceLegend": "出现在场景中",
+    "selectedEvent": "已选事件"
   },
   "graph": {
     "title": "关系图谱",
@@ -824,6 +839,15 @@
     "loginRequired": "请登录以访问您的账户",
     "privacyPolicy": "隐私政策",
     "privacy": "隐私",
-    "terms": "服务条款"
+    "terms": "服务条款",
+    "termsPageTitle": "服务条款与条件"
+  },
+  "cookie": {
+    "title": "我是一个Cookie！",
+    "message": "我和我的小伙伴们被用于在线客服和改善服务体验，但想先征求您的同意。",
+    "accept": "没问题",
+    "refuse": "不用了",
+    "privacyLink": "了解更多",
+    "settings": "Cookie设置"
   }
 }

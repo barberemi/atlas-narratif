@@ -22,7 +22,7 @@ Sélecteur de tome actif — filtre global cross-stores. Lit/écrit `useVolumeSt
 ### `SaveIndicator`
 Indicateur de sauvegarde en cours ("Enregistrement…" / "Sauvegardé"). Lit `useSaveIndicator`.
 ### `Footer`
-Pied de page avec liens légaux (/privacy, /terms) et sélecteur de langue.
+Pied de page avec liens légaux (/privacy, /terms), sélecteur de langue, et lien "Cookies" (`onCookieClick` prop) pour réouvrir le bandeau de consentement.
 ### `navConfig.js`
 Configuration centralisée des items de navigation (routes, labels, icônes).
 
@@ -158,6 +158,7 @@ Composants réutilisables sans logique métier :
 - `Skeleton` — placeholder de chargement (utilisé par Suspense)
 - `SidePanel` — panneau latéral sliding
 - `SourceBadge` — badge `import` vs `manual`
+- **CookieConsent** — Bandeau cookie RGPD (style Axeptio). Mascotte cookie, boutons Accepter/Refuser, lien footer "Cookies" pour réouvrir. Gate le chargement de Crisp (chat).
 
 ---
 

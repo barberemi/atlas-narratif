@@ -81,7 +81,7 @@ describe('computeAlerts', () => {
     const alerts = computeAlerts(chapters, [BEAT_MID]);
     expect(alerts).toHaveLength(1);
     expect(alerts[0].severity).toBe('warning');
-    expect(alerts[0].direction).toBe('tard');
+    expect(alerts[0].direction).toBe('late');
   });
 
   it('génère une alerte "critical" quand |diff| > tolerance*2', () => {
@@ -94,13 +94,13 @@ describe('computeAlerts', () => {
     expect(alerts[0].severity).toBe('critical');
   });
 
-  it('direction "tôt" quand le beat est avant l\'idéal', () => {
-    // 10 chapitres, midpoint au ch.1 → actualPct = 5% → diff = -45 → direction tôt
+  it('direction "early" quand le beat est avant l\'idéal', () => {
+    // 10 chapitres, midpoint au ch.1 → actualPct = 5% → diff = -45 → direction early
     const chapters = Array.from({ length: 10 }, (_, i) =>
       makeChapter(i + 1, `Ch${i + 1}`, i === 0 ? ['midpoint'] : [])
     );
     const alerts = computeAlerts(chapters, [BEAT_MID]);
-    expect(alerts[0].direction).toBe('tôt');
+    expect(alerts[0].direction).toBe('early');
   });
 
   it('inclut actualPct, idealPct et diff arrondis', () => {
@@ -159,12 +159,11 @@ describe('computeAlertsFromEvents', () => {
     expect(alerts[0].message).toBe('Setup trop tard');
   });
 
-  it('génère un message fallback si alertMessages ne couvre pas le cas', () => {
+  it('message est null si alertMessages ne couvre pas le cas (fallback géré côté UI)', () => {
     const beatNoMsg = makeBeat('beat_x', 50, 10); // messages tous null
     const map = new Map([['beat_x', makeEvent(9, 'Event')]]);
     const alerts = computeAlertsFromEvents(map, 10, [beatNoMsg]);
-    expect(typeof alerts[0].message).toBe('string');
-    expect(alerts[0].message.length).toBeGreaterThan(0);
+    expect(alerts[0].message).toBeNull();
   });
 
   it('résultat identique à computeAlerts pour les mêmes données', () => {
