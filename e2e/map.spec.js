@@ -13,6 +13,13 @@ test.describe('Phase 6a — Map', () => {
     await expect(page.getByText(/Aragorn|Frodo/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
+  test('bouton Remplacer le fond visible sur la carte', async ({ page }) => {
+    await page.goto('/map');
+    await expect(page.getByRole('img', { name: /Carte/i })).toBeVisible({ timeout: 15_000 });
+    // Le bouton "Remplacer le fond" doit être en overlay sur la carte
+    await expect(page.getByText(/Replace background|Remplacer le fond/i)).toBeVisible();
+  });
+
   test('mode edit — retirer un lieu, replacer via clic carte', async ({ page }) => {
     await page.goto('/map');
     await expect(page.getByRole('img', { name: /Carte/i })).toBeVisible({ timeout: 10_000 });

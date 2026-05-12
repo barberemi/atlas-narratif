@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoreStore }    from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
-import SourceBadge from '../ui/SourceBadge';
 import DarkCard from '../ui/DarkCard';
 
 export default function CharacterCard({ char, highlighted, onRelations }) {
@@ -31,7 +30,6 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
 
   return (
     <DarkCard ref={ref} color={char.color || '#64748b'} highlighted={highlighted}>
-      <SourceBadge source={char.source} />
       <div className="h-1" style={{ backgroundColor: char.color }} />
       <div className="p-4 flex flex-col gap-3">
         <div>

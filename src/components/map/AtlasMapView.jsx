@@ -191,56 +191,140 @@ export default function AtlasMapView({ onLocationClick }) {
             {t('nav.map')} <span style={{ color: '#3F51B5' }}>Interactive</span>
           </h1>
         </div>
+        {mapImage && allLocations.length > 0 && (
+          <ControlButton
+            active={editMode}
+            onClick={() => { setEditMode(v => !v); setPlacement(null); }}
+            title={editMode ? t('map.exitEditMode') : t('map.enterEditMode')}
+          >
+            <span>✏️</span>
+            <span className="hidden sm:inline">{editMode ? t('map.editing') : t('map.placeLocation')}</span>
+          </ControlButton>
+        )}
       </header>
 
-      {/* Zone centrale */}
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="flex flex-col items-center gap-6 max-w-sm text-center">
-          <span className="text-5xl">🗺️</span>
-          <div>
-            <p className="text-sm font-black text-slate-300 mb-1">{t('map.noJourneys')}</p>
-            <p className="text-xs text-slate-600 font-serif italic">
-              {mode === 'auto'
-                ? t('map.noJourneysAutoHint')
-                : t('map.noJourneysManualHint')}
-            </p>
-          </div>
+      {/* Bannière mode édition */}
+      {editMode && mapImage && (
+        <div
+          className="flex items-center gap-2 px-6 py-2 text-xs"
+          style={{ backgroundColor: 'rgba(99,102,241,0.08)', borderBottom: '1px solid rgba(99,102,241,0.2)' }}
+        >
+          <span style={{ color: '#818cf8' }}>✏️</span>
+          <span style={{ color: '#94a3b8' }}>
+            {unlocalizedLocs.length > 0
+              ? t('map.editBannerUnlocalized', { count: unlocalizedLocs.length })
+              : t('map.editBannerAllPlaced')}
+          </span>
+        </div>
+      )}
 
-          {/* Upload carte */}
-          <div className="w-full flex flex-col gap-2">
-            <p className="text-xs text-slate-500 font-semibold">
-              {mapImage ? t('map.replaceBackground') : t('map.addBackground')}
-            </p>
-            <label
-              className="flex items-center gap-3 px-4 py-4 rounded-xl cursor-pointer transition-all duration-150 hover:border-slate-600 w-full"
-              style={{ border: '1px dashed rgba(255,255,255,0.1)', backgroundColor: 'rgba(0,0,0,0.2)' }}
-            >
-              <span className="text-xl">{mapImage ? '✓' : '↑'}</span>
-              <span className="text-xs text-slate-500">
-                {mapImage ? t('map.backgroundLoaded') : t('map.chooseImage')}
-              </span>
-              <input type="file" accept="image/*" className="hidden" onChange={handleMapFile} />
-            </label>
-            {mapImage && (
-              <button
-                onClick={() => saveMapImage(null)}
-                className="text-[10px] text-slate-700 hover:text-red-400 transition-colors text-left"
+      {mapImage ? (
+        <>
+          {/* Carte uploadée — même rendu que le mode normal */}
+          <div className="flex-1 flex flex-col min-h-0 px-6 md:px-16 py-4 gap-4">
+            <div className="w-full relative z-0 overflow-hidden rounded-lg flex-1 min-h-0">
+              <MapCanvas
+                characters={[]}
+                locations={locations}
+                mapSrc={mapImage}
+                editMode={editMode}
+                onMapClick={handleMapClick}
+                onPinRemove={handlePinRemove}
+              />
+              <div className="absolute bottom-3 right-3 z-10">
+                <label
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all duration-150 hover:bg-white/15"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.6)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)' }}
+                >
+                  {t('map.replaceBackground')}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleMapFile} />
+                </label>
+              </div>
+
+              {/* Popup de placement de lieu */}
+              {placement && unlocalizedLocs.length > 0 && (
+                <div
+                  className="absolute z-50 rounded-xl overflow-hidden"
+                  style={{
+                    left: `${Math.min(placement.x, 75)}%`,
+                    top:  `${Math.min(placement.y, 70)}%`,
+                    backgroundColor: '#0d1b2a',
+                    border: '1px solid rgba(99,102,241,0.4)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
+                    minWidth: 200,
+                  }}
+                >
+                  <div className="px-3 pt-3 pb-1 flex items-center justify-between">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('map.placeHere')}</p>
+                    <button onClick={() => setPlacement(null)} className="text-slate-600 hover:text-slate-300 text-xs transition-colors">×</button>
+                  </div>
+                  <div className="p-1 max-h-48 overflow-y-auto">
+                    {unlocalizedLocs.map(loc => (
+                      <button
+                        key={loc.id}
+                        onClick={() => assignLocation(loc.id)}
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-white/5 transition-colors"
+                      >
+                        📍 {loc.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {!editMode && (
+              <div className="flex items-center justify-center gap-3 py-2 px-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' }}>
+                <span className="text-base">💡</span>
+                <p className="text-xs text-slate-400">
+                  {t('map.noDataHint')}
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        /* État vide — pas de carte */
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="flex flex-col items-center gap-6 max-w-sm text-center">
+            <span className="text-5xl">🗺️</span>
+            <div>
+              <p className="text-sm font-black text-slate-300 mb-1">{t('map.noJourneys')}</p>
+              <p className="text-xs text-slate-600 font-serif italic">
+                {mode === 'auto'
+                  ? t('map.noJourneysAutoHint')
+                  : t('map.noJourneysManualHint')}
+              </p>
+            </div>
+
+            {/* Upload carte */}
+            <div className="w-full flex flex-col gap-2">
+              <p className="text-xs text-slate-500 font-semibold">
+                {t('map.addBackground')}
+              </p>
+              <label
+                className="flex items-center gap-3 px-4 py-4 rounded-xl cursor-pointer transition-all duration-150 hover:border-slate-600 w-full"
+                style={{ border: '1px dashed rgba(255,255,255,0.1)', backgroundColor: 'rgba(0,0,0,0.2)' }}
               >
-                {t('map.deleteBackground')}
+                <span className="text-xl">↑</span>
+                <span className="text-xs text-slate-500">
+                  {t('map.chooseImage')}
+                </span>
+                <input type="file" accept="image/*" className="hidden" onChange={handleMapFile} />
+              </label>
+            </div>
+
+            {mode === 'manual' && (
+              <button
+                onClick={() => setMode('auto')}
+                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                {t('map.switchToAuto')}
               </button>
             )}
           </div>
-
-          {mode === 'manual' && (
-            <button
-              onClick={() => setMode('auto')}
-              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              {t('map.switchToAuto')}
-            </button>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 
@@ -580,6 +664,17 @@ export default function AtlasMapView({ onLocationClick }) {
           onMapClick={handleMapClick}
           onPinRemove={handlePinRemove}
         />
+
+        {/* Bouton remplacer le fond */}
+        <div className="absolute bottom-3 right-3 z-10">
+          <label
+            className="px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all duration-150 hover:bg-white/15"
+            style={{ backgroundColor: 'rgba(0,0,0,0.6)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            {t('map.replaceBackground')}
+            <input type="file" accept="image/*" className="hidden" onChange={handleMapFile} />
+          </label>
+        </div>
 
         {/* Popup de placement de lieu */}
         {placement && unlocalizedLocs.length > 0 && (

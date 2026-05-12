@@ -28,16 +28,18 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
         {/* En-tête */}
         <div>
           <p className="text-sm font-black text-white truncate">{group.name}</p>
-          <span
-            className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold"
-            style={{
-              backgroundColor: `${group.color}15`,
-              color:           group.color,
-              border:          `1px solid ${group.color}30`,
-            }}
-          >
-            {group.type}
-          </span>
+          {group.type && (
+            <span
+              className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold"
+              style={{
+                backgroundColor: `${group.color}15`,
+                color:           group.color,
+                border:          `1px solid ${group.color}30`,
+              }}
+            >
+              {group.type}
+            </span>
+          )}
         </div>
 
         {/* Description */}

@@ -761,9 +761,9 @@ function AppLayout() {
   const [showWelcome,  setShowWelcome]  = useState(false);
   const location = useLocation();
 
-  // Affiche le modal de bienvenue quand on arrive sur /dashboard avec un nouveau projet
+  // Affiche le modal de bienvenue uniquement pour la démo LOTR
   useEffect(() => {
-    if (location.pathname === '/dashboard' && projectId && shouldShowWelcome(projectId)) {
+    if (location.pathname === '/dashboard' && projectId?.startsWith('lotr') && shouldShowWelcome(projectId)) {
       setShowWelcome(true);
     }
   }, [location.pathname, projectId]);

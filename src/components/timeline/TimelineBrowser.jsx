@@ -307,7 +307,27 @@ export default function TimelineBrowser() {
 
   if (events.length === 0) return (
     <div className="h-full flex items-center justify-center">
-      <EmptyState icon="📅" title="Aucun événement" hint="Ajoutez votre premier événement pour construire votre timeline." />
+      <EmptyState
+        icon="📅"
+        title={t('empty.noEvents')}
+        hint={t('timeline.emptyHint', 'Ajoutez votre premier événement pour construire votre timeline.')}
+        action={
+          <button
+            onClick={() => setEditorEvent(null)}
+            className="px-4 py-2 rounded-xl text-sm font-black transition-all duration-200"
+            style={{ backgroundColor: 'rgba(63,81,181,0.25)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.4)' }}
+          >
+            {t('timeline.addEvent', '+ Créer un événement')}
+          </button>
+        }
+      />
+      {editorEvent !== undefined && (
+        <EventEditor
+          event={editorEvent ?? undefined}
+          chapters={[]}
+          onClose={() => setEditorEvent(undefined)}
+        />
+      )}
     </div>
   );
 

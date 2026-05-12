@@ -56,12 +56,25 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
     await expect(page).toHaveURL(/\/savethecat/, { timeout: 10_000 });
     await page.keyboard.press('Escape'); // dismiss welcome modal
 
+    // Dashboard : le modal de bienvenue ne doit PAS s'afficher sur un projet vide
+    await page.goto('/dashboard');
+    const welcomeModal = page.getByRole('dialog', { name: /Welcome|Bienvenue/i });
+    await expect(welcomeModal).not.toBeVisible({ timeout: 3_000 });
+
     // Vérifier les empty states sur chaque route
     await page.goto('/lore');
     await expect(page.getByText('◯').first()).toBeVisible({ timeout: 5_000 });
 
+    // Timeline vide : bouton "+ Créer un événement" visible
     await page.goto('/timeline');
     await expect(page.getByText('📅').first()).toBeVisible({ timeout: 5_000 });
+    const addEventBtn = page.getByRole('button', { name: /Create an event|Créer un événement|创建事件/i });
+    await expect(addEventBtn).toBeVisible();
+
+    // Cliquer ouvre l'EventEditor
+    await addEventBtn.click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5_000 });
+    await page.keyboard.press('Escape');
 
     await page.goto('/plants');
     await expect(page.getByText('🌱').first()).toBeVisible({ timeout: 5_000 });
@@ -69,14 +82,23 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
     await page.goto('/threads');
     await expect(page.getByText('🧵').first()).toBeVisible({ timeout: 5_000 });
 
-    // Map : pas d'image custom → le file input d'upload doit être visible
+    // Map : pas d'image → état vide avec emoji et upload
     await page.goto('/map');
+    await expect(page.getByText('🗺️')).toBeVisible({ timeout: 5_000 });
+
+    // Upload une image → le MapCanvas s'affiche (pas juste un <img>)
     const fileInput = page.locator('input[type="file"][accept*="image"]');
-    if (await fileInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Upload l'image LOTR comme test
-      await fileInput.setInputFiles(path.resolve('src/assets/ouest_terre_du_milieu.jpg'));
-      await expect(page.getByRole('img', { name: /Carte/i })).toBeVisible({ timeout: 10_000 });
-    }
+    await fileInput.setInputFiles(path.resolve('src/assets/ouest_terre_du_milieu.jpg'));
+    await expect(page.getByRole('img', { name: /Carte/i })).toBeVisible({ timeout: 10_000 });
+
+    // L'emoji de l'état vide doit avoir disparu
+    await expect(page.getByText('🗺️')).not.toBeVisible();
+
+    // Le bouton "Remplacer le fond" doit être visible
+    await expect(page.getByText(/Replace background|Remplacer le fond/i)).toBeVisible();
+
+    // Le message d'aide pour voir les trajets doit être visible
+    await expect(page.getByText(/To see journeys|Pour voir les trajets|显示旅程/i)).toBeVisible();
 
     // Cleanup : revenir sur le projet LOTR
     await page.locator('nav').getByRole('button', { name: /Empty Project/i }).click();
@@ -84,6 +106,28 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
     if (await lotrBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
       await lotrBtn.click();
     }
+  });
+
+  test('tour guidé — modal affiché uniquement sur LOTR', async ({ page }) => {
+    // Reset le flag "tour vu" pour le projet LOTR
+    await page.goto('/dashboard');
+    await page.evaluate(() => {
+      const projectId = localStorage.getItem('atlas_active_project');
+      if (projectId) localStorage.removeItem(`atlas_tour_seen_${projectId}`);
+    });
+
+    // Recharger → le modal de bienvenue doit s'afficher (projet LOTR)
+    await page.reload();
+    const welcomeModal = page.locator('[aria-modal="true"]');
+    await expect(welcomeModal).toBeVisible({ timeout: 5_000 });
+    await expect(welcomeModal.getByText(/Welcome|Bienvenue/i)).toBeVisible();
+
+    // Le bouton "Démarrer la visite" doit être présent
+    await expect(welcomeModal.getByText(/Start guided tour|Démarrer la visite/i)).toBeVisible();
+
+    // Fermer le modal
+    await page.keyboard.press('Escape');
+    await expect(welcomeModal).not.toBeVisible({ timeout: 3_000 });
   });
 
   test('données longues — nom 200 caractères', async ({ page }) => {

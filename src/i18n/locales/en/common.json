@@ -206,7 +206,9 @@
     "seriesEmptyHint": "Create at least 2 volumes via the volume selector to display the series view.",
     "unassignedEvents": "{{count}} event(s) without assigned volume",
     "memoryCount_one": "↩ {{count}} memory",
-    "memoryCount_other": "↩ {{count}} memories"
+    "memoryCount_other": "↩ {{count}} memories",
+    "emptyHint": "Add your first event to start building your timeline.",
+    "addEvent": "+ Create an event"
   },
   "dnd": {
     "dropHere": "Drop here",
@@ -571,7 +573,6 @@
     "replaceBackground": "Replace background",
     "addBackground": "Add map background",
     "chooseImage": "Choose image",
-    "deleteBackground": "Delete background",
     "switchToAuto": "Switch to automatic mode",
     "charCount": "{{count}} character(s)",
     "journeysFromTimeline": "Journeys from timeline",
@@ -604,6 +605,7 @@
     "backgroundLoaded": "Map background loaded",
     "noJourneysAutoHint": "Journeys will be computed from timeline events",
     "noJourneysManualHint": "Create manual journeys for your characters",
+    "noDataHint": "To see journeys: 1) Create characters and locations in the World · 2) Create events in the Timeline, linking your characters and a location · 3) Place your locations on the map via edit mode ✏️",
     "chooseCharacter": "Choose a character…",
     "noSteps": "No steps",
     "addLocation": "+ Add location",
@@ -801,7 +803,7 @@
     "sendingLink": "Sending\u2026",
     "sendError": "Error sending email",
     "emailSentTitle": "Email sent",
-    "emailSentDesc": "If <1>{{email}}</1> matches an account, you will receive a reset link shortly.",
+    "emailSentDesc": "If {{email}} matches an account, you will receive a reset link shortly.",
     "backToLogin": "Back to login",
     "backToLoginArrow": "\u2190 Back to login",
     "newPassword": "New password",

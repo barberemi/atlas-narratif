@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getEntityMeta } from '../../utils/entityUtils';
-import SourceBadge from '../ui/SourceBadge';
 import DarkCard from '../ui/DarkCard';
 
 export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelations }) {
@@ -14,12 +13,11 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
 
   return (
     <DarkCard ref={ref} color="#F59E0B" highlighted={highlighted}>
-      <SourceBadge source={obj.source} />
       <div className="h-1 bg-gradient-to-r from-amber-600 to-amber-400" />
       <div className="p-4 flex flex-col gap-3">
         <div>
-          <span className="text-xs px-2 py-0.5 rounded bg-amber-900/30 text-amber-400 border border-amber-800/40">{obj.type}</span>
-          <h3 className="text-base font-black text-white mt-1">{obj.name}</h3>
+          {obj.type && <span className="text-xs px-2 py-0.5 rounded bg-amber-900/30 text-amber-400 border border-amber-800/40">{obj.type}</span>}
+          <h3 className={`text-base font-black text-white${obj.type ? ' mt-1' : ''}`}>{obj.name}</h3>
           {obj.creator && <p className="text-xs text-slate-500 italic mt-0.5">{t('lore.forgedBy', { name: obj.creator })}</p>}
         </div>
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{obj.description}</p>

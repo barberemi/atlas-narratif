@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getEntityMeta } from '../../utils/entityUtils';
-import SourceBadge from '../ui/SourceBadge';
 import DarkCard from '../ui/DarkCard';
 
 export default function LocationCard({ loc, highlighted, onCharacterClick, onRelations }) {
@@ -14,13 +13,14 @@ export default function LocationCard({ loc, highlighted, onCharacterClick, onRel
 
   return (
     <DarkCard ref={ref} color="#818cf8" highlighted={highlighted}>
-      <SourceBadge source={loc.source} />
       <div className="h-1 bg-gradient-to-r from-slate-600 to-slate-700" />
       <div className="p-4 flex flex-col gap-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">{loc.type}</span>
-          </div>
+          {loc.type && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10">{loc.type}</span>
+            </div>
+          )}
           <h3 className="text-base font-black text-white">{loc.name}</h3>
           <p className="text-xs text-slate-500 italic mt-0.5">{loc.regime}</p>
         </div>

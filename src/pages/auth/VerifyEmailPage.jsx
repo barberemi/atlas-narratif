@@ -24,7 +24,12 @@ export default function VerifyEmailPage() {
     if (!email || sending || countdown > 0) return;
     setSending(true);
     try {
-      await authClient.sendVerificationEmail({ email });
+      const { error } = await authClient.sendVerificationEmail({ email });
+      if (error) {
+        console.error('[resendVerification]', error.message, error);
+        toast.error(t('authPages.resendError'));
+        return;
+      }
       toast.success(t('authPages.emailResent'));
       setCountdown(COOLDOWN);
     } catch {

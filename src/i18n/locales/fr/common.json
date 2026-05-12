@@ -206,7 +206,9 @@
     "seriesEmptyHint": "Créez au moins 2 tomes via le sélecteur de tome pour afficher la vue série.",
     "unassignedEvents": "{{count}} événement(s) sans tome assigné",
     "memoryCount_one": "↩ {{count}} mémoire",
-    "memoryCount_other": "↩ {{count}} mémoires"
+    "memoryCount_other": "↩ {{count}} mémoires",
+    "emptyHint": "Ajoutez votre premier événement pour construire votre timeline.",
+    "addEvent": "+ Créer un événement"
   },
   "dnd": {
     "dropHere": "Déposer ici",
@@ -553,7 +555,6 @@
     "replaceBackground": "Remplacer le fond",
     "addBackground": "Ajouter un fond de carte",
     "chooseImage": "Choisir une image",
-    "deleteBackground": "Supprimer le fond",
     "switchToAuto": "Passer en mode automatique",
     "charCount": "{{count}} personnage(s)",
     "journeysFromTimeline": "Trajets depuis la timeline",
@@ -586,6 +587,7 @@
     "backgroundLoaded": "Fond de carte chargé",
     "noJourneysAutoHint": "Les trajets seront calculés depuis les événements de la timeline",
     "noJourneysManualHint": "Créez des trajets manuels pour vos personnages",
+    "noDataHint": "Pour voir les trajets : 1) Créez des personnages et lieux dans l'Univers · 2) Créez des événements dans la Timeline en y associant vos personnages et un lieu · 3) Placez vos lieux sur la carte via le mode édition ✏️",
     "chooseCharacter": "Choisir un personnage…",
     "noSteps": "Aucune étape",
     "addLocation": "+ Ajouter un lieu",
@@ -783,7 +785,7 @@
     "sendingLink": "Envoi...",
     "sendError": "Erreur lors de l'envoi",
     "emailSentTitle": "Email envoy\u00e9",
-    "emailSentDesc": "Si <1>{{email}}</1> correspond \u00e0 un compte, vous recevrez un lien de r\u00e9initialisation dans quelques instants.",
+    "emailSentDesc": "Si {{email}} correspond \u00e0 un compte, vous recevrez un lien de r\u00e9initialisation dans quelques instants.",
     "backToLogin": "Retour \u00e0 la connexion",
     "backToLoginArrow": "\u2190 Retour \u00e0 la connexion",
     "newPassword": "Nouveau mot de passe",

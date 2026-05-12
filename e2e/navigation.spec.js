@@ -70,11 +70,14 @@ test.describe('Navigation & filtres', () => {
 
   test('clic résultat search → navigation /lore', async ({ page }) => {
     await page.goto('/dashboard');
+    await expect(page.getByText('Narrative Health')).toBeVisible({ timeout: 10_000 });
     await page.keyboard.press('Control+k');
-    await page.getByPlaceholder(/search|recherch/i).fill('Gandalf');
-    const result = page.getByText('Gandalf the Grey').first();
-    await expect(result).toBeVisible({ timeout: 5_000 });
-    await result.click();
+    const searchInput = page.getByPlaceholder(/search|recherch/i);
+    await expect(searchInput).toBeVisible({ timeout: 5_000 });
+    await searchInput.fill('Gandalf');
+    // Attendre que le premier résultat apparaisse, puis Enter pour naviguer
+    await expect(page.getByRole('button', { name: /Gandalf the Grey/i }).first()).toBeVisible({ timeout: 10_000 });
+    await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/lore/, { timeout: 10_000 });
   });
 
