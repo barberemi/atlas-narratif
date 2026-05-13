@@ -1,4 +1,50 @@
 ===============================================================================
+  POST LINKEDIN — LANCEMENT ATLAS NARRATIF
+===============================================================================
+
+[ ] Publier le post LinkedIn :
+
+Bonjour tout le monde,
+
+Je partage pas souvent des choses ici, mais aujourd'hui j'ai envie de vous faire part d'un projet sur lequel je bosse depuis quelque temps.
+
+Vous le savez peut-être mais le jour j'écris (plus ou moins à l'ère de l'IA 🤖), mais vous le savez surement moins, le soir, j'écris des histoires.
+
+Et un soir, j'en ai eu marre de me perdre dans mes propres intrigues.
+
+"Attends, il était où Aragorn au chapitre 12 ?" "Ce personnage secondaire que j'ai planté au tome 1, je l'ai jamais exploité ?" "Pourquoi mon méchant a les yeux bleus page 40 et marron page 312 ?"
+
+Alors j'ai construit Atlas Narratif.
+
+Deux façons de s'en servir :
+
+📖 T'as déjà un manuscrit ? Tu le drop, l'IA le digère, et tu obtiens une vue complète de ton univers en quelques minutes.
+
+✍️ T'as juste une idée ? Tu pars de zéro et tu construis ton histoire brique par brique : personnages, lieux, structure, timeline, etc... avant même d'écrire la première ligne.
+
+Dans les deux cas, tu te retrouves avec :
+
+🗺️ Une carte interactive avec les trajets de tes personnages
+🕸️ Un graphe de relations entre tout tes personnages
+📊 La timeline complète, chapitre par chapitre
+🎭 Les arcs émotionnels visualisés
+🌱 Un tracker plant/payoff (pour ne plus jamais fantômer une amorce narrative)
+🐱 La structure Save the Cat appliquée à ton histoire
+⚔️ Le Voyage du Héros en 12 étapes
+🔍 Et le meilleur : une détection automatique des incohérences
+
+En gros, c'est un tableau de bord pour les auteurs.
+
+Multi-tomes, pensé pour les sagas, mais fonctionne aussi pour un standalone.
+
+C'est en prod, c'est fonctionnel, et je continue d'y bosser activement.
+
+👉 atlas-narratif.com
+
+Si t'écris, si tu connais quelqu'un qui écrit, ou si t'as juste envie de voir ce que ça donne, n'hésite pas à y jeter un œil. Les retours sont les bienvenus.
+
+
+===============================================================================
   MODE COOPÉRATIF + MODÉRATION PUBLIQUE
   Multi-auteurs, rôles, invitations, vue publique, suggestions
 ===============================================================================
