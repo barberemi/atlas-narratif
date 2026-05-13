@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import cookieIcon from '../../assets/cookie.png';
+import cookieIcon from '../../assets/cookie-min.webp';
 import { loadCrisp, unloadCrisp } from '../../utils/crisp';
 
 const LS_KEY = 'atlas_cookie_consent';
@@ -55,7 +55,7 @@ export default function CookieConsent({ hasAuthBar = false, onReady }) {
           }}
         >
           <div className="flex justify-center pt-5 pb-2">
-            <img src={cookieIcon} alt="" className="w-19 h-16 drop-shadow-lg" />
+            <img src={cookieIcon} alt="cookie-logo" className="w-19 h-16 drop-shadow-lg" />
           </div>
           <div className="px-6 pb-5 text-center">
             <h3 className="text-base font-black text-white mb-2">{t('cookie.title')}</h3>

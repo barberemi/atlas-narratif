@@ -85,6 +85,7 @@ services:
         - traefik.http.routers.frontend-www.rule=Host(`www.${DOMAIN}`)
         - traefik.http.routers.frontend-www.entrypoints=websecure
         - traefik.http.routers.frontend-www.tls.certresolver=letsencrypt
+        - traefik.http.routers.frontend-www.service=frontend
         - traefik.http.routers.frontend-www.middlewares=www-redirect
         - traefik.http.middlewares.www-redirect.redirectregex.regex=^https?://www\.(.+)
         - traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}
