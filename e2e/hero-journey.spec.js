@@ -15,13 +15,13 @@ test.describe('Phase 5c — Hero Journey', () => {
         await chapterInput.fill('1');
       }
       await page.getByRole('button', { name: /Save|Sauvegarder/i }).click();
-      await expect(page.getByText('E2E hero journey test entry')).toBeVisible({ timeout: 5_000 });
+      await expect(page.getByText('E2E hero journey test entry').first()).toBeVisible({ timeout: 5_000 });
     }
   });
 
   test('supprimer une étape', async ({ page }) => {
     await page.goto('/heros');
-    const entry = page.getByText('E2E hero journey test entry');
+    const entry = page.getByText('E2E hero journey test entry').first();
     if (await entry.isVisible({ timeout: 3000 }).catch(() => false)) {
       await entry.click();
       await page.getByRole('button', { name: /Delete|Supprimer|Remove/i }).first().click();
