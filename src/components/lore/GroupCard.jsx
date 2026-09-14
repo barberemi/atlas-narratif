@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { ENTITY_COLORS } from '../../utils/entityUtils';
+import DarkCard from '../ui/DarkCard';
+import Icon from '../ui/Icon';
 
 export default function GroupCard({ group, onCharacterClick, onRelations }) {
   const { t } = useTranslation();
@@ -16,25 +19,21 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
     ? locations.find(l => l.id === group.homelandId)
     : null;
 
-  return (
-    <div
-      className="rounded-2xl overflow-hidden flex flex-col transition-all duration-150"
-      style={{ border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.02)' }}
-    >
-      {/* Bandeau couleur */}
-      <div className="h-1 w-full flex-shrink-0" style={{ backgroundColor: group.color }} />
+  const accent = group.color || ENTITY_COLORS.group;
 
+  return (
+    <DarkCard color={accent} accent={accent} className="flex flex-col">
       <div className="p-4 flex flex-col gap-2 flex-1">
         {/* En-tête */}
         <div>
-          <p className="text-sm font-black text-white truncate">{group.name}</p>
+          <p className="font-serif text-base font-semibold text-atlas-text truncate">{group.name}</p>
           {group.type && (
             <span
               className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold"
               style={{
-                backgroundColor: `${group.color}15`,
-                color:           group.color,
-                border:          `1px solid ${group.color}30`,
+                backgroundColor: `${accent}15`,
+                color:           accent,
+                border:          `1px solid ${accent}30`,
               }}
             >
               {group.type}
@@ -44,21 +43,21 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
 
         {/* Description */}
         {group.description && (
-          <p className="text-xs text-slate-500 font-serif italic leading-relaxed line-clamp-2">
+          <p className="text-xs text-atlas-soft font-serif italic leading-relaxed line-clamp-2">
             {group.description}
           </p>
         )}
 
         {/* Homeland */}
         {homeland && (
-          <p className="text-[10px] text-slate-600">
-            📍 {homeland.name}
+          <p className="text-[10px] text-atlas-mute flex items-center gap-1">
+            <Icon name="location" size={14} />{homeland.name}
           </p>
         )}
 
         {/* Membres */}
         <div className="mt-auto pt-2">
-          <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-1.5">
+          <p className="text-[10px] text-atlas-mute uppercase tracking-widest mb-1.5">
             {t('label.memberCount', { count: memberChars.length })}
           </p>
           {memberChars.length > 0 && (
@@ -98,8 +97,8 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
           <div className="flex justify-end mt-1">
             <button
               onClick={e => { e.stopPropagation(); onRelations(); }}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all duration-150 hover:scale-105 hover:brightness-125"
-              style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer' }}
+              className="flex items-center gap-1 px-2 py-1 font-grotesk text-[10px] font-bold uppercase tracking-[0.06em] transition-all duration-150 hover:brightness-125"
+              style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)', cursor: 'pointer' }}
             >
               <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>
@@ -110,6 +109,6 @@ export default function GroupCard({ group, onCharacterClick, onRelations }) {
           </div>
         )}
       </div>
-    </div>
+    </DarkCard>
   );
 }

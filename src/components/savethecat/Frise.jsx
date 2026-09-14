@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BEATS } from '../../data/beats_config';
+import { VIZ_CATEGORICAL, VIZ_STATUS } from '../../data/viz_palette';
+import { ACT_BANDS } from '../../utils/acts';
 
 const FRISE_H   = 340;
 const BAR_TOP   = 225;
@@ -8,7 +10,7 @@ const BAR_H     = 10;
 const BEAT_SIZE = 28;
 const BEAT_STEP = 34;
 
-export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onHoverBeat }) {
+export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onHoverBeat, selectedBeat = null, onSelectBeat }) {
   const { t } = useTranslation();
   const [hoveredChapterNum, setHoveredChapterNum] = useState(null);
 
@@ -43,19 +45,15 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
   return (
     <div className="relative w-full select-none" style={{ height: FRISE_H }}>
 
-      {/* ── Zones de fond par acte ── */}
-      {[
-        { from: 0,  to: 25,  label: t('stc.actI'),   color: 'rgba(99,102,241,0.04)' },
-        { from: 25, to: 75,  label: t('stc.actII'),  color: 'rgba(234,179,8,0.04)'  },
-        { from: 75, to: 100, label: t('stc.actIII'), color: 'rgba(239,68,68,0.04)'  },
-      ].map(({ from, to, label, color }) => (
+      {/* ── Zones de fond par acte (modèle partagé avec la Timeline) ── */}
+      {ACT_BANDS.map(({ from, to, key, color }) => (
         <div
-          key={label}
+          key={key}
           className="absolute"
           style={{
             left: `${from}%`, width: `${to - from}%`,
             top: 0, height: BAR_TOP + BAR_H,
-            backgroundColor: color,
+            backgroundColor: `${color}0a`,
             borderRight: to < 100 ? '1px dashed rgba(255,255,255,0.06)' : 'none',
           }}
         >
@@ -63,7 +61,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
             className="absolute text-[11px] font-mono tracking-widest uppercase"
             style={{ bottom: BAR_H + 6, left: 8, color: 'rgba(255,255,255,0.15)' }}
           >
-            {label}
+            {t(`stc.act${key}`)}
           </span>
         </div>
       ))}
@@ -119,9 +117,9 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                 }}
               >
                 <div
-                  className="rounded-xl p-3 space-y-2"
+                  className="rounded-none p-3 space-y-2"
                   style={{
-                    backgroundColor: 'rgba(11,22,33,0.97)',
+                    backgroundColor: 'rgba(21,23,27,0.97)',
                     border: '1px solid rgba(255,255,255,0.12)',
                     backdropFilter: 'blur(12px)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
@@ -130,7 +128,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                   <div className="flex items-center gap-2">
                     <span
                       className="text-[10px] font-mono px-1.5 py-0.5 rounded font-bold"
-                      style={{ backgroundColor: 'rgba(63,81,181,0.25)', color: '#818cf8' }}
+                      style={{ backgroundColor: 'rgba(92,174,142,0.25)', color: '#5cae8e' }}
                     >
                       Ch.{ch.number}
                     </span>
@@ -143,7 +141,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                         className="text-[10px] px-1.5 py-0.5 rounded font-medium"
                         style={{
                           backgroundColor: `${beat.color}18`,
-                          color: alertBeatIds.has(beat.id) ? '#fbbf24' : beat.color,
+                          color: alertBeatIds.has(beat.id) ? VIZ_STATUS.warn : beat.color,
                           border: `1px solid ${alertBeatIds.has(beat.id) ? 'rgba(251,191,36,0.3)' : beat.color + '40'}`,
                         }}
                       >
@@ -156,9 +154,10 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
             )}
 
             {chBeats.map((beat, bi) => {
-              const circleTop = BAR_TOP - (bi + 1) * BEAT_STEP - 4;
-              const isAlert   = alertBeatIds.has(beat.id);
-              const isHovered = hoveredBeat === beat.id;
+              const circleTop  = BAR_TOP - (bi + 1) * BEAT_STEP - 4;
+              const isAlert    = alertBeatIds.has(beat.id);
+              const isSelected = selectedBeat === beat.id;
+              const isHovered  = hoveredBeat === beat.id || isSelected;
 
               return (
                 <div key={beat.id}>
@@ -176,7 +175,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                     />
                   )}
                   <div
-                    className="absolute flex items-center justify-center rounded-full font-bold cursor-default transition-all duration-150"
+                    className="absolute flex items-center justify-center rounded-full font-bold cursor-pointer transition-all duration-150"
                     style={{
                       left: `${x}%`,
                       top: circleTop,
@@ -184,19 +183,22 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
                       height: BEAT_SIZE,
                       transform: 'translateX(-50%)',
                       backgroundColor: `${beat.color}15`,
-                      border: `2px solid ${isAlert ? '#fbbf24' : beat.color + (isHovered ? 'cc' : '60')}`,
+                      border: `2px solid ${isAlert ? VIZ_STATUS.warn : beat.color + (isHovered ? 'cc' : '60')}`,
                       boxShadow: isHovered
                         ? `0 0 16px ${beat.color}70`
                         : isAlert
                           ? `0 0 10px rgba(251,191,36,0.4)`
                           : `0 0 8px ${beat.color}25`,
-                      color: isAlert ? '#fbbf24' : beat.color,
+                      outline: isSelected ? `2px solid ${isAlert ? VIZ_STATUS.warn : beat.color}` : 'none',
+                      outlineOffset: 2,
+                      color: isAlert ? VIZ_STATUS.warn : beat.color,
                       fontSize: 11,
                       zIndex: 10,
                     }}
                     title={`${beat.number}. ${t(`narrative:beats.${beat.id}.label`, beat.label)}${isAlert ? ' ⚠' : ''}`}
                     onMouseEnter={() => onHoverBeat(beat.id)}
                     onMouseLeave={() => onHoverBeat(null)}
+                    onClick={() => onSelectBeat?.(beat.id)}
                   >
                     {beat.number}
                   </div>
@@ -212,7 +214,11 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: 'linear-gradient(to right, #6366f1 0%, #10b981 35%, #facc15 50%, #f97316 70%, #ef4444 82%, #ec4899 100%)',
+            // Segments d'acte (catégoriel) alignés sur les zones de fond — plus d'arc-en-ciel.
+            background: `linear-gradient(to right,`
+              + ` ${VIZ_CATEGORICAL[0]} 0%, ${VIZ_CATEGORICAL[0]} 25%,`
+              + ` ${VIZ_CATEGORICAL[1]} 25%, ${VIZ_CATEGORICAL[1]} 75%,`
+              + ` ${VIZ_CATEGORICAL[2]} 75%, ${VIZ_CATEGORICAL[2]} 100%)`,
             opacity: 0.3,
           }}
         />
@@ -226,18 +232,42 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
         ))}
       </div>
 
-      {/* ── Marqueurs idéaux (diamants sous la barre) ── */}
+      {/* ── Bandes de tolérance (zone acceptable autour de chaque position idéale) ── */}
+      {/* Dans la bande = beat « juste » ; hors bande, l'écart est signalé en ambre. */}
       {BEATS.map(beat => {
         const isHovered = hoveredBeat === beat.id;
+        const from = Math.max(0,   beat.idealPercent - beat.tolerance);
+        const to   = Math.min(100, beat.idealPercent + beat.tolerance);
+        return (
+          <div
+            key={`tol-${beat.id}`}
+            className="absolute pointer-events-none"
+            style={{
+              left: `${from}%`, width: `${to - from}%`,
+              top: BAR_TOP + BAR_H + 11, height: 12,
+              borderRadius: 6,
+              backgroundColor: `${beat.color}${isHovered ? '3a' : '12'}`,
+              border: `1px solid ${beat.color}${isHovered ? '55' : '1f'}`,
+              transition: 'background-color 0.15s, border-color 0.15s',
+              zIndex: 1,
+            }}
+          />
+        );
+      })}
+
+      {/* ── Marqueurs idéaux (diamants sous la barre) ── */}
+      {BEATS.map(beat => {
+        const isHovered = hoveredBeat === beat.id || selectedBeat === beat.id;
         const hasActual = beatEventMap.has(beat.id);
         return (
           <div
             key={`ideal-${beat.id}`}
-            className="absolute cursor-default"
-            style={{ left: `${beat.idealPercent}%`, top: BAR_TOP + BAR_H + 12, transform: 'translateX(-50%)' }}
-            title={`${beat.number}. ${t(`narrative:beats.${beat.id}.label`, beat.label)} — ${t('stc.ideal')} : ${beat.idealPercent}%`}
+            className="absolute cursor-pointer"
+            style={{ left: `${beat.idealPercent}%`, top: BAR_TOP + BAR_H + 12, transform: 'translateX(-50%)', zIndex: 2 }}
+            title={`${beat.number}. ${t(`narrative:beats.${beat.id}.label`, beat.label)} · ${t('stc.ideal')} : ${beat.idealPercent}%`}
             onMouseEnter={() => onHoverBeat(beat.id)}
             onMouseLeave={() => onHoverBeat(null)}
+            onClick={() => onSelectBeat?.(beat.id)}
           >
             <div
               style={{
@@ -251,7 +281,7 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
             {!hasActual && (
               <div
                 className="absolute text-[10px] font-mono"
-                style={{ top: 14, left: '50%', transform: 'translateX(-50%)', color: '#475569' }}
+                style={{ top: 14, left: '50%', transform: 'translateX(-50%)', color: 'var(--color-atlas-mute)' }}
               >
                 ?
               </div>
@@ -282,13 +312,13 @@ export default function Frise({ chapters, beatEventMap, alerts, hoveredBeat, onH
             transform: 'translateX(-50%)',
             color: hoveredBeat === beat.id ? beat.color : `${beat.color}65`,
             fontSize: 10,
-            maxWidth: 64,
-            lineHeight: 1.3,
-            whiteSpace: 'nowrap',
+            maxWidth: 78,
+            lineHeight: 1.25,
+            whiteSpace: 'normal',
             transition: 'color 0.15s',
           }}
         >
-          {t(`narrative:beats.${beat.id}.label`, beat.label).split(' ').slice(0, 2).join(' ')}
+          {t(`narrative:beats.${beat.id}.label`, beat.label)}
         </div>
       ))}
     </div>

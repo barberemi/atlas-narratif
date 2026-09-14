@@ -1,15 +1,19 @@
 /**
- * Export d'un projet AtlasNarratif vers un fichier Markdown (bible narrative).
+ * Export d'un projet Atlas Narratif vers un fichier Markdown (bible narrative).
  * Délègue la collecte des données au serveur via l'API,
  * puis transforme en Markdown lisible.
  */
 
 import { getDeviceId, ensureDeviceRegistered } from '../api/client';
 import { buildMarkdown } from '../utils/exportMarkdown';
+import { downloadBlob } from '../utils/download';
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-export async function exportProject(_db, projectId) {
+// Récupère le payload d'export complet d'un projet (JSON déchiffré côté serveur).
+// Réutilisé par l'export Markdown et par les livrables auteur (bible perso,
+// synopsis, checklist des amorces).
+export async function fetchProjectExport(projectId) {
   await ensureDeviceRegistered();
   const res = await fetch(`${BASE}/api/projects/${projectId}/export`, {
     credentials: 'include',
@@ -19,21 +23,20 @@ export async function exportProject(_db, projectId) {
     },
   });
   if (!res.ok) throw new Error(`Export échoué : HTTP ${res.status}`);
-  const payload = await res.json();
+  return res.json();
+}
 
+// Nom de fichier normalisé `atlas_<slug>_<date>` (sans extension).
+export function exportBasename(projectName) {
+  const slug = projectName.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').slice(0, 30);
+  const date = new Date().toISOString().slice(0, 10);
+  return `atlas_${slug}_${date}`;
+}
+
+export async function exportProject(_db, projectId) {
+  const payload  = await fetchProjectExport(projectId);
   const markdown = buildMarkdown(payload);
-
-  const slug     = payload.project.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').slice(0, 30);
-  const date     = new Date().toISOString().slice(0, 10);
-  const filename = `atlas_${slug}_${date}.md`;
-
-  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-
+  const filename = `${exportBasename(payload.project.name)}.md`;
+  downloadBlob(markdown, filename, 'text/markdown;charset=utf-8');
   return filename;
 }

@@ -81,9 +81,9 @@ export default function NotFoundPage() {
 
       <div className="flex flex-col items-center gap-2">
         <span className="text-4xl">📖</span>
-        <p className="text-xs text-slate-600 uppercase tracking-widest">{t('notFound.chapter', 'Chapitre 404')}</p>
+        <p className="text-xs text-atlas-mute uppercase tracking-widest">{t('notFound.chapter', 'Chapitre 404')}</p>
         <h1 className="text-xl font-black text-white">{t('notFound.title', 'Cette page n\'a pas encore \u00e9t\u00e9 \u00e9crite')}</h1>
-        <p className="text-xs text-slate-500">{t('notFound.subtitle', 'Le manuscrit est vierge... \u00e0 vous de jouer.')}</p>
+        <p className="text-xs text-atlas-soft">{t('notFound.subtitle', 'Le manuscrit est vierge... \u00e0 vous de jouer.')}</p>
       </div>
 
       {!published ? (
@@ -94,13 +94,13 @@ export default function NotFoundPage() {
               value={text}
               onChange={e => setText(e.target.value)}
               rows={8}
-              className="w-full px-5 py-4 rounded-xl text-sm leading-relaxed font-serif text-slate-300 outline-none resize-none transition-colors"
+              className="w-full px-5 py-4 rounded-none text-sm leading-relaxed font-serif text-slate-300 outline-none resize-none transition-colors"
               style={{
                 backgroundColor: 'rgba(0,0,0,0.3)',
                 border: '1px solid rgba(255,255,255,0.08)',
-                caretColor: '#818cf8',
+                caretColor: '#5cae8e',
               }}
-              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'; }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'rgba(92,174,142,0.3)'; }}
               onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
             />
             <span className="absolute bottom-2 right-3 text-[10px] text-slate-700">
@@ -111,22 +111,22 @@ export default function NotFoundPage() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate('/')}
-              className="text-xs text-slate-600 hover:text-slate-400 transition-colors"
+              className="text-xs text-atlas-mute hover:text-slate-400 transition-colors"
             >
               {t('notFound.backHome', 'Retour \u00e0 l\'accueil')}
             </button>
             <button
               onClick={handlePublish}
               disabled={charCount < 10}
-              className="px-4 py-2 text-sm font-black rounded-lg transition-all disabled:opacity-30 disabled:cursor-default"
+              className="px-4 py-2 text-sm font-black rounded-none transition-all disabled:opacity-30 disabled:cursor-default"
               style={{
-                backgroundColor: charCount >= 10 ? 'rgba(63,81,181,0.25)' : 'rgba(63,81,181,0.08)',
-                color: '#818cf8',
-                border: '1px solid rgba(99,102,241,0.3)',
+                backgroundColor: charCount >= 10 ? 'rgba(92,174,142,0.25)' : 'rgba(92,174,142,0.08)',
+                color: '#5cae8e',
+                border: '1px solid rgba(92,174,142,0.3)',
                 cursor: charCount >= 10 ? 'pointer' : undefined,
               }}
-              onMouseEnter={e => { if (charCount >= 10) { e.currentTarget.style.backgroundColor = 'rgba(63,81,181,0.4)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'; } }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = charCount >= 10 ? 'rgba(63,81,181,0.25)' : 'rgba(63,81,181,0.08)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'; }}
+              onMouseEnter={e => { if (charCount >= 10) { e.currentTarget.style.backgroundColor = 'rgba(92,174,142,0.4)'; e.currentTarget.style.borderColor = 'rgba(92,174,142,0.5)'; } }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = charCount >= 10 ? 'rgba(92,174,142,0.25)' : 'rgba(92,174,142,0.08)'; e.currentTarget.style.borderColor = 'rgba(92,174,142,0.3)'; }}
             >
               {t('notFound.publish', 'Publier ce chapitre')}
             </button>
@@ -134,10 +134,10 @@ export default function NotFoundPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-4 animate-fade-in">
-          <p className="text-sm text-indigo-300 font-serif italic">
+          <p className="text-sm text-[#5cae8e] font-serif italic">
             {t('notFound.published', 'Chapitre publi\u00e9 avec brio !')}
           </p>
-          <p className="text-xs text-slate-600">{t('notFound.redirecting', 'Redirection vers l\'accueil dans un instant...')}</p>
+          <p className="text-xs text-atlas-mute">{t('notFound.redirecting', 'Redirection vers l\'accueil dans un instant...')}</p>
           <style>{`
             @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
             .animate-fade-in { animation: fade-in 0.5s ease-out; }

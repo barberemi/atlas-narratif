@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import lotrMapImage from '../../assets/ouest_terre_du_milieu.jpg';
+import Icon from '../ui/Icon';
 
 /**
  * Carte multi-personnages avec object-contain.
  * Les coordonnées sont stockées en % de l'image (0-100).
  * La transformation contain convertit ces % vers le conteneur à l'affichage.
  */
-export default function MapCanvas({ characters, locations = [], onLocationClick, mapSrc = null, editMode = false, onMapClick, onPinRemove }) {
+export default function MapCanvas({ characters, locations = [], onLocationClick, mapSrc = null, editMode = false, onMapClick, onPinRemove, gatherings = [] }) {
   const activeSrc = mapSrc ?? lotrMapImage;
   const [hoveredLoc, setHoveredLoc] = useState(null);
   const containerRef = useRef(null);
@@ -61,7 +62,7 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-[#0B1621]"
+      className="relative w-full h-full overflow-hidden bg-atlas-ink"
       style={{ cursor: editMode ? 'crosshair' : 'default' }}
       onClick={handleContainerClick}
     >
@@ -186,7 +187,7 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
                   bottom: 'calc(100% + 4px)',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  backgroundColor: editMode ? 'rgba(239,68,68,0.9)' : 'rgba(8,14,30,0.95)',
+                  backgroundColor: editMode ? 'rgba(239,68,68,0.9)' : 'rgba(21,23,27,0.95)',
                   color: '#e2e8f0',
                   border: `1px solid ${editMode ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.15)'}`,
                   backdropFilter: 'blur(4px)',
@@ -202,11 +203,41 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
                 fill={editMode ? (isHovered ? '#f87171' : 'rgba(248,113,113,0.7)') : (isHovered ? '#e2e8f0' : 'rgba(255,255,255,0.55)')}
                 style={{ transition: 'fill 0.15s' }}
               />
-              <circle cx="7" cy="7" r="2.5" fill="rgba(8,14,30,0.8)" />
+              <circle cx="7" cy="7" r="2.5" fill="rgba(21,23,27,0.8)" />
             </svg>
           </button>
         );
       })}
+
+      {/* Anneaux de convergence — un par lieu où ≥2 personnages affichés se retrouvent */}
+      {gatherings.map((g, i) => (
+        <div
+          key={`gather-${i}`}
+          className="absolute pointer-events-none"
+          style={{
+            left: `${tx(g.x)}%`,
+            top:  `${ty(g.y)}%`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 6,
+            transition: 'left 0.9s cubic-bezier(0.4, 0, 0.2, 1), top 0.9s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <span
+            className="block rounded-full"
+            style={{ width: 46, height: 46, border: '2px dashed rgba(92,174,142,0.85)', boxShadow: '0 0 14px rgba(92,174,142,0.35)' }}
+          />
+          <span
+            className="absolute flex items-center justify-center rounded-full text-[10px] font-bold"
+            style={{
+              top: -6, right: -6, width: 18, height: 18,
+              backgroundColor: '#5cae8e', color: '#0b1621',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.6)',
+            }}
+          >
+            {g.count}
+          </span>
+        </div>
+      ))}
 
       {/* Marqueurs animés — un par personnage */}
       {characters.map(({ journey, currentStep, color, name, deathStepIndex }) => {
@@ -245,10 +276,10 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
           >
             {isDead ? (
               <span
-                className="relative block text-xl leading-none select-none"
+                className="relative block leading-none select-none"
                 style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.9))' }}
               >
-                💀
+                <Icon name="death" size={16} />
               </span>
             ) : (
               <>
@@ -281,11 +312,11 @@ export default function MapCanvas({ characters, locations = [], onLocationClick,
               className="absolute whitespace-nowrap text-xs font-bold px-2 py-0.5 rounded"
               style={{
                 top: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)',
-                backgroundColor: 'rgba(8,14,30,0.92)',
+                backgroundColor: 'rgba(21,23,27,0.92)',
                 border: `1px solid ${isDead ? 'rgba(100,100,100,0.4)' : `rgba(${dotRgb},0.55)`}`,
                 backdropFilter: 'blur(4px)',
                 textShadow: '0 1px 3px rgba(0,0,0,0.9)',
-                color: isDead ? '#64748b' : isFlashback ? '#fbbf24' : '#fff',
+                color: isDead ? 'var(--color-atlas-soft)' : isFlashback ? '#fbbf24' : '#fff',
               }}
             >
               {isFlashback && '↩ '}{name}{isMissing && ' ·?'}

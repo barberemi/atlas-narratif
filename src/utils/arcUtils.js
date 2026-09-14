@@ -1,5 +1,7 @@
 // ── Constantes SVG (partagées avec EmotionalArc.jsx) ──────────────────────────
 
+import { seqColor } from '../data/viz_palette';
+
 export const CHART_H = 220;
 export const PAD     = { top: 24, right: 24, bottom: 52, left: 40 };
 
@@ -28,11 +30,8 @@ export function smoothPath(pts) {
   return d.join(' ');
 }
 
-/** Retourne la couleur de la courbe selon l'intensité moyenne. */
-export function arcColor(avg) {
-  if (!avg) return '#818cf8';
-  if (avg >= 7) return '#f87171';
-  if (avg >= 5) return '#fb923c';
-  if (avg >= 3) return '#facc15';
-  return '#60a5fa';
-}
+/**
+ * Retourne la couleur de la courbe selon l'intensité moyenne.
+ * Encodage séquentiel (magnitude) → rampe or mono-teinte (cf. viz_palette).
+ */
+export const arcColor = seqColor;

@@ -1,7 +1,7 @@
-uid=27_0 RootWebArea "AtlasNarratif — Outil d'analyse narrative pour auteurs" url="http://localhost:5173/arc"
+uid=27_0 RootWebArea "Atlas Narratif — Outil d'analyse narrative pour auteurs" url="http://localhost:5173/arc"
   uid=27_1 region "Notifications alt+T" live="polite" relevant="additions text"
   uid=27_2 navigation
-    uid=27_3 button "AtlasNarratif"
+    uid=27_3 button "Atlas Narratif"
     uid=27_4 button "The Lord of the Rings ▾"
     uid=27_5 button "📚 Series ▾"
     uid=27_6 button "✍️ Write ▾" expandable haspopup="menu"

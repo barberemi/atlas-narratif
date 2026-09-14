@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useCharacterArcStore } from '../../stores/useCharacterArcStore';
 import { useLoreStore } from '../../stores/useLoreStore';
 import { CHART_H, PAD, xToSvg, smoothPath } from '../../utils/arcUtils';
+import Icon from '../ui/Icon';
 
 // ── Composant chart multi-lignes ──────────────────────────────────────────────
 
@@ -78,8 +79,8 @@ function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick, 
         return (
           <g key={sep.chapterNum}>
             <line x1={x} y1={PAD.top} x2={x} y2={PAD.top + CHART_H}
-              stroke="rgba(99,102,241,0.35)" strokeWidth="1" strokeDasharray="4,3" />
-            <text x={x + 4} y={PAD.top + 13} fontSize="9" fill="rgba(129,140,248,0.7)" fontWeight="bold">
+              stroke="rgba(92,174,142,0.35)" strokeWidth="1" strokeDasharray="4,3" />
+            <text x={x + 4} y={PAD.top + 13} fontSize="9" fill="rgba(92,174,142,0.7)" fontWeight="bold">
               {sep.label}
             </text>
           </g>
@@ -105,7 +106,7 @@ function MultiLineChart({ chapters, lines, svgW, activeChapter, onChapterClick, 
             )}
             {pts.map((pt, i) => (
               <circle key={i} cx={pt.x} cy={pt.y} r={3.5}
-                fill="#0B1621" stroke={color} strokeWidth="2" />
+                fill="#15171b" stroke={color} strokeWidth="2" />
             ))}
           </g>
         );
@@ -140,12 +141,12 @@ function LabelAutocomplete({ value, onChange, suggestions, onSelect, placeholder
         placeholder={placeholder}
         onChange={e => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
-        className="w-full px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-white/5 border border-white/10 outline-none focus:border-indigo-500/50"
+        className="w-full px-3 py-1.5 rounded-none text-xs text-slate-200 bg-white/5 border border-atlas-line outline-none focus:border-[#5cae8e]"
       />
       {open && filtered.length > 0 && (
         <div
-          className="absolute left-0 top-full mt-1 z-50 rounded-xl overflow-hidden"
-          style={{ minWidth: '100%', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+          className="absolute left-0 top-full mt-1 z-50 rounded-none overflow-hidden"
+          style={{ minWidth: '100%', backgroundColor: 'var(--color-atlas-ink)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
         >
           {filtered.map(s => (
             <button
@@ -182,7 +183,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
 
   // Formulaire ajout d'axe
   const [newLabel, setNewLabel] = useState('');
-  const [newColor, setNewColor] = useState('#818cf8');
+  const [newColor, setNewColor] = useState('#5cae8e');
   const [adding,   setAdding]   = useState(false);
 
   // Sélecteur personnage
@@ -252,7 +253,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       lines.push({
         id:        char.id,
         label:     char.name,
-        color:     char.color ?? '#64748b',
+        color:     char.color ?? 'var(--color-atlas-soft)',
         pointsMap: buildPointsMap(points[charAx.id] ?? []),
         axisId:    charAx.id,
       });
@@ -288,7 +289,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
 
       {/* Barre de mode */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-slate-500 uppercase tracking-widest">{t('arc.mode')}</span>
+        <span className="font-grotesk text-xs font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('arc.mode')}</span>
         {[
           { id: 'char', label: t('arc.modeChar') },
           { id: 'axis', label: t('arc.modeAxis') },
@@ -296,12 +297,12 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
           <button
             key={m.id}
             onClick={() => setMode(m.id)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            className="px-3 py-1.5 rounded-none text-xs font-semibold transition-all"
             style={{
-              backgroundColor: mode === m.id ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-              border:          mode === m.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.08)',
-              color:           mode === m.id ? '#818cf8' : '#64748b',
-              boxShadow:       mode === m.id ? '0 0 12px rgba(99,102,241,0.2)' : 'none',
+              backgroundColor: mode === m.id ? 'rgba(92,174,142,0.2)' : 'rgba(255,255,255,0.04)',
+              border:          mode === m.id ? '1px solid rgba(92,174,142,0.4)' : '1px solid rgba(255,255,255,0.08)',
+              color:           mode === m.id ? '#5cae8e' : 'var(--color-atlas-soft)',
+              boxShadow:       mode === m.id ? '0 0 12px rgba(92,174,142,0.2)' : 'none',
             }}
           >
             {m.label}
@@ -312,11 +313,11 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {/* Sélecteur */}
       {mode === 'char' ? (
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.characters', { count: 1 })}</span>
+          <span className="font-grotesk text-xs font-bold text-atlas-mute uppercase tracking-[0.2em] flex-shrink-0">{t('label.characters', { count: 1 })}</span>
           <div className="relative" ref={charMenuRef}>
             <button
               onClick={() => setCharMenuOpen(v => !v)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-none text-xs font-semibold transition-all"
               style={{
                 minWidth: 200,
                 backgroundColor: selectedChar ? `${selectedChar.color}22` : 'rgba(255,255,255,0.06)',
@@ -331,27 +332,27 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
                 </>
               ) : (
                 <>
-                  <span className="text-slate-500">👤</span>
+                  <Icon name="user" size={16} className="text-atlas-soft" />
                   {t('arc.chooseCharacter')}
                 </>
               )}
-              <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
+              <Icon name={charMenuOpen ? 'chevronUp' : 'chevronDown'} size={12} className="ml-auto text-atlas-mute" />
             </button>
             {charMenuOpen && (
               <div
-                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-hidden"
-                style={{ minWidth: 220, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+                className="absolute left-0 top-full mt-1 z-30 rounded-none overflow-hidden"
+                style={{ minWidth: 220, backgroundColor: 'var(--color-atlas-ink)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
               >
                 {characters.map(c => (
                   <button
                     key={c.id}
                     onClick={() => { setSelectedCharId(c.id); setCharMenuOpen(false); setActiveChapter(null); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all hover:bg-white/5"
-                    style={{ color: selectedCharId === c.id ? c.color : '#64748b' }}
+                    style={{ color: selectedCharId === c.id ? c.color : 'var(--color-atlas-soft)' }}
                   >
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                     {c.name}
-                    {selectedCharId === c.id && <span className="ml-auto text-[10px]" style={{ color: c.color }}>✓</span>}
+                    {selectedCharId === c.id && <Icon name="checkmark" size={12} className="ml-auto" style={{ color: c.color }} />}
                   </button>
                 ))}
               </div>
@@ -360,18 +361,18 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
         </div>
       ) : (
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('arc.axis')}</span>
+          <span className="font-grotesk text-xs font-bold text-atlas-mute uppercase tracking-[0.2em] flex-shrink-0">{t('arc.axis')}</span>
           {allLabels.length === 0 ? (
-            <span className="text-xs text-slate-600 italic">{t('arc.noAxes')}</span>
+            <span className="text-xs text-atlas-mute italic">{t('arc.noAxes')}</span>
           ) : allLabels.map(lbl => (
             <button
               key={lbl}
               onClick={() => { setSelectedLabel(lbl); setActiveChapter(null); }}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+              className="px-3 py-1.5 rounded-none text-xs font-semibold transition-all"
               style={{
-                backgroundColor: selectedLabel === lbl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-                border:          selectedLabel === lbl ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                color:           selectedLabel === lbl ? '#818cf8' : '#64748b',
+                backgroundColor: selectedLabel === lbl ? 'rgba(92,174,142,0.2)' : 'rgba(255,255,255,0.04)',
+                border:          selectedLabel === lbl ? '1px solid rgba(92,174,142,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                color:           selectedLabel === lbl ? '#5cae8e' : 'var(--color-atlas-soft)',
               }}
             >
               {lbl}
@@ -397,7 +398,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {activeLines.length > 0 && chapters.length > 0 && (
         <div
           ref={setContainerEl}
-          className="relative rounded-2xl overflow-hidden"
+          className="relative rounded-none overflow-hidden"
           style={{ height: CHART_H + PAD.top + PAD.bottom, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
           {svgW > 0 && (
@@ -411,7 +412,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
             />
           )}
           {isSeriesView && (
-            <div className="absolute bottom-2 right-3 text-[10px] text-slate-600 italic pointer-events-none">
+            <div className="absolute bottom-2 right-3 text-[10px] text-atlas-mute italic pointer-events-none">
               {t('arc.seriesViewHint')}
             </div>
           )}
@@ -421,11 +422,11 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {/* Panel chapitre actif (mode char) — masqué en vue série */}
       {mode === 'char' && !isSeriesView && activeChapterData && charAxes.length > 0 && (
         <div
-          className="rounded-xl p-4 flex flex-col gap-3"
+          className="rounded-none p-4 flex flex-col gap-3"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}
         >
           <p className="text-sm font-black text-slate-200">
-            {t('arc.chapter')} {activeChapterData.number}{activeChapterData.localNumber != null ? ` (ch.${activeChapterData.localNumber})` : ''} — {activeChapterData.title}
+            {t('arc.chapter')} {activeChapterData.number}{activeChapterData.localNumber != null ? ` (ch.${activeChapterData.localNumber})` : ''} · {activeChapterData.title}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {charAxes.map(ax => {
@@ -458,7 +459,7 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
           <table className="w-full text-xs border-collapse">
             <thead>
               <tr>
-                <th className="text-left px-2 py-1.5 text-slate-600 font-normal border-b border-white/5 sticky left-0 bg-[#0B1621]">Ch.</th>
+                <th className="text-left px-2 py-1.5 text-atlas-mute font-normal border-b border-white/5 sticky left-0 bg-atlas-ink">Ch.</th>
                 {charAxes.map(ax => (
                   <th key={ax.id} className="px-2 py-1.5 font-semibold border-b border-white/5 text-center"
                     style={{ color: ax.color }}>
@@ -477,9 +478,9 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
                     className={isSeriesView ? '' : 'cursor-pointer hover:bg-white/3 transition-colors'}
                     style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.04)' : undefined }}
                   >
-                    <td className="px-2 py-1.5 text-slate-500 border-b border-white/5 sticky left-0 bg-inherit font-mono">
+                    <td className="px-2 py-1.5 text-atlas-soft border-b border-white/5 sticky left-0 bg-inherit font-mono">
                       {ch.localNumber ?? ch.number}
-                      {ch.volumeId && <span className="ml-1 text-[9px] text-indigo-600">T{volumes.findIndex(v => v.id === ch.volumeId) + 1}</span>}
+                      {ch.volumeId && <span className="ml-1 text-[9px] text-atlas-gold">T{volumes.findIndex(v => v.id === ch.volumeId) + 1}</span>}
                     </td>
                     {charAxes.map(ax => {
                       const line = charLines.find(l => l.id === ax.id);
@@ -505,23 +506,23 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {/* Gestion des axes (mode char) — masqué en vue série */}
       {mode === 'char' && selectedCharId && !isSeriesView && (
         <div
-          className="rounded-xl p-4 flex flex-col gap-3"
+          className="rounded-none p-4 flex flex-col gap-3"
           style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <p className="text-[10px] text-slate-600 uppercase tracking-widest">{t('arc.axesOf', { name: selectedChar?.name ?? '…' })}</p>
+          <p className="text-[10px] text-atlas-mute uppercase tracking-widest">{t('arc.axesOf', { name: selectedChar?.name ?? '…' })}</p>
 
           {/* Liste des axes existants */}
           {charAxes.length > 0 && (
             <div className="flex flex-col gap-1">
               {charAxes.map(ax => (
-                <div key={ax.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
+                <div key={ax.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none"
                   style={{ backgroundColor: `${ax.color}10`, border: `1px solid ${ax.color}25` }}>
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: ax.color }} />
                   <span className="text-xs font-semibold flex-1" style={{ color: ax.color }}>{ax.label}</span>
                   <button
                     onClick={() => removeAxis(ax.id, selectedCharId)}
-                    className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-red-400 transition-colors text-xs flex-shrink-0"
-                  >×</button>
+                    className="w-5 h-5 flex items-center justify-center text-atlas-mute hover:text-red-400 transition-colors text-xs flex-shrink-0"
+                  ><Icon name="close" size={12} /></button>
                 </div>
               ))}
             </div>
@@ -546,8 +547,8 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
             <button
               onClick={handleAddAxis}
               disabled={adding || !newLabel.trim()}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex-shrink-0 disabled:opacity-30"
-              style={{ backgroundColor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
+              className="px-3 py-1.5 rounded-none text-xs font-bold transition-all flex-shrink-0 disabled:opacity-30"
+              style={{ backgroundColor: 'rgba(92,174,142,0.2)', border: '1px solid rgba(92,174,142,0.4)', color: '#5cae8e' }}
             >
               {adding ? '…' : `+ ${t('arc.axis')}`}
             </button>
@@ -558,12 +559,12 @@ export default function CharacterArcView({ chapters, chapterOffset = 0, volumes 
       {/* État vide */}
       {mode === 'char' && !selectedCharId && (
         <div className="flex items-center justify-center py-12">
-          <p className="text-slate-600 font-serif italic text-sm">{t('arc.selectCharHint')}</p>
+          <p className="text-atlas-mute font-serif italic text-sm">{t('arc.selectCharHint')}</p>
         </div>
       )}
       {mode === 'axis' && !selectedLabel && (
         <div className="flex items-center justify-center py-12">
-          <p className="text-slate-600 font-serif italic text-sm">
+          <p className="text-atlas-mute font-serif italic text-sm">
             {allLabels.length === 0
               ? t('arc.noAxesHint')
               : t('arc.selectAxisHint')}

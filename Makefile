@@ -54,7 +54,7 @@ test: ## Tests unitaires frontend (Vitest)
 	$(DC) exec frontend npx vitest run
 
 server-test: ## Tests unitaires API (node --test)
-	$(DC) exec api sh -c 'node --test src/*.test.js src/**/*.test.js'
+	$(DC) exec api sh -c 'node --test $$(find src -name "*.test.js")'
 
 e2e: ## Tests E2E (Playwright)
 	$(DC) run --rm e2e npx playwright test --reporter=list

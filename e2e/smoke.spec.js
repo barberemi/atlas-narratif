@@ -27,6 +27,11 @@ test.describe('Smoke — toutes les routes chargent', () => {
     await expect(page.getByText('Opening Image').first()).toBeVisible({ timeout: 10_000 });
   });
 
+  test('/demo → dépose le visiteur dans la démo (dashboard)', async ({ page }) => {
+    await page.goto('/demo');
+    await expect(page.getByText('Narrative Health')).toBeVisible({ timeout: 15_000 });
+  });
+
   test('/arc → SVG chart visible', async ({ page }) => {
     await page.goto('/arc');
     await expect(page.locator('svg').first()).toBeVisible({ timeout: 10_000 });

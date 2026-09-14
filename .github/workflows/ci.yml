@@ -26,7 +26,12 @@ jobs:
         run: cd server && npm ci
 
       - name: Audit (frontend)
-        run: npm audit --omit=dev --audit-level=high
+        # --omit=optional : better-auth déclare vitest en peerDependency optionnelle,
+        # ce qui tire toute la toolchain de dev (vite, esbuild, postcss, nanoid) dans
+        # l'arbre « prod » alors qu'elle n'est jamais installée en prod réelle
+        # (npm ci --omit=dev ne l'installe pas). On l'exclut pour n'auditer que le
+        # vrai runtime de production.
+        run: npm audit --omit=dev --omit=optional --audit-level=high
 
       - name: Audit (server)
         run: cd server && npm audit --omit=dev --audit-level=high

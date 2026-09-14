@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { useTourStore } from '../../stores/useTourStore';
 import { markWelcomeSeen } from './tourUtils';
+import Icon from '../ui/Icon';
 
 export default function WelcomeModal({ projectId, onClose }) {
   const { t } = useTranslation();
@@ -36,15 +37,15 @@ export default function WelcomeModal({ projectId, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label={t('welcome.title')}
-        className="flex flex-col gap-6 max-w-md w-full mx-4 rounded-2xl p-8"
-        style={{ backgroundColor: 'rgba(11,22,33,0.98)', border: '1px solid rgba(99,102,241,0.3)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}
+        className="flex flex-col gap-6 max-w-md w-full mx-4 rounded-none p-8"
+        style={{ backgroundColor: 'rgba(21,23,27,0.98)', border: '1px solid rgba(92,174,142,0.3)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-5xl text-center">🗺️</div>
+        <div className="text-center"><Icon name="map" size={40} /></div>
 
         <div className="text-center">
-          <h2 className="text-xl font-black text-slate-100 mb-2">
-            {t('welcome.title')}<span style={{ color: '#3F51B5' }}>Narratif</span>
+          <h2 className="font-serif text-2xl font-semibold text-slate-100 mb-2">
+            {t('welcome.title')}<span style={{ color: 'var(--color-atlas-green)' }}>Narratif</span>
           </h2>
           <p className="text-sm text-slate-400 leading-relaxed font-serif italic">
             {isDemo
@@ -55,13 +56,13 @@ export default function WelcomeModal({ projectId, onClose }) {
 
         <div className="flex flex-col gap-2">
           {[
-            { icon: '📊', label: t('welcome.feature1') },
-            { icon: '🌍', label: t('welcome.feature2') },
-            { icon: '🐱', label: t('welcome.feature3') },
-            { icon: '🧵', label: t('welcome.feature4') },
+            { icon: 'dashboard', label: t('welcome.feature1') },
+            { icon: 'universe', label: t('welcome.feature2') },
+            { icon: 'cat', label: t('welcome.feature3') },
+            { icon: 'thread', label: t('welcome.feature4') },
           ].map(({ icon, label }) => (
             <div key={label} className="flex items-center gap-3 text-xs text-slate-400">
-              <span className="text-base flex-shrink-0">{icon}</span>
+              <Icon name={icon} size={16} className="flex-shrink-0" />
               <span>{label}</span>
             </div>
           ))}
@@ -70,14 +71,14 @@ export default function WelcomeModal({ projectId, onClose }) {
         <div className="flex flex-col gap-2">
           <button
             onClick={handleStartTour}
-            className="w-full py-3 rounded-xl text-sm font-black transition-all duration-200"
-            style={{ backgroundColor: 'rgba(63,81,181,0.25)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.4)' }}
+            className="w-full py-3 rounded-none text-sm font-black transition-all duration-200"
+            style={{ backgroundColor: 'rgba(92,174,142,0.18)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.4)' }}
           >
             {t('btn.startTour')}
           </button>
           <button
             onClick={handleSkip}
-            className="w-full py-2 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+            className="w-full py-2 text-xs text-atlas-mute hover:text-slate-400 transition-colors"
           >
             {t('btn.exploreSolo')}
           </button>

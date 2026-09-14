@@ -30,55 +30,58 @@ export default function RegisterPage() {
     }
   }
 
-  const inputStyle = { backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)' };
-  function focusStyle(e) { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'; }
-  function blurStyle(e)  { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }
+  const inputStyle = { backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid var(--color-atlas-line)' };
+  function focusStyle(e) { e.currentTarget.style.borderColor = 'rgba(92,174,142,0.5)'; }
+  function blurStyle(e)  { e.currentTarget.style.borderColor = 'var(--color-atlas-line)'; }
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-[#0B1621] text-slate-200">
-      <title>Créer un compte — AtlasNarratif</title>
-      <meta name="description" content="Créez votre compte AtlasNarratif gratuitement et commencez à structurer vos projets d'écriture." />
+    <div className="h-screen overflow-hidden flex flex-col bg-atlas-ink text-slate-200">
+      <title>Créer un compte — Atlas Narratif</title>
+      <meta name="description" content="Créez votre compte Atlas Narratif gratuitement et commencez à structurer vos projets d'écriture." />
       <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/register" />
-      <nav className="flex-shrink-0 flex items-center px-4 border-b border-white/10"
-        style={{ height: 48, backgroundColor: 'rgba(11,22,33,0.97)' }}>
-        <Link to="/" className="text-sm font-black tracking-tight transition-opacity duration-150 hover:opacity-70">
-          Atlas<span style={{ color: '#3F51B5' }}>Narratif</span>
+      <nav className="flex-shrink-0 flex items-center px-4 border-b border-atlas-line"
+        style={{ height: 48, backgroundColor: 'rgba(21,23,27,0.97)' }}>
+        <Link to="/" className="font-serif text-base font-bold tracking-tight text-atlas-text transition-opacity duration-150 hover:opacity-70">
+          Atlas <span style={{ color: 'var(--color-atlas-green)' }}>Narratif</span>
         </Link>
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm flex flex-col gap-8">
 
-          <h1 className="text-2xl font-black text-white tracking-tight">{t('authPages.createAccount')}</h1>
+          <div className="border-b border-atlas-line pb-6">
+            <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-2">{t('authPages.kickerRegister')}</p>
+            <h1 className="font-serif text-4xl font-semibold text-white tracking-tight leading-tight">{t('authPages.createAccount')}</h1>
+          </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">{t('authPages.name')}</label>
+              <label className="text-xs text-atlas-soft font-semibold">{t('authPages.name')}</label>
               <input type="text" required autoComplete="name" value={name}
                 onChange={e => setName(e.target.value)} placeholder={t('authPages.namePlaceholder')}
-                className="px-3 py-2.5 rounded-lg text-sm text-white outline-none transition-all"
+                className="px-3 py-2.5 rounded-none text-sm text-white outline-none transition-all"
                 style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">{t('authPages.email')}</label>
+              <label className="text-xs text-atlas-soft font-semibold">{t('authPages.email')}</label>
               <input type="email" required autoComplete="email" value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="px-3 py-2.5 rounded-lg text-sm text-white outline-none transition-all"
+                className="px-3 py-2.5 rounded-none text-sm text-white outline-none transition-all"
                 style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-slate-500 font-semibold">{t('authPages.password')}</label>
+              <label className="text-xs text-atlas-soft font-semibold">{t('authPages.password')}</label>
               <input type="password" required autoComplete="new-password" minLength={8}
                 value={password} onChange={e => setPassword(e.target.value)}
                 placeholder={t('authPages.passwordPlaceholder')}
-                className="px-3 py-2.5 rounded-lg text-sm text-white outline-none transition-all"
+                className="px-3 py-2.5 rounded-none text-sm text-white outline-none transition-all"
                 style={inputStyle} onFocus={focusStyle} onBlur={blurStyle} />
             </div>
 
             {error && (
-              <div className="rounded-lg px-3 py-2.5 text-xs"
+              <div className="rounded-none px-3 py-2.5 text-xs"
                 style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
                 {error}
               </div>
@@ -92,14 +95,14 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-slate-600">{t('authPages.or')}</span>
+              <span className="text-xs text-atlas-mute">{t('authPages.or')}</span>
               <div className="flex-1 h-px bg-white/10" />
             </div>
             <button
               type="button"
               onClick={() => authClient.signIn.social({ provider: 'google', callbackURL: window.location.origin + '/' })}
-              className="flex items-center justify-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm text-slate-200 transition-colors hover:bg-white/5 cursor-pointer"
-              style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+              className="flex items-center justify-center gap-2.5 w-full px-3 py-2.5 rounded-none text-sm text-slate-200 transition-colors hover:bg-white/5 cursor-pointer"
+              style={{ border: '1px solid var(--color-atlas-line)' }}
             >
               <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -112,9 +115,9 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <p className="text-center text-xs text-slate-600">
+          <p className="text-center text-xs text-atlas-mute">
             {t('authPages.alreadyHaveAccount')}{' '}
-            <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+            <Link to="/login" className="text-atlas-green hover:opacity-80 font-semibold transition-colors">
               {t('authPages.signInLink')}
             </Link>
           </p>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { exportProject } from './exportProject';
+import { exportProject, exportBasename } from './exportProject';
 
 vi.mock('../api/client', () => ({
   getDeviceId: vi.fn().mockReturnValue('device-test-id'),
@@ -141,5 +141,33 @@ describe('exportProject', () => {
     expect(buildMarkdown).toHaveBeenCalledWith(expect.objectContaining({
       project: expect.objectContaining({ name: 'Mon Roman' }),
     }));
+  });
+});
+
+// ── exportBasename (fonction pure réutilisée par les livrables auteur) ──────────
+
+describe('exportBasename', () => {
+  it('préfixe atlas_ et suffixe la date YYYY-MM-DD (sans extension)', () => {
+    expect(exportBasename('Mon Roman')).toMatch(/^atlas_mon_roman_\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('normalise les accents et met en minuscules', () => {
+    expect(exportBasename('Héros & Légendes')).toMatch(/^atlas_heros_legendes_/);
+  });
+
+  it('remplace les caractères spéciaux par des underscores', () => {
+    const base = exportBasename('Mon Roman: Tome 1');
+    expect(base).not.toMatch(/[:]/);
+    expect(base).toMatch(/^atlas_mon_roman_tome_1_/);
+  });
+
+  it('tronque le slug à 30 caractères', () => {
+    const base = exportBasename('Un Roman Extraordinairement Long Avec Plein De Mots');
+    const slug = base.replace(/^atlas_/, '').replace(/_\d{4}-\d{2}-\d{2}$/, '');
+    expect(slug.length).toBeLessThanOrEqual(30);
+  });
+
+  it('ne comporte pas d\'extension de fichier', () => {
+    expect(exportBasename('Mon Roman')).not.toMatch(/\.\w+$/);
   });
 });

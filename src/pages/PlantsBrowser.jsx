@@ -7,25 +7,29 @@ import { useVolumeStore } from '../stores/useVolumeStore';
 import { useStcStore } from '../stores/useStcStore';
 import { useStoreLoader } from '../hooks/useStoreLoader';
 import EmptyState from '../components/ui/EmptyState';
+import Icon from '../components/ui/Icon';
+import Term from '../components/ui/Term';
+import { HeaderToggle, HeaderAction, HeaderSep } from '../components/ui/HeaderButton';
 import { getEntityMeta } from '../utils/entityUtils';
 import { extractChapters } from '../utils/reviewUtils';
+import { VIZ_STATUS } from '../data/viz_palette';
 
 // ── Config types ──────────────────────────────────────────────────────────────
 
 export const PLANT_TYPES = [
-  { id: 'object',      label: 'Objet',       color: '#f59e0b', icon: '⚔️' },
-  { id: 'character',   label: 'Personnage',  color: '#3b82f6', icon: '👤' },
-  { id: 'information', label: 'Information', color: '#a855f7', icon: '◉'  },
-  { id: 'dialogue',    label: 'Dialogue',    color: '#22c55e', icon: '💬' },
-  { id: 'theme',       label: 'Thème',       color: '#64748b', icon: '〰️' },
+  { id: 'object',      label: 'Objet',       color: '#f59e0b', icon: 'object' },
+  { id: 'character',   label: 'Personnage',  color: '#3b82f6', icon: 'user'   },
+  { id: 'information', label: 'Information', color: '#a855f7', icon: 'dot'    },
+  { id: 'dialogue',    label: 'Dialogue',    color: '#22c55e', icon: 'chat'   },
+  { id: 'theme',       label: 'Thème',       color: 'var(--color-atlas-soft)', icon: 'arc' },
 ];
 
 const PLANT_TYPE_MAP = Object.fromEntries(PLANT_TYPES.map(t => [t.id, t]));
 
 const STATUS_CFG = {
-  open:     { label: 'En suspens', color: '#818cf8', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.3)' },
+  open:     { label: 'En suspens', color: '#cba15e', bg: 'rgba(203,161,94,0.12)', border: 'rgba(203,161,94,0.3)' },
   resolved: { label: 'Résolu',     color: '#22c55e', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  },
-  dropped:  { label: 'Abandonné',  color: '#64748b', bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.2)' },
+  dropped:  { label: 'Abandonné',  color: 'var(--color-atlas-soft)', bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.2)' },
 };
 
 // ── Vue arc SVG ───────────────────────────────────────────────────────────────
@@ -43,7 +47,7 @@ function ArcView({ plants, chapters, volumes, t }) {
 
   if (!chapters.length) return (
     <div className="flex items-center justify-center py-16">
-      <p className="text-slate-600 italic text-sm">{t('empty.noEvents', 'Aucun chapitre dans la timeline.')}</p>
+      <p className="text-atlas-mute italic text-sm">{t('empty.noEvents', 'Aucun chapitre dans la timeline.')}</p>
     </div>
   );
 
@@ -63,8 +67,8 @@ function ArcView({ plants, chapters, volumes, t }) {
   const svgH = PAD.top + plantsWithPos.length * ARC_ROW_H + 16 + PAD.bottom;
 
   return (
-    <div ref={setContainerEl} className="rounded-2xl overflow-hidden"
-      style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div ref={setContainerEl} className="overflow-hidden"
+      style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
       {svgW > 0 && (
         <svg width={svgW} height={svgH}>
           {/* Ligne de base */}
@@ -164,6 +168,7 @@ function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defau
   });
 
   const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
+  const [entityDropOpen, setEntityDropOpen] = useState(false);
 
   const handleSave = () => {
     if (!form.label.trim()) return;
@@ -194,18 +199,18 @@ function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defau
   ];
 
   return (
-    <div className="flex flex-col gap-4 p-4 rounded-xl"
-      style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="flex flex-col gap-4 p-4"
+      style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderLeft: '2px solid var(--color-atlas-green)' }}>
 
       {/* Label */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('plants.plant', 'Amorce')} *</label>
+        <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('plants.plant', 'Amorce')} *</label>
         <input
           type="text"
           value={form.label}
           onChange={e => set('label', e.target.value)}
           placeholder={t('plants.labelPlaceholder')}
-          className="px-3 py-2 rounded-lg text-sm text-slate-200 bg-white/5 border border-white/10 outline-none focus:border-indigo-500/50"
+          className="px-3 py-2 rounded-none text-sm text-slate-200 bg-white/5 border border-white/10 outline-none focus:border-[#5cae8e]"
           autoFocus
         />
       </div>
@@ -213,31 +218,31 @@ function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defau
       {/* Type + Statut */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('label.type')}</label>
+          <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('label.type')}</label>
           <div className="flex flex-wrap gap-1">
             {PLANT_TYPES.map(pt => (
               <button key={pt.id} onClick={() => set('type', pt.id)}
-                className="px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-none text-[10px] font-bold transition-all"
                 style={{
                   backgroundColor: form.type === pt.id ? `${pt.color}22` : 'rgba(255,255,255,0.04)',
                   border:          form.type === pt.id ? `1px solid ${pt.color}55` : '1px solid rgba(255,255,255,0.08)',
-                  color:           form.type === pt.id ? pt.color : '#64748b',
+                  color:           form.type === pt.id ? pt.color : 'var(--color-atlas-soft)',
                 }}>
-                {pt.icon} {t(`plants.type${pt.id[0].toUpperCase()}${pt.id.slice(1)}`, pt.label)}
+                <Icon name={pt.icon} size={13} /> {t(`plants.type${pt.id[0].toUpperCase()}${pt.id.slice(1)}`, pt.label)}
               </button>
             ))}
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('label.status')}</label>
+          <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('label.status')}</label>
           <div className="flex gap-1">
             {Object.entries(STATUS_CFG).map(([k, v]) => (
               <button key={k} onClick={() => set('status', k)}
-                className="px-2 py-1 rounded-lg text-[10px] font-bold transition-all"
+                className="px-2 py-1 rounded-none text-[10px] font-bold transition-all"
                 style={{
                   backgroundColor: form.status === k ? v.bg : 'rgba(255,255,255,0.04)',
                   border:          form.status === k ? `1px solid ${v.border}` : '1px solid rgba(255,255,255,0.08)',
-                  color:           form.status === k ? v.color : '#64748b',
+                  color:           form.status === k ? v.color : 'var(--color-atlas-soft)',
                 }}>
                 {t(`plants.status${k[0].toUpperCase()}${k.slice(1)}`, v.label)}
               </button>
@@ -249,44 +254,44 @@ function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defau
       {/* Plant + Payoff */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('plants.plantChapter', 'Chapitre amorce')}</label>
+          <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('plants.plantChapter', 'Chapitre amorce')}</label>
           {volumes.length > 0 && (
             <select value={form.plantVolumeId} onChange={e => set('plantVolumeId', e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+              className="px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none">
               <option value="">{t('plants.volumeOptional', '\u2014 Tome (optionnel)')}</option>
               {volumes.map(v => <option key={v.id} value={v.id}>{t('plants.volumeLabel', 'Tome {{number}} \u2014 {{title}}', { number: v.number, title: v.title })}</option>)}
             </select>
           )}
           <select value={form.plantChapterNum} onChange={e => set('plantChapterNum', e.target.value)}
-            className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+            className="px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none">
             <option value="">{t('plants.noChapter', '\u2014')}</option>
-            {chapters.map(ch => <option key={ch.number} value={ch.number}>Ch.{ch.number} — {ch.title}</option>)}
+            {chapters.map(ch => <option key={ch.number} value={ch.number}>Ch.{ch.number} · {ch.title}</option>)}
           </select>
           {chapterEvents.length > 0 && (
             <select value={form.plantEventId} onChange={e => set('plantEventId', e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+              className="px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none">
               <option value="">{t('plants.eventOptional', '\u00c9v\u00e9nement (optionnel)')}</option>
               {chapterEvents.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
             </select>
           )}
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('plants.payoffChapter', 'Chapitre payoff')}</label>
+          <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]"><Term id="payoff">{t('plants.payoffChapter', 'Chapitre payoff')}</Term></label>
           {volumes.length > 0 && (
             <select value={form.payoffVolumeId} onChange={e => set('payoffVolumeId', e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+              className="px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none">
               <option value="">{t('plants.volumeOptional', '\u2014 Tome (optionnel)')}</option>
               {volumes.map(v => <option key={v.id} value={v.id}>{t('plants.volumeLabel', 'Tome {{number}} \u2014 {{title}}', { number: v.number, title: v.title })}</option>)}
             </select>
           )}
           <select value={form.payoffChapterNum} onChange={e => set('payoffChapterNum', e.target.value)}
-            className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+            className="px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none">
             <option value="">{t('plants.unresolved', '\u2014 non r\u00e9solu')}</option>
-            {chapters.map(ch => <option key={ch.number} value={ch.number}>Ch.{ch.number} — {ch.title}</option>)}
+            {chapters.map(ch => <option key={ch.number} value={ch.number}>Ch.{ch.number} · {ch.title}</option>)}
           </select>
           {payoffEvents.length > 0 && (
             <select value={form.payoffEventId} onChange={e => set('payoffEventId', e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none">
+              className="px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none">
               <option value="">{t('plants.eventOptional', '\u00c9v\u00e9nement (optionnel)')}</option>
               {payoffEvents.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
             </select>
@@ -297,40 +302,71 @@ function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defau
       {/* Entite liee */}
       {entityOptions.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('plants.linkedEntity', 'Entit\u00e9 li\u00e9e (optionnel)')}</label>
-          <select
-            value={form.entityId}
-            onChange={e => {
-              const opt = entityOptions.find(o => o.id === e.target.value);
-              set('entityId', e.target.value);
-              set('entityType', opt?.type ?? '');
-            }}
-            className="px-3 py-1.5 rounded-lg text-xs text-slate-200 bg-[#0d1b2a] border border-white/10 outline-none"
-          >
-            <option value="">—</option>
-            {characters.map(c => <option key={c.id} value={c.id}>👤 {c.name}</option>)}
-            {objects.map(o => <option key={o.id} value={o.id}>⚔️ {o.name}</option>)}
-          </select>
+          <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('plants.linkedEntity', 'Entit\u00e9 li\u00e9e (optionnel)')}</label>
+          {/* dropdown custom : icônes lucide au lieu d'emojis dans un <select> natif */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setEntityDropOpen(v => !v)}
+              className="w-full flex items-center gap-2 px-3 py-1.5 rounded-none text-xs text-slate-200 bg-atlas-ink border border-white/10 outline-none transition-colors hover:border-white/20"
+            >
+              {(() => {
+                const sel = entityOptions.find(o => o.id === form.entityId);
+                return sel
+                  ? (<><Icon name={sel.type === 'character' ? 'user' : 'object'} size={14} className="text-atlas-soft flex-shrink-0" /><span className="truncate">{sel.name}</span></>)
+                  : (<span className="text-atlas-mute">—</span>);
+              })()}
+              <span className="ml-auto text-atlas-mute"><Icon name={entityDropOpen ? 'chevronUp' : 'chevronDown'} size={12} /></span>
+            </button>
+
+            {entityDropOpen && (
+              <div
+                className="absolute left-0 right-0 top-full mt-1 z-30 rounded-none overflow-y-auto"
+                style={{ maxHeight: 260, backgroundColor: 'var(--color-atlas-ink)', border: '1px solid var(--color-atlas-line)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => { set('entityId', ''); set('entityType', ''); setEntityDropOpen(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-atlas-mute transition-colors duration-100 hover:bg-white/5"
+                >
+                  <span className="text-atlas-mute">—</span>
+                  {!form.entityId && <Icon name="checkmark" size={12} className="ml-auto" />}
+                </button>
+                {entityOptions.map(o => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => { set('entityId', o.id); set('entityType', o.type); setEntityDropOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-atlas-soft transition-colors duration-100 hover:bg-white/5"
+                  >
+                    <Icon name={o.type === 'character' ? 'user' : 'object'} size={14} className="flex-shrink-0" />
+                    <span className="truncate">{o.name}</span>
+                    {form.entityId === o.id && <Icon name="checkmark" size={12} className="ml-auto text-atlas-green" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Notes */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('plants.notes', 'Notes')}</label>
+        <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('plants.notes', 'Notes')}</label>
         <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
           rows={2} placeholder={t('plants.notesPlaceholder', 'Contexte, intention narrative\u2026')}
-          className="px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none resize-none font-serif" />
+          className="px-3 py-2 rounded-none text-xs text-slate-300 bg-white/5 border border-white/10 outline-none resize-none font-serif" />
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-2">
         <button onClick={onCancel}
-          className="px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-300 transition-colors">
+          className="px-3 py-1.5 font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] text-atlas-mute hover:text-atlas-soft transition-colors">
           {t('btn.cancel')}
         </button>
         <button onClick={handleSave} disabled={!form.label.trim()}
-          className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-30"
-          style={{ backgroundColor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
+          className="px-4 py-1.5 font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] transition-opacity disabled:opacity-30 hover:opacity-90"
+          style={{ backgroundColor: 'var(--color-atlas-green)', color: 'var(--color-atlas-ink)' }}>
           {t('btn.save')}
         </button>
       </div>
@@ -350,43 +386,45 @@ function PlantCard({ plant, onEdit, onDelete, volumes, t }) {
   const isCross   = plantVol && payoffVol && plantVol.id !== payoffVol.id;
 
   return (
-    <div className="flex items-start gap-3 px-4 py-3 rounded-xl"
-      style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: `1px solid ${typeCfg.color}20` }}>
+    <div className="flex items-start gap-3 py-3"
+      style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
       {/* Barre couleur latérale */}
-      <div className="w-0.5 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: typeCfg.color }} />
+      <div className="w-0.5 self-stretch flex-shrink-0" style={{ backgroundColor: typeCfg.color }} />
 
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
         {/* Header */}
         <div className="flex items-start gap-2 justify-between">
           <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-200 leading-snug">{plant.label}</p>
+            <p className="font-serif text-base font-semibold text-atlas-text leading-snug">{plant.label}</p>
             <div className="flex flex-wrap gap-1 items-center">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                 style={{ backgroundColor: `${typeCfg.color}18`, color: typeCfg.color, border: `1px solid ${typeCfg.color}30` }}>
-                {typeCfg.icon} {t(`plants.type${plant.type[0].toUpperCase()}${plant.type.slice(1)}`, typeCfg.label)}
+                <Icon name={typeCfg.icon} size={13} /> {t(`plants.type${plant.type[0].toUpperCase()}${plant.type.slice(1)}`, typeCfg.label)}
               </span>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                 style={{ backgroundColor: statusCfg.bg, color: statusCfg.color, border: `1px solid ${statusCfg.border}` }}>
                 {t(`plants.status${plant.status[0].toUpperCase()}${plant.status.slice(1)}`, statusCfg.label)}
               </span>
               {entity && (
-                <span className="text-[10px] text-slate-500">· {entity.name}</span>
+                <span className="text-[10px] text-atlas-soft">· {entity.name}</span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             <button onClick={onEdit}
-              className="w-6 h-6 flex items-center justify-center rounded-md opacity-40 hover:opacity-100 transition-all"
-              style={{ backgroundColor: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }}>
+              aria-label={t('btn.edit')} title={t('btn.edit')}
+              className="w-6 h-6 flex items-center justify-center rounded-none opacity-40 hover:opacity-100 transition-all"
+              style={{ backgroundColor: 'rgba(92,174,142,0.15)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.3)' }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </button>
             <button onClick={onDelete}
-              className="w-6 h-6 flex items-center justify-center rounded-md opacity-40 hover:opacity-100 transition-all"
-              style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>
-              ×
+              aria-label={t('btn.delete')} title={t('btn.delete')}
+              className="w-6 h-6 flex items-center justify-center rounded-none opacity-40 hover:opacity-100 transition-all"
+              style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: VIZ_STATUS.crit, border: '1px solid rgba(239,68,68,0.2)' }}>
+              <Icon name="close" size={12} />
             </button>
           </div>
         </div>
@@ -398,12 +436,12 @@ function PlantCard({ plant, onEdit, onDelete, volumes, t }) {
           </span>
           {plantVol && !isCross && (
             <span className="text-[9px] px-1 py-0.5 rounded font-bold"
-              style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)' }}>
+              style={{ backgroundColor: 'rgba(92,174,142,0.15)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)' }}>
               T{plantVol.number}
             </span>
           )}
-          <span className="text-slate-600">→</span>
-          <span style={{ color: plant.payoffChapterNum != null ? '#22c55e' : '#64748b' }}
+          <span className="text-atlas-mute">→</span>
+          <span style={{ color: plant.payoffChapterNum != null ? VIZ_STATUS.ok : 'var(--color-atlas-soft)' }}
             className="font-mono">
             {plant.payoffChapterNum != null ? `Ch.${plant.payoffChapterNum}` : t('plants.unresolvedShort', 'non r\u00e9solu')}
           </span>
@@ -423,7 +461,7 @@ function PlantCard({ plant, onEdit, onDelete, volumes, t }) {
 
         {/* Notes */}
         {plant.notes && (
-          <p className="text-xs text-slate-500 font-serif italic leading-snug">{plant.notes}</p>
+          <p className="text-xs text-atlas-soft font-serif italic leading-snug">{plant.notes}</p>
         )}
       </div>
     </div>
@@ -490,46 +528,38 @@ export default function PlantsBrowser() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
+    <div className="h-full w-full max-w-[1280px] mx-auto flex flex-col bg-atlas-ink text-slate-200 overflow-hidden">
 
       {/* Header */}
-      <header data-tour="plants-list" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4">
+      <header data-tour="plants-list" className="flex items-center px-6 py-5 border-b border-atlas-line flex-shrink-0 gap-5">
         <div className="flex-1">
-          <h1 className="text-lg font-black tracking-tight">
-            {t('plants.titlePrefix', 'Amorces')} <span style={{ color: '#3F51B5' }}>{t('plants.titleHighlight', 'Narratives')}</span>
+          <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">{'Écrire · amorces & payoffs'}</p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+            <Term id="plant">{t('plants.titlePrefix', 'Amorces')}</Term> <span className="italic" style={{ color: '#5cae8e' }}>{t('plants.titleHighlight', 'Narratives')}</span>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">
+          <p className="text-sm text-atlas-soft font-serif italic mt-1">
             {t('plants.statsLine', '{{total}} amorce(s) \u00b7 {{open}} en suspens \u00b7 {{resolved}} r\u00e9solue(s)', { total: stats.total, open: stats.open, resolved: stats.resolved })}
             {stats.dropped > 0 ? ` \u00b7 ${t('plants.droppedCount', '{{count}} abandonn\u00e9e(s)', { count: stats.dropped })}` : ''}
           </p>
         </div>
         {/* Onglets vue */}
-        <div className="flex items-center gap-1 p-1 rounded-xl flex-shrink-0"
-          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="flex items-center gap-5 flex-shrink-0">
           {[{ id: 'list', label: t('plants.viewList', 'Liste') }, { id: 'arc', label: t('plants.viewArc', 'Arc') }].map(v => (
-            <button key={v.id} onClick={() => setView(v.id)}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                backgroundColor: view === v.id ? 'rgba(99,102,241,0.2)' : 'transparent',
-                border:          view === v.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
-                color:           view === v.id ? '#818cf8' : '#64748b',
-              }}>
+            <HeaderToggle key={v.id} active={view === v.id} onClick={() => setView(v.id)}>
               {v.label}
-            </button>
+            </HeaderToggle>
           ))}
         </div>
+        <HeaderSep />
         {/* Bouton ajouter */}
-        <button
-          onClick={() => { setShowForm(true); setEditingId(null); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex-shrink-0"
-          style={{ backgroundColor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
+        <HeaderAction onClick={() => { setShowForm(true); setEditingId(null); }}>
           + {t('plants.plant', 'Amorce')}
-        </button>
+        </HeaderAction>
       </header>
 
       {/* Contenu */}
       <div data-tour="plants-content" className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-6">
-        <div className="flex flex-col gap-5 max-w-4xl mx-auto">
+        <div className="flex flex-col gap-5 max-w-5xl">
 
           {/* Formulaire ajout */}
           {showForm && (
@@ -556,11 +586,11 @@ export default function PlantsBrowser() {
                   { id: 'dropped',  label: t('plants.filterDropped', 'Abandonn\u00e9s') },
                 ].map(f => (
                   <button key={f.id} onClick={() => setStatusFilter(f.id)}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all"
+                    className="px-2.5 py-1 rounded-none text-[10px] font-semibold transition-all"
                     style={{
-                      backgroundColor: statusFilter === f.id ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
-                      border:          statusFilter === f.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.08)',
-                      color:           statusFilter === f.id ? '#818cf8' : '#64748b',
+                      backgroundColor: statusFilter === f.id ? 'rgba(92,174,142,0.2)' : 'rgba(255,255,255,0.04)',
+                      border:          statusFilter === f.id ? '1px solid rgba(92,174,142,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                      color:           statusFilter === f.id ? '#5cae8e' : 'var(--color-atlas-soft)',
                     }}>
                     {f.label}
                   </button>
@@ -570,23 +600,23 @@ export default function PlantsBrowser() {
               {/* Filtre type */}
               <div className="flex items-center gap-1 flex-wrap">
                 <button onClick={() => setTypeFilter('all')}
-                  className="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all"
+                  className="px-2.5 py-1 rounded-none text-[10px] font-semibold transition-all"
                   style={{
                     backgroundColor: typeFilter === 'all' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.08)',
-                    color: typeFilter === 'all' ? '#94a3b8' : '#64748b',
+                    color: typeFilter === 'all' ? '#94a3b8' : 'var(--color-atlas-soft)',
                   }}>
                   {t('plants.allTypes', 'Tous types')}
                 </button>
                 {PLANT_TYPES.map(pt => (
                   <button key={pt.id} onClick={() => setTypeFilter(pt.id)}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-none text-[10px] font-semibold transition-all"
                     style={{
                       backgroundColor: typeFilter === pt.id ? `${pt.color}18` : 'rgba(255,255,255,0.04)',
                       border:          typeFilter === pt.id ? `1px solid ${pt.color}40` : '1px solid rgba(255,255,255,0.08)',
-                      color:           typeFilter === pt.id ? pt.color : '#64748b',
+                      color:           typeFilter === pt.id ? pt.color : 'var(--color-atlas-soft)',
                     }}>
-                    {pt.icon} {t(`plants.type${pt.id[0].toUpperCase()}${pt.id.slice(1)}`, pt.label)}
+                    <Icon name={pt.icon} size={13} /> {t(`plants.type${pt.id[0].toUpperCase()}${pt.id.slice(1)}`, pt.label)}
                   </button>
                 ))}
               </div>
@@ -603,8 +633,8 @@ export default function PlantsBrowser() {
             <>
               {filtered.length === 0 && (
                 plants.length === 0
-                  ? <EmptyState icon="🌱" title={t('plants.emptyTitle', 'Aucune amorce narrative')} hint={t('plants.emptyHint', 'Cliquez sur \u00ab + Amorce \u00bb pour commencer \u00e0 tracker vos plants et payoffs.')} />
-                  : <EmptyState icon="🔍" title={t('plants.noFilterMatch', 'Aucune amorce ne correspond aux filtres')} />
+                  ? <EmptyState icon={<Icon name="plant" size={40} className="text-atlas-mute" />} title={t('plants.emptyTitle', 'Aucune amorce narrative')} hint={t('plants.emptyHint', 'Cliquez sur \u00ab + Amorce \u00bb pour commencer \u00e0 tracker vos plants et payoffs.')} />
+                  : <EmptyState icon={<Icon name="search" size={40} className="text-atlas-mute" />} title={t('plants.noFilterMatch', 'Aucune amorce ne correspond aux filtres')} />
               )}
               {filtered.map(plant => (
                 editingId === plant.id ? (

@@ -7,11 +7,26 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['./src/test/setup.js'],
     exclude: ['server/**', 'node_modules/**', 'e2e/**'],
   },
 
   build: {
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/'))
+              return 'vendor';
+            if (id.includes('i18next') || id.includes('zustand') || id.includes('sonner'))
+              return 'vendor';
+            if (id.includes('better-auth'))
+              return 'auth';
+          }
+        },
+      },
+    },
   },
 
   server: {

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>OG image — Atlas Narratif (variante A)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #333; }
+  /* Capture la div .og (1200×630) pour produire og-image.png */
+  .og {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background:
+      radial-gradient(90% 70% at 88% -10%, rgba(97,114,232,.20), transparent 55%),
+      #0b1621;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    color: #e8edf2;
+  }
+  /* contours topographiques */
+  .og::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: repeating-radial-gradient(circle at 84% 22%,
+      transparent 0, transparent 46px, rgba(97,114,232,.08) 47px, transparent 49px);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 60%);
+            mask-image: linear-gradient(90deg, transparent, #000 60%);
+  }
+  /* rose des vents laiton, débordante */
+  .compass {
+    position: absolute; right: -90px; top: 50%; transform: translateY(-50%);
+    width: 420px; height: 420px; opacity: .5;
+  }
+  .content { position: relative; z-index: 2; padding: 72px 80px; height: 100%; display: flex; flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid #c7a15a; position: relative;
+  }
+  .brand .dot::after {
+    content: ""; position: absolute; inset: 6px; border-radius: 50%;
+    background: #c7a15a;
+  }
+  .brand .name {
+    font-size: 26px; font-weight: 600; letter-spacing: .01em; color: #e8edf2;
+  }
+  .center { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .kicker {
+    font-style: italic; color: #8a97e8; font-size: 30px; margin-bottom: 18px;
+  }
+  h1 {
+    font-size: 78px; line-height: 1.04; font-weight: 600; letter-spacing: -.02em;
+    max-width: 15ch;
+  }
+  h1 .accent { color: #6172e8; }
+  .foot {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 22px; letter-spacing: .04em; color: #9fb0be;
+  }
+  .foot .b { color: #c7a15a; }
+</style>
+</head>
+<body>
+  <div class="og">
+    <svg class="compass" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="46" stroke="#c7a15a" stroke-width="0.6" opacity="0.7"/>
+      <circle cx="50" cy="50" r="34" stroke="#c7a15a" stroke-width="0.4" opacity="0.5"/>
+      <path d="M50 6 L57 50 L50 94 L43 50 Z" fill="#c7a15a" opacity="0.35"/>
+      <path d="M6 50 L50 43 L94 50 L50 57 Z" fill="#c7a15a" opacity="0.18"/>
+      <circle cx="50" cy="50" r="2.4" fill="#c7a15a"/>
+    </svg>
+    <div class="content">
+      <div class="brand">
+        <span class="dot"></span>
+        <span class="name">Atlas Narratif</span>
+      </div>
+      <div class="center">
+        <div class="kicker">L'atlas de ton roman.</div>
+        <h1>Structure ton roman.<br><span class="accent">Garde ta plume.</span></h1>
+      </div>
+      <div class="foot">atlas-narratif.com&nbsp;&nbsp;<span class="b">·</span>&nbsp;&nbsp;gratuit&nbsp;&nbsp;<span class="b">·</span>&nbsp;&nbsp;sans clé API</div>
+    </div>
+  </div>
+</body>
+</html>

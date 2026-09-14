@@ -9,7 +9,7 @@ import {
 const CHARACTERS = [
   { id: 'char_frodo',   name: 'Frodo Baggins',  aliases: ['Anneau-porteur'], color: '#10B981' },
   { id: 'char_aragorn', name: 'Aragorn',         aliases: ['Grands-Pas', 'Elessar'], color: '#3F51B5' },
-  { id: 'char_legolas', name: 'Legolas',         aliases: [], color: '#64748b' },
+  { id: 'char_legolas', name: 'Legolas',         aliases: [], color: 'var(--color-atlas-soft)' },
 ];
 const LOCATIONS = [
   { id: 'loc_shire',   name: 'La Comté' },
@@ -65,7 +65,7 @@ describe('getEntityInfo', () => {
 
   it('retourne un objet fallback pour un id inconnu', () => {
     const info = getEntityInfo('char_unknown');
-    expect(info).toMatchObject({ name: 'char_unknown', type: 'unknown', icon: '?' });
+    expect(info).toMatchObject({ name: 'char_unknown', type: 'unknown', icon: 'help' });
   });
 });
 

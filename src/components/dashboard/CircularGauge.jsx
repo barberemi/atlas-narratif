@@ -1,8 +1,10 @@
+import { VIZ_STATUS } from '../../data/viz_palette';
+
 export default function CircularGauge({ score, title, valueLabel }) {
   const R = 70;
   const C = 2 * Math.PI * R;
   const dash = (score / 100) * C;
-  const color = score === 100 ? '#A78BFA' : score >= 80 ? '#10B981' : score >= 50 ? '#F59E0B' : score >= 25 ? '#F97316' : '#EF4444';
+  const color = score >= 80 ? VIZ_STATUS.ok : score >= 50 ? VIZ_STATUS.warn : score >= 25 ? VIZ_STATUS.serious : VIZ_STATUS.crit;
   const statusLabel = score === 100 ? 'Parfait' : score >= 80 ? 'Bon' : score >= 50 ? 'Moyen' : score >= 25 ? 'Faible' : 'Critique';
 
   return (
@@ -25,7 +27,7 @@ export default function CircularGauge({ score, title, valueLabel }) {
           {statusLabel}
         </text>
       </svg>
-      <p className="text-xs text-slate-500 font-serif italic text-center">{title}</p>
+      <p className="text-xs text-atlas-mute font-serif italic text-center">{title}</p>
     </div>
   );
 }

@@ -16,6 +16,7 @@ Outil d'analyse et de construction narrative pour auteurs. SPA React + API Hono 
 | Path | Composant | Rôle |
 |------|-----------|------|
 | `/` | `HomePage` (App.jsx) | Onboarding : créer ou importer un projet |
+| `/demo` | `DemoRoute` (App.jsx) | Lien public partageable : charge la démo LOTR (seed) et redirige vers `/dashboard` |
 | `/review` | `ReviewPage` | Validation après import IA |
 | `/dashboard` | `NarrativeDashboard` | Stats, recommandations, incohérences |
 | `/map` | `AtlasMapView` | Carte interactive + trajets personnages |
@@ -91,7 +92,7 @@ src/
 
 ## Flux principaux
 1. **Import manuscrit** : `FilePicker` → `analyzeAndImport()` (appel Anthropic) → DB → `/review`
-2. **Construction** : créer projet vide → `/savethecat` → saisie manuelle
+2. **Construction** : créer projet vide (nom + logline) → `/dashboard` → checklist « premières minutes » (`FirstRunChecklist`) qui guide la saisie (logline, 3 personnages, 1re scène)
 3. **Restauration** : fichier `atlas_*.json` → `importFromBackup()` → `/dashboard`
 4. **Navigation cross-vue** : les routes se passent des query params (`?tab=`, `?entity=`, `?filter=`)
 
@@ -162,7 +163,7 @@ Le projet "Le Seigneur des Anneaux" sert de jeu de données de test complet. Il 
 
 ## Prompt d'analyse IA (`src/data/analysis_prompt.js`)
 
-Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gemini, Claude…) pour analyser un manuscrit. Il décrit exactement la structure JSON que l'IA doit retourner, qui est ensuite importée via `src/db/importFromAiOutput.js` → `src/db/seed.generic.js`.
+Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gemini, Claude…) pour analyser un manuscrit. Il décrit exactement la structure JSON que l'IA doit retourner, qui est ensuite importée via `src/api/importFromAiOutputViaApi.js` → API serveur (`seedProjectViaApi`). Le seeder de référence pour le mapping des champs reste `src/db/seed.generic.js` (utilisé par la démo LOTR et les projets vides).
 
 **Règle : toute modification du modèle de données doit être répercutée dans le prompt.**
 
@@ -177,7 +178,7 @@ Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gem
 
 **Cohérence à maintenir entre les fichiers :**
 - `analysis_prompt.js` — déclare ce que l'IA doit générer
-- `importFromAiOutput.js` — initialise les clés manquantes (`??= []`), valide le format
+- `importFromAiOutputViaApi.js` — initialise les clés manquantes (`??= []`), valide le format, envoie au serveur
 - `seed.generic.js` — insère les données ; les champs non colonnes SQL doivent passer par `extra` (JSONB)
 - `queries.js` — relit les champs stockés dans `extra` pour les exposer aux stores
 

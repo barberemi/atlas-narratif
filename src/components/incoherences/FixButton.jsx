@@ -21,8 +21,8 @@ export default function FixButton({ links, onFix }) {
     return (
       <button
         onClick={() => onFix(fixable[0])}
-        className="text-xs font-bold px-2.5 py-1 rounded-lg transition-all duration-150 flex-shrink-0"
-        style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
+        className="font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] px-2.5 py-1 transition-all duration-150 flex-shrink-0"
+        style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)' }}
       >
         {t('inc.fix')}
       </button>
@@ -33,15 +33,15 @@ export default function FixButton({ links, onFix }) {
     <div ref={ref} className="relative flex-shrink-0">
       <button
         onClick={() => setOpen(v => !v)}
-        className="text-xs font-bold px-2.5 py-1 rounded-lg transition-all duration-150"
-        style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
+        className="font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] px-2.5 py-1 transition-all duration-150"
+        style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)' }}
       >
         {t('inc.fixMultiple')}
       </button>
       {open && (
         <div
-          className="absolute top-full mt-1 left-0 z-20 rounded-xl overflow-hidden py-1"
-          style={{ minWidth: 180, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
+          className="absolute top-full mt-1 left-0 z-20 overflow-hidden py-1"
+          style={{ minWidth: 180, backgroundColor: '#1a1d22', border: '1px solid var(--color-atlas-line)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
         >
           {fixable.map(link => (
             <button

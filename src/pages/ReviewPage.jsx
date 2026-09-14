@@ -5,12 +5,14 @@ import { useLoreStore }     from '../stores/useLoreStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useStoreLoader }   from '../hooks/useStoreLoader';
 import EntityEditor from '../components/lore/EntityEditor';
+import { HeaderAction } from '../components/ui/HeaderButton';
 import EventEditor  from '../components/timeline/EventEditor';
+import Icon from '../components/ui/Icon';
 import { filterBySource, computeStats, extractChapters } from '../utils/reviewUtils';
 
 // ── Badge source ───────────────────────────────────────────────────────────────
 const SOURCE_LABELS = {
-  import:   { key: 'review.sourceImport',   fallback: 'Import\u00e9',  color: '#64748b', bg: 'rgba(100,116,139,0.1)',  border: 'rgba(100,116,139,0.2)'  },
+  import:   { key: 'review.sourceImport',   fallback: 'Import\u00e9',  color: 'var(--color-atlas-soft)', bg: 'rgba(100,116,139,0.1)',  border: 'rgba(100,116,139,0.2)'  },
   manual:   { key: 'review.sourceManual',   fallback: 'Manuel',   color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)'  },
   modified: { key: 'review.sourceModified', fallback: 'Modifi\u00e9',  color: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)'  },
 };
@@ -42,30 +44,22 @@ function Section({ title, count, items, renderItem, accent }) {
   if (items.length === 0) return null;
 
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.02)' }}
-    >
-      {/* Header section */}
+    <div className="flex flex-col">
+      {/* Header section (filet) */}
       <button
         onClick={() => setCollapsed(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 transition-colors"
-        style={{ borderBottom: collapsed ? 'none' : '1px solid rgba(255,255,255,0.06)' }}
+        className="w-full flex items-center justify-between pb-2 pt-2 transition-colors"
+        style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-black uppercase tracking-widest" style={{ color: accent }}>{title}</span>
-          <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-            style={{ backgroundColor: `${accent}15`, color: accent }}
-          >
-            {count}
-          </span>
+        <div className="flex items-baseline gap-2">
+          <span className="font-grotesk text-xs font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{title}</span>
+          <span className="font-grotesk text-[11px] font-bold" style={{ color: accent }}>{count}</span>
         </div>
-        <span className="text-slate-600 text-xs">{collapsed ? '▶' : '▼'}</span>
+        <Icon name={collapsed ? 'chevronRight' : 'chevronDown'} size={12} className="text-atlas-mute" />
       </button>
 
       {!collapsed && (
-        <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8">
           {items.map(renderItem)}
         </div>
       )}
@@ -78,24 +72,22 @@ function EntityRow({ item, color, onEdit, children, t }) {
   return (
     <div
       key={item.id}
-      className="flex items-center gap-3 px-4 py-2.5 group transition-colors"
-      style={{ backgroundColor: 'transparent' }}
-      onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.02)'; }}
-      onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+      className="flex items-center gap-3 py-3 group"
+      style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
     >
       {color && (
         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
       )}
-      <span className="text-sm text-slate-300 flex-1 truncate font-medium">{item.name ?? item.title}</span>
+      <span className="text-sm text-atlas-soft flex-1 truncate font-medium">{item.name ?? item.title}</span>
       {children}
       <SourceBadge source={item.source ?? 'import'} t={t} />
       <button
         onClick={() => onEdit(item)}
-        className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded text-[11px] transition-opacity flex-shrink-0"
-        style={{ backgroundColor: 'rgba(129,140,248,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }}
+        className="opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center text-[11px] transition-opacity flex-shrink-0"
+        style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)' }}
         title={t('review.edit', 'Modifier')}
       >
-        ✎
+        <Icon name="edit" size={14} />
       </button>
     </div>
   );
@@ -128,46 +120,39 @@ export default function ReviewPage() {
   const closeEditor = () => setEditorState(null);
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar">
-      <div className="max-w-2xl mx-auto px-6 py-10 flex flex-col gap-6">
+    <div className="h-full overflow-hidden no-scrollbar">
+      <div className="h-full max-w-[1280px] mx-auto flex flex-col overflow-hidden">
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{t('review.importDone', 'Import termin\u00e9')}</p>
-            <h1 className="text-2xl font-black tracking-tight">
-              {t('review.titlePrefix', 'R\u00e9vision du')} <span style={{ color: '#818cf8' }}>{t('review.titleHighlight', 'projet')}</span>
+        <header className="flex items-center justify-between gap-4 px-6 py-5 border-b border-atlas-line flex-shrink-0">
+          <div className="flex-1">
+            <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">{'Import \u00b7 r\u00e9vision du projet'}</p>
+            <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+              {t('review.titlePrefix', 'R\u00e9vision du')} <span className="italic" style={{ color: '#5cae8e' }}>{t('review.titleHighlight', 'projet')}</span>
             </h1>
-            <p className="text-sm text-slate-500 font-serif italic mt-1">
+            <p className="text-sm text-atlas-soft font-serif italic mt-1">
               {stats.characters} {t('label.characters')} · {stats.locations} {t('label.locations')} · {stats.objects} {t('label.objects')} · {stats.events} {t('label.events')}
               {stats.modified > 0 && (
                 <span style={{ color: '#f59e0b' }}> · {stats.modified} {t('review.modifiedAdded', 'modifi\u00e9s/ajout\u00e9s')}</span>
               )}
             </p>
           </div>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-black transition-all duration-150"
-            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
-          >
+          <HeaderAction onClick={() => navigate('/dashboard')}>
             {t('review.goToDashboard', 'Dashboard →')}
-          </button>
-        </div>
+          </HeaderAction>
+        </header>
 
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 pt-6 pb-10 flex flex-col gap-6">
         {/* ── Filtres source ── */}
-        <div
-          className="flex gap-1 p-1 rounded-xl"
-          style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
-        >
+        <div className="flex gap-6" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
           {FILTER_IDS.map(f => (
             <button
               key={f.id}
               onClick={() => setSourceFilter(f.id)}
-              className="flex-1 py-2 rounded-lg text-xs font-bold transition-all duration-150"
+              className="pb-3 -mb-px font-grotesk text-[11px] font-bold uppercase tracking-[0.08em] transition-colors duration-150"
               style={{
-                backgroundColor: sourceFilter === f.id ? 'rgba(63,81,181,0.2)'  : 'transparent',
-                color:           sourceFilter === f.id ? '#818cf8'               : '#475569',
-                border:          sourceFilter === f.id ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
+                borderBottom: `2px solid ${sourceFilter === f.id ? 'var(--color-atlas-green)' : 'transparent'}`,
+                color:        sourceFilter === f.id ? '#5cae8e' : 'var(--color-atlas-mute)',
               }}
             >
               {t(f.key, f.fallback)}
@@ -182,7 +167,7 @@ export default function ReviewPage() {
 
         {/* ── Message si filtre vide ── */}
         {totalFiltered === 0 && (
-          <div className="text-center py-12 text-slate-600 font-serif italic text-sm">
+          <div className="text-center py-12 text-atlas-mute font-serif italic text-sm">
             {t('review.noFilterResult', 'Aucun \u00e9l\u00e9ment avec ce filtre')}
           </div>
         )}
@@ -191,7 +176,7 @@ export default function ReviewPage() {
         <Section
           title={t('label.characters')}
           count={filteredChars.length}
-          accent="#818cf8"
+          accent="#cba15e"
           items={filteredChars}
           renderItem={(char) => (
             <EntityRow
@@ -209,7 +194,7 @@ export default function ReviewPage() {
         <Section
           title={t('label.locations')}
           count={filteredLocs.length}
-          accent="#60a5fa"
+          accent="#5cae8e"
           items={filteredLocs}
           renderItem={(loc) => (
             <EntityRow
@@ -220,7 +205,7 @@ export default function ReviewPage() {
               t={t}
             >
               {loc.type && (
-                <span className="text-[11px] text-slate-600 truncate hidden sm:block">{loc.type}</span>
+                <span className="text-[11px] text-atlas-mute truncate hidden sm:block">{loc.type}</span>
               )}
             </EntityRow>
           )}
@@ -230,7 +215,7 @@ export default function ReviewPage() {
         <Section
           title={t('label.objects')}
           count={filteredObjs.length}
-          accent="#a78bfa"
+          accent="#cba15e"
           items={filteredObjs}
           renderItem={(obj) => (
             <EntityRow
@@ -241,7 +226,7 @@ export default function ReviewPage() {
               t={t}
             >
               {obj.type && (
-                <span className="text-[11px] text-slate-600 truncate hidden sm:block">{obj.type}</span>
+                <span className="text-[11px] text-atlas-mute truncate hidden sm:block">{obj.type}</span>
               )}
             </EntityRow>
           )}
@@ -251,7 +236,7 @@ export default function ReviewPage() {
         <Section
           title={t('label.events')}
           count={filteredEvents.length}
-          accent="#3F51B5"
+          accent="#5cae8e"
           items={filteredEvents}
           renderItem={(evt) => (
             <EntityRow
@@ -261,7 +246,7 @@ export default function ReviewPage() {
               onEdit={() => setEditorState({ type: 'event', entity: evt })}
               t={t}
             >
-              <span className="text-[11px] text-slate-600 flex-shrink-0 hidden sm:block">
+              <span className="text-[11px] text-atlas-mute flex-shrink-0 hidden sm:block">
                 Ch.{evt.chapter}
               </span>
             </EntityRow>
@@ -271,12 +256,13 @@ export default function ReviewPage() {
         {/* ── Bouton bas de page ── */}
         <button
           onClick={() => navigate('/dashboard')}
-          className="w-full py-3 rounded-xl text-sm font-black transition-all duration-200 mt-2"
-          style={{ backgroundColor: 'rgba(63,81,181,0.18)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
+          className="w-full py-3 font-grotesk text-xs font-bold uppercase tracking-[0.08em] transition-opacity hover:opacity-90 mt-2"
+          style={{ backgroundColor: 'var(--color-atlas-green)', color: 'var(--color-atlas-ink)' }}
         >
           {t('review.startExploring', 'Commencer l\'exploration \u2192')}
         </button>
 
+        </div>
       </div>
 
       {/* ── Éditeurs slide-in ── */}

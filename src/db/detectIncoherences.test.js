@@ -202,7 +202,7 @@ describe('detectUsedInactiveObject', () => {
 
     expect(results).toHaveLength(1);
     expect(results[0].severity).toBe('high');
-    expect(results[0].title).toContain('lost');
+    expect(results[0].title).toContain('perdu');
   });
 
   it('signale un objet détruit', () => {
@@ -210,7 +210,7 @@ describe('detectUsedInactiveObject', () => {
     const events = [makeEvent('evt1', 5, 'Ch5', { entities: [withObj('obj_1')] })];
     const results = runDetection({ ...empty, objects, events });
 
-    expect(results[0].title).toContain('destroyed');
+    expect(results[0].title).toContain('détruit');
   });
 
   it('ne signale pas un objet perdu utilisé AVANT son changement de statut', () => {
@@ -385,7 +385,7 @@ describe('detectCrossVolumeDeadCharacter', () => {
     expect(found).toHaveLength(1);
     expect(found[0].severity).toBe('critical');
     expect(found[0].title).toContain('Alice');
-    expect(found[0].title).toContain('V1');
+    expect(found[0].title).toContain('T1');
   });
 
   it('ne signale pas si le personnage mort n\'a pas de volumeId sur l\'événement de mort', () => {
@@ -607,7 +607,7 @@ describe('detectFlashbackObjectDestroyed', () => {
     const found = results.filter(r => r.type === 'Flashback Temporel' && r.severity === 'high');
     expect(found).toHaveLength(1);
     expect(found[0].title).toContain('Épée');
-    expect(found[0].title).toContain('destroyed');
+    expect(found[0].title).toContain('détruit');
   });
 
   it('ne signale pas un objet dans un flashback diégétiquement antérieur à sa destruction', () => {

@@ -35,6 +35,8 @@ export function computeAutoJourneys(events, locations, characters) {
         eventId:         evt.id,
         chapterNum:      evt.chapter,
         chapitre:        `Ch.${evt.chapter} — ${evt.chapterTitle}`,
+        locationId:      evt.locationId ?? null,
+        isPov:           evt.povCharacterId === char.id,
         lieu:            loc?.name ?? (evt.locationId ? 'Lieu non localisé' : 'Aucun lieu précisé'),
         sous_lieu:       evt.title,
         action:          evt.description ?? '',

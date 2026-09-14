@@ -1,5 +1,6 @@
 import { hexToRgb } from '../../utils/color';
 import { getEntityMeta, ENTITY_ICONS } from '../../utils/entityUtils';
+import Icon from '../ui/Icon';
 
 export default function EntityChip({ entity, onClick }) {
   const meta = getEntityMeta(entity.id, entity.entityType);
@@ -16,7 +17,7 @@ export default function EntityChip({ entity, onClick }) {
       title={`Voir ${meta.name}`}
     >
       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color, opacity: 0.7 }} />
-      <span className="leading-none">{ENTITY_ICONS[entity.entityType]}</span>
+      <Icon name={ENTITY_ICONS[entity.entityType]} size={12} className="leading-none flex-shrink-0" />
       <span className="leading-none">{meta.name}</span>
     </button>
   );

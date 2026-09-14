@@ -316,7 +316,11 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   // ── Voyage du Héros ───────────────────────────────────────────────────────────
   report('Voyage du Héros…');
   for (const hj of heroJourneyDB) {
-    const id = `hj_${hj.characterId}_${hj.stageKey}`;
+    // ⚠️ project_id DOIT faire partie de l'id : hero_journey_entries a une PK
+    // globale (id seul), donc un id non scopé (hj_<char>_<stage>) entre en
+    // collision entre projets et fait no-op le seed via ON CONFLICT dès qu'un
+    // premier projet a été seedé. → scoper par projet.
+    const id = `hj_${projectId}_${hj.characterId}_${hj.stageKey}`;
     await tx`
       INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
       VALUES (${id}, ${projectId}, ${hj.stageKey}, ${hj.characterId ?? null}, ${hj.chapterNum ?? null}, ${e(hj.summary ?? null)}, ${hj.volumeId ?? null})

@@ -19,8 +19,8 @@ test.describe('Phase 5a — CRUD Plants', () => {
     await page.getByRole('button', { name: 'Save changes' }).click();
     await page.goto('/plants');
     await expect(page.getByText('To Delete Plant')).toBeVisible({ timeout: 5_000 });
-    // Le bouton × du dernier plant créé (le plus récent = dernier ×)
-    await page.getByRole('button', { name: '×' }).last().click();
+    // Le bouton supprimer du dernier plant créé (le plus récent = dernier)
+    await page.getByRole('button', { name: /Delete|Supprimer|删除/i }).last().click();
     await page.goto('/plants');
     await expect(page.getByText('To Delete Plant')).not.toBeVisible({ timeout: 5_000 });
   });

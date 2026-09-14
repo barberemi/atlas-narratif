@@ -7,6 +7,7 @@ import { usePlantStore } from '../../stores/usePlantStore';
 import { PLANT_TYPES } from '../../pages/PlantsBrowser';
 import EntityChip from './EntityChip';
 import DarkCard from '../ui/DarkCard';
+import Icon from '../ui/Icon';
 
 export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allIncoherences, beat, volumeLabel }) {
   const { t } = useTranslation();
@@ -30,17 +31,16 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
     [plants, event.id],
   );
 
-  const accentColor = outcome ? outcome.color : beat ? beat.color : 'rgba(63,81,181,0.5)';
+  const accentColor = outcome ? outcome.color : beat ? beat.color : 'rgba(169,162,145,0.35)';
 
   return (
     <DarkCard
       dimmed={isDimmed}
+      accent={accentColor}
       onClick={() => setExpanded(p => !p)}
       className="group"
       style={event.isFlashback ? { borderColor: 'rgba(217,119,6,0.4)', backgroundColor: 'rgba(120,77,15,0.07)' } : undefined}
     >
-      <div className="h-0.5" style={{ backgroundColor: accentColor }} />
-
       <div className="p-4 space-y-3">
 
         {/* ── Titre + bouton édition ── */}
@@ -49,17 +49,17 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
             {volumeLabel && (
               <span
                 className="text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0"
-                style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
+                style={{ backgroundColor: '#cba15e', color: '#15171b' }}
               >
                 {volumeLabel}
               </span>
             )}
-            <p className="text-sm font-bold text-slate-200 leading-snug">{event.title}</p>
+            <p className="font-serif text-[15px] font-semibold text-slate-100 leading-snug">{event.title}</p>
           </div>
           <button
             onClick={e => { e.stopPropagation(); onEdit(event); }}
-            className="w-6 h-6 flex items-center justify-center rounded-md flex-shrink-0 transition-all duration-200"
-            style={{ backgroundColor: 'rgba(129,140,248,0.15)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }}
+            className="w-6 h-6 flex items-center justify-center rounded-md flex-shrink-0 transition-all duration-200 opacity-0 group-hover:opacity-100"
+            style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#8a96a2', border: '1px solid rgba(255,255,255,0.09)' }}
             title={t('btn.edit', 'Modifier')}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -76,7 +76,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
             {/* Flashback */}
             {event.isFlashback && (
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-700 w-7 flex-shrink-0">↩</span>
+                <span className="text-slate-700 w-7 flex-shrink-0 flex items-center"><Icon name="memory" size={13} /></span>
                 <span
                   className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: 'rgba(217,119,6,0.12)', color: '#fbbf24', border: '1px solid rgba(217,119,6,0.3)' }}
@@ -110,7 +110,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                   className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{ backgroundColor: `${povMeta.color}18`, color: povMeta.color, border: `1px solid ${povMeta.color}40` }}
                 >
-                  👁 {povMeta.name.split(' ')[0]}
+                  <Icon name="pov" size={12} /> {povMeta.name.split(' ')[0]}
                 </span>
               </div>
             )}
@@ -150,13 +150,13 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                 <div className="space-y-1.5">
                   {event.sceneGoal && (
                     <div className="text-xs">
-                      <span className="text-slate-600 uppercase tracking-wider text-[9px] font-bold">{t('eventEditor.sceneGoal')} </span>
+                      <span className="text-atlas-mute uppercase tracking-wider text-[9px] font-bold">{t('eventEditor.sceneGoal')} </span>
                       <span className="text-slate-400 font-serif">{event.sceneGoal}</span>
                     </div>
                   )}
                   {event.sceneConflict && (
                     <div className="text-xs">
-                      <span className="text-slate-600 uppercase tracking-wider text-[9px] font-bold">{t('eventEditor.sceneConflict')} </span>
+                      <span className="text-atlas-mute uppercase tracking-wider text-[9px] font-bold">{t('eventEditor.sceneConflict')} </span>
                       <span className="text-slate-400 font-serif">{event.sceneConflict}</span>
                     </div>
                   )}
@@ -165,7 +165,7 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
                       className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ backgroundColor: `${outcome.color}18`, color: outcome.color, border: `1px solid ${outcome.color}40` }}
                     >
-                      {outcome.icon} {t(`outcome.${outcome.id}`, outcome.label)}
+                      <Icon name={outcome.icon} size={12} /> {t(`outcome.${outcome.id}`, outcome.label)}
                     </span>
                   )}
                 </div>
@@ -187,8 +187,8 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
             {linkedIncs.map(inc => {
               const cfg = SEVERITY_CONFIG[inc.severity];
               return (
-                <div key={inc.id} className="text-xs px-2.5 py-1 rounded-lg" style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
-                  ⚠ {inc.title}
+                <div key={inc.id} className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg" style={{ backgroundColor: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                  <Icon name="warning" size={12} className="flex-shrink-0" /> {inc.title}
                 </div>
               );
             })}

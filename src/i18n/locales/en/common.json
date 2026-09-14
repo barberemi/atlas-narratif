@@ -1,7 +1,6 @@
 {
   "app": {
-    "name": "AtlasNarrative",
-    "h1Prefix": "Structure your novel with",
+    "name": "Atlas Narrative",
     "exported": "Exported from Atlas Narrative on {{date}}"
   },
   "nav": {
@@ -13,6 +12,15 @@
     "emotionalArc": "Emotional Arc",
     "plants": "Setups",
     "threads": "Threads",
+    "secFoundation": "Foundation",
+    "secDeepen": "Go deeper",
+    "secThreads": "Track the threads",
+    "startHere": "Start here",
+    "descSaveTheCat": "The backbone — 15 beats",
+    "descHeroJourney": "The protagonist's arc — 12 stages",
+    "descEmotionalArc": "The intensity curve, chapter by chapter",
+    "descPlants": "What's set up, what's left to pay off",
+    "descThreads": "The subplots not to lose",
     "lore": "World",
     "map": "Map",
     "timeline": "Timeline",
@@ -25,6 +33,9 @@
     "login": "Log in"
   },
   "home": {
+    "heroTitle": "Structure your novel.",
+    "heroTitleAccent": "Keep your voice.",
+    "heroSubtitle": "Build on a real narrative structure (Save the Cat, the Hero's Journey), see your whole story at a glance, and catch inconsistencies before your readers do.",
     "startQuestion": "Where to start?",
     "buildTitle": "I'm building my story",
     "buildDesc": "Plan with a narrative method, create characters and locations",
@@ -33,7 +44,7 @@
     "analyzeDesc": "Import a manuscript or notes to extract timeline, map, inconsistencies…",
     "analyzeAction": "Import →",
     "demoTitle": "Explore with the demo",
-    "demoDesc": "The Lord of the Rings — 3 volumes, complete trilogy",
+    "demoDesc": "The Lord of the Rings: 3 volumes, complete trilogy",
     "demoAction": "Load →",
     "demoOpen": "Open →",
     "demoLoading": "Loading…",
@@ -45,18 +56,42 @@
     "projectNamePlaceholder": "My novel",
     "createProject": "Create project →",
     "creating": "Creating…",
+    "buildLoglineLabel": "Logline (optional)",
+    "buildLoglinePlaceholder": "In one sentence: who wants what, and what stands in the way?",
+    "buildLoglineHint": "Your story's pitch. You can refine it later.",
     "demoSending": "Sending to server…",
     "demoReloading": "Switching demo language…",
     "back": "← Back",
-    "featureTimelineTitle": "Create your narrative timeline in a few clicks",
-    "featureTimelineDesc": "Organize events chapter by chapter. Drag and drop to reorder, filter by volume, visualize the emotional arc.",
+    "featureTimelineTitle": "Build your narrative timeline in a few clicks",
+    "featureTimelineDesc": "Organize your events chapter by chapter. Drag and drop to reorder, filter by volume, visualize the emotional arc.",
     "featureCharactersTitle": "Manage your characters and their arcs",
     "featureCharactersDesc": "Character sheets, relationship graph, and emotional arcs to track each character's evolution.",
-    "featureIncoherencesTitle": "Detect inconsistencies automatically",
-    "featureIncoherencesDesc": "Over 12 detectors analyze your data and flag contradictions, duplicates, and oversights.",
+    "featureIncoherencesTitle": "Catch inconsistencies automatically",
+    "featureIncoherencesDesc": "Over 12 detectors analyze your story and flag contradictions, duplicates, and oversights, before your readers do.",
     "featureFrameworksTitle": "Compatible with Save the Cat and the Hero's Journey",
-    "featureFrameworksDesc": "Structure with Save the Cat's 15 beats or the Hero's Journey's 12 stages.",
-    "featuresLabel": "Features"
+    "featureFrameworksDesc": "Structure with Save the Cat's 15 beats or the Hero's Journey's 12 stages: guided, with famous examples.",
+    "featuresLabel": "Features",
+    "kicker": "For the writers who build whole worlds",
+    "signature": "The atlas of your novel.",
+    "ctaStart": "Start for free",
+    "ctaDemo": "Explore the demo",
+    "reassure": "Free · No API key · Your content stays yours",
+    "closerTrust": "No API key · no AI trained on your text · your worlds stay yours",
+    "bandQuoteLead": "Fifty thousand words in,",
+    "bandQuoteRest": "and the question keeps coming back: does it hold together?",
+    "indexLabel": "What the tool does",
+    "indexToc": "Contents",
+    "idx1Title": "Never start from a blank page again",
+    "idx1Cat": "The method",
+    "idx1Desc": "Save the Cat (15 beats) or the Hero's Journey (12 stages), guided and illustrated with works you know.",
+    "idx2Title": "Your novel, finally in full view",
+    "idx2Cat": "The big picture",
+    "idx2Desc": "Timeline, journey map, relationship graph, emotional arc: the same story from every angle.",
+    "idx3Title": "Spot the cracks before your readers do",
+    "idx3Cat": "Consistency",
+    "idx3Desc": "Over 12 detectors track contradictions and omissions; setup tracking reminds you of every promise, even three volumes later.",
+    "closerTitle": "Your saga deserves a map.",
+    "closerCta": "Create my first project"
   },
   "label": {
     "characters": "Characters",
@@ -157,7 +192,7 @@
   },
   "welcome": {
     "title": "Welcome to Atlas",
-    "demoSubtitle": "You're exploring <strong>The Lord of the Rings</strong> project — a complete example to discover all features.",
+    "demoSubtitle": "You're exploring <strong>The Lord of the Rings</strong> project: a complete example to discover all features.",
     "projectSubtitle": "Discover the tools at your disposal to analyze and structure your story.",
     "feature1": "Dashboard, timeline and inconsistencies",
     "feature2": "Interactive map and complete lore",
@@ -165,7 +200,8 @@
     "feature4": "Emotional arcs, setups and narrative threads"
   },
   "auth": {
-    "cookieWarning": "Your projects are tied to this browser — they will be lost if you clear your cookies.",
+    "localMode": "Local mode",
+    "cookieWarning": "Create a free account to keep your projects safe and access them on any device.",
     "signIn": "Sign in →"
   },
   "lang": {
@@ -224,17 +260,29 @@
     "noChapter": "No chapter",
     "noEntities": "No entities in the database",
     "emptyTitle": "No Save the Cat chapters",
-    "emptyHint": "Create chapters from the timeline to see them here.",
+    "emptyHint": "Create your first scene to start placing the 15 beats.",
+    "emptyAction": "+ Create a scene",
     "beatsPlaced": "beats placed",
     "criticalAlerts": "critical alerts",
     "warnings": "warnings",
     "legendPlaced": "Beat placed",
     "legendIdeal": "Ideal position",
+    "legendTolerance": "Tolerance zone",
     "legendDeviation": "Deviation",
     "narrativeAlerts": "Narrative alerts",
     "solidStructure": "Solid narrative structure!",
     "solidStructureHint": "All beats are well placed within the recommended intervals.",
     "the15beats": "The 15 beats",
+    "beatDetailTab": "Beat detail",
+    "selectBeatHint": "Click a beat on the strip to see its detail.",
+    "statusMissing": "Missing",
+    "statusOnTrack": "On track",
+    "statusDeviation": "Deviation",
+    "idealTolerance": "Ideal {{ideal}}% · ±{{tol}}",
+    "actualAt": "actual {{pct}}%",
+    "scenesForBeat": "Scenes carrying this beat",
+    "noSceneForBeat": "No scene carries this beat yet.",
+    "addAnotherScene": "+ Add a scene",
     "entities": "Entities",
     "beatsCoverage": "Beat coverage",
     "ideal": "ideal",
@@ -253,7 +301,7 @@
     "subtitle": "Automatic narrative coherence analysis",
     "scanning": "Analyzing…",
     "rescan": "Re-scan",
-    "lastScanCount": "{{count}} inconsistencies detected",
+    "lastScanCount": "Last scan: {{count}} auto-detected",
     "catalogTitle": "Inconsistency catalog",
     "catalog": "Catalog",
     "catalogCount": "{{count}} automatically detectable inconsistency types",
@@ -465,6 +513,17 @@
     "good": "Good",
     "average": "Average",
     "critical": "Critical",
+    "healthSolid": "Solid",
+    "healthBuilding": "In progress",
+    "healthConsolidate": "Needs work",
+    "scoreExplainAria": "Show the breakdown and levers of the narrative health score",
+    "scoreDiagnosisKicker": "A diagnosis, not a grade",
+    "scoreDiagnosisIntro": "This score sums up how far along your narrative axes are. Here's how to raise it.",
+    "scoreComposition": "What makes up the score",
+    "scoreWeightAria": "Weight ×{{weight}} in the score",
+    "scoreLevers": "Levers to raise it",
+    "scoreAllMax": "Every axis is maxed out. Nothing to shore up for now.",
+    "scoreClose": "Close",
     "open": "Open →",
     "overview": "Overview",
     "structureComplete": "Structure complete",
@@ -479,12 +538,12 @@
     "crossVolumeContinuity": "Cross-volume continuity",
     "crossVolumeSetups": "Setups spanning multiple volumes",
     "viewAll": "View all →",
-    "confirmed_one": "Confirmed — {{count}} thread",
-    "confirmed_other": "Confirmed — {{count}} threads",
+    "confirmed_one": "Confirmed: {{count}} thread",
+    "confirmed_other": "Confirmed: {{count}} threads",
     "resolved": "resolved",
     "inProgress": "in progress",
-    "pending_one": "Pending — {{count}} without assigned payoff",
-    "pending_other": "Pending — {{count}} without assigned payoff",
+    "pending_one": "Pending: {{count}} without assigned payoff",
+    "pending_other": "Pending: {{count}} without assigned payoff",
     "incoherenceCorrection": "Inconsistency correction",
     "characterCoverage": "Character coverage",
     "stcStructure": "Save the Cat structure",
@@ -500,7 +559,7 @@
     "goalConflictOutcome": "goal + conflict + outcome",
     "bestChar": "Best: {{name}} ({{filled}}/12)",
     "todoNow": "To do now",
-    "allGood": "Everything is in order — no action required.",
+    "allGood": "Everything is in order, no action required.",
     "recCritical_one": "{{count}} unresolved critical inconsistency",
     "recCritical_other": "{{count}} unresolved critical inconsistencies",
     "recHigh_one": "{{count}} high severity inconsistency",
@@ -509,8 +568,8 @@
     "recMissingBeats_other": "{{count}} missing Save the Cat beats",
     "recOrphanChars_one": "{{count}} character missing from timeline",
     "recOrphanChars_other": "{{count}} characters missing from timeline",
-    "recArcIncomplete": "Emotional arc incomplete — {{filled}}/{{total}} chapters filled",
-    "recHeroJourney": "Hero's Journey — only {{filled}}/{{total}} stages filled",
+    "recArcIncomplete": "Emotional arc incomplete: {{filled}}/{{total}} chapters filled",
+    "recHeroJourney": "Hero's Journey: only {{filled}}/{{total}} stages filled",
     "recNoAnatomy_one": "{{count}} scene without complete anatomy",
     "recNoAnatomy_other": "{{count}} scenes without complete anatomy",
     "recModified_one": "{{count}} entity modified or added manually",
@@ -612,7 +671,25 @@
     "noLocalizedLocations": "No localized locations",
     "povLegend": "Main POV",
     "presenceLegend": "Present in the scene",
-    "selectedEvent": "Selected event"
+    "selectedEvent": "Selected event",
+    "chapterCursor": "Chapter",
+    "prevChapter": "Previous chapter",
+    "nextChapter": "Next chapter",
+    "presenceTitle": "Presence",
+    "byLocationLegend": "Colour = location",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "gatheringLabel": "Gathering",
+    "splitLabel": "Split",
+    "singleView": "Map",
+    "gridView": "Thumbnails",
+    "singleViewTitle": "Single map view",
+    "gridViewTitle": "Compare journeys (thumbnails)",
+    "steps": "steps",
+    "play": "Animate playback",
+    "pause": "Pause",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen"
   },
   "graph": {
     "title": "Atlas Relations",
@@ -663,8 +740,8 @@
     "avgIntensity": "avg. intensity",
     "avgLabel": "avg.",
     "characterEvolution": "Individual character evolution by axis",
-    "chapterLabel": "Chapter {{number}} — {{title}}",
-    "intensityUndefined": "Intensity not set — move the slider",
+    "chapterLabel": "Chapter {{number}}: {{title}}",
+    "intensityUndefined": "Intensity not set, move the slider",
     "curveColor": "Curve color",
     "calm": "Calm",
     "moderate": "Moderate",
@@ -698,11 +775,11 @@
     "allTypes": "All types",
     "plantChapter": "Setup chapter",
     "payoffChapter": "Payoff chapter",
-    "volumeOptional": "— Volume (optional)",
-    "volumeLabel": "Vol. {{number}} — {{title}}",
-    "noChapter": "—",
+    "volumeOptional": "Volume (optional)",
+    "volumeLabel": "Vol. {{number}}: {{title}}",
+    "noChapter": "·",
     "eventOptional": "Event (optional)",
-    "unresolved": "— unresolved",
+    "unresolved": "unresolved",
     "unresolvedShort": "unresolved",
     "linkedEntity": "Linked entity (optional)",
     "notes": "Notes",
@@ -777,6 +854,10 @@
   },
   "authPages": {
     "login": "Log in",
+    "kickerLogin": "Account \u00b7 sign in",
+    "kickerRegister": "Account \u00b7 sign up",
+    "kickerForgot": "Account \u00b7 forgot password",
+    "kickerReset": "Account \u00b7 reset password",
     "loginLoading": "Logging in\u2026",
     "loginSubmit": "Log in \u2192",
     "invalidCredentials": "Invalid credentials",
@@ -825,8 +906,155 @@
     "emailResent": "Email resent",
     "resendError": "Error sending email"
   },
+  "firstRun": {
+    "kicker": "First minutes",
+    "title": "Get your story started",
+    "subtitle": "Three moves to bring your story to life.",
+    "stepLogline": "Write your logline",
+    "stepCharacters": "Create your first characters ({{count}}/{{target}})",
+    "stepScene": "Add your first scene",
+    "addCharacter": "+ Character",
+    "addScene": "+ Scene",
+    "loglinePlaceholder": "In one sentence: who wants what, and what stands in the way?",
+    "loglineSave": "Save",
+    "loglineSaved": "Logline saved",
+    "edit": "edit",
+    "exploreDemo": "Or explore the demo (The Lord of the Rings) as a model"
+  },
+  "craft": {
+    "title": "What I notice",
+    "showOnCurve": "show on the curve",
+    "chapterOne": "ch. {{n}}",
+    "chapterRange": "ch. {{from}}–{{to}}",
+    "tomeChip": "{{label}}",
+    "stc": {
+      "solid": {
+        "title": "Solid structure",
+        "detail": "Your beats land where they should — nothing to rework for now."
+      },
+      "verdict": {
+        "title": "Backbone in place",
+        "detail": "{{placed}}/{{total}} beats placed · {{count}} point(s) to watch."
+      },
+      "missing": {
+        "title": "Missing beats",
+        "detail": "{{count}} beat(s) not placed — key structural milestones are missing."
+      },
+      "actIII": {
+        "title": "Cramped act III",
+        "detail": "{{count}} closing beat(s) land too late — the resolution will feel rushed."
+      },
+      "midpoint": {
+        "title": "Off-balance midpoint",
+        "detailLate": "Your midpoint lands too late — the second half will be squeezed.",
+        "detailEarly": "Your midpoint lands too early — the first half will be too short."
+      },
+      "slowStart": {
+        "title": "Slow start",
+        "detail": "{{count}} opening beats land late — the story is slow to get going."
+      }
+    },
+    "rhythm": {
+      "overloaded": {
+        "title": "Overloaded chapter",
+        "detail": "Chapter {{n}} packs in {{count}} events — readers may get overwhelmed."
+      },
+      "crowded": {
+        "title": "Crowded cast",
+        "detail": "{{count}} active characters in chapter {{n}} — hard to keep track of them all."
+      }
+    },
+    "pov": {
+      "monopoly": {
+        "title": "POV monopolized",
+        "detail": "{{name}} carries {{pct}}% of POV scenes — the other viewpoints fade away."
+      },
+      "missing": {
+        "title": "Undefined POV",
+        "detail": "{{count}} chapters with no POV character — the viewpoint stays unclear."
+      }
+    },
+    "presence": {
+      "gap": {
+        "title": "Character eclipsed",
+        "detail": "{{name}} disappears for {{count}} chapters — is a return coming?"
+      }
+    },
+    "arc": {
+      "softBelly": {
+        "title": "Soft belly",
+        "detail": "{{count}} low-tension chapters in a row — readers may drift."
+      },
+      "peaks": {
+        "title": "Peaks in a row",
+        "detail": "{{count}} high-tension chapters with no respite — the intensity dulls."
+      },
+      "flat": {
+        "title": "Flat curve",
+        "detail": "Intensity barely varies (std dev {{stdev}}) — the tension lacks relief."
+      },
+      "noClimax": {
+        "title": "No real climax",
+        "detail": "No chapter passes {{threshold}}/10 (peak at {{max}}) — your dramatic high point is missing."
+      },
+      "climaxEnd": {
+        "title": "Ending on the peak",
+        "detail": "Your last chapter is also your most intense — consider a wind-down scene after the climax."
+      },
+      "climaxGood": {
+        "title": "Climax well placed",
+        "detail": "Your intensity peak lands in the final third — good placement."
+      },
+      "climaxEarly": {
+        "title": "Early climax",
+        "detail": "Your peak lands before the final third — the ending risks losing intensity."
+      }
+    }
+  },
+  "deliverables": {
+    "export": "Export…",
+    "kicker": "Back to writing",
+    "hubTitle": "Deliverables",
+    "hubSubtitle": "Documents ready to share — from analysis back to writing.",
+    "close": "Close",
+    "generate": "Generate",
+    "download": "Download",
+    "characterBible": "Character bible",
+    "characterBibleDesc": "One sheet per character: identity, traits, affiliations, description.",
+    "synopsis": "Synopsis by volume",
+    "synopsisDesc": "The thread of the story, chapter by chapter, volume by volume.",
+    "openPlants": "Setups checklist",
+    "openPlantsDesc": "Setups planted but not yet paid off, to address during revision.",
+    "fullBible": "Full bible (Markdown)",
+    "fullBibleDesc": "The complete project export in a single Markdown file.",
+    "docCharacterBible": "Character Bible",
+    "docSynopsis": "Synopsis",
+    "docOpenPlants": "Setups to Pay Off",
+    "printHint": "Tip: Ctrl / ⌘ + P to save as PDF",
+    "exportedOn": "Exported from Atlas Narratif on {{date}}",
+    "countCharacters_one": "{{count}} character",
+    "countCharacters_other": "{{count}} characters",
+    "countPlants_one": "{{count}} setup awaiting payoff",
+    "countPlants_other": "{{count}} setups awaiting payoff",
+    "chapterN": "Chapter {{n}}",
+    "volumeN": "Volume {{n}}",
+    "plantPosed": "Planted ch. {{n}}",
+    "noSummary": "No summary yet.",
+    "fAliases": "Aliases",
+    "fOrigin": "Origin",
+    "fTraits": "Traits",
+    "fAffiliations": "Affiliations",
+    "fGroups": "Groups",
+    "emptyCharacters": "No characters to export.",
+    "emptyChapters": "No chapters to export.",
+    "emptyPlants": "No pending setups — everything is paid off.",
+    "loadError": "Could not load the project data.",
+    "genError": "Document generation failed.",
+    "popupBlocked": "The tab was blocked. Please allow popups for this site."
+  },
   "account": {
     "title": "My account",
+    "kicker": "Account · your information",
     "info": "Information",
     "exportData": "Export my data",
     "exportDesc": "Download all your data as JSON (GDPR).",

@@ -111,6 +111,18 @@ describe('computeAutoJourneys', () => {
     expect(allies).not.toContain('Frodo'); // pas lui-même
   });
 
+  it('expose locationId et isPov par étape (pour la frise de présence)', () => {
+    const events = [
+      { ...makeEvent('evt1', 1, 'Ch1', 'loc_shire', ['char_frodo', 'char_sam']), povCharacterId: 'char_frodo' },
+      { ...makeEvent('evt2', 2, 'Ch2', 'loc_rivendell', ['char_frodo']), povCharacterId: 'char_sam' },
+    ];
+    const { autoJourneys } = computeAutoJourneys(events, LOCATIONS, CHARACTERS);
+    expect(autoJourneys['frodo'][0]).toMatchObject({ locationId: 'loc_shire', isPov: true });
+    expect(autoJourneys['frodo'][1]).toMatchObject({ locationId: 'loc_rivendell', isPov: false });
+    // Sam présent au ch1 mais pas POV
+    expect(autoJourneys['char_sam'][0]).toMatchObject({ locationId: 'loc_shire', isPov: false });
+  });
+
   it('gère un événement sans lieu (locationId null)', () => {
     const events = [{ ...makeEvent('evt1', 1, 'Ch1', null, ['char_frodo']) }];
     const { autoJourneys, unlocalized } = computeAutoJourneys(events, LOCATIONS, CHARACTERS);

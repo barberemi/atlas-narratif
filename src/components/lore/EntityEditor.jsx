@@ -6,12 +6,13 @@ import { restoreCharacter, restoreLocation, restoreObject } from '../../api/clie
 import { useUndoableDelete } from '../../hooks/useUndoableDelete';
 import { Field, Input, Textarea } from '../ui/FormFields';
 import SidePanel from '../ui/SidePanel';
+import Icon from '../ui/Icon';
 
 // ── Config par type ────────────────────────────────────────────────────────────
 const TYPE_CONFIG = {
-  character: { labelKey: 'label.characters', accent: '#818cf8', saveAction: 'saveCharacter', removeAction: 'removeCharacter' },
-  location:  { labelKey: 'label.locations',  accent: '#60a5fa', saveAction: 'saveLocation',  removeAction: 'removeLocation'  },
-  object:    { labelKey: 'label.objects',    accent: '#a78bfa', saveAction: 'saveObject',    removeAction: 'removeObject'    },
+  character: { labelKey: 'label.characters', accent: '#5cae8e', saveAction: 'saveCharacter', removeAction: 'removeCharacter' },
+  location:  { labelKey: 'label.locations',  accent: '#5cae8e', saveAction: 'saveLocation',  removeAction: 'removeLocation'  },
+  object:    { labelKey: 'label.objects',    accent: '#5cae8e', saveAction: 'saveObject',    removeAction: 'removeObject'    },
 };
 
 const PRESET_COLORS = [
@@ -45,8 +46,8 @@ function TagInput({ value, onChange, placeholder, testId }) {
           <button
             onClick={() => onChange(value.filter((_, idx) => idx !== i))}
             className="hover:text-white ml-0.5 transition-colors"
-            style={{ color: '#64748b' }}
-          >✕</button>
+            style={{ color: 'var(--color-atlas-soft)' }}
+          ><Icon name="close" size={12} /></button>
         </span>
       ))}
       <input
@@ -130,14 +131,14 @@ function CharacterFields({ data, set, accent, t }) {
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all duration-150"
                   style={{
                     backgroundColor: active ? `${g.color}20` : 'rgba(255,255,255,0.04)',
-                    color:           active ? g.color : '#475569',
+                    color:           active ? g.color : 'var(--color-atlas-mute)',
                     border:          `1px solid ${active ? `${g.color}50` : 'rgba(255,255,255,0.08)'}`,
                   }}
                 >
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: active ? g.color : '#334155' }} />
                   {g.name}
                   <span className="text-[10px] opacity-50">{g.type}</span>
-                  {active && <span style={{ opacity: 0.6 }}>✓</span>}
+                  {active && <Icon name="checkmark" size={12} style={{ opacity: 0.6 }} />}
                 </button>
               );
             })}
@@ -149,10 +150,10 @@ function CharacterFields({ data, set, accent, t }) {
         <select
           value={data.deathEventId ?? ''}
           onChange={e => set('deathEventId', e.target.value === '' ? null : e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-sm text-white border border-white/10 outline-none"
-          style={{ backgroundColor: '#0d1b2a' }}
+          className="w-full px-3 py-2 rounded-none text-sm text-white border border-atlas-line outline-none"
+          style={{ backgroundColor: 'var(--color-atlas-ink)' }}
           onFocus={e => { e.currentTarget.style.borderColor = `${accent}80`; }}
-          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+          onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-atlas-line)'; }}
         >
           <option value="">— {t('entity.alive')} —</option>
           {events.map(evt => (
@@ -223,7 +224,7 @@ function LocationFields({ data, set, accent, t }) {
                 onClick={() => toggleVisitedBy(c)}
                 title={t('eventEditor.remove')}
               >
-                {c.name.split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
+                {c.name.split(' ')[0]} <Icon name="close" size={12} style={{ opacity: 0.5 }} />
               </span>
             ))}
           </div>
@@ -248,8 +249,8 @@ function LocationFields({ data, set, accent, t }) {
                 }}
               >
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: selected ? c.color : '#334155' }} />
-                <span className="text-xs flex-1 truncate" style={{ color: selected ? '#e2e8f0' : '#64748b' }}>{c.name}</span>
-                {selected && <span className="text-[10px]" style={{ color: c.color }}>✓</span>}
+                <span className="text-xs flex-1 truncate" style={{ color: selected ? '#e2e8f0' : 'var(--color-atlas-soft)' }}>{c.name}</span>
+                {selected && <Icon name="checkmark" size={12} style={{ color: c.color }} />}
               </button>
             );
           })}
@@ -300,7 +301,7 @@ function ObjectFields({ data, set, accent, t }) {
                 onClick={() => set('currentHolder', '')}
                 title={t('eventEditor.remove')}
               >
-                {data.currentHolder.split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
+                {data.currentHolder.split(' ')[0]} <Icon name="close" size={12} style={{ opacity: 0.5 }} />
               </span>
             </div>
           );
@@ -325,8 +326,8 @@ function ObjectFields({ data, set, accent, t }) {
                 }}
               >
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: selected ? c.color : '#334155' }} />
-                <span className="text-xs flex-1 truncate" style={{ color: selected ? '#e2e8f0' : '#64748b' }}>{c.name}</span>
-                {selected && <span className="text-[10px]" style={{ color: c.color }}>✓</span>}
+                <span className="text-xs flex-1 truncate" style={{ color: selected ? '#e2e8f0' : 'var(--color-atlas-soft)' }}>{c.name}</span>
+                {selected && <Icon name="checkmark" size={12} style={{ color: c.color }} />}
               </button>
             );
           })}
@@ -341,10 +342,10 @@ function ObjectFields({ data, set, accent, t }) {
         <select
           value={data.status ?? 'active'}
           onChange={e => set('status', e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-sm text-white bg-white/5 border border-white/10 outline-none"
-          style={{ backgroundColor: '#0d1b2a' }}
+          className="w-full px-3 py-2 rounded-none text-sm text-white border border-atlas-line outline-none"
+          style={{ backgroundColor: 'var(--color-atlas-ink)' }}
           onFocus={e => { e.currentTarget.style.borderColor = `${accent}80`; }}
-          onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+          onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-atlas-line)'; }}
         >
           <option value="active">{t('entity.active')}</option>
           <option value="lost">{t('entity.lost')}</option>
@@ -436,19 +437,19 @@ export default function EntityEditor({ entity, entityType, onClose }) {
   return (
     <SidePanel onClose={onClose}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-atlas-line flex-shrink-0">
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest">
+            <p className="font-grotesk text-[10px] text-atlas-soft uppercase tracking-[0.2em]">
               {isEdit ? `${label} — ${t('btn.save').toLowerCase()}` : `${label} — ${t('btn.create').toLowerCase()}`}
             </p>
-            <h2 className="text-sm font-black text-white mt-0.5">
+            <h2 className="font-serif text-base font-semibold text-white mt-0.5">
               Lore <span style={{ color: cfg.accent }}>Browser</span>
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all text-sm"
-          >✕</button>
+            className="w-7 h-7 flex items-center justify-center rounded-none text-atlas-soft hover:text-white hover:bg-white/10 transition-all text-sm"
+          ><Icon name="close" size={12} /></button>
         </div>
 
         {/* Corps scrollable */}
@@ -471,14 +472,14 @@ export default function EntityEditor({ entity, entityType, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 border-t border-white/10 p-4 space-y-2">
+        <div className="flex-shrink-0 border-t border-atlas-line p-4 space-y-2">
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="w-full py-2.5 rounded-lg text-sm font-black transition-all duration-200"
+            className="w-full py-2.5 rounded-none text-sm font-black transition-all duration-200"
             style={{
               backgroundColor: canSave ? cfg.accent : `${cfg.accent}25`,
-              color:           canSave ? '#fff'      : `${cfg.accent}60`,
+              color:           canSave ? '#15171b'  : `${cfg.accent}60`,
               cursor:          canSave ? 'pointer'   : 'not-allowed',
             }}
           >
@@ -489,7 +490,7 @@ export default function EntityEditor({ entity, entityType, onClose }) {
             <button
               onClick={() => setConfirmDelete(true)}
               data-testid="delete-entity"
-              className="w-full py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
+              className="w-full py-2 rounded-lg text-xs font-bold text-atlas-mute hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
               style={{ border: '1px solid rgba(255,255,255,0.05)' }}
             >
               {t('btn.delete')} {label.toLowerCase()}
@@ -500,7 +501,7 @@ export default function EntityEditor({ entity, entityType, onClose }) {
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmDelete(false)}
-                className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
+                className="flex-1 py-2 rounded-lg text-xs font-bold text-atlas-soft border border-white/08 hover:bg-white/05 transition-all"
               >
                 {t('btn.cancel')}
               </button>

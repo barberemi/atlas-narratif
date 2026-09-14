@@ -887,6 +887,17 @@ export async function createProject({ name, description }, { userId, deviceId } 
   return id;
 }
 
+export async function updateProject(projectId, { name, description }) {
+  // On ne met à jour que les champs fournis (logline = description).
+  if (name !== undefined && description !== undefined) {
+    await sql`UPDATE projects SET name = ${name.trim()}, description = ${description?.trim() ?? null} WHERE id = ${projectId}`;
+  } else if (name !== undefined) {
+    await sql`UPDATE projects SET name = ${name.trim()} WHERE id = ${projectId}`;
+  } else if (description !== undefined) {
+    await sql`UPDATE projects SET description = ${description?.trim() ?? null} WHERE id = ${projectId}`;
+  }
+}
+
 export async function deleteProject(projectId, { userId, deviceId } = {}) {
   if (!userId && !deviceId) throw new Error('deleteProject: userId ou deviceId requis');
   if (userId) {

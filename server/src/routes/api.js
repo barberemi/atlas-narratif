@@ -149,6 +149,14 @@ api.delete('/account', wrap(async (c) => {
 
 // ── Projects (suite) ─────────────────────────────────────────────────────────
 
+api.put('/projects/:projectId', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.updateProject);
+  if (error) return error;
+  await q.updateProject(projectId, body);
+  return c.json({ ok: true });
+}));
+
 api.delete('/projects/:projectId', wrap(async (c) => {
   const { projectId } = c.req.param();
   const ctx = getContext(c);

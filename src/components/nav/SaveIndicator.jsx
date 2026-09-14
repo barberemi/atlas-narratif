@@ -21,7 +21,7 @@ export default function SaveIndicator() {
 
   if (saving > 0) {
     return (
-      <span className="text-[11px] text-slate-500 flex items-center gap-1.5 animate-pulse">
+      <span className="text-[11px] text-atlas-soft flex items-center gap-1.5 animate-pulse">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
         {t('saveIndicator.saving')}
       </span>

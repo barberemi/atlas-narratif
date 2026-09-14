@@ -37,7 +37,7 @@ export default function SortableEventCard({ id, children }) {
         {...listeners}
         onPointerDown={handlePointerDown}
         onMouseDown={e => e.stopPropagation()}
-        className="absolute top-2 left-1 z-10 w-5 h-5 flex items-center justify-center rounded text-slate-600 hover:text-slate-300 hover:bg-white/10 cursor-grab active:cursor-grabbing transition-colors"
+        className="absolute top-2 left-1 z-10 w-5 h-5 flex items-center justify-center rounded text-atlas-mute hover:text-slate-300 hover:bg-white/10 cursor-grab active:cursor-grabbing transition-colors"
         title={t('dnd.dragToReorder')}
         onClick={e => e.stopPropagation()}
       >

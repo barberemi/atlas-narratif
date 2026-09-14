@@ -25,6 +25,11 @@ export const createProject = z.object({
   description: strOpt,
 }).strict();
 
+export const updateProject = z.object({
+  name:        strReq.optional(),
+  description: strOpt,
+}).strict();
+
 export const mapImage = z.object({
   image: z.string().max(10_000_000),  // ~7.5 Mo de données brutes en base64
 }).strict();

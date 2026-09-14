@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import cookieIcon from '../../assets/cookie-min.webp';
 import { loadCrisp, unloadCrisp } from '../../utils/crisp';
+import Button from './Button';
 
 const LS_KEY = 'atlas_cookie_consent';
 
@@ -47,10 +48,10 @@ export default function CookieConsent({ hasAuthBar = false, onReady }) {
 
         {/* Card */}
         <div
-          className="w-full rounded-2xl overflow-hidden"
+          className="w-full rounded-none overflow-hidden"
           style={{
-            backgroundColor: '#0f172a',
-            border: '1px solid rgba(99,102,241,0.2)',
+            backgroundColor: 'var(--color-atlas-ink)',
+            border: '1px solid var(--color-atlas-line)',
             boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
           }}
         >
@@ -58,10 +59,10 @@ export default function CookieConsent({ hasAuthBar = false, onReady }) {
             <img src={cookieIcon} alt="cookie-logo" className="w-19 h-16 drop-shadow-lg" />
           </div>
           <div className="px-6 pb-5 text-center">
-            <h3 className="text-base font-black text-white mb-2">{t('cookie.title')}</h3>
+            <h3 className="font-serif text-lg font-semibold text-white mb-2">{t('cookie.title')}</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
               {t('cookie.message')}{' '}
-              <Link to="/privacy" className="text-indigo-400 hover:underline">
+              <Link to="/privacy" className="text-atlas-green hover:underline">
                 {t('cookie.privacyLink')}
               </Link>
             </p>
@@ -70,22 +71,12 @@ export default function CookieConsent({ hasAuthBar = false, onReady }) {
 
         {/* Boutons */}
         <div className="flex items-center gap-2 w-full">
-          <button
-            onClick={handleRefuse}
-            className="flex-1 py-2.5 rounded-xl text-xs font-bold text-slate-400 cursor-pointer transition-all duration-200 hover:text-slate-200"
-            style={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.08)' }}
-          >
+          <Button variant="ghost" fullWidth onClick={handleRefuse} style={{ backgroundColor: 'var(--color-atlas-line2)' }}>
             {t('cookie.refuse')}
-          </button>
-          <button
-            onClick={handleAccept}
-            className="flex-1 py-2.5 rounded-xl text-xs font-black cursor-pointer transition-all duration-200"
-            style={{ backgroundColor: '#3F51B5', color: '#fff', border: '1px solid #5c6bc0' }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#4a5bc7'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3F51B5'; }}
-          >
+          </Button>
+          <Button variant="primary" fullWidth onClick={handleAccept}>
             {t('cookie.accept')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,17 +1,16 @@
-import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
-import { buildAnalysisPrompt } from './data/analysis_prompt';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { createProject, seedProjectViaApi, claimProjects } from './api/client';
 import { authClient } from './lib/authClient';
-import { buildLotrSeedPayload } from './db/seed.lotr';
 import { importFromAiOutputViaApi } from './api/importFromAiOutputViaApi';
 import { Routes, Route, Navigate, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Button from './components/ui/Button';
-import GuidedTour   from './components/tour/GuidedTour';
-import WelcomeModal from './components/tour/WelcomeModal';
+import Icon from './components/ui/Icon';
+const GuidedTour   = lazy(() => import('./components/tour/GuidedTour'));
+const WelcomeModal = lazy(() => import('./components/tour/WelcomeModal'));
 import { shouldShowWelcome } from './components/tour/tourUtils';
-import TourPageButton from './components/tour/TourPageButton';
-import CookieConsent from './components/ui/CookieConsent';
+const TourPageButton = lazy(() => import('./components/tour/TourPageButton'));
+const CookieConsent = lazy(() => import('./components/ui/CookieConsent'));
 import { loadCrisp } from './utils/crisp';
 import { useLotrReseed } from './hooks/useLotrReseed';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
@@ -35,10 +34,9 @@ const PrivacyPage          = lazy(() => import('./pages/legal/PrivacyPage'));
 const TermsPage            = lazy(() => import('./pages/legal/TermsPage'));
 const AccountPage          = lazy(() => import('./pages/AccountPage'));
 const NotFoundPage         = lazy(() => import('./pages/NotFoundPage'));
-import FeaturesShowcase from './components/home/FeaturesShowcase';
 import { getEntityMeta } from './utils/entityUtils';
 import { ProjectProvider, useProject } from './db/ProjectContext';
-import GlobalSearch  from './components/search/GlobalSearch';
+const GlobalSearch  = lazy(() => import('./components/search/GlobalSearch'));
 import TopNav        from './components/nav/TopNav';
 import Footer        from './components/nav/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -133,6 +131,84 @@ function IncoherencesRoute() {
   );
 }
 
+// ── Route : Démo partageable (/demo) ──────────────────────────────────────────
+// Lien public sans friction : dépose le visiteur directement dans la démo LOTR.
+// Réutilise la même logique de seed que le bouton « Charger » de la HomePage.
+function DemoRoute() {
+  const { t, i18n } = useTranslation();
+  const { reloadProjects, setProjectId, projects, loading } = useProject();
+  const navigate = useNavigate();
+  const [error,    setError]    = useState(null);
+  const [progress, setProgress] = useState('');
+  const [percent,  setPercent]  = useState(0);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (loading || startedRef.current) return;
+    startedRef.current = true;
+    (async () => {
+      try {
+        const existingLotr = projects.find(p => p.id.startsWith('lotr'));
+        if (existingLotr) {
+          setProjectId(existingLotr.id);
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+        setProgress(t('home.demoLoading'));
+        setPercent(10);
+        const lang = i18n.language?.split('-')[0] || 'fr';
+        const { buildLotrSeedPayload } = await import('./db/seed.lotr');
+        const payload = await buildLotrSeedPayload({ lang });
+        setProgress(t('home.demoSending'));
+        setPercent(40);
+        const lotrId = await seedProjectViaApi(payload.meta, payload.data);
+        setPercent(100);
+        await reloadProjects();
+        setProjectId(lotrId);
+        navigate('/dashboard', { replace: true });
+      } catch (err) {
+        setError(err.message);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  return (
+    <div className="h-full flex items-center justify-center px-6">
+      <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+        {error ? (
+          <>
+            <span className="text-3xl">💍</span>
+            <p className="text-sm text-red-400 whitespace-pre-wrap">{error}</p>
+            <Button onClick={() => navigate('/')} variant="secondary" size="sm">← {t('home.back', 'Retour')}</Button>
+          </>
+        ) : (
+          <>
+            <svg className="animate-spin" width="32" height="32" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="rgba(92,174,142,0.2)" strokeWidth="3" />
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="#5cae8e" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+            <p className="text-sm font-black text-slate-300">{t('home.demoTitle')}</p>
+            <p className="text-xs font-mono" style={{ color: '#5cae8e' }}>
+              {progress || t('home.demoLoading')} ({percent}%)
+            </p>
+            <div className="w-48 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(92,174,142,0.15)' }}>
+              <div className="h-full rounded-full transition-all duration-300" style={{ width: `${percent}%`, backgroundColor: '#5cae8e' }} />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Sommaire éditorial « ce que fait l'outil » (template Maison d'édition) ─────
+const INDEX_ITEMS = [
+  { no: '01', titleKey: 'home.idx1Title', catKey: 'home.idx1Cat', descKey: 'home.idx1Desc' },
+  { no: '02', titleKey: 'home.idx2Title', catKey: 'home.idx2Cat', descKey: 'home.idx2Desc' },
+  { no: '03', titleKey: 'home.idx3Title', catKey: 'home.idx3Cat', descKey: 'home.idx3Desc' },
+];
+
 // ── Page d'accueil / Import ───────────────────────────────────────────────────
 function HomePage() {
   const { t, i18n } = useTranslation();
@@ -153,9 +229,10 @@ function HomePage() {
   const [method,      setMethod]      = useState(null); // 'savethecat' | null
 
   // ── Flux construire ───────────────────────────────────────────────────────
-  const [buildName,   setBuildName]   = useState('');
-  const [buildStatus, setBuildStatus] = useState('idle');
-  const [buildError,  setBuildError]  = useState(null);
+  const [buildName,    setBuildName]    = useState('');
+  const [buildLogline, setBuildLogline] = useState('');
+  const [buildStatus,  setBuildStatus]  = useState('idle');
+  const [buildError,   setBuildError]   = useState(null);
 
   // ── Flux analyser ─────────────────────────────────────────────────────────
   const [mode,          setMode]          = useState('prompt');    // 'prompt' | 'import-json'
@@ -170,10 +247,28 @@ function HomePage() {
 
   const analyzing = status === 'analyzing';
 
-  const generatedPrompt = useMemo(
-    () => buildAnalysisPrompt({ projectName: projectName.trim(), projectDesc: projectDesc.trim() }),
-    [projectName, projectDesc],
-  );
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const buildPromptRef = useRef(null);
+
+  // Ancre « Commencer » : le hero et le closer y ramènent (template Maison d'édition)
+  const startRef = useRef(null);
+  const scrollToStart = useCallback(() => {
+    startRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  useEffect(() => {
+    if (mode !== 'prompt') return;
+    let cancelled = false;
+    (async () => {
+      if (!buildPromptRef.current) {
+        const mod = await import('./data/analysis_prompt');
+        buildPromptRef.current = mod.buildAnalysisPrompt;
+      }
+      const text = buildPromptRef.current({ projectName: projectName.trim(), projectDesc: projectDesc.trim() });
+      if (!cancelled) setGeneratedPrompt(text);
+    })();
+    return () => { cancelled = true; };
+  }, [mode, projectName, projectDesc]);
 
   const handleCopyPrompt = useCallback(async () => {
     await navigator.clipboard.writeText(generatedPrompt);
@@ -219,11 +314,14 @@ function HomePage() {
     setBuildStatus('creating');
     setBuildError(null);
     try {
-      const projectId = await createProject({ name: buildName.trim() });
+      const projectId = await createProject({
+        name: buildName.trim(),
+        description: buildLogline.trim() || undefined,
+      });
       await reloadProjects();
       setProjectId(projectId);
       toast.success(t('toast.projectCreated'));
-      navigate('/savethecat');
+      navigate('/dashboard');
     } catch (err) {
       setBuildError(err.message);
       setBuildStatus('error');
@@ -245,6 +343,7 @@ function HomePage() {
     setError(null);
     try {
       const lang = i18n.language?.split('-')[0] || 'fr';
+      const { buildLotrSeedPayload } = await import('./db/seed.lotr');
       const payload = await buildLotrSeedPayload({ lang });
       setProgress(t('home.demoSending'));
       setSeedPercent(30);
@@ -267,7 +366,7 @@ function HomePage() {
       label:   'Save the Cat',
       desc:    t('home.methodSaveTheCat'),
       hint:    t('home.methodSaveTheCatHint'),
-      icon:    '🐱',
+      icon:    'cat',
       available: true,
     },
     {
@@ -275,20 +374,20 @@ function HomePage() {
       label:   'Voyage du Héros',
       desc:    t('home.methodHeroJourney'),
       hint:    t('home.methodHeroJourneyHint'),
-      icon:    '⚔️',
+      icon:    'object',
       available: true,
     },
   ];
 
   return (
     <>
-      <title>AtlasNarratif — Outil d'analyse narrative pour auteurs</title>
-      <meta name="description" content="AtlasNarratif aide les auteurs à construire et analyser leurs histoires : timeline, carte, personnages, incohérences et arcs narratifs. Structurez votre roman avec Save the Cat ou le Voyage du Héros." />
-      <meta property="og:title" content="AtlasNarratif — Outil d'analyse narrative pour auteurs" />
+      <title>Atlas Narratif — Outil d'analyse narrative pour auteurs</title>
+      <meta name="description" content="Atlas Narratif aide les auteurs à construire et analyser leurs histoires : timeline, carte, personnages, incohérences et arcs narratifs. Structurez votre roman avec Save the Cat ou le Voyage du Héros." />
+      <meta property="og:title" content="Atlas Narratif — Outil d'analyse narrative pour auteurs" />
       <meta property="og:description" content="Construisez et analysez vos histoires : timeline, carte, personnages, incohérences et arcs narratifs." />
       <meta property="og:url" content="https://DOMAIN_PLACEHOLDER/" />
       <meta property="og:image" content="https://DOMAIN_PLACEHOLDER/og-image.png" />
-      <meta name="twitter:title" content="AtlasNarratif — Outil d'analyse narrative pour auteurs" />
+      <meta name="twitter:title" content="Atlas Narratif — Outil d'analyse narrative pour auteurs" />
       <meta name="twitter:description" content="Construisez et analysez vos histoires : timeline, carte, personnages, incohérences et arcs narratifs." />
       <meta name="twitter:image" content="https://DOMAIN_PLACEHOLDER/og-image.png" />
       <link rel="canonical" href="https://DOMAIN_PLACEHOLDER/" />
@@ -297,122 +396,142 @@ function HomePage() {
         "@type": "FAQPage",
         "mainEntity": [
           { "@type": "Question", "name": "Mes données restent-elles privées ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Vos données narratives sont stockées dans une base PostgreSQL sécurisée. Les mots de passe sont hashés et les données sensibles sont chiffrées au repos (AES-256-GCM). Aucun outil d'analytics ou de tracking n'est utilisé." } },
-          { "@type": "Question", "name": "Quels outils narratifs sont disponibles ?", "acceptedAnswer": { "@type": "Answer", "text": "AtlasNarratif propose une timeline interactive, un graphe de relations, une carte des lieux, la structure Save the Cat (15 beats), le Voyage du Héros (12 étapes), un arc émotionnel, un détecteur d'incohérences, un tracker d'amorces narratives et la gestion de fils narratifs." } },
-          { "@type": "Question", "name": "Puis-je importer un manuscrit existant ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Générez un prompt d'analyse avec AtlasNarratif, envoyez-le à votre IA favorite (ChatGPT, Gemini, Claude), puis importez le résultat JSON pour extraire automatiquement la timeline, les personnages et les lieux." } },
-          { "@type": "Question", "name": "AtlasNarratif supporte-t-il les séries en plusieurs tomes ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Le support multi-tomes permet de filtrer par volume, de suivre les amorces narratives entre les tomes et de visualiser les arcs sur l'ensemble de la série." } },
+          { "@type": "Question", "name": "Quels outils narratifs sont disponibles ?", "acceptedAnswer": { "@type": "Answer", "text": "Atlas Narratif propose une timeline interactive, un graphe de relations, une carte des lieux, la structure Save the Cat (15 beats), le Voyage du Héros (12 étapes), un arc émotionnel, un détecteur d'incohérences, un tracker d'amorces narratives et la gestion de fils narratifs." } },
+          { "@type": "Question", "name": "Puis-je importer un manuscrit existant ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Générez un prompt d'analyse avec Atlas Narratif, envoyez-le à votre IA favorite (ChatGPT, Gemini, Claude), puis importez le résultat JSON pour extraire automatiquement la timeline, les personnages et les lieux." } },
+          { "@type": "Question", "name": "Atlas Narratif supporte-t-il les séries en plusieurs tomes ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Le support multi-tomes permet de filtrer par volume, de suivre les amorces narratives entre les tomes et de visualiser les arcs sur l'ensemble de la série." } },
         ],
       }) }} />
-    <div className="h-full overflow-y-auto no-scrollbar">
-      <div className="max-w-2xl mx-auto px-6 py-12 flex flex-col gap-10">
+    <div className="h-full overflow-y-auto no-scrollbar" style={{ backgroundColor: 'var(--color-atlas-ink)' }}>
+      <div className="max-w-5xl mx-auto px-6 md:px-10">
 
-        {/* ── Header ── */}
-        <header className="text-center">
-          <h1 className="text-3xl md:text-5xl font-black tracking-tighter mb-3">
-            {t('app.h1Prefix')} <span className="text-[#3F51B5] drop-shadow-[0_0_20px_rgba(63,81,181,0.4)]">AtlasNarratif</span>
-          </h1>
-        </header>
+        {/* ── Hero éditorial (split) ── */}
+        <section
+          className="grid md:grid-cols-2 gap-10 md:gap-14 items-end py-14 md:py-20"
+          style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+        >
+          <div>
+            <p className="font-grotesk text-[11px] md:text-xs font-bold uppercase tracking-[0.2em] text-atlas-green mb-5">
+              {t('home.kicker')}
+            </p>
+            <h1
+              className="font-serif font-semibold tracking-tight text-atlas-text"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', lineHeight: 1.03, textWrap: 'balance' }}
+            >
+              {t('home.heroTitle')}{' '}
+              <span className="italic" style={{ color: 'var(--color-atlas-green)' }}>
+                {t('home.heroTitleAccent')}
+              </span>
+            </h1>
+          </div>
+          <div>
+            <p className="font-serif text-atlas-soft leading-relaxed mb-7" style={{ fontSize: '1.125rem' }}>
+              <span className="block italic text-atlas-green mb-3" style={{ fontSize: '1.35rem' }}>
+                {t('home.signature')}
+              </span>
+              {t('home.heroSubtitle')}
+            </p>
+            <div className="flex flex-wrap items-center gap-5">
+              <button
+                onClick={scrollToStart}
+                className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] px-6 py-3 transition-opacity hover:opacity-90"
+                style={{ backgroundColor: 'var(--color-atlas-green)', color: 'var(--color-atlas-ink)' }}
+              >
+                {t('home.ctaStart')}
+              </button>
+              <button
+                onClick={handleLoadDemo}
+                className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] pb-0.5 text-atlas-text transition-colors hover:text-atlas-green"
+                style={{ borderBottom: '2px solid var(--color-atlas-gold)' }}
+              >
+                {t('home.ctaDemo')}
+              </button>
+            </div>
+            <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute mt-6">
+              {t('home.reassure')}
+            </p>
+          </div>
+        </section>
+
+        {/* ── Commencer : onboarding ── */}
+        <section id="commencer" ref={startRef} className="max-w-2xl mx-auto py-14 md:py-16 flex flex-col gap-10">
 
         {/* ── Étape 0 : choix du flux ── */}
         {flow === null && (
-          <div className="flex flex-col gap-4">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+          <div className="flex flex-col">
+            <div
+              className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3"
+              style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
+            >
               {t('home.startQuestion')}
-            </p>
-            <div data-tour="home-cards" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Carte construire */}
+            </div>
+
+            <div data-tour="home-cards" className="flex flex-col">
+              {/* Choix construire */}
               <button
                 onClick={() => setFlow('construire')}
-                className="flex flex-col gap-3 p-6 rounded-2xl text-left transition-all duration-200 hover:scale-[1.02]"
-                style={{ backgroundColor: 'rgba(63,81,181,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}
+                className="group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
+                style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
               >
-                <svg viewBox="0 0 64 64" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M44 4 L54 14 L22 46 L8 50 L12 36 Z" fill="rgba(63,81,181,0.15)" stroke="#3F51B5" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-                  <line x1="38" y1="10" x2="48" y2="20" stroke="#3F51B5" strokeWidth="1.5" opacity="0.4" />
-                  <line x1="12" y1="36" x2="22" y2="46" stroke="#3F51B5" strokeWidth="1.5" opacity="0.4" />
-                  <path d="M8 50 L12 36 L22 46 Z" fill="rgba(63,81,181,0.3)" />
-                  <line x1="8" y1="58" x2="56" y2="58" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>01</div>
                 <div>
-                  <p className="text-sm font-black text-slate-200">{t('home.buildTitle')}</p>
-                  <p className="text-xs text-slate-500 mt-1 font-serif italic">
-                    {t('home.buildDesc')}
-                  </p>
+                  <h3 className="font-serif text-xl font-semibold text-atlas-text leading-snug transition-colors group-hover:text-atlas-green">{t('home.buildTitle')}</h3>
+                  <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.buildDesc')}</p>
                 </div>
-                <span className="text-xs font-bold text-indigo-400 mt-auto">{t('home.buildAction')}</span>
+                <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green whitespace-nowrap md:justify-self-end md:self-center">{t('home.buildAction')}</span>
               </button>
 
-              {/* Carte analyser */}
+              {/* Choix analyser */}
               <button
                 onClick={() => setFlow('analyser')}
-                className="flex flex-col gap-3 p-6 rounded-2xl text-left transition-all duration-200 hover:scale-[1.02]"
-                style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}
+                className="group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
+                style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
               >
-                <svg viewBox="0 0 64 64" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 12 Q8 8, 12 8 L30 8 Q32 8, 32 10 L32 52 Q32 50, 30 50 L12 50 Q8 50, 8 46 Z" fill="rgba(63,81,181,0.1)" stroke="#3F51B5" strokeWidth="1.5" />
-                  <path d="M56 12 Q56 8, 52 8 L34 8 Q32 8, 32 10 L32 52 Q32 50, 34 50 L52 50 Q56 50, 56 46 Z" fill="rgba(63,81,181,0.15)" stroke="#3F51B5" strokeWidth="1.5" />
-                  <line x1="18" y1="18" x2="26" y2="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="18" y1="24" x2="24" y2="24" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="18" y1="30" x2="26" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="38" y1="18" x2="48" y2="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="38" y1="24" x2="46" y2="24" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="38" y1="30" x2="48" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>02</div>
                 <div>
-                  <p className="text-sm font-black text-slate-200">{t('home.analyzeTitle')}</p>
-                  <p className="text-xs text-slate-500 mt-1 font-serif italic">
-                    {t('home.analyzeDesc')}
-                  </p>
+                  <h3 className="font-serif text-xl font-semibold text-atlas-text leading-snug transition-colors group-hover:text-atlas-green">{t('home.analyzeTitle')}</h3>
+                  <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.analyzeDesc')}</p>
                 </div>
-                <span className="text-xs font-bold text-slate-400 mt-auto">{t('home.analyzeAction')}</span>
+                <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-gold whitespace-nowrap md:justify-self-end md:self-center">{t('home.analyzeAction')}</span>
               </button>
             </div>
 
             {/* Démo LOTR */}
-            <div
-              className="rounded-2xl p-5 flex items-center gap-4 transition-all duration-300"
-              style={{
-                backgroundColor: status === 'analyzing' ? 'rgba(63,81,181,0.08)' : 'rgba(63,81,181,0.04)',
-                border: `1px solid ${status === 'analyzing' ? 'rgba(99,102,241,0.35)' : 'rgba(63,81,181,0.15)'}`,
-              }}
-            >
-              {/* Icône / Spinner */}
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+            <div className="flex items-center gap-4 py-6">
+              <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center">
                 {status === 'analyzing' ? (
-                  <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="rgba(99,102,241,0.2)" strokeWidth="3"/>
-                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#818cf8" strokeWidth="3" strokeLinecap="round"/>
+                  <svg className="animate-spin" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="rgba(92,174,142,0.2)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#5cae8e" strokeWidth="3" strokeLinecap="round"/>
                   </svg>
                 ) : (
-                  <span className="text-3xl">💍</span>
+                  <span className="text-2xl">💍</span>
                 )}
               </div>
 
-              {/* Texte */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-black text-slate-300">{t('home.demoTitle')}</p>
+                <p className="font-serif text-base font-semibold text-atlas-text">{t('home.demoTitle')}</p>
                 {status === 'analyzing' ? (
                   <div className="mt-1 flex flex-col gap-1">
-                    <p className="text-xs font-mono" style={{ color: '#818cf8' }}>
+                    <p className="text-xs font-mono text-atlas-green">
                       {progress || t('home.demoLoading')}
                       {seedPercent !== null ? ` (${seedPercent}%)` : ''}
                     </p>
                     {seedPercent !== null && (
-                      <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(99,102,241,0.15)' }}>
+                      <div className="h-1 overflow-hidden" style={{ backgroundColor: 'rgba(92,174,142,0.15)' }}>
                         <div
-                          className="h-full rounded-full transition-all duration-300"
-                          style={{ width: `${seedPercent}%`, backgroundColor: '#6366f1' }}
+                          className="h-full transition-all duration-300"
+                          style={{ width: `${seedPercent}%`, backgroundColor: 'var(--color-atlas-green)' }}
                         />
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-600 font-serif italic mt-0.5">
+                  <p className="text-sm text-atlas-soft font-serif italic mt-0.5">
                     {t('home.demoDesc')}
                   </p>
                 )}
               </div>
 
-              {/* Bouton */}
               {status !== 'analyzing' && (
                 <Button onClick={handleLoadDemo} size="sm" className="flex-shrink-0">
                   {projects.find(p => p.id.startsWith('lotr')) ? t('home.demoOpen') : t('home.demoAction')}
@@ -420,8 +539,8 @@ function HomePage() {
               )}
             </div>
             {status === 'error' && error && (
-              <div className="rounded-xl px-4 py-3 text-xs whitespace-pre-wrap"
-                style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+              <div className="pl-4 py-1 text-xs whitespace-pre-wrap"
+                style={{ borderLeft: '2px solid rgba(239,68,68,0.6)', color: '#f87171' }}>
                 {error}
               </div>
             )}
@@ -431,50 +550,47 @@ function HomePage() {
         {/* ── Étape 1a : flux construire ── */}
         {flow === 'construire' && (
           <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-3">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Choisir une méthode</p>
+            <div
+              className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3"
+              style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+            >
+              Choisir une méthode
             </div>
 
             {/* Sélecteur de méthode */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
               {METHODS.map(m => (
                 <button
                   key={m.id}
                   onClick={() => m.available && setMethod(m.id)}
-                  className="flex items-center gap-4 p-4 rounded-xl text-left transition-all duration-150"
+                  className="flex items-center gap-4 py-4 text-left transition-colors"
                   style={{
-                    backgroundColor: method === m.id
-                      ? 'rgba(63,81,181,0.15)'
-                      : 'rgba(255,255,255,0.02)',
-                    border: method === m.id
-                      ? '1px solid rgba(99,102,241,0.4)'
-                      : '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid var(--color-atlas-line)',
                     opacity: m.available ? 1 : 0.45,
                     cursor: m.available ? 'pointer' : 'default',
                   }}
                 >
-                  <span className="text-2xl flex-shrink-0">{m.icon}</span>
+                  <Icon name={m.icon} size={16} className="flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-black text-slate-200">{m.label}</p>
+                      <p className="font-serif text-base font-semibold" style={{ color: method === m.id ? 'var(--color-atlas-green)' : 'var(--color-atlas-text)' }}>{m.label}</p>
                       {!m.available && (
                         <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#475569' }}
+                          className="font-grotesk text-[10px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 flex-shrink-0 border border-atlas-line text-atlas-mute"
                         >
                           Bientôt
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{m.desc}</p>
-                    {m.hint && <p className="text-[10px] text-slate-600 mt-1 font-serif italic">{m.hint}</p>}
+                    <p className="text-xs text-atlas-soft mt-0.5">{m.desc}</p>
+                    {m.hint && <p className="text-[11px] text-atlas-mute mt-1 font-serif italic">{m.hint}</p>}
                   </div>
                   {m.available && (
                     <span
                       className="w-4 h-4 rounded-full flex-shrink-0 border-2 transition-all"
                       style={{
-                        backgroundColor: method === m.id ? '#818cf8' : 'transparent',
-                        borderColor:     method === m.id ? '#818cf8' : '#334155',
+                        backgroundColor: method === m.id ? 'var(--color-atlas-green)' : 'transparent',
+                        borderColor:     method === m.id ? 'var(--color-atlas-green)' : 'var(--color-atlas-mute)',
                       }}
                     />
                   )}
@@ -488,17 +604,31 @@ function HomePage() {
             {/* Nom du projet */}
             {method && (
               <div className="flex flex-col gap-2">
-                <label className="text-xs text-slate-500 font-semibold">Nom du projet *</label>
+                <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">{t('home.projectName')}</label>
                 <input
                   type="text"
                   value={buildName}
                   onChange={e => setBuildName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleBuild()}
-                  placeholder="Mon roman"
+                  placeholder={t('home.projectNamePlaceholder')}
                   autoFocus
-                  className="px-3 py-2 text-sm rounded-lg text-white outline-none"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  className="px-0 py-2 text-sm text-atlas-text bg-transparent border-0 border-b border-atlas-line outline-none focus:border-atlas-green transition-colors"
                 />
+              </div>
+            )}
+
+            {/* Logline (pitch en une phrase) */}
+            {method && (
+              <div className="flex flex-col gap-2">
+                <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">{t('home.buildLoglineLabel')}</label>
+                <textarea
+                  value={buildLogline}
+                  onChange={e => setBuildLogline(e.target.value)}
+                  placeholder={t('home.buildLoglinePlaceholder')}
+                  rows={2}
+                  className="px-0 py-2 text-sm text-atlas-text bg-transparent border-0 border-b border-atlas-line outline-none focus:border-atlas-green transition-colors resize-none"
+                />
+                <p className="text-[11px] text-atlas-mute font-serif italic">{t('home.buildLoglineHint')}</p>
               </div>
             )}
 
@@ -515,8 +645,8 @@ function HomePage() {
             )}
 
             {buildStatus === 'error' && buildError && (
-              <div className="rounded-xl px-4 py-3 text-xs"
-                style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+              <div className="pl-4 py-1 text-xs"
+                style={{ borderLeft: '2px solid rgba(239,68,68,0.6)', color: '#f87171' }}>
                 {buildError}
               </div>
             )}
@@ -526,10 +656,15 @@ function HomePage() {
         {/* ── Étape 1b : flux analyser ── */}
         {flow === 'analyser' && (
           <div className="flex flex-col gap-6">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Importer un projet</p>
+            <div
+              className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3"
+              style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
+            >
+              Importer un projet
+            </div>
 
-            {/* ── Onglets ── */}
-            <div className="flex rounded-xl p-1 gap-1" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            {/* ── Onglets (soulignés) ── */}
+            <div className="flex gap-8" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
               {[
                 { id: 'prompt',      label: '① Générer le prompt',   desc: 'Manuscrit ou notes' },
                 { id: 'import-json', label: '② Importer le résultat', desc: 'JSON généré par votre IA' },
@@ -537,59 +672,53 @@ function HomePage() {
                 <button
                   key={id}
                   onClick={() => { setMode(id); setError(null); }}
-                  className="flex-1 flex flex-col items-center py-2.5 rounded-lg transition-all duration-150 text-center"
+                  className="flex flex-col items-start pb-3 -mb-px text-left transition-colors"
                   style={{
-                    backgroundColor: mode === id ? 'rgba(63,81,181,0.2)' : 'transparent',
-                    border: `1px solid ${mode === id ? 'rgba(99,102,241,0.35)' : 'transparent'}`,
-                    color: mode === id ? '#818cf8' : '#475569',
+                    borderBottom: `2px solid ${mode === id ? 'var(--color-atlas-green)' : 'transparent'}`,
+                    color: mode === id ? 'var(--color-atlas-green)' : 'var(--color-atlas-mute)',
                   }}
                 >
-                  <span className="text-xs font-bold">{label}</span>
-                  <span className="text-[10px] opacity-60 mt-0.5">{desc}</span>
+                  <span className="font-grotesk text-[11px] font-bold uppercase tracking-[0.1em]">{label}</span>
+                  <span className="text-[10px] opacity-70 mt-0.5">{desc}</span>
                 </button>
               ))}
             </div>
 
             {/* ── Mode : Générer le prompt ── */}
             {mode === 'prompt' && (
-              <div className="flex flex-col gap-5" style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 24 }}>
+              <div className="flex flex-col gap-5">
 
                 {/* Nom + Description */}
-                <div className="flex gap-3">
+                <div className="flex gap-6">
                   <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-xs text-slate-500 font-semibold">Nom du projet</label>
+                    <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">Nom du projet</label>
                     <input type="text" value={projectName} onChange={e => setProjectName(e.target.value)}
                       placeholder="Mon roman"
-                      className="px-3 py-2 text-sm rounded-lg text-white outline-none"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      className="px-0 py-2 text-sm text-atlas-text bg-transparent border-0 border-b border-atlas-line outline-none focus:border-atlas-green transition-colors" />
                   </div>
                   <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-xs text-slate-500 font-semibold">Description</label>
+                    <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">Description</label>
                     <input type="text" value={projectDesc} onChange={e => setProjectDesc(e.target.value)}
-                      placeholder="Auteur — sous-titre…"
-                      className="px-3 py-2 text-sm rounded-lg text-white outline-none"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      placeholder="Auteur, sous-titre…"
+                      className="px-0 py-2 text-sm text-atlas-text bg-transparent border-0 border-b border-atlas-line outline-none focus:border-atlas-green transition-colors" />
                   </div>
                 </div>
 
                 {/* Prompt généré */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-500 font-semibold">Prompt généré</p>
-                    <div className="flex gap-2">
+                    <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">Prompt généré</p>
+                    <div className="flex gap-5">
                       <button
                         onClick={handleCopyPrompt}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-bold transition-all duration-150"
-                        style={{ backgroundColor: copied ? 'rgba(16,185,129,0.15)' : 'rgba(63,81,181,0.15)', color: copied ? '#10b981' : '#818cf8', border: `1px solid ${copied ? 'rgba(16,185,129,0.3)' : 'rgba(99,102,241,0.3)'}` }}
+                        className="inline-flex items-center gap-1 font-grotesk text-[11px] font-bold uppercase tracking-[0.08em] transition-colors"
+                        style={{ color: copied ? '#10b981' : 'var(--color-atlas-green)' }}
                       >
-                        {copied ? '✓ Copié !' : 'Copier'}
+                        {copied ? <><Icon name="checkmark" size={12} /> Copié !</> : 'Copier'}
                       </button>
                       <button
                         onClick={handleDownloadPrompt}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-bold transition-all duration-150"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#64748b', border: '1px solid rgba(255,255,255,0.08)' }}
-                        onMouseEnter={e => { e.currentTarget.style.color = '#94a3b8'; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; }}
+                        className="font-grotesk text-[11px] font-bold uppercase tracking-[0.08em] text-atlas-mute hover:text-atlas-soft transition-colors"
                       >
                         ↓ .txt
                       </button>
@@ -598,24 +727,16 @@ function HomePage() {
                   <textarea
                     readOnly
                     value={generatedPrompt}
-                    className="w-full text-xs font-mono rounded-xl outline-none resize-none"
-                    style={{
-                      height: 220,
-                      padding: '12px 14px',
-                      backgroundColor: 'rgba(0,0,0,0.35)',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      color: '#64748b',
-                      lineHeight: 1.6,
-                    }}
+                    className="w-full text-xs font-mono outline-none resize-none text-atlas-mute bg-black/30"
+                    style={{ height: 220, padding: '12px 14px', lineHeight: 1.6 }}
                   />
                 </div>
 
-                {/* Instructions */}
-                <div className="rounded-xl px-4 py-3 flex items-start gap-3"
-                  style={{ backgroundColor: 'rgba(63,81,181,0.06)', border: '1px solid rgba(99,102,241,0.15)' }}>
-                  <span className="text-base flex-shrink-0 mt-0.5">💡</span>
-                  <p className="text-xs text-slate-400 leading-relaxed font-serif italic">
-                    Copiez ce prompt, ouvrez votre IA favorite (<strong className="font-bold not-italic text-slate-300">ChatGPT, Gemini, Claude…</strong>), collez le prompt puis ajoutez votre texte à la suite. Enregistrez la réponse JSON dans un fichier <code className="font-mono text-indigo-400">.json</code>, puis importez-le via l'onglet <strong className="font-bold not-italic text-slate-300">② Importer le résultat</strong>.
+                {/* Instructions (note à filet) */}
+                <div className="pl-4 flex items-start gap-3" style={{ borderLeft: '2px solid var(--color-atlas-gold)' }}>
+                  <Icon name="idea" size={16} className="flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-atlas-soft leading-relaxed font-serif italic">
+                    Copiez ce prompt, ouvrez votre IA favorite (<strong className="font-bold not-italic text-atlas-text">ChatGPT, Gemini, Claude…</strong>), collez le prompt puis ajoutez votre texte à la suite. Enregistrez la réponse JSON dans un fichier <code className="font-mono text-atlas-green">.json</code>, puis importez-le via l'onglet <strong className="font-bold not-italic text-atlas-text">② Importer le résultat</strong>.
                   </p>
                 </div>
               </div>
@@ -623,47 +744,42 @@ function HomePage() {
 
             {/* ── Mode : Importer le résultat ── */}
             {mode === 'import-json' && (
-              <div className="flex flex-col gap-5" style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 24 }}>
+              <div className="flex flex-col gap-5">
 
                 {/* Nom + Description */}
-                <div className="flex gap-3">
+                <div className="flex gap-6">
                   <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-xs text-slate-500 font-semibold">Nom du projet *</label>
+                    <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">Nom du projet *</label>
                     <input type="text" value={projectName} onChange={e => setProjectName(e.target.value)}
                       placeholder="Mon roman" autoFocus
-                      className="px-3 py-2 text-sm rounded-lg text-white outline-none"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      className="px-0 py-2 text-sm text-atlas-text bg-transparent border-0 border-b border-atlas-line outline-none focus:border-atlas-green transition-colors" />
                   </div>
                   <div className="flex-1 flex flex-col gap-1.5">
-                    <label className="text-xs text-slate-500 font-semibold">Description</label>
+                    <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">Description</label>
                     <input type="text" value={projectDesc} onChange={e => setProjectDesc(e.target.value)}
-                      placeholder="Auteur — sous-titre…"
-                      className="px-3 py-2 text-sm rounded-lg text-white outline-none"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      placeholder="Auteur, sous-titre…"
+                      className="px-0 py-2 text-sm text-atlas-text bg-transparent border-0 border-b border-atlas-line outline-none focus:border-atlas-green transition-colors" />
                   </div>
                 </div>
 
                 {/* Upload JSON */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs text-slate-500 font-semibold">
-                    Fichier JSON résultat <span className="font-normal text-slate-700">(réponse de votre IA)</span>
+                  <label className="font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute">
+                    Fichier JSON résultat <span className="font-normal normal-case tracking-normal text-atlas-mute">(réponse de votre IA)</span>
                   </label>
                   <label
-                    className="flex items-center gap-3 px-4 py-4 rounded-xl cursor-pointer transition-all duration-150"
-                    style={{
-                      border: aiJsonFile ? '1px solid rgba(99,102,241,0.4)' : '1px dashed rgba(255,255,255,0.1)',
-                      backgroundColor: aiJsonFile ? 'rgba(63,81,181,0.08)' : 'rgba(0,0,0,0.15)',
-                    }}
+                    className="flex items-center gap-3 py-3 cursor-pointer transition-colors"
+                    style={{ borderBottom: aiJsonFile ? '1px solid var(--color-atlas-green)' : '1px dashed var(--color-atlas-line)' }}
                   >
-                    <span className="text-xl">{aiJsonFile ? '✓' : '↑'}</span>
+                    <span className="text-xl">{aiJsonFile ? <Icon name="checkmark" size={18} /> : '↑'}</span>
                     <div className="flex flex-col gap-0.5 flex-1">
                       {aiJsonFile ? (
                         <>
-                          <span className="text-xs font-bold text-indigo-300">{aiJsonFile.name}</span>
-                          <span className="text-[10px] text-slate-600">{(aiJsonFile.size / 1024).toFixed(1)} Ko</span>
+                          <span className="text-xs font-bold text-atlas-green">{aiJsonFile.name}</span>
+                          <span className="text-[10px] text-atlas-mute">{(aiJsonFile.size / 1024).toFixed(1)} Ko</span>
                         </>
                       ) : (
-                        <span className="text-xs text-slate-600">Choisir le fichier .json généré par votre IA…</span>
+                        <span className="text-xs text-atlas-mute">Choisir le fichier .json généré par votre IA…</span>
                       )}
                     </div>
                     <input type="file" accept=".json,application/json,text/plain"
@@ -672,7 +788,7 @@ function HomePage() {
                   </label>
                   {aiJsonFile && (
                     <button onClick={() => setAiJsonFile(null)}
-                      className="text-[10px] text-slate-600 hover:text-red-400 transition-colors text-left">
+                      className="text-[10px] text-atlas-mute hover:text-red-400 transition-colors text-left">
                       Supprimer
                     </button>
                   )}
@@ -689,8 +805,8 @@ function HomePage() {
                 </Button>
 
                 {status === 'error' && error && (
-                  <div className="rounded-xl px-4 py-3 text-xs whitespace-pre-wrap"
-                    style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+                  <div className="pl-4 py-1 text-xs whitespace-pre-wrap"
+                    style={{ borderLeft: '2px solid rgba(239,68,68,0.6)', color: '#f87171' }}>
                     {error}
                   </div>
                 )}
@@ -704,15 +820,72 @@ function HomePage() {
           </div>
         )}
 
-        {/* ── Séparateur ── */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 border-t border-white/5" />
-          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{t('home.featuresLabel', 'Fonctionnalités')}</span>
-          <div className="flex-1 border-t border-white/5" />
-        </div>
+        </section>
 
-        {/* ── Features showcase ── */}
-        <FeaturesShowcase />
+        {/* ── Bande citation ── */}
+        <section
+          className="py-14 md:py-20"
+          style={{ borderTop: '1px solid var(--color-atlas-line)', borderBottom: '1px solid var(--color-atlas-line)' }}
+        >
+          <p
+            className="font-serif font-medium text-atlas-text"
+            style={{ fontSize: 'clamp(1.5rem, 3.4vw, 2.1rem)', lineHeight: 1.4, maxWidth: '26ch' }}
+          >
+            <span style={{ color: 'var(--color-atlas-green)' }}>{t('home.bandQuoteLead')}</span>{' '}
+            {t('home.bandQuoteRest')}
+          </p>
+        </section>
+
+        {/* ── Sommaire : ce que fait l'outil ── */}
+        <section className="py-14 md:py-16">
+          <div
+            className="flex items-center justify-between font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
+            style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
+          >
+            <span>{t('home.indexLabel')}</span>
+            <span>{t('home.indexToc')}</span>
+          </div>
+          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey }) => (
+            <div
+              key={no}
+              className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline py-7"
+              style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+            >
+              <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
+              <div>
+                <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
+                  {t(titleKey)}
+                </h3>
+                <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
+                  {t(catKey)}
+                </p>
+              </div>
+              <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
+                {t(descKey)}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* ── Closer ── */}
+        <section className="text-center py-16 md:py-20">
+          <p className="font-serif italic text-atlas-green mb-2" style={{ fontSize: '1.15rem' }}>
+            {t('home.signature')}
+          </p>
+          <h2 className="font-serif font-semibold text-atlas-text mb-7" style={{ fontSize: 'clamp(1.9rem, 4.4vw, 2.9rem)' }}>
+            {t('home.closerTitle')}
+          </h2>
+          <button
+            onClick={scrollToStart}
+            className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] px-7 py-3 transition-opacity hover:opacity-90"
+            style={{ backgroundColor: 'var(--color-atlas-green)', color: 'var(--color-atlas-ink)' }}
+          >
+            {t('home.closerCta')}
+          </button>
+          <p className="font-grotesk text-[11px] uppercase tracking-[0.14em] text-atlas-mute mt-6">
+            {t('home.closerTrust')}
+          </p>
+        </section>
 
       </div>
     </div>
@@ -759,6 +932,8 @@ function AppLayout() {
   }, [session?.user?.id]);
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [showWelcome,  setShowWelcome]  = useState(false);
+  const [authBarDismissed, setAuthBarDismissed] = useState(false);
+  const showAuthBar = !session?.user && !loading && projects.length > 0 && !authBarDismissed;
   const location = useLocation();
 
   // Affiche le modal de bienvenue uniquement pour la démo LOTR
@@ -781,16 +956,16 @@ function AppLayout() {
   }, [hasProjects]);
 
   return (
-    <div className="h-screen w-full flex flex-col bg-[#0B1621] text-slate-200 selection:bg-[#3F51B5]/30 overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-atlas-ink text-slate-200 selection:bg-[#5cae8e]/30 overflow-hidden">
       <TopNav onSearchOpen={() => setSearchOpen(true)} />
       {reseeding && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(11,22,33,0.85)' }}>
+        <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(21,23,27,0.85)' }}>
           <div className="flex flex-col items-center gap-3">
             <svg className="animate-spin" width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="rgba(99,102,241,0.2)" strokeWidth="3"/>
-              <path d="M12 2a10 10 0 0 1 10 10" stroke="#818cf8" strokeWidth="3" strokeLinecap="round"/>
+              <circle cx="12" cy="12" r="10" stroke="rgba(92,174,142,0.2)" strokeWidth="3"/>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="#5cae8e" strokeWidth="3" strokeLinecap="round"/>
             </svg>
-            <span className="text-sm text-indigo-300 font-semibold">{t('home.demoReloading')}</span>
+            <span className="text-sm text-[#7bc4a6] font-semibold">{t('home.demoReloading')}</span>
           </div>
         </div>
       )}
@@ -799,6 +974,7 @@ function AppLayout() {
         <Suspense fallback={<Skeleton variant="list" />}>
         <Routes>
           <Route path="/"                 element={<HomePage />} />
+          <Route path="/demo"         element={<DemoRoute />} />
           <Route path="/map"          element={<RequireProject><MapRoute /></RequireProject>} />
           <Route path="/lore"         element={<RequireProject><LoreRoute /></RequireProject>} />
           <Route path="/relations"    element={<RequireProject><GraphRoute /></RequireProject>} />
@@ -818,26 +994,41 @@ function AppLayout() {
         </ErrorBoundary>
       </div>
       <Footer onCookieClick={openCookieBanner} />
-      {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
-      <GuidedTour />
-      <TourPageButton />
-      <CookieConsent hasAuthBar={!session?.user && !loading && projects.length > 0} onReady={setOpenCookieBanner} />
-      {showWelcome && <WelcomeModal projectId={projectId} onClose={() => setShowWelcome(false)} />}
-      {!session?.user && !loading && projects.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-20 flex items-center justify-between gap-4 px-6 py-3"
-          style={{ backgroundColor: 'rgba(17,24,39,0.97)', borderTop: '1px solid rgba(234,179,8,0.25)' }}>
-          <span className="text-xs" style={{ color: '#fbbf24' }}>
-            {t('auth.cookieWarning')}
-          </span>
-          <button
-            onClick={() => navigate('/login')}
-            className="flex-shrink-0 inline-flex items-center justify-center font-black tracking-wide transition-all duration-200 cursor-pointer text-xs px-3 py-1.5 rounded-lg"
-            style={{ backgroundColor: 'rgba(234,179,8,0.15)', color: '#fbbf24', border: '1px solid rgba(234,179,8,0.3)' }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(234,179,8,0.28)'; e.currentTarget.style.borderColor = 'rgba(234,179,8,0.5)'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(234,179,8,0.15)'; e.currentTarget.style.borderColor = 'rgba(234,179,8,0.3)'; }}
-          >
-            {t('auth.signIn')}
-          </button>
+      {searchOpen && <Suspense fallback={null}><GlobalSearch onClose={() => setSearchOpen(false)} /></Suspense>}
+      <Suspense fallback={null}><GuidedTour /></Suspense>
+      <Suspense fallback={null}><TourPageButton /></Suspense>
+      <Suspense fallback={null}><CookieConsent hasAuthBar={showAuthBar} onReady={setOpenCookieBanner} /></Suspense>
+      {showWelcome && <Suspense fallback={null}><WelcomeModal projectId={projectId} onClose={() => setShowWelcome(false)} /></Suspense>}
+      {showAuthBar && (
+        <div className="fixed bottom-0 left-0 right-0 z-20"
+          style={{ backgroundColor: 'rgba(21,23,27,0.97)', borderTop: '1px solid rgba(92,174,142,0.3)', backdropFilter: 'blur(8px)' }}>
+          <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-4 px-6 py-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex-shrink-0" style={{ color: '#5cae8e' }} aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 16l-4-4-4 4"/><path d="M12 12v9"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+              </span>
+              <p className="text-xs text-atlas-soft truncate">
+                <span className="font-grotesk uppercase tracking-[0.16em] font-bold mr-2" style={{ color: '#5cae8e' }}>{t('auth.localMode')}</span>
+                {t('auth.cookieWarning')}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Button variant="primary" size="sm" onClick={() => navigate('/register')}
+                style={{ backgroundColor: '#5cae8e', color: '#15171b', borderColor: '#5cae8e' }}>
+                {t('authPages.createAccount')}
+              </Button>
+              <button
+                onClick={() => setAuthBarDismissed(true)}
+                className="w-7 h-7 flex items-center justify-center text-sm text-atlas-mute hover:text-atlas-soft transition-colors cursor-pointer"
+                aria-label={t('btn.close', 'Fermer')}
+                title={t('btn.close', 'Fermer')}
+              >
+                <Icon name="close" size={12} />
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import Icon from '../ui/Icon';
 
 /**
  * Éditeur de trajet manuel pour un personnage.
@@ -76,12 +77,12 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
   return (
     <div
       className="px-6 py-5 flex flex-col gap-4"
-      style={{ borderTop: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(11,22,33,0.97)' }}
+      style={{ borderTop: '1px solid var(--color-atlas-line)', backgroundColor: 'var(--color-atlas-ink)' }}
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-black tracking-tight text-slate-200">{t('map.manualJourneys')}</h2>
-          <p className="text-xs text-slate-500 font-serif italic mt-0.5">
+          <h2 className="font-serif text-base font-semibold tracking-tight text-slate-200">{t('map.manualJourneys')}</h2>
+          <p className="text-xs text-atlas-soft font-serif italic mt-0.5">
             {t('map.manualJourneysDesc')}
           </p>
         </div>
@@ -89,8 +90,8 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            style={{ backgroundColor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-none text-xs font-bold transition-all"
+            style={{ backgroundColor: 'rgba(92,174,142,0.2)', border: '1px solid rgba(92,174,142,0.4)', color: '#5cae8e' }}
           >
             {saving ? '…' : t('btn.save')}
           </button>
@@ -99,11 +100,11 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
 
       {/* Sélecteur de personnage */}
       <div className="flex items-center gap-3">
-        <span className="text-xs text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.characters', { count: 1 })}</span>
+        <span className="text-xs font-grotesk font-bold text-atlas-mute uppercase tracking-[0.2em] flex-shrink-0">{t('label.characters', { count: 1 })}</span>
         <div className="relative" ref={charDropRef}>
           <button
             onClick={() => setCharDropOpen(v => !v)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-150"
             style={{
               minWidth: 180,
               backgroundColor: charKey ? `${characters.find(c => c.id === charKey)?.color ?? '#94a3b8'}22` : 'rgba(255,255,255,0.06)',
@@ -118,28 +119,28 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
               </>
             ) : (
               <>
-                <span className="text-slate-500">👤</span>
+                <Icon name="user" size={16} className="text-atlas-soft" />
                 {t('map.chooseCharacter')}
               </>
             )}
-            <span className="ml-auto text-slate-600 text-[10px]">{charDropOpen ? '▲' : '▼'}</span>
+            <Icon name={charDropOpen ? 'chevronUp' : 'chevronDown'} size={12} className="ml-auto text-atlas-mute" />
           </button>
 
           {charDropOpen && (
             <div
-              className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
-              style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+              className="absolute left-0 top-full mt-1 z-30 rounded-none overflow-y-auto"
+              style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: 'var(--color-atlas-ink)', border: '1px solid var(--color-atlas-line)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
             >
               {characters.map(c => (
                 <button
                   key={c.id}
                   onClick={() => { if (charKey !== c.id) setCharKey(c.id); setCharDropOpen(false); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
-                  style={{ color: charKey === c.id ? c.color : '#64748b' }}
+                  style={{ color: charKey === c.id ? c.color : 'var(--color-atlas-soft)' }}
                 >
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                   {c.name}
-                  {charKey === c.id && <span className="ml-auto text-[10px]" style={{ color: c.color }}>✓</span>}
+                  {charKey === c.id && <Icon name="checkmark" size={12} className="ml-auto" style={{ color: c.color }} />}
                 </button>
               ))}
             </div>
@@ -151,25 +152,25 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
       {charKey && (
         <div className="flex flex-col gap-1.5">
           {steps.length === 0 && (
-            <p className="text-xs text-slate-600 font-serif italic py-2">
+            <p className="text-xs text-atlas-mute font-serif italic py-2">
               {t('map.noSteps')}
             </p>
           )}
           {steps.map((s, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg"
+              className="flex items-center gap-2 px-3 py-2 rounded-none"
               style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
-              <span className="text-[10px] text-slate-600 font-mono w-5 flex-shrink-0">{i + 1}.</span>
+              <span className="text-[10px] text-atlas-mute font-mono w-5 flex-shrink-0">{i + 1}.</span>
               <span className="text-xs text-slate-300 flex-1 truncate">{s.lieu}</span>
               <div className="flex items-center gap-0.5 flex-shrink-0">
                 <button onClick={() => moveStep(i, -1)} disabled={i === 0}
-                  className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-300 disabled:opacity-20 transition-colors text-xs">↑</button>
+                  className="w-5 h-5 flex items-center justify-center text-atlas-mute hover:text-slate-300 disabled:opacity-20 transition-colors text-xs">↑</button>
                 <button onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1}
-                  className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-300 disabled:opacity-20 transition-colors text-xs">↓</button>
+                  className="w-5 h-5 flex items-center justify-center text-atlas-mute hover:text-slate-300 disabled:opacity-20 transition-colors text-xs">↓</button>
                 <button onClick={() => removeStep(i)}
-                  className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-red-400 transition-colors text-xs">×</button>
+                  className="w-5 h-5 flex items-center justify-center text-atlas-mute hover:text-red-400 transition-colors text-xs"><Icon name="close" size={12} /></button>
               </div>
             </div>
           ))}
@@ -178,25 +179,25 @@ export default function JourneyEditor({ characters, locations, journeys, onSave 
           <div className="relative">
             <button
               onClick={() => setAddOpen(v => !v)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
+              className="flex items-center gap-2 px-3 py-2 rounded-none text-xs text-atlas-soft hover:text-slate-300 transition-colors w-full text-left"
               style={{ border: '1px dashed rgba(255,255,255,0.08)' }}
             >
               + {t('map.addLocation')}
             </button>
             {addOpen && (
               <div
-                className="absolute left-0 top-full mt-1 z-50 rounded-xl overflow-hidden w-64 max-h-48 overflow-y-auto"
-                style={{ backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}
+                className="absolute left-0 top-full mt-1 z-50 rounded-none overflow-hidden w-64 max-h-48 overflow-y-auto"
+                style={{ backgroundColor: 'var(--color-atlas-ink)', border: '1px solid var(--color-atlas-line)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}
               >
                 {localized.length === 0 ? (
-                  <p className="text-xs text-slate-600 p-3 italic">{t('map.noLocalizedLocations')}</p>
+                  <p className="text-xs text-atlas-mute p-3 italic">{t('map.noLocalizedLocations')}</p>
                 ) : (
                   <div className="p-1">
                     {localized.map(loc => (
                       <button
                         key={loc.id}
                         onClick={() => addStep(loc)}
-                        className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-300 hover:bg-white/5 transition-colors"
+                        className="w-full text-left px-3 py-2 rounded-none text-xs text-slate-300 hover:bg-white/5 transition-colors"
                       >
                         {loc.name}
                       </button>

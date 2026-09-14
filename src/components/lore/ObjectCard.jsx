@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getEntityMeta } from '../../utils/entityUtils';
+import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
 import DarkCard from '../ui/DarkCard';
 
 export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelations }) {
@@ -12,13 +12,12 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
   }, [highlighted]);
 
   return (
-    <DarkCard ref={ref} color="#F59E0B" highlighted={highlighted}>
-      <div className="h-1 bg-gradient-to-r from-amber-600 to-amber-400" />
+    <DarkCard ref={ref} color={ENTITY_COLORS.object} accent={ENTITY_COLORS.object} highlighted={highlighted}>
       <div className="p-4 flex flex-col gap-3">
         <div>
           {obj.type && <span className="text-xs px-2 py-0.5 rounded bg-amber-900/30 text-amber-400 border border-amber-800/40">{obj.type}</span>}
-          <h3 className={`text-base font-black text-white${obj.type ? ' mt-1' : ''}`}>{obj.name}</h3>
-          {obj.creator && <p className="text-xs text-slate-500 italic mt-0.5">{t('lore.forgedBy', { name: obj.creator })}</p>}
+          <h3 className={`font-serif text-lg font-semibold text-atlas-text${obj.type ? " mt-1" : ""}`}>{obj.name}</h3>
+          {obj.creator && <p className="text-xs text-atlas-soft italic mt-0.5">{t('lore.forgedBy', { name: obj.creator })}</p>}
         </div>
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{obj.description}</p>
         {obj.powers?.length > 0 && (
@@ -30,7 +29,7 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
         )}
         {obj.holders?.length > 0 && (
           <div>
-            <p className="text-xs text-slate-600 uppercase tracking-widest mb-1.5">{t('lore.bearers')}</p>
+            <p className="text-xs text-atlas-mute uppercase tracking-widest mb-1.5">{t('lore.bearers')}</p>
             <div className="flex flex-wrap gap-1.5">
               {obj.holders.map((char) => {
                 const meta = getEntityMeta(char.id, 'character');
@@ -72,8 +71,8 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
           <div className="flex justify-end mt-1">
             <button
               onClick={e => { e.stopPropagation(); onRelations(); }}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all duration-150 hover:scale-105 hover:brightness-125"
-              style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer' }}
+              className="flex items-center gap-1 px-2 py-1 font-grotesk text-[10px] font-bold uppercase tracking-[0.06em] transition-all duration-150 hover:brightness-125"
+              style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)', cursor: 'pointer' }}
             >
               <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>

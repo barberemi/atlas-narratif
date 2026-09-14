@@ -29,13 +29,12 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
   const [memoriesOpen, setMemoriesOpen] = useState(false);
 
   return (
-    <DarkCard ref={ref} color={char.color || '#64748b'} highlighted={highlighted}>
-      <div className="h-1" style={{ backgroundColor: char.color }} />
+    <DarkCard ref={ref} color={char.color || 'var(--color-atlas-soft)'} accent={char.color || 'var(--color-atlas-soft)'} highlighted={highlighted}>
       <div className="p-4 flex flex-col gap-3">
         <div>
-          <h3 className="text-base font-black text-white leading-tight">{char.name}</h3>
+          <h3 className="font-serif text-lg font-semibold text-atlas-text leading-tight">{char.name}</h3>
           {char.aliases?.length > 0 && (
-            <p className="text-xs text-slate-500 italic mt-0.5">{char.aliases.slice(0, 2).join(' · ')}</p>
+            <p className="text-xs text-atlas-soft italic mt-0.5">{char.aliases.slice(0, 2).join(' · ')}</p>
           )}
           {charGroups.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -52,7 +51,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
           )}
         </div>
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{char.description}</p>
-        {char.origin && <p className="text-xs text-slate-600 italic">{char.origin}</p>}
+        {char.origin && <p className="text-xs text-atlas-mute italic">{char.origin}</p>}
         {/* ── Mémoires / Flashbacks ── */}
         {flashbacks.length > 0 && (
           <div className="border-t pt-2" style={{ borderColor: 'rgba(217,119,6,0.2)' }}>
@@ -77,14 +76,14 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
                   return (
                     <div
                       key={evt.id}
-                      className="rounded-lg px-2.5 py-2 flex flex-col gap-0.5"
+                      className="px-2.5 py-2 flex flex-col gap-0.5"
                       style={{ backgroundColor: 'rgba(120,77,15,0.12)', border: '1px solid rgba(217,119,6,0.2)' }}
                     >
                       <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: '#d97706' }}>
                         {posLabel}
                       </p>
                       <p className="text-[11px] font-semibold text-slate-300 leading-snug">{evt.title}</p>
-                      <p className="text-[9px] text-slate-600">{t('timeline.narratedAtCh', { ch: evt.chapter })}</p>
+                      <p className="text-[9px] text-atlas-mute">{t('timeline.narratedAtCh', { ch: evt.chapter })}</p>
                     </div>
                   );
                 })}
@@ -97,8 +96,8 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
           <div className="flex justify-end">
             <button
               onClick={e => { e.stopPropagation(); onRelations(); }}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all duration-150 hover:scale-105 hover:brightness-125"
-              style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer' }}
+              className="flex items-center gap-1 px-2 py-1 font-grotesk text-[10px] font-bold uppercase tracking-[0.06em] transition-all duration-150 hover:brightness-125"
+              style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.25)', cursor: 'pointer' }}
             >
               <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <circle cx="2" cy="7" r="1.5"/><circle cx="12" cy="2" r="1.5"/><circle cx="12" cy="12" r="1.5"/>

@@ -1,13 +1,15 @@
+import Icon from '../ui/Icon';
+
 export default function StatCard({ icon, value, label, sub }) {
   return (
     <div
-      className="rounded-2xl p-4 flex flex-col gap-1"
-      style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+      className="pt-4 flex flex-col gap-1"
+      style={{ borderTop: '1px solid var(--color-atlas-line)' }}
     >
-      <span className="text-lg">{icon}</span>
-      <span className="text-3xl font-black text-white leading-none">{value}</span>
-      <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{label}</span>
-      {sub && <span className="text-[10px] text-slate-600">{sub}</span>}
+      <Icon name={icon} size={18} className="text-atlas-soft" />
+      <span className="font-serif text-3xl font-semibold text-atlas-text leading-none">{value}</span>
+      <span className="font-grotesk text-[11px] text-atlas-mute font-bold uppercase tracking-[0.12em]">{label}</span>
+      {sub && <span className="text-[10px] text-atlas-mute">{sub}</span>}
     </div>
   );
 }

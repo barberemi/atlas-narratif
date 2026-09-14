@@ -16,21 +16,33 @@ Barre de navigation principale en haut. Contient le `ProjectPicker`, le `VolumeP
 ### `NavDropdown`
 Menu déroulant de la nav. Configuration des items dans `navConfig.js`.
 ### `ProjectPicker`
-Sélecteur de projet actif — liste les projets depuis `useProject()`. Contient aussi le bouton "Exporter ce projet" (`exportProject`).
+Sélecteur de projet actif — liste les projets depuis `useProject()`. Contient aussi l'entrée « Exporter… » qui ouvre le `DeliverablesHub`.
 ### `VolumePicker`
 Sélecteur de tome actif — filtre global cross-stores. Lit/écrit `useVolumeStore.activeVolumeId`. Permet aussi la gestion CRUD des volumes (créer, renommer, supprimer).
 ### `SaveIndicator`
 Indicateur de sauvegarde en cours ("Enregistrement…" / "Sauvegardé"). Lit `useSaveIndicator`.
 ### `Footer`
 Pied de page avec liens légaux (/privacy, /terms), sélecteur de langue, et lien "Cookies" (`onCookieClick` prop) pour réouvrir le bandeau de consentement.
+### `NavDropdown`
+Menu déroulant d'un groupe de nav. Rendu à plat par défaut ; si les items portent des métadonnées optionnelles (`section`, `sublabelKey`, `badgeKey`), il les rend **orchestrés** : en-têtes de section, ligne d'usage sous chaque item, badge (ex. « Commence ici »). Seul le menu « Écrire » les utilise (point 16).
 ### `navConfig.js`
-Configuration centralisée des items de navigation (routes, labels, icônes).
+Configuration centralisée des items de navigation (routes, labels, icônes). Le groupe « Écrire » ajoute `section` / `sublabelKey` / `badgeKey` pour hiérarchiser les 5 méthodes (Fondation → Approfondir → Suivre les fils) sans en supprimer aucune.
+
+---
+
+## src/components/export/
+### `DeliverablesHub`
+Hub « Livrables » (modal via portal dans `document.body`) ouvert depuis le `ProjectPicker`. Ferme la boucle analyse → écriture : génère des documents prêts à transmettre à partir du payload d'export (`fetchProjectExport`). Trois livrables HTML imprimables (→ PDF via Cmd/Ctrl+P), ouverts dans un onglet : **Bible des personnages**, **Synopsis par tome**, **Checklist des amorces non résolues** (générateurs dans `src/utils/deliverables.js`) ; plus la **bible complète Markdown** téléchargée (`buildMarkdown`). Props : `projectId`, `projectName`, `onClose`. Utilitaires : `src/utils/download.js` (`downloadBlob`, `openHtmlDocument`).
 
 ---
 
 ## src/components/dashboard/
 ### `NarrativeDashboard`
-Page principale de synthèse. Props : `onOpenIncoherences(filter)`, `onEntityClick(id, type)`.
+Page principale de synthèse. Props : `onOpenIncoherences(filter)`, `onEntityClick(id, type)`. Le score de santé du header est cliquable et ouvre `HealthScorePanel` (recadrage du score en diagnostic + leviers). Le libellé de statut est constructif : Solide (≥80) / En construction (≥50) / À consolider (<50). Affiche `FirstRunChecklist` en tête tant que le projet est « quasi vide » (jamais sur la démo LOTR).
+### `FirstRunChecklist`
+Checklist « premières minutes » (point 8) pour dé-frictionner le cold-start d'un projet vide. Props : `description`, `charactersCount`, `eventsCount`. 3 étapes dérivées des données réelles (aucun state persisté, cf. `src/utils/firstRun.js`) : logline (input inline → `updateProject`), 3 personnages (ouvre `EntityEditor`), 1re scène (ouvre `EventEditor`). Barre de progression + CTA vers la démo LOTR (`/demo`). Visibilité pilotée par `shouldShowFirstRun()`.
+### `HealthScorePanel`
+Panneau « diagnostic » du score de santé narrative (popover ouvert depuis le header du dashboard). Recadre le score en diagnostic plutôt qu'en note : montre sa composition (chaque axe pondéré avec mini-barre) et propose les leviers à plus fort potentiel de gain, chacun navigant vers la vue concernée. Props : `parts` (axes pondérés + `gain`), `onNavigate(path)`, `onClose()`. Fermeture au clic extérieur ou Échap.
 ### `StatCard`
 Carte de statistique simple (nombre, label, icône).
 ### `CircularGauge`
@@ -68,13 +80,17 @@ Hook custom pour la simulation de force D3-like (calcul des positions des nœuds
 
 ## src/components/map/
 ### `AtlasMapView`
-Vue principale carte. Affiche l'image de carte du projet + trajets. Props : `onLocationClick(locationName)`.
+Vue principale carte. **Layout une-page** (piste 6) : `h-full flex flex-col` qui remplit la zone de contenu — header + sélecteur en haut, **carte en héros** (`flex-1`, remplit la hauteur, jamais de scroll de page), **dock bas** (frise de présence + curseur) en bas. **Mode plein écran** (état `isFullscreen`) : bouton ⤢ → la racine passe en `fixed inset-0 z-[60]` (couvre la nav, pleine largeur), le gros header est masqué au profit d'une barre slim ; `Échap` ou le bouton pour sortir. Le **cadre de la carte** est dimensionné au ratio de l'image (`absolute inset:0; margin:auto; aspect-ratio` + `max-w/h:100%`) : la carte remplit son cadre sans halo flou autour, avec un fin liseré + ombre (rendu « carte encadrée »). NB : ratio figé sur celui de la carte LOTR par défaut ; un fond importé d'un autre ratio retombe sur le letterbox interne de `MapCanvas`. Affiche l'image de carte du projet + trajets. Le temps est piloté par un **curseur de chapitres partagé** (`ChapterCursor`) : glisser le curseur déplace tous les personnages affichés au chapitre choisi (étape courante = dernière étape du trajet dont `chapterNum ≤ curseur` ; un personnage n'apparaît qu'à partir du chapitre où son récit commence). Header **compact** (titre `text-2xl`, une ligne) et **frise de présence repliée par défaut** (`stripOpen` init `false`) pour maximiser la taille de la carte. Le dock contient une **frise de présence** (`PresenceStrip`) **pliable** (état `stripOpen`) : dépliée via « ▸ PRÉSENCE », elle apparaît ; repliée, la carte récupère la place. En mode manuel (trajets sans chapitre), le trajet complet est affiché ; curseur et frise sont masqués (l'éditeur est plafonné en hauteur avec scroll interne). Sélecteur « Suivre » = un personnage focalisé + cases œil pour la visibilité (multi-affichage possible). Props : `onLocationClick(locationName)`.
+### `ChapterCursor`
+Curseur de chapitres partagé (footer, mode auto). Piste temporelle avec **bandes d'acte** (I/II/III) alignées sur le modèle partagé `utils/acts.js` (mêmes bandes que la frise Save the Cat / la Timeline). **Repères de convergence/divergence** (piste 4) : losange plein ◆ (rassemblement) / creux ◇ (scission) sur la piste, aux chapitres concernés, + légende du chapitre courant (« qui est ensemble, où »). Interactions : glisser (pointer), flèches ‹/›, clavier (←/→/Home/End), `role="slider"` accessible. **Lecture animée** (piste 7) : bouton ▶/⏸ qui déroule les chapitres tout seul (l'avancement du curseur fait glisser les personnages via la transition de `MapCanvas`) ; toute interaction manuelle met en pause ; s'arrête au dernier chapitre. Props : `chapters` (`[{number,title}]`), `index`, `onChange(index)`, `markers` (repères par chapitre, cf. `utils/gatherings.js`), `currentInfo` (légende texte), `playing`, `onTogglePlay`.
+### `PresenceStrip`
+Frise de présence — comparatif « qui est où, quand » (remplace l'ancienne matrice persos×chapitres). Une barre fine par personnage affiché, une cellule par chapitre, **colorée par le lieu** (`utils/color.js` → `locationColor`, hash stable en attendant les régions/piste 5). Le dernier lieu connu est reporté entre deux apparitions ; chapitres POV marqués d'un point. Cliquer une cellule déplace le curseur partagé ; la colonne du chapitre courant est surlignée. **Pliable** (props `open`/`onToggle`, piste 6) : en-tête cliquable, barres plafonnées en hauteur (scroll interne au-delà). S'appuie sur les champs `locationId` / `isPov` désormais exposés par `computeAutoJourneys` (`utils/journeyUtils.js`). Props : `chapters`, `characters` (affichés), `index`, `onChange(index)`, `open`, `onToggle`.
 ### `MapCanvas`
-Canvas SVG pour le rendu des trajets et marqueurs.
-### `JourneySidebar`
-Panneau latéral listant les personnages et leurs trajets sur la carte.
-### `JourneyTimeline`
-Frise chronologique des étapes d'un trajet par personnage.
+Canvas SVG pour le rendu des trajets et marqueurs. Prop `gatherings` (piste 4) : liste `[{x,y,count}]` de lieux où ≥2 personnages affichés sont réunis au chapitre courant → dessine un **anneau de convergence** avec badge du nombre.
+### `JourneyGrid`
+Mode **mini-cartes / small multiples** (piste 3) : grille responsive de vignettes, une par personnage affiché, chacune montrant son **trajet complet**. Scroll interne au-delà de quelques persos (page sans scroll). Activé par le toggle « Mini-cartes / Carte » du header d'`AtlasMapView` (état `viewMode` : `'single' | 'grid'`) ; en mode grille le dock (frise + curseur) est masqué. Props : `characters` (affichés), `mapSrc`.
+### `MiniJourneyMap`
+Vignette légère utilisée par `JourneyGrid` : fond de carte (object-contain, même transformation que `MapCanvas`, répliquée pour rester autonome/sans marqueurs animés) + trajet complet d'UN personnage (polyline, départ, étapes, marqueur de fin ou de mort). Props : `journey`, `color`, `deathStepIndex`, `mapSrc`.
 ### `JourneyEditor`
 Éditeur de trajet : ajout/modification/suppression d'étapes.
 
@@ -82,7 +98,7 @@ Frise chronologique des étapes d'un trajet par personnage.
 
 ## src/components/timeline/
 ### `TimelineBrowser`
-Timeline narrative avec filtres, drag-and-drop (réordonnancement intra et inter-chapitre via @dnd-kit). Lit `useTimelineStore`.
+Timeline narrative avec filtres, drag-and-drop (réordonnancement intra et inter-chapitre via @dnd-kit). Lit `useTimelineStore`. Colonnes de chapitres (290px) surmontées de **bandes d'acte** partagées avec la frise Save the Cat (modèle `src/utils/acts.js`, label d'acte collant au scroll) — les deux pages sont des « sœurs visuelles » (même axe chapitres, mêmes couleurs d'acte).
 ### `EventCard`
 Carte d'un événement de la timeline (résumé, entités, beat, POV).
 ### `SortableEventCard`
@@ -100,11 +116,11 @@ Chip cliquable représentant une entité dans un événement.
 
 ## src/components/savethecat/
 ### `SaveTheCat`
-Éditeur des 15 beats Save the Cat. Lit/écrit `useStcStore`.
-### `BeatRow`
-Ligne d'un beat : numéro, nom, description, chapitres associés.
+Éditeur des 15 beats Save the Cat. Lit/écrit `useStcStore`. En mode série (plusieurs tomes, pas de filtre global), une **bande compacte** (sélecteur T1·T2·T3 + couverture) affiche **une seule frise à la fois** au lieu de frises empilées. Cliquer un beat sur la frise ouvre son détail dans le `BeatDrawer`.
 ### `Frise`
-Visualisation linéaire des beats dans l'ordre narratif.
+Visualisation linéaire des beats : positions réelles vs idéales (losanges), **bandes de tolérance** par beat, beats cliquables (`onSelectBeat`) et surlignés (`selectedBeat`).
+### `BeatDrawer`
+Tiroir de détail d'un beat sélectionné : statut, position idéale/tolérance, note(s) de craft, scènes qui le portent (par tome, éditables), exemple canonique, action créer/éditer.
 ### `AlertCard`
 Alerte contextuelle (beat manquant, incohérence…).
 
@@ -150,14 +166,14 @@ Modale de recherche globale (Ctrl+K / Cmd+K). Cherche dans personnages, lieux, o
 
 ## src/components/ui/
 Composants réutilisables sans logique métier :
+- `CraftDiagnostics` — bandeau « Ce que je remarque » : 1 à 3 constats de craft actionnables, communs à toutes les vues (arc, Save the Cat, dashboard). Alimenté par les moteurs purs de `src/utils/craftDiagnostics.js` (`diagnoseArc`, `diagnoseStc`, `diagnoseRhythm`, `diagnosePov`, `diagnosePresence`). Constats cliquables → le parent décide de l'effet via `onPick(finding)` (surligner un chapitre/beat, naviguer vers la vue). Props : `findings`, `onPick`, `dataTour`, `title` (`null` masque l'en-tête interne). Le dashboard agrège les constats les plus forts (max 2/vue, 5 au total) au-dessus de « À faire maintenant ».
 - `Button` — bouton stylisé avec variants
 - `DarkCard` — conteneur carte dark avec border subtile
 - `EmptyState` — placeholder pour listes vides (icône + message)
 - `FormFields` — inputs, textareas stylisés
-- `LoreCard` — carte générique pour entité lore (utilisée par CharacterCard, etc.)
 - `Skeleton` — placeholder de chargement (utilisé par Suspense)
+- `Term` — filet terminologique : `<Term id="stc">Save the Cat</Term>` affiche la définition du glossaire (`src/data/glossary.js`) dans une bulle au survol/focus. Sans enfant, affiche le `label` du terme ; id inconnu → rend les enfants sans décoration. Piloté sur le dashboard (section « Couverture des méthodes »).
 - `SidePanel` — panneau latéral sliding
-- `SourceBadge` — badge `import` vs `manual`
 - **CookieConsent** — Bandeau cookie RGPD (style Axeptio). Mascotte cookie, boutons Accepter/Refuser, lien footer "Cookies" pour réouvrir. Gate le chargement de Crisp (chat).
 
 ---

@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "叙事图谱",
-    "h1Prefix": "用以下工具构建您的小说",
     "exported": "由叙事图谱导出，日期：{{date}}"
   },
   "nav": {
@@ -13,6 +12,15 @@
     "emotionalArc": "情感弧线",
     "plants": "伏笔",
     "threads": "叙事线索",
+    "secFoundation": "基础",
+    "secDeepen": "深入",
+    "secThreads": "追踪线索",
+    "startHere": "从这里开始",
+    "descSaveTheCat": "骨架——15 个节拍",
+    "descHeroJourney": "主角的弧线——12 个阶段",
+    "descEmotionalArc": "逐章的强度曲线",
+    "descPlants": "已埋下的、待回收的",
+    "descThreads": "不容遗失的副线",
     "lore": "世界观",
     "map": "地图",
     "timeline": "时间线",
@@ -25,6 +33,9 @@
     "login": "登录"
   },
   "home": {
+    "heroTitle": "构建你的小说结构，",
+    "heroTitleAccent": "笔触仍属于你。",
+    "heroSubtitle": "基于经典叙事方法（救猫咪、英雄之旅）构建，纵观故事全貌，在读者之前发现不一致之处。",
     "startQuestion": "从哪里开始？",
     "buildTitle": "我要构建我的故事",
     "buildDesc": "使用叙事方法进行规划，创建角色和地点",
@@ -33,7 +44,7 @@
     "analyzeDesc": "导入手稿或笔记，提取时间线、地图、不一致之处……",
     "analyzeAction": "导入 →",
     "demoTitle": "体验演示项目",
-    "demoDesc": "魔戒 — 三部曲完整版",
+    "demoDesc": "魔戒：三部曲完整版",
     "demoAction": "加载 →",
     "demoOpen": "打开 →",
     "demoLoading": "加载中……",
@@ -45,6 +56,9 @@
     "projectNamePlaceholder": "我的小说",
     "createProject": "创建项目 →",
     "creating": "创建中……",
+    "buildLoglineLabel": "一句话梗概（可选）",
+    "buildLoglinePlaceholder": "用一句话说明：谁想要什么，又是什么在阻碍他？",
+    "buildLoglineHint": "您故事的核心卖点。稍后可以再完善。",
     "demoSending": "发送至服务器……",
     "demoReloading": "切换演示语言……",
     "back": "← 返回",
@@ -52,11 +66,32 @@
     "featureTimelineDesc": "按章节组织事件，拖拽排序，按卷筛选，可视化情感弧线。",
     "featureCharactersTitle": "管理角色及其成长弧线",
     "featureCharactersDesc": "角色档案、关系图谱和情感弧线，追踪每个角色的成长变化。",
-    "featureIncoherencesTitle": "自动检测不一致之处",
-    "featureIncoherencesDesc": "超过12种检测器分析数据，标记矛盾、重复和遗漏。",
+    "featureIncoherencesTitle": "在读者之前，自动发现不一致之处",
+    "featureIncoherencesDesc": "超过12种检测器分析你的故事，标记矛盾、重复和遗漏，在读者之前。",
     "featureFrameworksTitle": "兼容救猫咪与英雄之旅",
     "featureFrameworksDesc": "使用救猫咪的15节拍或英雄之旅的12阶段来构建故事。",
-    "featuresLabel": "功能特性"
+    "featuresLabel": "功能特性",
+    "kicker": "献给构建世界的写作者",
+    "signature": "你的小说地图集。",
+    "ctaStart": "免费开始",
+    "ctaDemo": "体验演示",
+    "reassure": "免费 · 无需 API 密钥 · 内容归你所有",
+    "closerTrust": "无需 API 密钥 · 不用你的文本训练 AI · 你的世界始终属于你",
+    "bandQuoteLead": "写下五万字之后，",
+    "bandQuoteRest": "那个问题总会回来：故事立得住吗？",
+    "indexLabel": "这个工具能做什么",
+    "indexToc": "目录",
+    "idx1Title": "不再从空白页开始",
+    "idx1Cat": "方法",
+    "idx1Desc": "救猫咪（15 个节拍）或英雄之旅（12 个阶段），全程引导，并以你熟悉的作品加以说明。",
+    "idx2Title": "你的小说，终于尽收眼底",
+    "idx2Cat": "全局视角",
+    "idx2Desc": "时间线、行程地图、关系图谱、情感曲线：从各个角度审视同一个故事。",
+    "idx3Title": "在读者之前发现漏洞",
+    "idx3Cat": "一致性",
+    "idx3Desc": "超过 12 种检测器追踪矛盾与遗漏；伏笔追踪会提醒你每一个承诺，哪怕相隔三卷。",
+    "closerTitle": "你的传奇值得一张地图。",
+    "closerCta": "创建我的第一个项目"
   },
   "label": {
     "characters": "角色",
@@ -85,7 +120,7 @@
     "inscription": "铭文",
     "status": "状态",
     "members": "成员",
-    "memberCount": "{{count}} 名成员",
+    "memberCount_other": "{{count}} 名成员",
     "regime": "政权",
     "inhabitants": "居民",
     "keyPlaces": "重要地点",
@@ -156,7 +191,7 @@
   },
   "welcome": {
     "title": "欢迎使用叙事图谱",
-    "demoSubtitle": "您正在浏览<strong>魔戒</strong>项目——一个完整的示例，帮助您发现所有功能。",
+    "demoSubtitle": "您正在浏览<strong>魔戒</strong>项目：一个完整的示例，帮助您发现所有功能。",
     "projectSubtitle": "发现可用的工具来分析和构建您的叙事。",
     "feature1": "仪表盘、时间线和不一致检测",
     "feature2": "交互式地图和完整世界观",
@@ -164,7 +199,8 @@
     "feature4": "情感弧线、伏笔和叙事线索"
   },
   "auth": {
-    "cookieWarning": "您的项目绑定在此浏览器上——清除cookies将导致数据丢失。",
+    "localMode": "本地模式",
+    "cookieWarning": "创建免费账户，保存你的项目并在任何设备上访问。",
     "signIn": "登录 →"
   },
   "lang": {
@@ -204,7 +240,7 @@
     "viewVolume": "查看此卷 →",
     "seriesEmptyHint": "通过卷册选择器创建至少2个卷册以显示系列视图。",
     "unassignedEvents": "{{count}}个事件未分配卷册",
-    "memoryCount": "↩ {{count}}段回忆",
+    "memoryCount_other": "↩ {{count}}段回忆",
     "emptyHint": "添加第一个事件以开始构建您的时间线。",
     "addEvent": "+ 创建事件"
   },
@@ -222,17 +258,29 @@
     "noChapter": "无章节",
     "noEntities": "数据库中没有实体",
     "emptyTitle": "没有救猫咪章节",
-    "emptyHint": "从时间线创建章节后可在此查看。",
+    "emptyHint": "创建第一个场景，开始安排 15 个节拍。",
+    "emptyAction": "+ 创建场景",
     "beatsPlaced": "已放置节拍",
     "criticalAlerts": "严重警报",
     "warnings": "注意事项",
     "legendPlaced": "已放置节拍",
     "legendIdeal": "理想位置",
+    "legendTolerance": "容差区间",
     "legendDeviation": "偏差",
     "narrativeAlerts": "叙事警报",
     "solidStructure": "叙事结构稳固！",
     "solidStructureHint": "所有节拍都在推荐区间内。",
     "the15beats": "15个节拍",
+    "beatDetailTab": "节拍详情",
+    "selectBeatHint": "点击时间轴上的节拍查看其详情。",
+    "statusMissing": "缺失",
+    "statusOnTrack": "位置合理",
+    "statusDeviation": "偏差",
+    "idealTolerance": "理想 {{ideal}}% · ±{{tol}}",
+    "actualAt": "实际 {{pct}}%",
+    "scenesForBeat": "承载此节拍的场景",
+    "noSceneForBeat": "尚无场景承载此节拍。",
+    "addAnotherScene": "+ 添加场景",
     "entities": "实体",
     "beatsCoverage": "节拍覆盖率",
     "ideal": "理想",
@@ -251,7 +299,7 @@
     "subtitle": "自动叙事连贯性分析",
     "scanning": "分析中……",
     "rescan": "重新扫描",
-    "lastScanCount": "检测到{{count}}个不一致",
+    "lastScanCount": "上次扫描：自动检测到 {{count}} 个",
     "catalogTitle": "不一致目录",
     "catalog": "目录",
     "catalogCount": "{{count}}种可自动检测的不一致类型",
@@ -463,6 +511,17 @@
     "good": "良好",
     "average": "一般",
     "critical": "严重",
+    "healthSolid": "稳固",
+    "healthBuilding": "构建中",
+    "healthConsolidate": "待巩固",
+    "scoreExplainAria": "查看叙事健康分数的构成与提升杠杆",
+    "scoreDiagnosisKicker": "这是诊断，不是评分",
+    "scoreDiagnosisIntro": "该分数概括了各叙事维度的进展。以下是提升它的方法。",
+    "scoreComposition": "分数的构成",
+    "scoreWeightAria": "在分数中的权重 ×{{weight}}",
+    "scoreLevers": "提升分数的杠杆",
+    "scoreAllMax": "所有维度均已满分，暂无需巩固。",
+    "scoreClose": "关闭",
     "open": "打开 →",
     "overview": "总览",
     "structureComplete": "结构完整",
@@ -477,12 +536,12 @@
     "crossVolumeContinuity": "跨卷连续性",
     "crossVolumeSetups": "跨越多卷的伏笔",
     "viewAll": "查看全部 →",
-    "confirmed_one": "已确认 — {{count}}条线索",
-    "confirmed_other": "已确认 — {{count}}条线索",
+    "confirmed_one": "已确认：{{count}}条线索",
+    "confirmed_other": "已确认：{{count}}条线索",
     "resolved": "已解决",
     "inProgress": "进行中",
-    "pending_one": "待定 — {{count}}个未指定呼应",
-    "pending_other": "待定 — {{count}}个未指定呼应",
+    "pending_one": "待定：{{count}}个未指定呼应",
+    "pending_other": "待定：{{count}}个未指定呼应",
     "incoherenceCorrection": "不一致修正",
     "characterCoverage": "角色覆盖率",
     "stcStructure": "救猫咪结构",
@@ -498,7 +557,7 @@
     "goalConflictOutcome": "目标+冲突+结果",
     "bestChar": "最佳：{{name}}（{{filled}}/12）",
     "todoNow": "待办事项",
-    "allGood": "一切正常——无需操作。",
+    "allGood": "一切正常，无需操作。",
     "recCritical_one": "{{count}}个未解决的严重不一致",
     "recCritical_other": "{{count}}个未解决的严重不一致",
     "recHigh_one": "{{count}}个高严重性不一致",
@@ -507,8 +566,8 @@
     "recMissingBeats_other": "缺少{{count}}个救猫咪节拍",
     "recOrphanChars_one": "{{count}}个角色不在时间线中",
     "recOrphanChars_other": "{{count}}个角色不在时间线中",
-    "recArcIncomplete": "情感弧线不完整——{{filled}}/{{total}}章已填写",
-    "recHeroJourney": "英雄之旅——仅{{filled}}/{{total}}个阶段已填写",
+    "recArcIncomplete": "情感弧线不完整：{{filled}}/{{total}}章已填写",
+    "recHeroJourney": "英雄之旅：仅{{filled}}/{{total}}个阶段已填写",
     "recNoAnatomy_one": "{{count}}个场景缺少完整解剖",
     "recNoAnatomy_other": "{{count}}个场景缺少完整解剖",
     "recModified_one": "{{count}}个实体已手动修改或添加",
@@ -610,7 +669,25 @@
     "noLocalizedLocations": "无已定位的地点",
     "povLegend": "主视角",
     "presenceLegend": "出现在场景中",
-    "selectedEvent": "已选事件"
+    "selectedEvent": "已选事件",
+    "chapterCursor": "章节",
+    "prevChapter": "上一章",
+    "nextChapter": "下一章",
+    "presenceTitle": "在场",
+    "byLocationLegend": "颜色 = 地点",
+    "collapse": "收起",
+    "expand": "展开",
+    "gatheringLabel": "汇合",
+    "splitLabel": "分离",
+    "singleView": "地图",
+    "gridView": "缩略图",
+    "singleViewTitle": "单张地图视图",
+    "gridViewTitle": "比较路线（缩略图）",
+    "steps": "步",
+    "play": "动画播放",
+    "pause": "暂停",
+    "fullscreen": "全屏",
+    "exitFullscreen": "退出全屏"
   },
   "graph": {
     "title": "关系图谱",
@@ -661,8 +738,8 @@
     "avgIntensity": "平均强度",
     "avgLabel": "平均",
     "characterEvolution": "按维度的角色个体演变",
-    "chapterLabel": "第{{number}}章 — {{title}}",
-    "intensityUndefined": "强度未设定——移动滑块",
+    "chapterLabel": "第{{number}}章：{{title}}",
+    "intensityUndefined": "强度未设定，移动滑块",
     "curveColor": "曲线颜色",
     "calm": "平静",
     "moderate": "适中",
@@ -696,11 +773,11 @@
     "allTypes": "所有类型",
     "plantChapter": "铺垫章节",
     "payoffChapter": "回收章节",
-    "volumeOptional": "— 卷册（可选）",
-    "volumeLabel": "第{{number}}卷 — {{title}}",
-    "noChapter": "—",
+    "volumeOptional": "卷册（可选）",
+    "volumeLabel": "第{{number}}卷：{{title}}",
+    "noChapter": "·",
     "eventOptional": "事件（可选）",
-    "unresolved": "— 未解决",
+    "unresolved": "未解决",
     "unresolvedShort": "未解决",
     "linkedEntity": "关联实体（可选）",
     "notes": "备注",
@@ -775,6 +852,10 @@
   },
   "authPages": {
     "login": "\u767b\u5f55",
+    "kickerLogin": "\u8d26\u6237 \u00b7 \u767b\u5f55",
+    "kickerRegister": "\u8d26\u6237 \u00b7 \u6ce8\u518c",
+    "kickerForgot": "\u8d26\u6237 \u00b7 \u5fd8\u8bb0\u5bc6\u7801",
+    "kickerReset": "\u8d26\u6237 \u00b7 \u91cd\u7f6e\u5bc6\u7801",
     "loginLoading": "\u767b\u5f55\u4e2d\u2026\u2026",
     "loginSubmit": "\u767b\u5f55 \u2192",
     "invalidCredentials": "\u51ed\u8bc1\u65e0\u6548",
@@ -823,8 +904,153 @@
     "emailResent": "\u90ae\u4ef6\u5df2\u91cd\u65b0\u53d1\u9001",
     "resendError": "\u53d1\u9001\u90ae\u4ef6\u65f6\u51fa\u9519"
   },
+  "firstRun": {
+    "kicker": "最初几分钟",
+    "title": "开启你的故事",
+    "subtitle": "三个步骤，让你的故事鲜活起来。",
+    "stepLogline": "写下你的一句话梗概",
+    "stepCharacters": "创建最初的角色（{{count}}/{{target}}）",
+    "stepScene": "添加第一个场景",
+    "addCharacter": "+ 角色",
+    "addScene": "+ 场景",
+    "loglinePlaceholder": "用一句话说明：谁想要什么，又是什么在阻碍他？",
+    "loglineSave": "保存",
+    "loglineSaved": "梗概已保存",
+    "edit": "编辑",
+    "exploreDemo": "或参考演示项目（《指环王》）作为范例"
+  },
+  "craft": {
+    "title": "我的观察",
+    "showOnCurve": "在曲线上显示",
+    "chapterOne": "第 {{n}} 章",
+    "chapterRange": "第 {{from}}–{{to}} 章",
+    "tomeChip": "{{label}}",
+    "stc": {
+      "solid": {
+        "title": "结构稳固",
+        "detail": "节拍位置得当——暂时无需调整。"
+      },
+      "verdict": {
+        "title": "骨架已就位",
+        "detail": "已放置 {{placed}}/{{total}} 个节拍 · {{count}} 处需留意。"
+      },
+      "missing": {
+        "title": "节拍缺失",
+        "detail": "有 {{count}} 个节拍未放置——缺少关键的结构支点。"
+      },
+      "actIII": {
+        "title": "第三幕过挤",
+        "detail": "{{count}} 个收尾节拍来得太晚——结局会显得仓促。"
+      },
+      "midpoint": {
+        "title": "中点失衡",
+        "detailLate": "中点来得太晚——后半段会被压缩。",
+        "detailEarly": "中点来得太早——前半段会太短。"
+      },
+      "slowStart": {
+        "title": "开场缓慢",
+        "detail": "{{count}} 个开场节拍来得晚——故事迟迟未能展开。"
+      }
+    },
+    "rhythm": {
+      "overloaded": {
+        "title": "章节过载",
+        "detail": "第 {{n}} 章塞入了 {{count}} 个事件——读者可能会应接不暇。"
+      },
+      "crowded": {
+        "title": "出场过多",
+        "detail": "第 {{n}} 章有 {{count}} 个活跃角色——难以一一跟上。"
+      }
+    },
+    "pov": {
+      "monopoly": {
+        "title": "视角被垄断",
+        "detail": "{{name}} 占据了 {{pct}}% 的视角场景——其他视角被淹没。"
+      },
+      "missing": {
+        "title": "视角未定",
+        "detail": "有 {{count}} 章没有视角角色——叙事视角含糊不清。"
+      }
+    },
+    "presence": {
+      "gap": {
+        "title": "角色淡出",
+        "detail": "{{name}} 消失了 {{count}} 章——是否在酝酿回归？"
+      }
+    },
+    "arc": {
+      "softBelly": {
+        "title": "中段松弛",
+        "detail": "连续 {{count}} 章张力偏低——读者可能会走神。"
+      },
+      "peaks": {
+        "title": "高潮扎堆",
+        "detail": "连续 {{count}} 章高张力而无喘息——强度会逐渐钝化。"
+      },
+      "flat": {
+        "title": "曲线过平",
+        "detail": "强度几乎不变（标准差 {{stdev}}）——张力缺乏起伏。"
+      },
+      "noClimax": {
+        "title": "缺乏真正的高潮",
+        "detail": "没有章节超过 {{threshold}}/10（峰值 {{max}}）——戏剧高点缺失。"
+      },
+      "climaxEnd": {
+        "title": "结束于顶点",
+        "detail": "最后一章也是最强烈的——考虑在高潮后加一段收束场景。"
+      },
+      "climaxGood": {
+        "title": "高潮位置恰当",
+        "detail": "强度峰值落在最后三分之一——位置很好。"
+      },
+      "climaxEarly": {
+        "title": "高潮过早",
+        "detail": "峰值出现在最后三分之一之前——结尾的强度可能回落。"
+      }
+    }
+  },
+  "deliverables": {
+    "export": "导出…",
+    "kicker": "回到写作",
+    "hubTitle": "交付物",
+    "hubSubtitle": "可直接分享的文档——从分析回到写作。",
+    "close": "关闭",
+    "generate": "生成",
+    "download": "下载",
+    "characterBible": "角色宝典",
+    "characterBibleDesc": "每个角色一页：身份、特征、从属、简介。",
+    "synopsis": "分卷梗概",
+    "synopsisDesc": "故事脉络，逐章逐卷呈现。",
+    "openPlants": "伏笔清单",
+    "openPlantsDesc": "已埋下但尚未回收的伏笔，供修订时处理。",
+    "fullBible": "完整宝典（Markdown）",
+    "fullBibleDesc": "将整个项目导出为单个 Markdown 文件。",
+    "docCharacterBible": "角色宝典",
+    "docSynopsis": "梗概",
+    "docOpenPlants": "待回收的伏笔",
+    "printHint": "提示：Ctrl / ⌘ + P 保存为 PDF",
+    "exportedOn": "于 {{date}} 从 Atlas Narratif 导出",
+    "countCharacters_other": "{{count}} 个角色",
+    "countPlants_other": "{{count}} 个待回收的伏笔",
+    "chapterN": "第 {{n}} 章",
+    "volumeN": "第 {{n}} 卷",
+    "plantPosed": "埋于第 {{n}} 章",
+    "noSummary": "尚无摘要。",
+    "fAliases": "别名",
+    "fOrigin": "出身",
+    "fTraits": "特征",
+    "fAffiliations": "从属",
+    "fGroups": "团体",
+    "emptyCharacters": "没有可导出的角色。",
+    "emptyChapters": "没有可导出的章节。",
+    "emptyPlants": "没有待处理的伏笔——全部已回收。",
+    "loadError": "无法加载项目数据。",
+    "genError": "文档生成失败。",
+    "popupBlocked": "标签页被拦截。请允许本站弹出窗口。"
+  },
   "account": {
     "title": "我的账户",
+    "kicker": "账户 · 我的信息",
     "info": "信息",
     "exportData": "导出我的数据",
     "exportDesc": "以JSON格式下载所有数据（GDPR）。",
