@@ -26,13 +26,13 @@ React 19 SPA (Vite 7) with Zustand 5 state management. Server-side: Hono 4 API o
 │   │   ├── graph/          EntityGraph (D3/SVG relation graph)
 │   │   ├── incoherences/   IncoherencesBrowser, cards, fix actions
 │   │   ├── lore/           LoreBrowser, CharacterCard, LocationCard, EntityEditor
-│   │   ├── map/            AtlasMapView, MapCanvas, JourneySidebar
+│   │   ├── map/            AtlasMapView, MapCanvas, JourneyEditor
 │   │   ├── nav/            TopNav, NavDropdown, ProjectPicker
 │   │   ├── savethecat/     Save the Cat beats (BeatRow, Frise)
 │   │   ├── search/         GlobalSearch (Ctrl+K)
 │   │   ├── timeline/       TimelineBrowser, EventCard, ArcStrip
 │   │   ├── tour/           Guided tour overlay
-│   │   └── ui/             Shared primitives: Button, DarkCard, SidePanel, SourceBadge…
+│   │   └── ui/             Shared primitives: Button, DarkCard, SidePanel, EmptyState…
 │   ├── pages/              Route-level page components
 │   │   ├── auth/           LoginPage, RegisterPage, VerifyEmailPage, ForgotPasswordPage, ResetPasswordPage
 │   │   ├── EmotionalArc.jsx

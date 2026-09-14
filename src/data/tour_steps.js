@@ -58,13 +58,13 @@ export const TOUR_STEPS = [
     route:       '/map',
     dataKey:     'map-canvas',
     title:       'Carte interactive',
-    description: 'Importez une image de fond (carte de votre monde), puis placez vos lieux dessus. Activez le mode "Lier" pour tracer les trajets de chaque personnage.',
+    description: 'Importez une image de fond (carte de votre monde), puis placez vos lieux dessus. Les trajets des personnages se tracent automatiquement depuis la timeline.',
   },
   {
     route:       '/map',
     dataKey:     'map-journeys',
-    title:       'Trajets des personnages',
-    description: 'Visualisez le voyage de chaque personnage chapitre par chapitre. Cliquez sur un lieu pour voir les personnages qui s\'y trouvent à ce moment de l\'histoire.',
+    title:       'Curseur de chapitres',
+    description: 'Glissez le curseur pour avancer dans le récit : tous les personnages affichés se déplacent au chapitre choisi. Les bandes d\'acte (I, II, III) situent le moment dans la structure.',
   },
 
   // ── Save the Cat ───────────────────────────────────────────────────────────

@@ -64,10 +64,16 @@ test.describe('Phase 4 — CRUD Timeline', () => {
 
   test('toggle arc strip', async ({ page }) => {
     await page.goto('/timeline');
-    const arcBtn = page.getByRole('button', { name: '∿ Arc' });
+    const arcBtn = page.getByRole('button', { name: /^Arc$|^弧线$/ });
     await arcBtn.click();
     await page.waitForTimeout(500);
     await arcBtn.click();
+  });
+
+  test('bandes d\'acte partagées avec la frise Save the Cat', async ({ page }) => {
+    await page.goto('/timeline');
+    // L'axe chapitres porte les bandes d'acte (chantier 6 : duo vitrine avec /savethecat)
+    await expect(page.getByText(/^Act I$|^Acte I$|^第一幕$/).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('notes de chapitre — ouvrir et écrire', async ({ page }) => {

@@ -35,6 +35,36 @@ describe('createProject', () => {
   });
 });
 
+describe('updateProject', () => {
+  it('accepts description-only update (logline)', () => {
+    ok(v.updateProject, { description: 'Un hobbit doit détruire un anneau.' });
+  });
+
+  it('accepts name-only update', () => {
+    ok(v.updateProject, { name: 'Nouveau titre' });
+  });
+
+  it('accepts name + description', () => {
+    ok(v.updateProject, { name: 'Titre', description: 'Pitch' });
+  });
+
+  it('accepts empty object (no-op)', () => {
+    ok(v.updateProject, {});
+  });
+
+  it('accepts null description', () => {
+    ok(v.updateProject, { description: null });
+  });
+
+  it('rejects empty name when provided', () => {
+    fail(v.updateProject, { name: '' });
+  });
+
+  it('rejects extra fields (strict)', () => {
+    fail(v.updateProject, { name: 'Test', evil: 'DROP TABLE' });
+  });
+});
+
 // ── mapImage ─────────────────────────────────────────────────────────────────
 
 describe('mapImage', () => {

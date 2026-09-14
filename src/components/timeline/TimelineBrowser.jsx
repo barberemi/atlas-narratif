@@ -7,7 +7,10 @@ import { useDragScroll } from '../../hooks/useDragScroll';
 import { hexToRgb } from '../../utils/color';
 import { getEntityMeta } from '../../utils/entityUtils';
 import EmptyState from '../ui/EmptyState';
+import { HeaderSep } from '../ui/HeaderButton';
 import Skeleton from '../ui/Skeleton';
+import Icon from '../ui/Icon';
+import Term from '../ui/Term';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
@@ -21,6 +24,7 @@ import { useStoreLoader }   from '../../hooks/useStoreLoader';
 import { reorderEvents }    from '../../api/client';
 import { toast }            from '../../lib/toast';
 import { BEATS }            from '../../data/beats_config';
+import { actSegments }      from '../../utils/acts';
 import { OUTCOMES }         from '../../data/outcome_config';
 import EventEditor from './EventEditor';
 import EventCard from './EventCard';
@@ -308,14 +312,14 @@ export default function TimelineBrowser() {
   if (events.length === 0) return (
     <div className="h-full flex items-center justify-center">
       <EmptyState
-        icon="📅"
+        icon={<Icon name="event" size={40} className="text-atlas-mute" />}
         title={t('empty.noEvents')}
         hint={t('timeline.emptyHint', 'Ajoutez votre premier événement pour construire votre timeline.')}
         action={
           <button
             onClick={() => setEditorEvent(null)}
-            className="px-4 py-2 rounded-xl text-sm font-black transition-all duration-200"
-            style={{ backgroundColor: 'rgba(63,81,181,0.25)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.4)' }}
+            className="px-4 py-2 rounded-none text-sm font-black transition-all duration-200"
+            style={{ backgroundColor: 'rgba(92,174,142,0.18)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.4)' }}
           >
             {t('timeline.addEvent', '+ Créer un événement')}
           </button>
@@ -332,34 +336,36 @@ export default function TimelineBrowser() {
   );
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
+    <div className="h-full w-full max-w-[1280px] mx-auto flex flex-col bg-atlas-ink text-slate-200 overflow-hidden">
 
       {/* ── Header ── */}
-      <header data-tour="timeline-events" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="timeline-events" className="flex items-center justify-between px-6 py-5 border-b border-atlas-line flex-shrink-0">
         <div className="flex-1">
-          <h1 className="text-lg font-black tracking-tight">
-            Timeline <span style={{ color: '#3F51B5' }}>Narrative</span>
+          <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">
+            Analyser — chronologie du récit
+          </p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+            Timeline <span className="italic" style={{ color: '#5cae8e' }}>narrative</span>
           </h1>
-          <p className="text-sm text-slate-500 font-serif italic">
+          <p className="text-sm text-atlas-soft font-serif italic mt-1">
             {chapters.length} {t('label.chapters').toLowerCase()} · {events.length} {t('label.events').toLowerCase()}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 md:gap-5 font-grotesk">
           {/* Onglet Vue série */}
           {showSeriesTab && (
-            <div className="hidden md:flex items-center gap-0.5 p-0.5 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="hidden md:flex items-center gap-4 md:gap-5 flex-shrink-0">
               {[
                 { id: 'chapters', label: t('label.chapters') },
-                { id: 'series',   label: `📚 ${t('timeline.seriesTab')}` },
+                { id: 'series',   label: t('timeline.seriesTab'), icon: 'series' },
               ].map(v => (
                 <button key={v.id} onClick={() => setViewMode(v.id)}
-                  className="px-3 py-1 rounded-md text-xs font-semibold transition-all"
+                  className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] pb-1 transition-all"
                   style={{
-                    backgroundColor: viewMode === v.id ? 'rgba(99,102,241,0.2)' : 'transparent',
-                    border:          viewMode === v.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
-                    color:           viewMode === v.id ? '#818cf8' : '#64748b',
+                    color:        viewMode === v.id ? '#ece7db' : 'var(--color-atlas-soft)',
+                    borderBottom: viewMode === v.id ? '2px solid #cba15e' : '2px solid transparent',
                   }}>
+                  {v.icon && <Icon name={v.icon} size={14} />}
                   {v.label}
                 </button>
               ))}
@@ -368,43 +374,41 @@ export default function TimelineBrowser() {
           {viewMode === 'chapters' && (<>
             <button
               onClick={() => setTimeOrder(v => v === 'narrative' ? 'chronological' : 'narrative')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] pb-1 transition-all"
               style={{
-                backgroundColor: timeOrder === 'chronological' ? 'rgba(217,119,6,0.15)' : 'rgba(255,255,255,0.04)',
-                color:  timeOrder === 'chronological' ? '#fbbf24' : '#475569',
-                border: `1px solid ${timeOrder === 'chronological' ? 'rgba(217,119,6,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                color:        timeOrder === 'chronological' ? '#fbbf24' : 'var(--color-atlas-soft)',
+                borderBottom: `2px solid ${timeOrder === 'chronological' ? '#d97706' : 'transparent'}`,
               }}
             >
-              ↩ {t('timeline.chrono')}
+              <Icon name="memory" size={14} /> {t('timeline.chrono')}
             </button>
             <button
               onClick={() => setShowArc(v => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] pb-1 transition-all"
               style={{
-                backgroundColor: showArc ? 'rgba(251,146,60,0.15)' : 'rgba(255,255,255,0.04)',
-                color:  showArc ? '#fb923c' : '#475569',
-                border: `1px solid ${showArc ? 'rgba(251,146,60,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                color:        showArc ? '#fb923c' : 'var(--color-atlas-soft)',
+                borderBottom: `2px solid ${showArc ? '#fb923c' : 'transparent'}`,
               }}
               title="Afficher / masquer l'arc émotionnel"
             >
-              ∿ {t('timeline.arc')}
+              <Icon name="arc" size={14} /> {t('timeline.arc')}
             </button>
             <button
               onClick={() => setShowStc(v => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] pb-1 transition-all"
               style={{
-                backgroundColor: showStc ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.04)',
-                color:  showStc ? '#f97316' : '#475569',
-                border: `1px solid ${showStc ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                color:        showStc ? '#5cae8e' : 'var(--color-atlas-soft)',
+                borderBottom: `2px solid ${showStc ? '#5cae8e' : 'transparent'}`,
               }}
               title="Afficher / masquer les beats Save the Cat"
             >
-              🐱 {t('timeline.stc')}
+              <Icon name="cat" size={14} /> {t('timeline.stc')}
             </button>
+            <HeaderSep />
             <button
               onClick={() => setEditorEvent(null)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
-              style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
+              className="flex items-center gap-1.5 text-xs uppercase tracking-[0.1em] font-semibold pb-1 transition-all"
+              style={{ color: '#5cae8e', borderBottom: '2px solid transparent' }}
             >
               {t('btn.add')}
             </button>
@@ -412,6 +416,7 @@ export default function TimelineBrowser() {
         </div>
       </header>
 
+      <div className="flex-1 min-h-0 overflow-y-auto">
       {/* ── Vue série ── */}
       {viewMode === 'series' && (
         <SeriesTimeline
@@ -431,47 +436,44 @@ export default function TimelineBrowser() {
           <button
             onClick={() => setFiltersOpen(v => !v)}
             className="md:hidden flex items-center gap-2 px-4 py-2 border-b border-white/5 flex-shrink-0 text-xs font-bold uppercase tracking-widest"
-            style={{ background: 'rgba(0,0,0,0.2)', color: activeFilterCount > 0 ? '#818cf8' : '#475569' }}
+            style={{ background: 'rgba(0,0,0,0.2)', color: activeFilterCount > 0 ? '#5cae8e' : '#475569' }}
           >
-            <span>🎛</span>
+            <span><Icon name="controls" size={14} /></span>
             <span>{t('timeline.filters', 'Filtres')}</span>
             {activeFilterCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black" style={{ backgroundColor: 'rgba(63,81,181,0.3)', color: '#818cf8' }}>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black" style={{ backgroundColor: 'rgba(92,174,142,0.2)', color: '#5cae8e' }}>
                 {activeFilterCount}
               </span>
             )}
-            <span className="ml-auto text-[10px]" style={{ color: '#475569' }}>{filtersOpen ? '▲' : '▼'}</span>
+            <span className="ml-auto text-[10px]" style={{ color: 'var(--color-atlas-mute)' }}>{filtersOpen ? '▲' : '▼'}</span>
           </button>
         );
       })()}
       <div
         data-tour="timeline-filters"
-        className={`flex-col border-b border-white/5 flex-shrink-0 ${filtersOpen ? 'flex' : 'hidden'} md:flex`}
-        style={{ background: 'rgba(0,0,0,0.2)' }}
+        className={`flex-row flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4 flex-shrink-0 border-b border-white/10 ${filtersOpen ? 'flex' : 'hidden'} md:flex`}
       >
         {/* Ligne 1 : label + toggle mode + dropdown personnage */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 px-4 pt-2.5 pb-2">
-          <span className="text-[10px] text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.followBy')}</span>
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 md:gap-3">
+          <span className="font-grotesk text-[10px] text-atlas-soft uppercase tracking-[0.16em] flex-shrink-0">{t('timeline.followBy')}</span>
+          <div className="flex items-center rounded-lg overflow-hidden border border-white/10">
             {[
-              { id: 'presence', label: t('timeline.presence'), icon: '👤' },
-              { id: 'pov',      label: t('timeline.pov'),      icon: '👁' },
+              { id: 'presence', label: t('timeline.presence'), icon: 'user' },
+              { id: 'pov',      label: t('timeline.pov'),      icon: 'pov' },
             ].map(({ id, label, icon }) => {
               const active = filterMode === id;
               return (
                 <button
                   key={id}
                   onClick={() => { setFilterMode(id); setFocusedCharId(null); }}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black transition-all duration-150"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 font-grotesk text-xs font-semibold transition-all duration-150"
                   style={{
-                    backgroundColor: active ? 'rgba(63,81,181,0.25)' : 'rgba(255,255,255,0.04)',
-                    color:           active ? '#818cf8' : '#475569',
-                    border:          `1px solid ${active ? 'rgba(99,102,241,0.45)' : 'rgba(255,255,255,0.07)'}`,
-                    boxShadow:       active ? '0 0 8px rgba(99,102,241,0.2)' : 'none',
+                    backgroundColor: active ? '#5cae8e' : 'transparent',
+                    color:           active ? '#15171b' : '#8a96a2',
                   }}
                 >
-                  <span>{icon}</span>
-                  {label}
+                  <span><Icon name={icon} size={14} /></span>
+                  {id === 'pov' ? <Term id="pov">{label}</Term> : label}
                 </button>
               );
             })}
@@ -496,26 +498,26 @@ export default function TimelineBrowser() {
                 </>
               ) : (
                 <>
-                  <span className="text-slate-500">👤</span>
+                  <span className="text-atlas-soft"><Icon name="user" size={14} /></span>
                   {t('timeline.allCharacters')}
                 </>
               )}
-              <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
+              <span className="ml-auto text-atlas-mute text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
             </button>
 
             {charMenuOpen && (
               <div
-                className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
-                style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
+                className="absolute left-0 top-full mt-1 z-30 rounded-none overflow-y-auto"
+                style={{ minWidth: 200, maxHeight: 'calc(100vh - 120px)', backgroundColor: 'var(--color-atlas-ink)', border: '1px solid var(--color-atlas-line)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
               >
                 <button
                   onClick={() => { setFocusedCharId(null); setCharMenuOpen(false); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
-                  style={{ color: !focusedCharId ? '#818cf8' : '#64748b' }}
+                  style={{ color: !focusedCharId ? '#5cae8e' : 'var(--color-atlas-soft)' }}
                 >
                   <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
                   {t('timeline.allCharacters')}
-                  {!focusedCharId && <span className="ml-auto text-indigo-400 text-[10px]">✓</span>}
+                  {!focusedCharId && <Icon name="check" size={13} className="ml-auto text-[#5cae8e]" />}
                 </button>
                 <div className="border-t border-white/5" />
                 {characters.map(char => {
@@ -525,11 +527,11 @@ export default function TimelineBrowser() {
                       key={char.id}
                       onClick={() => { setFocusedCharId(isActive ? null : char.id); setCharMenuOpen(false); }}
                       className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
-                      style={{ color: isActive ? char.color : '#64748b' }}
+                      style={{ color: isActive ? char.color : 'var(--color-atlas-soft)' }}
                     >
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: char.color }} />
                       {char.name}
-                      {isActive && <span className="ml-auto text-[10px]" style={{ color: char.color }}>✓</span>}
+                      {isActive && <Icon name="check" size={13} className="ml-auto" style={{ color: char.color }} />}
                     </button>
                   );
                 })}
@@ -540,8 +542,8 @@ export default function TimelineBrowser() {
 
         {/* Ligne 2 : filtre fil narratif (dropdown) */}
         {threads.length > 0 && (
-          <div className="flex items-center gap-2 px-4 pb-1.5">
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest flex-shrink-0">{t('label.threads')}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-grotesk text-[10px] text-atlas-soft uppercase tracking-[0.16em] flex-shrink-0">{t('label.threads')}</span>
             <div className="relative" ref={threadMenuRef}>
               <button
                 onClick={() => setThreadMenuOpen(v => !v)}
@@ -560,11 +562,11 @@ export default function TimelineBrowser() {
                   </>
                 ) : (
                   <>
-                    <span className="text-slate-500">🧵</span>
+                    <span className="text-atlas-soft"><Icon name="thread" size={14} /></span>
                     {t('review.filterAll', 'Tous')}
                   </>
                 )}
-                <span className="ml-auto text-slate-600 text-[10px]">{threadMenuOpen ? '▲' : '▼'}</span>
+                <span className="ml-auto text-atlas-mute text-[10px]">{threadMenuOpen ? '▲' : '▼'}</span>
               </button>
 
               {threadMenuOpen && (
@@ -575,11 +577,11 @@ export default function TimelineBrowser() {
                   <button
                     onClick={() => { setThreadFilter(null); setThreadMenuOpen(false); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
-                    style={{ color: !threadFilter ? '#818cf8' : '#64748b' }}
+                    style={{ color: !threadFilter ? '#5cae8e' : 'var(--color-atlas-soft)' }}
                   >
                     <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-600" />
                     {t('review.filterAll', 'Tous')}
-                    {!threadFilter && <span className="ml-auto text-indigo-400 text-[10px]">✓</span>}
+                    {!threadFilter && <Icon name="check" size={13} className="ml-auto text-[#5cae8e]" />}
                   </button>
                   <div className="border-t border-white/5" />
                   {threads.map(th => {
@@ -589,11 +591,11 @@ export default function TimelineBrowser() {
                         key={th.id}
                         onClick={() => { setThreadFilter(isActive ? null : th.id); setThreadMenuOpen(false); }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all duration-100 hover:bg-white/5"
-                        style={{ color: isActive ? th.color : '#64748b' }}
+                        style={{ color: isActive ? th.color : 'var(--color-atlas-soft)' }}
                       >
                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: th.color }} />
                         {th.name}
-                        {isActive && <span className="ml-auto text-[10px]" style={{ color: th.color }}>✓</span>}
+                        {isActive && <Icon name="check" size={13} className="ml-auto" style={{ color: th.color }} />}
                       </button>
                     );
                   })}
@@ -604,15 +606,15 @@ export default function TimelineBrowser() {
         )}
 
         {/* Ligne 3 : filtre issue */}
-        <div className="flex items-center gap-2 px-4 pb-2.5">
-          <span className="text-[10px] text-slate-500 uppercase tracking-widest flex-shrink-0">{t('timeline.outcome')}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-grotesk text-[10px] text-atlas-soft uppercase tracking-[0.16em] flex-shrink-0">{t('timeline.outcome')}</span>
           <div className="flex items-center gap-1 rounded-lg px-1.5 py-1" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <button
               onClick={() => setOutcomeFilter(null)}
               className="text-[10px] px-2 py-0.5 rounded font-bold transition-all duration-150"
               style={{
                 backgroundColor: !outcomeFilter ? 'rgba(255,255,255,0.1)' : 'transparent',
-                color:           !outcomeFilter ? '#cbd5e1' : '#475569',
+                color:           !outcomeFilter ? '#cbd5e1' : 'var(--color-atlas-mute)',
               }}
             >
               {t('review.filterAll', 'Tous')}
@@ -624,12 +626,12 @@ export default function TimelineBrowser() {
                 className="text-[10px] px-2 py-1 rounded font-bold transition-all duration-150"
                 style={{
                   backgroundColor: outcomeFilter === o.id ? `${o.color}20` : 'transparent',
-                  color:           outcomeFilter === o.id ? o.color : '#475569',
+                  color:           outcomeFilter === o.id ? o.color : 'var(--color-atlas-mute)',
                   border:          outcomeFilter === o.id ? `1px solid ${o.color}40` : '1px solid transparent',
                 }}
                 title={t(`outcome.${o.id}`, o.label)}
               >
-                {o.icon}
+                <Icon name={o.icon} size={13} />
               </button>
             ))}
           </div>
@@ -637,16 +639,16 @@ export default function TimelineBrowser() {
       </div>
 
       {/* ── Timeline horizontale ── */}
-      <div className="flex-1 min-h-0 relative">
+      <div className="relative px-6 pb-6">
         {/* Flèche gauche */}
         {canLeft && (
           <>
             <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
-              style={{ background: 'linear-gradient(to right, #0B1621 0%, transparent 100%)' }} />
+              style={{ background: 'linear-gradient(to right, #15171b 0%, transparent 100%)' }} />
             <button
               onClick={() => scrollBy(-1)}
               className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 hover:scale-110"
-              style={{ backgroundColor: 'rgba(63,81,181,0.25)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
+              style={{ backgroundColor: 'rgba(92,174,142,0.22)', border: '1px solid rgba(92,174,142,0.45)', color: '#5cae8e' }}
             >
               ‹
             </button>
@@ -657,11 +659,11 @@ export default function TimelineBrowser() {
         {canRight && (
           <>
             <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
-              style={{ background: 'linear-gradient(to left, #0B1621 0%, transparent 100%)' }} />
+              style={{ background: 'linear-gradient(to left, #15171b 0%, transparent 100%)' }} />
             <button
               onClick={() => scrollBy(1)}
               className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 hover:scale-110"
-              style={{ backgroundColor: 'rgba(63,81,181,0.25)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
+              style={{ backgroundColor: 'rgba(92,174,142,0.22)', border: '1px solid rgba(92,174,142,0.45)', color: '#5cae8e' }}
             >
               ›
             </button>
@@ -670,7 +672,7 @@ export default function TimelineBrowser() {
 
         <div
           ref={(el) => { dragScroll.ref.current = el; scrollRef.current = el; }}  
-          className="h-full overflow-x-auto overflow-y-auto no-scrollbar"
+          className="overflow-x-auto no-scrollbar"
           style={{ cursor: 'grab' }}
           onScroll={updateArrows}
           onMouseDown={dragScroll.onMouseDown}
@@ -679,6 +681,32 @@ export default function TimelineBrowser() {
           onMouseLeave={dragScroll.onMouseLeave}
         >
         <div style={{ minWidth: `${displayChapters.length * 290}px` }}>
+          {/* ── Bandes d'acte (axe partagé avec la frise Save the Cat) ── */}
+          {displayChapters.length >= 3 && (
+            <div className="flex" style={{ width: displayChapters.length * 290 }}>
+              {actSegments(displayChapters.length).map((seg, i, arr) => (
+                <div
+                  key={seg.key}
+                  className="flex items-center flex-shrink-0"
+                  style={{
+                    width: seg.count * 290,
+                    height: 24,
+                    backgroundColor: `${seg.color}1a`,
+                    borderRight: i < arr.length - 1 ? '1px dashed rgba(255,255,255,0.08)' : 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  }}
+                >
+                  {/* Label collant : reste visible tant que l'acte est à l'écran */}
+                  <span
+                    className="text-[10px] font-mono uppercase tracking-widest"
+                    style={{ color: seg.color, opacity: 0.85, position: 'sticky', left: 24, paddingRight: 16 }}
+                  >
+                    {t(`stc.act${seg.key}`)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
           {showArc && (
             <ArcStrip chapters={chapters} arcPoints={arcPoints ?? []} />
           )}
@@ -699,30 +727,31 @@ export default function TimelineBrowser() {
               >
                 {/* En-tête chapitre */}
                 <div
-                  className="flex-shrink-0 px-4 py-3 border-b border-white/10"
-                  style={{ background: isPreStory ? 'rgba(120,77,15,0.1)' : 'rgba(63,81,181,0.06)' }}
+                  className="flex-shrink-0 px-4 pt-2 pb-4"
+                  style={isPreStory ? { background: 'rgba(120,77,15,0.1)' } : undefined}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-mono uppercase tracking-widest" style={{ color: isPreStory ? '#d97706' : '#64748b' }}>
+                      <p className="text-xs font-mono uppercase tracking-widest" style={{ color: isPreStory ? '#d97706' : '#cba15e' }}>
                         {isPreStory ? t('timeline.ancientEra', { n: number }) : t('timeline.chapter', { n: number })}
                       </p>
-                      <p className="text-sm font-bold text-slate-300 leading-snug mt-1">
+                      <p className="font-serif text-base font-semibold text-slate-200 leading-snug mt-1">
                         {title}
                       </p>
-                      <p className="text-xs text-slate-600 mt-1">
+                      <p className="text-xs text-atlas-mute mt-1">
                         {chEvts.length} {t('label.events').toLowerCase()}
                         {timeOrder === 'chronological' && chEvts.some(e => e.isFlashback) && (
-                          <span style={{ color: '#d97706' }}> · ↩ flashback</span>
+                          <span className="inline-flex items-center gap-1" style={{ color: '#d97706' }}> · <Icon name="memory" size={12} /> flashback</span>
                         )}
                       </p>
+                      <div className="h-0.5 mt-3" style={{ width: 32, backgroundColor: isPreStory ? 'rgba(217,119,6,0.6)' : 'rgba(203,161,94,0.55)' }} />
                     </div>
                     <button
                       onClick={() => setNoteOpen(prev => prev === number ? null : number)}
                       className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center mt-0.5 transition-all duration-150"
                       style={{
                         backgroundColor: notes[number] ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.04)',
-                        color:           notes[number] ? '#fbbf24' : '#475569',
+                        color:           notes[number] ? '#fbbf24' : 'var(--color-atlas-mute)',
                         border:          `1px solid ${notes[number] ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.07)'}`,
                       }}
                       title="Notes du chapitre"
@@ -771,8 +800,8 @@ export default function TimelineBrowser() {
                     return (
                       <SortableEventCard key={evt.id} id={evt.id}>
                         {timeOrder === 'chronological' && evt.isFlashback && (
-                          <p className="text-[9px] font-bold uppercase tracking-wider mb-1 px-1" style={{ color: '#d97706' }}>
-                            ↩ {t('timeline.narratedAtCh', { ch: evt.chapter })}
+                          <p className="text-[9px] font-bold uppercase tracking-wider mb-1 px-1 flex items-center gap-1" style={{ color: '#d97706' }}>
+                            <Icon name="memory" size={12} /> {t('timeline.narratedAtCh', { ch: evt.chapter })}
                           </p>
                         )}
                         <EventCard
@@ -816,6 +845,7 @@ export default function TimelineBrowser() {
         />
       )}
       </>}
+      </div>
     </div>
   );
 }

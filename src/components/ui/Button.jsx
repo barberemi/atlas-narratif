@@ -30,22 +30,22 @@ export default function Button({
   ].join(' ');
 
   const sizes = {
-    sm: 'px-3 py-1.5 rounded-lg text-xs',
-    md: 'py-3 rounded-xl text-sm',
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'py-3 text-sm',
   };
 
   const variants = {
     primary: isDisabled
       ? 'bg-[rgba(255,255,255,0.03)] text-slate-700 border border-[rgba(255,255,255,0.05)]'
-      : 'bg-[rgba(63,81,181,0.25)] text-[#818cf8] border border-[rgba(99,102,241,0.4)] hover:bg-[rgba(63,81,181,0.4)] hover:border-[rgba(99,102,241,0.6)]',
+      : 'bg-[#5cae8e] text-[#15171b] border border-[#5cae8e] hover:brightness-110',
 
     secondary: isDisabled
       ? 'bg-[rgba(255,255,255,0.03)] text-slate-700 border border-[rgba(255,255,255,0.05)]'
-      : 'bg-[rgba(63,81,181,0.15)] text-[#818cf8] border border-[rgba(99,102,241,0.3)] hover:bg-[rgba(63,81,181,0.25)] hover:border-[rgba(99,102,241,0.5)]',
+      : 'bg-[rgba(92,174,142,0.14)] text-[#5cae8e] border border-[rgba(92,174,142,0.4)] hover:bg-[rgba(92,174,142,0.24)] hover:border-[rgba(92,174,142,0.6)]',
 
     ghost: isDisabled
       ? 'bg-[rgba(255,255,255,0.02)] text-slate-700 border border-[rgba(255,255,255,0.05)]'
-      : 'bg-[rgba(255,255,255,0.04)] text-slate-500 border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] hover:text-slate-300',
+      : 'bg-[rgba(255,255,255,0.04)] text-atlas-soft border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] hover:text-slate-300',
   };
 
   return (
@@ -57,7 +57,7 @@ export default function Button({
       {...props}
     >
       {loading && (
-        <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full flex-shrink-0" />
+        <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-[#5cae8e]/30 border-t-[#5cae8e] rounded-full flex-shrink-0" />
       )}
       {children}
     </button>

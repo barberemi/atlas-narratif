@@ -1,5 +1,8 @@
-export const ENTITY_COLORS = { character: '#64748B', location: '#3B82F6', object: '#F59E0B', group: '#64748B' };
-export const ENTITY_ICONS  = { character: '👤', location: '📍', object: '⚔️', group: '⚑' };
+import { ENTITY_VIZ } from '../data/viz_palette';
+
+// Couleurs par type d'entité — dérivées de la palette data-viz unifiée (validée CVD).
+export const ENTITY_COLORS = ENTITY_VIZ;
+export const ENTITY_ICONS  = { character: 'user', location: 'location', object: 'object', group: 'group' }; // noms d'icônes lucide (cf. ui/Icon.jsx)
 
 // ── Cache module-level (initialisé depuis la DB via DbContext) ────────────────
 let _cache = { characters: [], locations: [], objects: [], groups: [] };
@@ -52,7 +55,7 @@ export function getEntityMeta(id, type) {
  * @returns {{ name: string, type: string, color: string, icon: string }}
  */
 export function getEntityInfo(id) {
-  return getEntityMeta(id) ?? { name: id, type: 'unknown', color: '#64748b', icon: '?' };
+  return getEntityMeta(id) ?? { name: id, type: 'unknown', color: '#64748b', icon: 'help' };
 }
 
 /**

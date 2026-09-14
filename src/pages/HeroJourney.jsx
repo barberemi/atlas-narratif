@@ -6,14 +6,17 @@ import { useVolumeStore } from '../stores/useVolumeStore';
 import { useStoreLoader } from '../hooks/useStoreLoader';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
+import Icon from '../components/ui/Icon';
+import Term from '../components/ui/Term';
 import { useVolumeFilter } from '../hooks/useVolumeFilter';
+import { VIZ_STATUS } from '../data/viz_palette';
 import { HERO_PHASES, HERO_STAGES, HERO_PHASE_MAP } from '../data/hero_journey_config';
 
 // ── StageCard ─────────────────────────────────────────────────────────────────
 
 function StageCard({ stage, entry, onSave, onRemove, t }) {
   const phase      = HERO_PHASE_MAP[stage.phase];
-  const phaseColor = phase?.color ?? '#3F51B5';
+  const phaseColor = phase?.color ?? '#5cae8e';
 
   const [editing,    setEditing]    = useState(false);
   const [chapterNum, setChapterNum] = useState(entry?.chapterNum ?? '');
@@ -53,13 +56,14 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all duration-150"
+      className="rounded-none overflow-hidden transition-all duration-150"
       style={{
         backgroundColor: 'rgba(255,255,255,0.02)',
-        border: editing
-          ? `1px solid ${phaseColor}50`
-          : '1px solid rgba(255,255,255,0.06)',
-        borderLeft: `3px solid ${phaseColor}`,
+        borderStyle: 'solid',
+        borderWidth: '1px 1px 1px 3px',
+        borderColor: editing
+          ? `${phaseColor}50 ${phaseColor}50 ${phaseColor}50 ${phaseColor}`
+          : `transparent transparent transparent ${phaseColor}`,
       }}
     >
       {/* Contenu principal */}
@@ -68,10 +72,10 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
         onClick={() => !editing && setEditing(true)}
       >
         <div className="flex items-start gap-3">
-          <span className="text-xl flex-shrink-0 mt-0.5">{stage.icon}</span>
+          <Icon name={stage.icon} size={20} className="flex-shrink-0 mt-0.5" style={{ color: phaseColor }} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-bold text-slate-200">{t(`narrative:hero.stages.${stage.key}.label`, stage.label)}</p>
+              <p className="font-serif text-sm font-semibold text-atlas-text">{t(`narrative:hero.stages.${stage.key}.label`, stage.label)}</p>
               {hasChapter && (
                 <span
                   className="text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
@@ -85,7 +89,7 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 italic font-serif mt-0.5 leading-relaxed">
+            <p className="text-xs text-atlas-soft italic font-serif mt-0.5 leading-relaxed">
               {t(`narrative:hero.stages.${stage.key}.desc`, stage.desc)}
             </p>
             {hasSummary && (
@@ -113,14 +117,14 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
         >
           <div className="flex items-center gap-3 pt-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('label.chapters', 'Chapitre')}</label>
+              <label className="text-[10px] font-grotesk font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('label.chapters', 'Chapitre')}</label>
               <input
                 type="number"
                 min={1}
                 value={chapterNum}
                 onChange={e => setChapterNum(e.target.value)}
                 placeholder="—"
-                className="w-16 px-2 py-1.5 rounded-lg text-xs text-slate-200 outline-none text-center"
+                className="w-16 px-2 py-1.5 rounded-none text-xs text-slate-200 outline-none text-center"
                 style={{
                   backgroundColor: 'rgba(0,0,0,0.3)',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -128,13 +132,13 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
               />
             </div>
             <div className="flex-1 flex flex-col gap-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('hero.noteSummary', 'Note / R\u00e9sum\u00e9')}</label>
+              <label className="text-[10px] font-grotesk font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('hero.noteSummary', 'Note / R\u00e9sum\u00e9')}</label>
               <textarea
                 value={summary}
                 onChange={e => setSummary(e.target.value)}
                 placeholder={t('hero.summaryPlaceholder', 'D\u00e9crivez comment cette \u00e9tape se manifeste dans votre histoire\u2026')}
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg text-xs text-slate-200 outline-none resize-none"
+                className="w-full px-3 py-2 rounded-none text-xs text-slate-200 outline-none resize-none"
                 style={{
                   backgroundColor: 'rgba(0,0,0,0.3)',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -147,7 +151,7 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all"
+              className="px-4 py-1.5 font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] transition-all"
               style={{
                 backgroundColor: `${phaseColor}25`,
                 color: phaseColor,
@@ -158,7 +162,7 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
             </button>
             <button
               onClick={handleCancel}
-              className="px-3 py-1.5 rounded-lg text-xs text-slate-500 transition-all hover:text-slate-300"
+              className="px-3 py-1.5 font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] text-atlas-mute transition-all hover:text-atlas-soft"
               style={{ border: '1px solid rgba(255,255,255,0.06)' }}
             >
               {t('btn.cancel')}
@@ -166,7 +170,7 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
             {entry && (
               <button
                 onClick={handleRemove}
-                className="ml-auto px-3 py-1.5 rounded-lg text-xs text-red-500 transition-all hover:text-red-400"
+                className="ml-auto px-3 py-1.5 font-grotesk text-[11px] font-bold uppercase tracking-[0.06em] text-red-500 transition-all hover:text-red-400"
                 style={{ border: '1px solid rgba(239,68,68,0.2)' }}
               >
                 {t('btn.delete')}
@@ -241,6 +245,23 @@ export default function HeroJourney() {
     return map;
   }, [entries]);
 
+  // Auto-sélection au premier chargement : atterrir sur le personnage au
+  // parcours le plus renseigné plutôt que sur un écran vide « 0/12 ».
+  // Une seule fois par montage → ne réécrase pas un choix « Aucun personnage ».
+  const didAutoSelectRef = useRef(false);
+  useEffect(() => {
+    if (didAutoSelectRef.current || heroCharId || !countPerChar.size) return;
+    let bestId = null, bestCount = 0;
+    for (const c of characterList) {
+      const n = countPerChar.get(c.id) ?? 0;
+      if (n > bestCount) { bestCount = n; bestId = c.id; }
+    }
+    if (bestId) {
+      didAutoSelectRef.current = true;
+      setHeroCharId(bestId);
+    }
+  }, [countPerChar, characterList, heroCharId]);
+
   const handleSave = async ({ stageKey, chapterNum, summary }) => {
     await saveEntry({
       stageKey,
@@ -253,22 +274,23 @@ export default function HeroJourney() {
 
   // ── Rendu ─────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
+    <div className="h-full w-full max-w-[1280px] mx-auto flex flex-col bg-atlas-ink text-slate-200 overflow-hidden">
 
       {/* Header */}
-      <header data-tour="heros-stages" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-4 flex-wrap">
+      <header data-tour="heros-stages" className="flex items-center px-6 py-5 border-b border-atlas-line flex-shrink-0 gap-4 flex-wrap">
         <div className="flex-1">
-          <h1 className="text-lg font-black tracking-tight">
-            {t('hero.titlePrefix', 'Voyage du')} <span style={{ color: '#3F51B5' }}>{t('hero.titleHighlight', 'H\u00e9ros')}</span>
+          <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">{'\u00c9crire \u00b7 voyage du h\u00e9ros'}</p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+            <Term id="heroJourney">{t('hero.titlePrefix', 'Voyage du')} <span className="italic" style={{ color: '#5cae8e' }}>{t('hero.titleHighlight', 'H\u00e9ros')}</span></Term>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">
+          <p className="text-sm text-atlas-soft font-serif italic mt-1">
             {t('hero.subtitle', '12 \u00e9tapes arch\u00e9typales de Joseph Campbell')} · {filledCount}/{HERO_STAGES.length} {t('hero.stagesFilled', '\u00e9tapes renseign\u00e9es')}
           </p>
         </div>
 
         {/* Sélecteur de personnage */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-xs text-slate-500 uppercase tracking-widest">{t('hero.heroLabel', 'H\u00e9ros')}</span>
+          <span className="text-xs font-grotesk font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('hero.heroLabel', 'H\u00e9ros')}</span>
           <div className="relative" ref={charMenuRef}>
             {(() => {
               const selectedChar = characterList.find(c => c.id === heroCharId);
@@ -276,7 +298,7 @@ export default function HeroJourney() {
                 <>
                   <button
                     onClick={() => setCharMenuOpen(v => !v)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-none text-xs font-semibold transition-all"
                     style={{
                       minWidth: 200,
                       backgroundColor: selectedChar ? `${selectedChar.color}22` : 'rgba(255,255,255,0.06)',
@@ -296,31 +318,31 @@ export default function HeroJourney() {
                             <span
                               className="text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1"
                               style={{
-                                backgroundColor: full ? 'rgba(16,185,129,0.2)' : 'rgba(99,102,241,0.2)',
-                                color:           full ? '#10b981' : '#818cf8',
+                                backgroundColor: full ? 'rgba(16,185,129,0.2)' : 'rgba(92,174,142,0.2)',
+                                color:           full ? VIZ_STATUS.ok : '#5cae8e',
                               }}
                             >
-                              {full ? '✓' : `${count}/${total}`}
+                              {full ? <Icon name="checkmark" size={14} /> : `${count}/${total}`}
                             </span>
                           ) : null;
                         })()}
                       </>
                     ) : (
                       <>
-                        <span className="text-slate-500">👤</span>
+                        <Icon name="user" size={14} className="text-atlas-soft" />
                         {t('hero.chooseCharacter', 'Choisir un personnage\u2026')}
                       </>
                     )}
-                    <span className="ml-auto text-slate-600 text-[10px]">{charMenuOpen ? '▲' : '▼'}</span>
+                    <span className="ml-auto text-atlas-mute"><Icon name={charMenuOpen ? 'chevronUp' : 'chevronDown'} size={12} /></span>
                   </button>
                   {charMenuOpen && (
                     <div
-                      className="absolute left-0 top-full mt-1 z-30 rounded-xl overflow-y-auto"
-                      style={{ minWidth: 220, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+                      className="absolute left-0 top-full mt-1 z-30 rounded-none overflow-y-auto"
+                      style={{ minWidth: 220, maxHeight: 'calc(100vh - 120px)', backgroundColor: '#1a1d22', border: '1px solid var(--color-atlas-line)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
                     >
                       <button
                         onClick={() => { setHeroCharId(''); setCharMenuOpen(false); }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all hover:bg-white/5 text-slate-600"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all hover:bg-white/5 text-atlas-mute"
                       >
                         <span className="w-2 h-2 rounded-full flex-shrink-0 bg-slate-700" />
                         {t('hero.noCharacter', 'Aucun personnage')}
@@ -335,7 +357,7 @@ export default function HeroJourney() {
                             key={c.id}
                             onClick={() => { setHeroCharId(c.id); setCharMenuOpen(false); }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-all hover:bg-white/5"
-                            style={{ color: active ? c.color : '#64748b' }}
+                            style={{ color: active ? c.color : 'var(--color-atlas-soft)' }}
                           >
                             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                             <span className="flex-1 text-left">{c.name}</span>
@@ -343,12 +365,12 @@ export default function HeroJourney() {
                               <span
                                 className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                                 style={{
-                                  backgroundColor: full ? 'rgba(16,185,129,0.15)' : 'rgba(99,102,241,0.15)',
-                                  color:           full ? '#10b981' : '#818cf8',
-                                  border: `1px solid ${full ? 'rgba(16,185,129,0.3)' : 'rgba(99,102,241,0.3)'}`,
+                                  backgroundColor: full ? 'rgba(16,185,129,0.15)' : 'rgba(92,174,142,0.15)',
+                                  color:           full ? VIZ_STATUS.ok : '#5cae8e',
+                                  border: `1px solid ${full ? 'rgba(16,185,129,0.3)' : 'rgba(92,174,142,0.3)'}`,
                                 }}
                               >
-                                {full ? '✓' : `${count}/${total}`}
+                                {full ? <Icon name="checkmark" size={14} /> : `${count}/${total}`}
                               </span>
                             )}
                           </button>
@@ -369,7 +391,7 @@ export default function HeroJourney() {
         {entries === null ? (
           <Skeleton variant="card" />
         ) : characterList.length === 0 ? (
-          <EmptyState icon="🦸" title={t('empty.noCharacters')} hint={t('hero.emptyHint', 'Ajoutez des personnages dans le Lore pour commencer le Voyage du H\u00e9ros.')} />
+          <EmptyState icon={<Icon name="hero" size={40} className="text-atlas-mute" />} title={t('empty.noCharacters')} hint={t('hero.emptyHint', 'Ajoutez des personnages dans le Lore pour commencer le Voyage du H\u00e9ros.')} />
         ) : (
           <div data-tour="heros-grid" className="max-w-6xl mx-auto">
 
@@ -391,7 +413,7 @@ export default function HeroJourney() {
                     backgroundColor: filledCount === HERO_STAGES.length
                       ? 'rgba(16,185,129,0.15)'
                       : 'rgba(255,255,255,0.04)',
-                    color: filledCount === HERO_STAGES.length ? '#10B981' : '#64748b',
+                    color: filledCount === HERO_STAGES.length ? VIZ_STATUS.ok : 'var(--color-atlas-soft)',
                     border: filledCount === HERO_STAGES.length
                       ? '1px solid rgba(16,185,129,0.3)'
                       : '1px solid rgba(255,255,255,0.06)',
@@ -410,20 +432,17 @@ export default function HeroJourney() {
                   <div key={phase.id} className="flex flex-col gap-3">
                     {/* En-tête de phase */}
                     <div
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                      style={{
-                        backgroundColor: `${phase.color}10`,
-                        border: `1px solid ${phase.color}25`,
-                      }}
+                      className="flex items-center gap-2 pb-2"
+                      style={{ borderBottom: `2px solid ${phase.color}` }}
                     >
                       <div
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: phase.color }}
                       />
-                      <span className="text-xs font-black tracking-wide uppercase" style={{ color: phase.color }}>
+                      <span className="font-grotesk text-xs font-bold tracking-[0.14em] uppercase" style={{ color: phase.color }}>
                         {t(`narrative:hero.phases.${phase.id}`, phase.label)}
                       </span>
-                      <span className="text-[10px] text-slate-600 ml-auto">
+                      <span className="text-[10px] text-atlas-mute ml-auto">
                         {phaseStages.filter(s => entryMap.has(s.key)).length}/{phaseStages.length}
                       </span>
                     </div>

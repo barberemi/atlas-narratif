@@ -4,74 +4,75 @@ import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { useIncStore } from '../../stores/useIncStore';
 import EntityChip from './EntityChip';
 import FixButton from './FixButton';
+import Icon, { ICONS } from '../ui/Icon';
 
 const TYPE_ICONS = {
   // critical
-  'Continuité de Personnage':       '💀',
+  'Continuité de Personnage':       'death',
   // high
-  "Continuité d'Objet":             '⚙',
-  'Conflit de Lieu Intra-Chapitre': '⚡',
-  'Payoff Avant Plant':             '⏪',
-  'Entité Non Référencée':          '🔗',
+  "Continuité d'Objet":             'settings',
+  'Conflit de Lieu Intra-Chapitre': 'zap',
+  'Payoff Avant Plant':             'clock',
+  'Entité Non Référencée':          'link',
   // medium
-  'Incohérence de Porteur':         '🎒',
-  'Affiliation Fantôme':            '👻',
-  'Personnage POV Absent':          '👁',
-  'Plant Sans Payoff':              '🌱',
+  'Incohérence de Porteur':         'inventory',
+  'Affiliation Fantôme':            'ghost',
+  'Personnage POV Absent':          'pov',
+  'Plant Sans Payoff':              'plant',
   // low
-  'Fil Narratif Vide':              '🧵',
-  'Entité Orpheline':               '🔗',
-  'Scène Vide':                     '◯',
+  'Fil Narratif Vide':              'thread',
+  'Entité Orpheline':               'link',
+  'Scène Vide':                     'ghost',
   // cross-tomes
-  'Mort Cross-Tomes':               '💀',
-  'Objet Cross-Tomes':              '⚙',
-  'Plant Cross-Tomes':              '🌱',
+  'Mort Cross-Tomes':               'death',
+  'Objet Cross-Tomes':              'settings',
+  'Plant Cross-Tomes':              'plant',
 };
 
 export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick, onEntityFilter, onFix }) {
   const { t } = useTranslation();
-  const cfg  = SEVERITY_CONFIG[inc.severity];
-  const icon = TYPE_ICONS[inc.type] ?? '⚠';
+  const cfg      = SEVERITY_CONFIG[inc.severity];
+  const iconName = TYPE_ICONS[inc.type] ?? 'warning';
   const setNote = useIncStore(s => s.setNote);
   const [note, setLocalNote] = useState(inc.resolutionNote ?? '');
 
   return (
     <div
-      className="rounded-xl border transition-all duration-300 relative"
-      style={{ borderColor: resolved ? 'rgba(255,255,255,0.05)' : cfg.border, backgroundColor: resolved ? 'rgba(255,255,255,0.015)' : cfg.bg }}
+      className="transition-all duration-300 relative"
+      style={{ border: '1px solid var(--color-atlas-line)', backgroundColor: 'rgba(255,255,255,0.02)' }}
     >
-      <div className="h-1" style={{ backgroundColor: resolved ? '#1e293b' : cfg.color }} />
+      <div className="absolute left-0 top-0 bottom-0 w-[2px] z-10" style={{ backgroundColor: resolved ? 'var(--color-atlas-line)' : cfg.color }} />
 
-      <div className="p-4 flex flex-col gap-3" style={{ opacity: resolved ? 0.35 : 1 }}>
+      <div className="pl-5 pr-4 py-4 flex flex-col gap-3" style={{ opacity: resolved ? 0.35 : 1 }}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className="text-xs px-2 py-0.5 rounded font-mono font-bold tracking-wide"
-              style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: resolved ? '#475569' : cfg.color, border: '1px solid rgba(255,255,255,0.08)' }}
+              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-mono font-bold tracking-wide"
+              style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: resolved ? 'var(--color-atlas-mute)' : cfg.color, border: '1px solid rgba(255,255,255,0.08)' }}
             >
-              {icon} {t(`incType.${inc.type}`, { defaultValue: inc.type })}
+              {ICONS[iconName] ? <Icon name={iconName} size={13} /> : iconName} {t(`incType.${inc.type}`, { defaultValue: inc.type })}
             </span>
             <span
               className="text-xs px-2 py-0.5 rounded-full font-bold"
-              style={{ backgroundColor: resolved ? 'rgba(255,255,255,0.04)' : cfg.bg, color: resolved ? '#475569' : cfg.color, border: `1px solid ${resolved ? 'rgba(255,255,255,0.06)' : cfg.border}` }}
+              style={{ backgroundColor: resolved ? 'rgba(255,255,255,0.04)' : cfg.bg, color: resolved ? 'var(--color-atlas-mute)' : cfg.color, border: `1px solid ${resolved ? 'rgba(255,255,255,0.06)' : cfg.border}` }}
             >
               {t(`severity.${inc.severity}`)}
             </span>
           </div>
 
           <label className="flex items-center gap-1.5 cursor-pointer group flex-shrink-0" title={t('inc.markResolved')}>
-            <span className="text-xs text-slate-600 group-hover:text-slate-400 transition-colors">{t('inc.resolved')}</span>
+            <span className="text-xs text-atlas-mute group-hover:text-slate-400 transition-colors">{t('inc.resolved')}</span>
             <div
               className="w-4 h-4 rounded border flex items-center justify-center transition-all duration-150"
               style={{ backgroundColor: resolved ? cfg.color : 'transparent', borderColor: resolved ? cfg.color : 'rgba(255,255,255,0.2)' }}
             >
-              {resolved && <span className="text-white text-xs leading-none">✓</span>}
+              {resolved && <Icon name="checkmark" size={12} className="text-white" />}
             </div>
             <input type="checkbox" className="sr-only" checked={resolved} onChange={() => onToggleResolved(inc.id)} />
           </label>
         </div>
 
-        <h3 className="text-sm font-black leading-snug" style={{ color: resolved ? '#475569' : '#e2e8f0' }}>{inc.title}</h3>
+        <h3 className="font-serif text-base font-semibold leading-snug" style={{ color: resolved ? 'var(--color-atlas-mute)' : '#ece7db' }}>{inc.title}</h3>
         <p className="text-xs text-slate-400 leading-relaxed font-serif">{inc.explanation}</p>
 
         {inc.links?.length > 0 && (
@@ -87,18 +88,18 @@ export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEnt
       </div>
 
       {resolved && (
-        <div className="px-4 pb-4 flex flex-col gap-1.5">
-          <label className="text-[10px] text-slate-500 uppercase tracking-widest">{t('inc.resolutionNote')}</label>
+        <div className="pl-5 pr-4 pb-4 flex flex-col gap-1.5">
+          <label className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('inc.resolutionNote')}</label>
           <textarea
             value={note}
             onChange={e => setLocalNote(e.target.value)}
             placeholder={t('inc.resolutionPlaceholder')}
             rows={3}
-            style={{ backgroundColor: '#1e2d3d', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 8, color: '#e2e8f0', fontSize: 12, lineHeight: 1.6, padding: '8px 12px', outline: 'none', resize: 'none', width: '100%', fontFamily: 'serif' }}
-            onFocus={e => { e.currentTarget.style.borderColor = 'rgba(129,140,248,0.7)'; }}
-            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(129,140,248,0.3)'; setNote(inc.id, note); }}
+            style={{ backgroundColor: '#1a1d22', border: '1px solid var(--color-atlas-line)', color: '#e2e8f0', fontSize: 12, lineHeight: 1.6, padding: '8px 12px', outline: 'none', resize: 'none', width: '100%', fontFamily: 'serif' }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#5cae8e'; }}
+            onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-atlas-line)'; setNote(inc.id, note); }}
           />
-          {note && <p className="text-[10px] text-slate-600 text-right">✓ {t('saveIndicator.saved')}</p>}
+          {note && <p className="text-[10px] text-atlas-mute text-right"><Icon name="checkmark" size={12} className="inline align-text-bottom mr-1" />{t('saveIndicator.saved')}</p>}
         </div>
       )}
     </div>

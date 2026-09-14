@@ -12,6 +12,19 @@ test.describe('Navigation & filtres', () => {
     await expect(menu.getByRole('link', { name: /Hero/i })).toBeVisible();
   });
 
+  test('menu Write → orchestré (sections + badge + usage)', async ({ page }) => {
+    await page.goto('/dashboard');
+    await nav(page).getByRole('button', { name: /Write/i }).click();
+    const menu = page.getByRole('menu');
+    // En-têtes de section (nav.secFoundation/secDeepen/secThreads en EN)
+    await expect(menu.getByText(/Foundation/i)).toBeVisible();
+    await expect(menu.getByText(/Go deeper/i)).toBeVisible();
+    await expect(menu.getByText(/Track the threads/i)).toBeVisible();
+    // Badge « Start here » sur Save the Cat + ligne d'usage
+    await expect(menu.getByText(/Start here/i)).toBeVisible();
+    await expect(menu.getByText(/15 beats/i)).toBeVisible();
+  });
+
   test('menu World → World et Map', async ({ page }) => {
     await page.goto('/dashboard');
     await nav(page).getByRole('button', { name: /World.*▾/i }).click();
@@ -57,12 +70,14 @@ test.describe('Navigation & filtres', () => {
   // ── Global search ───────────────────────────────────────────────────────────
   test('Ctrl+K ouvre la recherche', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
     await page.keyboard.press('Control+k');
     await expect(page.getByPlaceholder(/search|recherch/i)).toBeVisible({ timeout: 5_000 });
   });
 
   test('recherche "Gandalf" → résultats', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
     await page.keyboard.press('Control+k');
     await page.getByPlaceholder(/search|recherch/i).fill('Gandalf');
     await expect(page.getByText('Gandalf the Grey').first()).toBeVisible({ timeout: 5_000 });

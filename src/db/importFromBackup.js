@@ -1,5 +1,5 @@
 /**
- * Import d'un projet AtlasNarratif depuis un fichier JSON exporté.
+ * Import d'un projet Atlas Narratif depuis un fichier JSON exporté.
  * Les lignes sont des snapshots bruts de la DB — on les réinsère directement
  * après avoir remplacé le project_id original par un nouvel ID unique.
  */
@@ -12,12 +12,12 @@ export async function importFromBackup(db, file, { onProgress } = {}) {
   try {
     payload = JSON.parse(text);
   } catch {
-    throw new Error('Fichier invalide — ce n\'est pas un JSON AtlasNarratif.');
+    throw new Error('Fichier invalide — ce n\'est pas un JSON Atlas Narratif.');
   }
 
   // ── Validation minimale ────────────────────────────────────────────────────
   if (payload.version !== '1.0' || !payload.project?.name) {
-    throw new Error('Format non reconnu. Utilise un fichier exporté depuis AtlasNarratif.');
+    throw new Error('Format non reconnu. Utilise un fichier exporté depuis Atlas Narratif.');
   }
 
   const {

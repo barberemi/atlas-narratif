@@ -4,8 +4,9 @@ import { useLoreStore } from '../../stores/useLoreStore';
 import { setGroupMemberRole } from '../../api/client';
 import { Field, Input, Textarea } from '../ui/FormFields';
 import SidePanel from '../ui/SidePanel';
+import Icon from '../ui/Icon';
 
-const ACCENT = '#818cf8';
+const ACCENT = '#5cae8e';
 
 const PALETTE = [
   '#64748B', '#3F51B5', '#10B981', '#F59E0B', '#EF4444',
@@ -78,19 +79,19 @@ export default function GroupEditor({ group, onClose }) {
   return (
     <SidePanel width={420} onClose={onClose}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-atlas-line flex-shrink-0">
         <div>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest">
+          <p className="font-grotesk text-[10px] text-atlas-soft uppercase tracking-[0.2em]">
             {isEdit ? t('group.edit') : t('group.new')}
           </p>
-          <h2 className="text-sm font-black text-white mt-0.5">
+          <h2 className="font-serif text-base font-semibold text-white mt-0.5">
             Lore <span style={{ color: ACCENT }}>Browser</span>
           </h2>
         </div>
         <button
           onClick={onClose}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all text-sm"
-        >✕</button>
+          className="w-7 h-7 flex items-center justify-center rounded-none text-atlas-soft hover:text-white hover:bg-white/10 transition-all text-sm"
+        ><Icon name="close" size={12} /></button>
       </div>
 
       {/* Corps */}
@@ -128,7 +129,7 @@ export default function GroupEditor({ group, onClose }) {
                 className="px-2 py-0.5 rounded text-[10px] font-bold transition-all duration-150"
                 style={{
                   backgroundColor: data.type === s ? `${ACCENT}20` : 'rgba(255,255,255,0.04)',
-                  color:           data.type === s ? ACCENT : '#475569',
+                  color:           data.type === s ? ACCENT : 'var(--color-atlas-mute)',
                   border:          `1px solid ${data.type === s ? `${ACCENT}50` : 'rgba(255,255,255,0.08)'}`,
                 }}
               >
@@ -174,12 +175,12 @@ export default function GroupEditor({ group, onClose }) {
           {selectedLoc && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               <span
-                className="flex items-center gap-1 px-2 py-0.5 rounded text-xs cursor-pointer"
-                style={{ backgroundColor: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-none text-xs cursor-pointer"
+                style={{ backgroundColor: 'rgba(92,174,142,0.12)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.3)' }}
                 onClick={() => set('homelandId', null)}
                 title={t('btn.delete')}
               >
-                📍 {selectedLoc.name} <span style={{ opacity: 0.5 }}>✕</span>
+                <Icon name="location" size={14} />{selectedLoc.name} <Icon name="close" size={12} style={{ opacity: 0.5 }} />
               </span>
             </div>
           )}
@@ -187,7 +188,7 @@ export default function GroupEditor({ group, onClose }) {
             value={locSearch}
             onChange={e => setLocSearch(e.target.value)}
             placeholder={t('group.searchLocation')}
-            className="w-full px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600 mb-1.5"
+            className="w-full px-3 py-2 rounded-none text-xs text-slate-300 bg-white/5 border border-atlas-line outline-none placeholder-slate-600 mb-1.5"
           />
           <div className="space-y-0.5 max-h-36 overflow-y-auto">
             {filteredLocs.map(loc => {
@@ -196,19 +197,19 @@ export default function GroupEditor({ group, onClose }) {
                 <button
                   key={loc.id}
                   onClick={() => { set('homelandId', isSelected ? null : loc.id); setLocSearch(''); }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-all duration-100"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-none text-left transition-all duration-100"
                   style={{
-                    backgroundColor: isSelected ? 'rgba(96,165,250,0.1)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${isSelected ? 'rgba(96,165,250,0.4)' : 'rgba(255,255,255,0.05)'}`,
+                    backgroundColor: isSelected ? 'rgba(92,174,142,0.1)' : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${isSelected ? 'rgba(92,174,142,0.4)' : 'rgba(255,255,255,0.05)'}`,
                   }}
                 >
-                  <span className="text-xs flex-1 truncate" style={{ color: isSelected ? '#e2e8f0' : '#64748b' }}>📍 {loc.name}</span>
-                  {isSelected && <span className="text-[10px]" style={{ color: '#60a5fa' }}>✓</span>}
+                  <span className="text-xs flex-1 truncate" style={{ color: isSelected ? '#e2e8f0' : 'var(--color-atlas-soft)' }}><Icon name="location" size={14} className="inline align-text-bottom mr-1" />{loc.name}</span>
+                  {isSelected && <Icon name="checkmark" size={12} style={{ color: '#5cae8e' }} />}
                 </button>
               );
             })}
             {filteredLocs.length === 0 && (
-              <p className="text-xs text-slate-600 text-center py-2 italic">{t('group.noLocationFound')}</p>
+              <p className="text-xs text-atlas-mute text-center py-2 italic">{t('group.noLocationFound')}</p>
             )}
           </div>
         </Field>
@@ -245,14 +246,14 @@ export default function GroupEditor({ group, onClose }) {
       </div>
 
       {/* Footer */}
-      <div className="flex-shrink-0 border-t border-white/10 p-4 space-y-2">
+      <div className="flex-shrink-0 border-t border-atlas-line p-4 space-y-2">
         <button
           onClick={handleSave}
           disabled={!canSave}
-          className="w-full py-2.5 rounded-lg text-sm font-black transition-all duration-200"
+          className="w-full py-2.5 rounded-none text-sm font-black transition-all duration-200"
           style={{
             backgroundColor: canSave ? ACCENT : `${ACCENT}25`,
-            color:           canSave ? '#fff'  : `${ACCENT}60`,
+            color:           canSave ? '#15171b' : `${ACCENT}60`,
             cursor:          canSave ? 'pointer' : 'not-allowed',
           }}
         >
@@ -262,7 +263,7 @@ export default function GroupEditor({ group, onClose }) {
         {isEdit && !confirmDelete && (
           <button
             onClick={() => setConfirmDelete(true)}
-            className="w-full py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
+            className="w-full py-2 rounded-lg text-xs font-bold text-atlas-mute hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
             style={{ border: '1px solid rgba(255,255,255,0.05)' }}
           >
             {t('group.delete')}
@@ -273,7 +274,7 @@ export default function GroupEditor({ group, onClose }) {
           <div className="flex gap-2">
             <button
               onClick={() => setConfirmDelete(false)}
-              className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
+              className="flex-1 py-2 rounded-lg text-xs font-bold text-atlas-soft border border-white/08 hover:bg-white/05 transition-all"
             >
               {t('btn.cancel')}
             </button>

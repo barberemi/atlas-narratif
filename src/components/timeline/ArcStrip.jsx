@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { seqColor as arcColor } from '../../data/viz_palette';
 
 const COL_W    = 290;
 const STRIP_H  = 60;
@@ -17,14 +18,6 @@ function arcSmoothPath(pts) {
     d.push(`C ${cp},${pts[i - 1].y} ${cp},${pts[i].y} ${pts[i].x},${pts[i].y}`);
   }
   return d.join(' ');
-}
-
-function arcColor(avg) {
-  if (!avg)     return '#818cf8';
-  if (avg >= 7) return '#f87171';
-  if (avg >= 5) return '#fb923c';
-  if (avg >= 3) return '#facc15';
-  return '#60a5fa';
 }
 
 export { COL_W };
@@ -70,7 +63,7 @@ export default function ArcStrip({ chapters, arcPoints }) {
 
         {definedPts.map(pt => (
           <g key={pt.number}>
-            <circle cx={pt.x} cy={pt.y} r={3} fill="#0B1621" stroke={color} strokeWidth="1.5" />
+            <circle cx={pt.x} cy={pt.y} r={3} fill="#15171b" stroke={color} strokeWidth="1.5" />
             <text x={pt.x} y={pt.y < 18 ? pt.y + 14 : pt.y - 6} textAnchor="middle" fontSize="9" fontWeight="700" fill={color} style={{ pointerEvents: 'none' }}>
               {pt.intensity}
             </text>

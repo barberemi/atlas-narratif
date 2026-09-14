@@ -40,11 +40,11 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col bg-[#0B1621] text-slate-200">
-      <nav className="flex-shrink-0 flex items-center px-4 border-b border-white/10"
-        style={{ height: 48, backgroundColor: 'rgba(11,22,33,0.97)' }}>
-        <Link to="/" className="text-sm font-black tracking-tight transition-opacity duration-150 hover:opacity-70">
-          Atlas<span style={{ color: '#3F51B5' }}>Narratif</span>
+    <div className="h-screen overflow-hidden flex flex-col bg-atlas-ink text-slate-200">
+      <nav className="flex-shrink-0 flex items-center px-4 border-b border-atlas-line"
+        style={{ height: 48, backgroundColor: 'rgba(21,23,27,0.97)' }}>
+        <Link to="/" className="font-serif text-base font-bold tracking-tight text-atlas-text transition-opacity duration-150 hover:opacity-70">
+          Atlas <span style={{ color: 'var(--color-atlas-green)' }}>Narratif</span>
         </Link>
       </nav>
 
@@ -54,15 +54,15 @@ export default function VerifyEmailPage() {
           <div className="text-5xl">&#9993;&#65039;</div>
 
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-black text-white tracking-tight">{t('authPages.verifyEmailTitle')}</h1>
+            <h1 className="font-serif text-3xl font-semibold text-white tracking-tight">{t('authPages.verifyEmailTitle')}</h1>
             <p className="text-sm text-slate-400 leading-relaxed">
               {t('authPages.verifyEmailDesc')}
               {email
-                ? <span className="text-indigo-300 font-semibold">{email}</span>
+                ? <span className="text-atlas-green font-semibold">{email}</span>
                 : t('authPages.verifyEmailDescFallback')
               }.
             </p>
-            <p className="text-xs text-slate-600 leading-relaxed mt-1">
+            <p className="text-xs text-atlas-mute leading-relaxed mt-1">
               {t('authPages.verifyEmailHint')}
             </p>
           </div>
@@ -72,11 +72,11 @@ export default function VerifyEmailPage() {
               <button
                 onClick={handleResend}
                 disabled={sending || countdown > 0}
-                className="w-full py-3 rounded-xl text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center disabled:opacity-50"
+                className="w-full py-3 rounded-none text-sm font-black tracking-wide transition-all duration-200 flex items-center justify-center disabled:opacity-50"
                 style={{
-                  backgroundColor: 'rgba(63,81,181,0.15)',
-                  color: '#818cf8',
-                  border: '1px solid rgba(99,102,241,0.3)',
+                  backgroundColor: 'rgba(92,174,142,0.15)',
+                  color: '#5cae8e',
+                  border: '1px solid rgba(92,174,142,0.3)',
                 }}
               >
                 {sending
@@ -88,7 +88,7 @@ export default function VerifyEmailPage() {
             )}
             <Link
               to="/login"
-              className="w-full py-3 rounded-xl text-sm font-medium tracking-wide transition-all duration-200 flex items-center justify-center text-slate-500 hover:text-slate-300"
+              className="w-full py-3 rounded-none text-sm font-medium tracking-wide transition-all duration-200 flex items-center justify-center text-atlas-soft hover:text-slate-300"
             >
               {t('authPages.backToLogin')}
             </Link>

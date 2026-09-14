@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BEATS } from '../../data/beats_config';
+import { seqColor } from '../../data/viz_palette';
 
 const BEAT_COUNT = BEATS.length;
 
@@ -14,9 +15,9 @@ function avg(arr) {
 // ── Jauge intensité mini ───────────────────────────────────────────────────────
 
 function IntensityBar({ value }) {
-  if (value == null) return <span className="text-[10px] text-slate-600 italic">—</span>;
+  if (value == null) return <span className="text-[10px] text-atlas-mute italic">—</span>;
   const pct = (value / 10) * 100;
-  const color = value >= 8 ? '#ef4444' : value >= 6 ? '#f97316' : value >= 4 ? '#fbbf24' : '#3b82f6';
+  const color = seqColor(value); // rampe or séquentielle (cohérente avec l'arc émotionnel)
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
@@ -38,12 +39,12 @@ function BeatCoverage({ covered, total }) {
           <div
             key={b.id}
             className="w-2 h-2 rounded-sm"
-            style={{ backgroundColor: covered > i ? 'rgba(99,102,241,0.7)' : 'rgba(255,255,255,0.07)' }}
+            style={{ backgroundColor: covered > i ? 'rgba(92,174,142,0.7)' : 'rgba(255,255,255,0.07)' }}
             title={b.label}
           />
         ))}
       </div>
-      <span className="text-[10px] text-slate-500">{pct}%</span>
+      <span className="text-[10px] text-atlas-soft">{pct}%</span>
     </div>
   );
 }
@@ -83,31 +84,32 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned, t }) {
   }, [events]);
   const maxEvtsPerCh = Math.max(1, ...chapterDist.map(([, n]) => n));
 
-  const accentColor = isUnassigned ? '#475569' : '#818cf8';
-  const bgColor     = isUnassigned ? 'rgba(71,85,105,0.08)' : 'rgba(63,81,181,0.08)';
-  const borderColor = isUnassigned ? 'rgba(71,85,105,0.2)'  : 'rgba(99,102,241,0.2)';
+  const accentColor = isUnassigned ? 'var(--color-atlas-mute)' : '#5cae8e';
+  const bgColor     = 'rgba(255,255,255,0.025)';
+  const borderColor = 'var(--color-atlas-line)';
 
   return (
     <div
-      className="flex flex-col rounded-2xl overflow-hidden flex-shrink-0"
+      className="relative flex flex-col rounded-none overflow-hidden flex-shrink-0"
       style={{
         width: 260,
         backgroundColor: bgColor,
         border: `1px solid ${borderColor}`,
       }}
     >
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] z-10" style={{ backgroundColor: accentColor }} />
       {/* En-tête */}
-      <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="px-5 pt-5 pb-4" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
         {!isUnassigned && (
-          <p className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: accentColor }}>
+          <p className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: '#cba15e' }}>
             {t('volume.tome', { number: volume.number })}
           </p>
         )}
-        <h3 className="text-base font-black text-slate-200 leading-tight">
+        <h3 className="font-serif text-lg font-semibold text-slate-200 leading-tight">
           {isUnassigned ? t('timeline.unassigned') : volume.title}
         </h3>
         {!isUnassigned && volume.description && (
-          <p className="text-xs text-slate-500 font-serif italic mt-1 leading-snug line-clamp-2">
+          <p className="text-xs text-atlas-soft font-serif italic mt-1 leading-snug line-clamp-2">
             {volume.description}
           </p>
         )}
@@ -117,25 +119,25 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned, t }) {
       <div className="px-5 py-4 space-y-3 flex-1">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-0.5">{t('label.chapters')}</p>
+            <p className="text-[9px] text-atlas-mute uppercase tracking-widest mb-0.5">{t('label.chapters')}</p>
             <p className="text-xl font-black" style={{ color: accentColor }}>{chapters}</p>
           </div>
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-0.5">{t('label.events')}</p>
+            <p className="text-[9px] text-atlas-mute uppercase tracking-widest mb-0.5">{t('label.events')}</p>
             <p className="text-xl font-black text-slate-300">{events.length}</p>
           </div>
         </div>
 
         {/* Intensité arc */}
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1">{t('timeline.avgIntensity')}</p>
+          <p className="text-[9px] text-atlas-mute uppercase tracking-widest mb-1">{t('timeline.avgIntensity')}</p>
           <IntensityBar value={avgIntensity != null ? Math.round(avgIntensity * 10) / 10 : null} />
         </div>
 
         {/* Beats STC */}
         {!isUnassigned && (
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1">{t('timeline.beatsSTC')}</p>
+            <p className="text-[9px] text-atlas-mute uppercase tracking-widest mb-1">{t('timeline.beatsSTC')}</p>
             <BeatCoverage covered={beatsHit} total={BEAT_COUNT} />
           </div>
         )}
@@ -143,7 +145,7 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned, t }) {
         {/* Mini heatmap de densité narrative */}
         {chapterDist.length > 0 && (
           <div>
-            <p className="text-[9px] text-slate-600 uppercase tracking-widest mb-1.5">{t('timeline.densityPerChapter')}</p>
+            <p className="text-[9px] text-atlas-mute uppercase tracking-widest mb-1.5">{t('timeline.densityPerChapter')}</p>
             <div className="flex items-end gap-0.5 h-6">
               {chapterDist.map(([ch, n]) => (
                 <div
@@ -167,14 +169,14 @@ function VolumeCard({ volume, events, arcPoints, onSelect, isUnassigned, t }) {
         <div className="px-5 pb-5">
           <button
             onClick={() => onSelect(volume.id)}
-            className="w-full py-2 rounded-xl text-xs font-bold transition-all duration-150"
+            className="w-full py-2 rounded-none font-grotesk text-xs font-bold uppercase tracking-[0.08em] transition-all duration-150"
             style={{
-              backgroundColor: 'rgba(99,102,241,0.15)',
-              border: '1px solid rgba(99,102,241,0.3)',
+              backgroundColor: 'rgba(92,174,142,0.15)',
+              border: '1px solid rgba(92,174,142,0.3)',
               color: accentColor,
             }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.25)'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(99,102,241,0.15)'; }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(92,174,142,0.25)'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(92,174,142,0.15)'; }}
           >
             {t('timeline.viewVolume')}
           </button>
@@ -215,7 +217,7 @@ export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelect
   if (!volumes.length) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-slate-600 italic text-sm">
+        <p className="text-atlas-mute italic text-sm">
           {t('timeline.seriesEmptyHint')}
         </p>
       </div>
@@ -226,27 +228,27 @@ export default function SeriesTimeline({ volumes, allEvents, arcPoints, onSelect
     <div className="h-full overflow-y-auto px-6 py-6">
       {/* Bandeau résumé série */}
       <div
-        className="flex items-center gap-6 px-5 py-3 rounded-xl mb-6 flex-shrink-0"
-        style={{ backgroundColor: 'rgba(63,81,181,0.06)', border: '1px solid rgba(99,102,241,0.12)' }}
+        className="flex items-center gap-6 px-5 py-3 rounded-none mb-6 flex-shrink-0"
+        style={{ backgroundColor: 'rgba(255,255,255,0.025)', border: '1px solid var(--color-atlas-line)' }}
       >
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest">{t('label.volumes')}</p>
-          <p className="text-2xl font-black" style={{ color: '#818cf8' }}>{volumes.length}</p>
+          <p className="text-[9px] text-atlas-mute uppercase tracking-widest">{t('label.volumes')}</p>
+          <p className="text-2xl font-black" style={{ color: '#5cae8e' }}>{volumes.length}</p>
         </div>
         <div className="w-px h-8 bg-white/10" />
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest">{t('label.chapters')}</p>
+          <p className="text-[9px] text-atlas-mute uppercase tracking-widest">{t('label.chapters')}</p>
           <p className="text-2xl font-black text-slate-300">{totalChapters}</p>
         </div>
         <div className="w-px h-8 bg-white/10" />
         <div>
-          <p className="text-[9px] text-slate-600 uppercase tracking-widest">{t('label.events')}</p>
+          <p className="text-[9px] text-atlas-mute uppercase tracking-widest">{t('label.events')}</p>
           <p className="text-2xl font-black text-slate-300">{totalEvents}</p>
         </div>
         {unassigned.length > 0 && (
           <>
             <div className="w-px h-8 bg-white/10" />
-            <p className="text-xs text-slate-500 italic">
+            <p className="text-xs text-atlas-soft italic">
               {t('timeline.unassignedEvents', { count: unassigned.length })}
             </p>
           </>

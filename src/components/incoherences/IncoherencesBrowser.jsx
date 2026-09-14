@@ -13,6 +13,8 @@ import { DETECTOR_CATALOG } from '../../db/detectIncoherences';
 import EntityEditor      from '../lore/EntityEditor';
 import IncoherenceCard   from './IncoherenceCard';
 import DetectorCatalog   from './DetectorCatalog';
+import Icon              from '../ui/Icon';
+import { HeaderToggle }  from '../ui/HeaderButton';
 
 const SEVERITY_KEYS = [
   { key: 'all',      labelKey: 'inc.allSeverities' },
@@ -131,52 +133,38 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
   if (!incoherences) return <Skeleton variant="list" />;
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
+    <div className="h-full w-full max-w-[1280px] mx-auto flex flex-col bg-atlas-ink text-slate-200 overflow-hidden">
 
       {/* ── Header ── */}
-      <header data-tour="inc-list" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="inc-list" className="flex items-center justify-between px-6 py-5 border-b border-atlas-line flex-shrink-0">
         <div className="flex-1">
-          <h1 className="text-lg font-black tracking-tight">
-            {t('inc.detectorPrefix')}<span style={{ color: '#EF4444' }}>{t('label.incoherences')}</span>
+          <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">{'Analyser · cohérence narrative'}</p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+            {t('inc.detectorPrefix')}<span className="italic" style={{ color: '#5cae8e' }}>{t('label.incoherences')}</span>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">
+          <p className="text-sm text-atlas-soft font-serif italic mt-1">
             {t('inc.subtitle')}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              onClick={runRescan}
-              disabled={scanning}
-              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-all duration-150"
-              style={{
-                backgroundColor: scanning ? 'rgba(255,255,255,0.03)' : 'rgba(129,140,248,0.12)',
-                color:           scanning ? '#334155'                 : '#818cf8',
-                border:          `1px solid ${scanning ? 'rgba(255,255,255,0.06)' : 'rgba(129,140,248,0.3)'}`,
-                cursor:          scanning ? 'default' : 'pointer',
-              }}
-            >
+        <div className="flex items-center gap-5">
+          <div className="relative flex-shrink-0">
+            <HeaderToggle active={scanning} disabled={scanning} onClick={runRescan}>
               {scanning
-                ? <><span className="animate-spin inline-block w-3 h-3 border border-indigo-400/30 border-t-indigo-400 rounded-full" /> {t('inc.scanning')}</>
-                : `⚡ ${t('inc.rescan')}`
+                ? <><span className="animate-spin inline-block w-3 h-3 border border-[#5cae8e]/30 border-t-[#5cae8e] rounded-full" /> {t('inc.scanning')}</>
+                : <><Icon name="rescan" size={14} /> {t('inc.rescan')}</>
               }
-            </button>
+            </HeaderToggle>
             {lastScanCount !== null && (
-              <span className="text-[10px] text-slate-600">
+              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 text-[10px] text-atlas-mute whitespace-nowrap">
                 {t('inc.lastScanCount', { count: lastScanCount })}
               </span>
             )}
           </div>
-          <button
-            onClick={() => setShowCatalog(true)}
-            className="text-xs px-2.5 py-1.5 rounded-lg font-bold transition-all duration-150"
-            style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
-            title={t('inc.catalogTitle')}
-          >
-            {t('inc.catalog')}
-          </button>
-          <span className="text-xs font-mono text-slate-600">
+          <HeaderToggle onClick={() => setShowCatalog(true)} title={t('inc.catalogTitle')}>
+            <Icon name="detector" size={14} /> {t('inc.catalog')}
+          </HeaderToggle>
+          <span className="text-xs font-mono text-atlas-mute">
             {t('inc.resolvedCount', { resolved: resolvedCount, total: incoherences.length })}
           </span>
         </div>
@@ -187,7 +175,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
 
         {/* Sévérité */}
         <div className="relative">
-          <nav className="flex gap-1 border-b border-white/10 overflow-x-auto no-scrollbar"
+          <nav className="flex gap-1 border-b border-atlas-line overflow-x-auto no-scrollbar"
             ref={sevNavRef}
             onScroll={() => {
               const el = sevNavRef.current;
@@ -201,20 +189,20 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
                 <button
                   key={opt.key}
                   onClick={() => setSeverityFilter(opt.key)}
-                  className="px-4 py-2.5 text-sm font-bold transition-all duration-200 relative flex-shrink-0 whitespace-nowrap"
-                  style={{ color: isActive ? (cfg?.color ?? '#fff') : '#475569' }}
+                  className="font-grotesk px-4 py-2.5 text-xs font-bold uppercase tracking-[0.08em] transition-all duration-200 relative flex-shrink-0 whitespace-nowrap"
+                  style={{ color: isActive ? (cfg?.color ?? '#ece7db') : 'var(--color-atlas-mute)' }}
                 >
                   {t(opt.labelKey)}
                   <span
                     className="ml-2 text-xs font-mono"
-                    style={{ color: isActive ? (cfg?.color ?? '#818cf8') : '#1e293b' }}
+                    style={{ color: isActive ? (cfg?.color ?? '#5cae8e') : '#1e293b' }}
                   >
                     {counts[opt.key]}
                   </span>
                   {isActive && (
                     <span
                       className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{ backgroundColor: cfg?.color ?? '#3F51B5' }}
+                      style={{ backgroundColor: cfg?.color ?? '#5cae8e' }}
                     />
                   )}
                 </button>
@@ -223,7 +211,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
           </nav>
           {sevCanScroll && (
             <div className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none"
-              style={{ background: 'linear-gradient(to right, transparent, #0B1621)' }} />
+              style={{ background: 'linear-gradient(to right, transparent, #15171b)' }} />
           )}
         </div>
 
@@ -232,25 +220,25 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
           <div className="relative" ref={typeDropRef}>
             <button
               onClick={() => setTypeDropOpen(v => !v)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-150"
               style={{
                 minWidth: 200,
-                backgroundColor: typeFilter !== 'all' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.06)',
-                color:           typeFilter !== 'all' ? '#818cf8' : '#94a3b8',
-                border:          typeFilter !== 'all' ? '1px solid rgba(99,102,241,0.35)' : '1px solid rgba(255,255,255,0.1)',
+                backgroundColor: typeFilter !== 'all' ? 'rgba(92,174,142,0.15)' : 'rgba(255,255,255,0.06)',
+                color:           typeFilter !== 'all' ? '#5cae8e' : '#94a3b8',
+                border:          typeFilter !== 'all' ? '1px solid rgba(92,174,142,0.35)' : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               {typeFilter === 'all'
-                ? <><span className="text-slate-500">⚠</span> {t('inc.allTypes')}</>
-                : <>{DETECTOR_CATALOG.find(d => d.type === typeFilter)?.icon} {t(`incType.${typeFilter}`, { defaultValue: typeFilter })}</>
+                ? <><Icon name="warning" size={14} className="text-atlas-soft" /> {t('inc.allTypes')}</>
+                : <><Icon name={DETECTOR_CATALOG.find(d => d.type === typeFilter)?.icon} size={14} /> {t(`incType.${typeFilter}`, { defaultValue: typeFilter })}</>
               }
-              <span className="ml-auto text-slate-600 text-[10px]">{typeDropOpen ? '▲' : '▼'}</span>
+              <Icon name={typeDropOpen ? 'chevronUp' : 'chevronDown'} size={12} className="ml-auto text-atlas-mute" />
             </button>
 
             {typeDropOpen && (
               <div
-                className="absolute left-0 top-full mt-1 z-50 rounded-xl overflow-hidden overflow-y-auto"
-                style={{ minWidth: 240, maxHeight: 320, backgroundColor: '#0d1b2a', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
+                className="absolute left-0 top-full mt-1 z-50 rounded-none overflow-hidden overflow-y-auto"
+                style={{ minWidth: 240, maxHeight: 320, backgroundColor: '#1a1d22', border: '1px solid var(--color-atlas-line)', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}
               >
                 {[
                   { key: 'all' },
@@ -266,15 +254,15 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
                       style={{
                         cursor:          isDisabled ? 'default' : 'pointer',
                         opacity:         isDisabled ? 0.3 : 1,
-                        backgroundColor: isActive ? 'rgba(99,102,241,0.15)' : 'transparent',
-                        color:           isActive ? '#818cf8' : '#94a3b8',
+                        backgroundColor: isActive ? 'rgba(92,174,142,0.15)' : 'transparent',
+                        color:           isActive ? '#5cae8e' : '#94a3b8',
                       }}
                       onMouseEnter={e => { if (!isDisabled && !isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
                       onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
                     >
-                      {opt.key === 'all' ? <span className="text-slate-500">⚠</span> : <span>{opt.icon}</span>}
+                      {opt.key === 'all' ? <Icon name="warning" size={14} className="text-atlas-soft" /> : <Icon name={opt.icon} size={14} />}
                       <span>{opt.key === 'all' ? t('inc.allTypes') : t(`incType.${opt.key}`, { defaultValue: opt.key })}</span>
-                      {isActive && <span className="ml-auto text-[10px]">✓</span>}
+                      {isActive && <Icon name="checkmark" size={12} className="ml-auto" />}
                     </div>
                   );
                 })}
@@ -285,38 +273,38 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
           {entityFilter && (
             <button
               onClick={() => setEntityFilter(null)}
-              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all duration-150"
-              style={{ backgroundColor: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.35)' }}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-none font-medium transition-all duration-150"
+              style={{ backgroundColor: 'rgba(92,174,142,0.15)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.35)' }}
               title={t('inc.removeEntityFilter')}
             >
-              👤 {entityFilter.label}
-              <span className="opacity-60 ml-0.5">✕</span>
+              <Icon name="user" size={13} /> {entityFilter.label}
+              <Icon name="close" size={12} className="opacity-60 ml-0.5" />
             </button>
           )}
 
           {(typeFilter !== 'all' || entityFilter) && (
             <button
               onClick={() => { setTypeFilter('all'); setEntityFilter(null); }}
-              className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors"
+              className="text-[10px] text-atlas-mute hover:text-slate-400 transition-colors"
             >
               {t('inc.clearAll')}
             </button>
           )}
 
-          <span className="ml-auto text-xs font-mono text-slate-600">
+          <span className="ml-auto text-xs font-mono text-atlas-mute">
             {t('inc.resultCount', { count: filtered.length })}
           </span>
         </div>
       </div>
 
       {/* ── Grille de cartes ── */}
-      <main className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6 py-4 bg-[#0B1621]">
+      <main className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-atlas-ink">
         {filtered.length === 0 ? (
-          <p className="text-slate-600 font-serif italic text-center mt-20">
+          <p className="text-atlas-mute font-serif italic text-center mt-20">
             {t('inc.noResults')}
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-w-7xl mx-auto items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
             {filtered.map(inc => (
               <IncoherenceCard
                 key={inc.id}

@@ -13,6 +13,7 @@
 | sonner | 2.x | Toasts (notifications) |
 | @dnd-kit | core 6.x / sortable 10.x | Drag-and-drop (timeline, lore) |
 | i18next + react-i18next | 25.x / 15.x | Internationalisation (fr, en, zh) |
+| lucide-react | 1.x | Jeu d'icônes linéaires (trait fin). Wrapper central : `src/components/ui/Icon.jsx` (`<Icon name="..." size strokeWidth className>`, teinté via `currentColor`). Les configs stockent des **noms** d'icônes, pas des emojis. |
 
 ## Internationalisation (i18n)
 

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
+import Icon from '../ui/Icon';
 
 export default function EntityChip({ link, onEntityClick, onEntityFilter }) {
   const meta = useMemo(() => getEntityMeta(link.entityId, link.entityType), [link]);
@@ -12,8 +13,8 @@ export default function EntityChip({ link, onEntityClick, onEntityFilter }) {
   const b     = parseInt(hex.slice(4, 6), 16);
   const rgb   = `${r},${g},${b}`;
 
-  const typeIcons = { character: '👤', location: '📍', object: '⚔️' };
-  const icon = typeIcons[link.entityType] ?? '·';
+  const typeIcons = { character: 'user', location: 'location', object: 'object' };
+  const iconName  = typeIcons[link.entityType];
 
   const handleClick = (e) => {
     if (!meta) return;
@@ -44,7 +45,7 @@ export default function EntityChip({ link, onEntityClick, onEntityFilter }) {
         : 'Entité non trouvée dans la base'
       }
     >
-      <span>{icon}</span>
+      {iconName ? <Icon name={iconName} size={13} /> : <span>·</span>}
       {displayName}
     </button>
   );

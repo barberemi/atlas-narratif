@@ -28,6 +28,19 @@ test.describe('Phase 7 — Arc émotionnel & Character Arc', () => {
     await page.waitForTimeout(500);
   });
 
+  test('diagnostics de craft — bandeau "ce que je remarque"', async ({ page }) => {
+    await page.goto('/arc');
+    const panel = page.locator('[data-tour="arc-diagnostics"]');
+    await expect(panel).toBeVisible({ timeout: 10_000 });
+    // craft.title EN = "What I notice"
+    await expect(panel.getByText(/What I notice/i)).toBeVisible();
+    // Au moins un constat cliquable → met un chapitre en surbrillance (slider apparaît)
+    const finding = panel.getByRole('button').first();
+    await expect(finding).toBeVisible();
+    await finding.click();
+    await expect(page.getByRole('slider')).toBeVisible({ timeout: 5_000 });
+  });
+
   test('tab personnages accessible', async ({ page }) => {
     await page.goto('/arc');
     await page.getByRole('button', { name: 'Character arcs' }).click();

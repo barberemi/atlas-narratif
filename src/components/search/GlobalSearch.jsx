@@ -4,18 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
+import Icon                 from '../ui/Icon';
+import { VIZ_STATUS }        from '../../data/viz_palette';
 
 // ── Config des groupes ─────────────────────────────────────────────────────────
 const GROUP_DEFS = [
-  { id: 'character', i18nKey: 'label.characters', icon: '👤', color: '#818cf8' },
-  { id: 'location',  i18nKey: 'label.locations',  icon: '📍', color: '#60a5fa' },
-  { id: 'object',    i18nKey: 'label.objects',     icon: '⚔️', color: '#a78bfa' },
-  { id: 'event',     i18nKey: 'label.events',      icon: '📅', color: '#6366f1' },
-  { id: 'inco',      i18nKey: 'label.incoherences',icon: '⚠️', color: '#ef4444' },
+  { id: 'character', i18nKey: 'label.characters', icon: 'user',     color: '#5cae8e' },
+  { id: 'location',  i18nKey: 'label.locations',  icon: 'location', color: '#60a5fa' },
+  { id: 'object',    i18nKey: 'label.objects',     icon: 'object',  color: '#a78bfa' },
+  { id: 'event',     i18nKey: 'label.events',      icon: 'event',   color: '#cba15e' },
+  { id: 'inco',      i18nKey: 'label.incoherences',icon: 'warning', color: '#ef4444' },
 ];
 
 const SEVERITY_COLORS = {
-  critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#64748b',
+  critical: VIZ_STATUS.crit, high: VIZ_STATUS.serious, medium: VIZ_STATUS.warn, low: 'var(--color-atlas-soft)',
 };
 
 // ── Highlight du terme recherché ───────────────────────────────────────────────
@@ -26,7 +28,7 @@ function Highlight({ text, query }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-transparent font-black" style={{ color: '#818cf8' }}>
+      <mark className="bg-transparent font-black" style={{ color: '#5cae8e' }}>
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -42,15 +44,17 @@ function ResultRow({ result, query, isActive, onSelect, onHover, groups }) {
       onMouseEnter={onHover}
       onClick={onSelect}
       className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-75"
-      style={{ backgroundColor: isActive ? 'rgba(129,140,248,0.1)' : 'transparent' }}
+      style={{ backgroundColor: isActive ? 'rgba(92,174,142,0.1)' : 'transparent' }}
     >
-      <span className="text-base flex-shrink-0 w-5 text-center leading-none">{group?.icon}</span>
+      <span className="flex-shrink-0 w-5 flex items-center justify-center leading-none">
+        {group && <Icon name={group.icon} size={16} style={{ color: group.color }} />}
+      </span>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-slate-200 truncate font-medium">
           <Highlight text={result.title} query={query} />
         </p>
         {result.sub && (
-          <p className="text-[11px] text-slate-600 truncate mt-0.5">
+          <p className="text-[11px] text-atlas-mute truncate mt-0.5">
             <Highlight text={result.sub} query={query} />
           </p>
         )}
@@ -161,7 +165,7 @@ export default function GlobalSearch({ onClose }) {
           title:      i.title,
           sub:        translatedType || null,
           badge:      t(`severity.${i.severity}`, { defaultValue: i.severity }),
-          badgeColor: SEVERITY_COLORS[i.severity] ?? '#64748b',
+          badgeColor: SEVERITY_COLORS[i.severity] ?? 'var(--color-atlas-soft)',
           action:     () => navigate(`/incoherences?filter=${i.severity}`),
         });
       }
@@ -222,15 +226,15 @@ export default function GlobalSearch({ onClose }) {
           top: '15vh',
           width: '100%',
           maxWidth: 580,
-          backgroundColor: '#0d1b2a',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 16,
+          backgroundColor: '#1a1d22',
+          border: '1px solid var(--color-atlas-line)',
+          borderRadius: 0,
           boxShadow: '0 24px 80px rgba(0,0,0,0.8)',
         }}
       >
         {/* Input */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/10 flex-shrink-0">
-          <span className="text-slate-500 text-base">🔍</span>
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-atlas-line flex-shrink-0">
+          <Icon name="search" size={18} className="text-atlas-soft flex-shrink-0" />
           <input
             ref={inputRef}
             value={query}
@@ -243,14 +247,14 @@ export default function GlobalSearch({ onClose }) {
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="text-slate-600 hover:text-slate-400 transition-colors text-xs"
+              className="text-atlas-mute hover:text-slate-400 transition-colors text-xs"
             >
               {t('btn.close')}
             </button>
           )}
           <kbd
             className="text-[10px] px-1.5 py-0.5 rounded font-mono flex-shrink-0"
-            style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#475569', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#475569', border: '1px solid var(--color-atlas-line)' }}
           >
             Esc
           </kbd>
@@ -264,7 +268,7 @@ export default function GlobalSearch({ onClose }) {
             style={{ maxHeight: '60vh' }}
           >
             {results.length === 0 ? (
-              <p className="text-slate-600 font-serif italic text-sm text-center py-10">
+              <p className="text-atlas-mute font-serif italic text-sm text-center py-10">
                 {t('empty.noSearch')}
               </p>
             ) : (
@@ -276,9 +280,9 @@ export default function GlobalSearch({ onClose }) {
                     {/* Header groupe */}
                     <div
                       className="flex items-center gap-2 px-4 py-1.5 sticky top-0"
-                      style={{ backgroundColor: '#0d1b2a', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                      style={{ backgroundColor: '#1a1d22', borderBottom: '1px solid var(--color-atlas-line)' }}
                     >
-                      <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: group.color }}>
+                      <span className="font-grotesk text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: group.color }}>
                         {group.label}
                       </span>
                       <span className="text-[10px] text-slate-700">{groupResults.length}</span>
@@ -317,7 +321,7 @@ export default function GlobalSearch({ onClose }) {
 
         {results.length > 0 && (
           <div
-            className="flex items-center justify-between px-4 py-2 border-t border-white/5 flex-shrink-0"
+            className="flex items-center justify-between px-4 py-2 border-t border-atlas-line flex-shrink-0"
             style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
           >
             <span className="text-[10px] text-slate-700">{t('search.resultCount', { count: results.length })}</span>

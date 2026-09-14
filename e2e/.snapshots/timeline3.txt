@@ -1,7 +1,7 @@
-uid=13_0 RootWebArea "AtlasNarratif — Outil d'analyse narrative pour auteurs" url="http://localhost:5173/timeline"
+uid=13_0 RootWebArea "Atlas Narratif — Outil d'analyse narrative pour auteurs" url="http://localhost:5173/timeline"
   uid=13_1 region "Notifications alt+T" live="polite" relevant="additions text"
   uid=13_2 navigation
-    uid=13_3 button "AtlasNarratif"
+    uid=13_3 button "Atlas Narratif"
     uid=13_4 button "The Lord of the Rings ▾"
     uid=13_5 button "📚 Series ▾"
     uid=13_6 button "✍️ Write ▾" expandable haspopup="menu"

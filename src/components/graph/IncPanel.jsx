@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { hexToRgb } from '../../utils/color';
 import { getEntityInfo, getEntityMeta } from '../../utils/entityUtils';
+import Icon from '../ui/Icon';
 
 export default function IncPanel({ incPanelId, panelIncs = [], onClose, central, satellites, navigateTo }) {
   const { t } = useTranslation();
@@ -10,24 +11,24 @@ export default function IncPanel({ incPanelId, panelIncs = [], onClose, central,
 
   return (
     <div
-      className="absolute top-4 right-4 flex flex-col rounded-2xl shadow-2xl overflow-hidden"
+      className="absolute top-4 right-4 flex flex-col rounded-none shadow-2xl overflow-hidden"
       style={{
         zIndex: 40, width: 320, maxHeight: 'calc(100% - 32px)',
-        backgroundColor: 'rgba(10,18,28,0.96)',
+        backgroundColor: 'rgba(21,23,27,0.96)',
         border: '1px solid rgba(239,68,68,0.25)',
         boxShadow: '0 0 40px rgba(239,68,68,0.1)',
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-atlas-line flex-shrink-0">
         <div>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest">{t('inc.detectedTitle')}</p>
-          <p className="text-sm font-bold text-white leading-tight mt-0.5">{entityName}</p>
+          <p className="font-grotesk text-[10px] text-atlas-soft uppercase tracking-[0.2em]">{t('inc.detectedTitle')}</p>
+          <p className="font-serif text-base font-semibold text-white leading-tight mt-0.5">{entityName}</p>
         </div>
         <button
           onClick={onClose}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all text-sm flex-shrink-0"
-        >✕</button>
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-atlas-soft hover:text-white hover:bg-white/10 transition-all text-sm flex-shrink-0"
+        ><Icon name="close" size={12} /></button>
       </div>
 
       {/* Liste */}
@@ -37,12 +38,12 @@ export default function IncPanel({ incPanelId, panelIncs = [], onClose, central,
           return (
             <div
               key={inc.id}
-              className="rounded-xl p-3"
+              className="rounded-none p-3"
               style={{ backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: cfg.color }}>{t(`severity.${inc.severity}`, cfg.label)}</span>
-                <span className="text-[10px] text-slate-500 shrink-0">{t(`incType.${inc.type}`, { defaultValue: inc.type })}</span>
+                <span className="text-[10px] text-atlas-soft shrink-0">{t(`incType.${inc.type}`, { defaultValue: inc.type })}</span>
               </div>
               <p className="text-xs font-semibold text-white leading-snug mb-2">{inc.title}</p>
               <p className="text-[11px] text-slate-400 leading-relaxed font-serif">{inc.explanation}</p>
@@ -59,13 +60,13 @@ export default function IncPanel({ incPanelId, panelIncs = [], onClose, central,
                         className="text-[10px] px-2 py-0.5 rounded-full transition-all duration-150"
                         style={{
                           backgroundColor: exists ? `rgba(${hexToRgb(info.color)},0.1)` : 'rgba(255,255,255,0.04)',
-                          color:           exists ? info.color : '#475569',
+                          color:           exists ? info.color : 'var(--color-atlas-mute)',
                           border:          `1px solid ${exists ? `rgba(${hexToRgb(info.color)},0.3)` : 'rgba(255,255,255,0.08)'}`,
                           cursor:          exists ? 'pointer' : 'default',
                         }}
                         title={exists ? `Explorer ${info.name}` : 'Entité non référencée'}
                       >
-                        {info.icon} {info.name}
+                        <Icon name={info.icon} size={13} className="inline align-text-bottom mr-1" />{info.name}
                       </button>
                     );
                   })}

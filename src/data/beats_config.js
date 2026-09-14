@@ -2,7 +2,13 @@
 // idealPercent : position idéale dans le livre (0-100%)
 // tolerance    : marge d'erreur acceptée (en points de %)
 // Indépendant de tout projet narratif — configuration de la méthode elle-même.
-export const BEATS = [
+//
+// NB : le champ `color` littéral ci-dessous est ÉCRASÉ à l'export par la couleur
+// d'acte (cf. bas de fichier). La couleur data-viz suit désormais le job
+// « catégoriel par acte » (I/II/III) dérivé de src/data/viz_palette.js.
+import { actColorForBeatNumber } from './viz_palette';
+
+const RAW_BEATS = [
   {
     id: 'opening_image',
     number: 1,
@@ -289,3 +295,7 @@ export const BEATS = [
     ],
   },
 ];
+
+// Couleur unifiée par acte (catégoriel) — remplace l'ancien arc-en-ciel des 15 beats.
+// Le rouge/ambre reste réservé aux alertes (sémantique), jamais à la décoration.
+export const BEATS = RAW_BEATS.map(b => ({ ...b, color: actColorForBeatNumber(b.number) }));

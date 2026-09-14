@@ -98,6 +98,10 @@ export async function createProject({ name, description }) {
   return id;
 }
 
+export async function updateProject(projectId, data) {
+  return put(`/api/projects/${projectId}`, data);
+}
+
 export async function deleteProject(projectId) {
   return del(`/api/projects/${projectId}`);
 }

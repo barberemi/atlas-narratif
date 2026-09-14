@@ -10,6 +10,7 @@
       <Suspense fallback={<Skeleton />}>
         <Routes>
           /                    ← HomePage (pas de guard)
+          /demo                ← DemoRoute (public, pas de guard)
           /review              ← RequireProject
           /dashboard           ← RequireProject
           /map                 ← RequireProject
@@ -55,6 +56,12 @@ Onboarding à 2 flux :
 Bouton **"Charger la démo"** : `buildLotrSeedPayload()` + `seedProjectViaApi()` → navigate `/dashboard`.
 
 **Bandeau anonyme** : si l'utilisateur n'est pas connecté et a des projets, un bandeau fixe en bas l'avertit que ses données sont liées au navigateur (risque de perte si cookies vidés) avec un lien vers `/login`.
+
+### `/demo` — DemoRoute (lien public partageable)
+
+Route publique sans friction (pas de `RequireProject`), pensée pour le marketing : un lien `atlas-narratif.com/demo` dépose le visiteur **directement dans la démo** sans passer par l'écran d'onboarding.
+
+Au montage : si un projet LOTR existe déjà (`id` préfixé `lotr`), on l'active et on redirige vers `/dashboard` ; sinon on seed la démo via `buildLotrSeedPayload()` + `seedProjectViaApi()` (même logique que le bouton « Charger » de la HomePage), puis redirection `/dashboard`. Affiche un écran de chargement avec barre de progression ; en cas d'erreur, un lien retour vers `/`.
 
 ### `/review` — ReviewPage
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CHART_H, PAD, yToSvg, xToSvg, smoothPath, arcColor } from './arcUtils';
+import { VIZ_SEQUENTIAL } from '../data/viz_palette';
 
 // ── yToSvg ────────────────────────────────────────────────────────────────────
 
@@ -94,36 +95,38 @@ describe('smoothPath', () => {
 
 // ── arcColor ──────────────────────────────────────────────────────────────────
 
+// arcColor = rampe séquentielle or mono-teinte (cf. viz_palette). Encodage par
+// magnitude d'intensité, paliers historiques conservés (<3 / 3-5 / 5-7 / ≥7).
 describe('arcColor', () => {
-  it('null / 0 → couleur neutre indigo', () => {
-    expect(arcColor(null)).toBe('#818cf8');
-    expect(arcColor(0)).toBe('#818cf8');
+  it('null / 0 → pas le plus clair de la rampe', () => {
+    expect(arcColor(null)).toBe(VIZ_SEQUENTIAL[0]);
+    expect(arcColor(0)).toBe(VIZ_SEQUENTIAL[0]);
   });
 
-  it('avg >= 7 → rouge (intense)', () => {
-    expect(arcColor(7)).toBe('#f87171');
-    expect(arcColor(10)).toBe('#f87171');
-    expect(arcColor(7.5)).toBe('#f87171');
+  it('avg >= 7 → or le plus foncé (intense)', () => {
+    expect(arcColor(7)).toBe(VIZ_SEQUENTIAL[3]);
+    expect(arcColor(10)).toBe(VIZ_SEQUENTIAL[3]);
+    expect(arcColor(7.5)).toBe(VIZ_SEQUENTIAL[3]);
   });
 
-  it('avg >= 5 et < 7 → orange (dramatique)', () => {
-    expect(arcColor(5)).toBe('#fb923c');
-    expect(arcColor(6.9)).toBe('#fb923c');
+  it('avg >= 5 et < 7 → or foncé (dramatique)', () => {
+    expect(arcColor(5)).toBe(VIZ_SEQUENTIAL[2]);
+    expect(arcColor(6.9)).toBe(VIZ_SEQUENTIAL[2]);
   });
 
-  it('avg >= 3 et < 5 → jaune (modéré)', () => {
-    expect(arcColor(3)).toBe('#facc15');
-    expect(arcColor(4.9)).toBe('#facc15');
+  it('avg >= 3 et < 5 → or moyen (modéré)', () => {
+    expect(arcColor(3)).toBe(VIZ_SEQUENTIAL[1]);
+    expect(arcColor(4.9)).toBe(VIZ_SEQUENTIAL[1]);
   });
 
-  it('avg < 3 → bleu (calme)', () => {
-    expect(arcColor(1)).toBe('#60a5fa');
-    expect(arcColor(2.9)).toBe('#60a5fa');
+  it('avg < 3 → or clair (calme)', () => {
+    expect(arcColor(1)).toBe(VIZ_SEQUENTIAL[0]);
+    expect(arcColor(2.9)).toBe(VIZ_SEQUENTIAL[0]);
   });
 
   it('frontières exactes : 3, 5, 7 tombent dans le bon palier', () => {
-    expect(arcColor(3)).toBe('#facc15'); // >= 3 → jaune
-    expect(arcColor(5)).toBe('#fb923c'); // >= 5 → orange
-    expect(arcColor(7)).toBe('#f87171'); // >= 7 → rouge
+    expect(arcColor(3)).toBe(VIZ_SEQUENTIAL[1]);
+    expect(arcColor(5)).toBe(VIZ_SEQUENTIAL[2]);
+    expect(arcColor(7)).toBe(VIZ_SEQUENTIAL[3]);
   });
 });

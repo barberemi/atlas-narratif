@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render } from './entry-prerender';
 
 const ROUTES = {
-  '/':         { title: 'AtlasNarratif', h1: 'AtlasNarratif', schema: 'FAQPage' },
+  '/':         { title: 'Atlas Narratif', h1: 'Structure ton roman', schema: 'FAQPage' },
   '/login':    { title: 'Connexion', h1: 'Connexion' },
   '/register': { title: 'Créer un compte', h1: 'Créer un compte' },
   '/privacy':  { title: 'Politique de confidentialité', h1: 'Politique de confidentialité' },

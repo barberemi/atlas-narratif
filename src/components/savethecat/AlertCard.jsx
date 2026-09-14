@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { VIZ_STATUS } from '../../data/viz_palette';
+import Icon from '../ui/Icon';
 
 export default function AlertCard({ alert, isHovered, onHover }) {
   const { t } = useTranslation();
@@ -16,7 +18,7 @@ export default function AlertCard({ alert, isHovered, onHover }) {
 
   return (
     <div
-      className="p-4 rounded-xl space-y-2 transition-all duration-150 cursor-default"
+      className="p-4 rounded-none space-y-2 transition-all duration-150 cursor-default"
       style={{
         backgroundColor: isHovered
           ? (isCritical ? 'rgba(239,68,68,0.12)' : 'rgba(251,191,36,0.10)')
@@ -29,14 +31,14 @@ export default function AlertCard({ alert, isHovered, onHover }) {
       onMouseLeave={() => onHover(null)}
     >
       <div className="flex items-center gap-2 flex-wrap">
-        <span style={{ color: isCritical ? '#ef4444' : '#fbbf24', fontSize: 13 }}>
-          {isMissing ? '○' : isCritical ? '⛔' : '⚠'}
+        <span className="flex items-center" style={{ color: isCritical ? VIZ_STATUS.crit : VIZ_STATUS.warn }}>
+          <Icon name={isMissing ? 'dot' : isCritical ? 'critical' : 'warning'} size={13} />
         </span>
         <span className="text-xs font-bold" style={{ color: alert.beat.color }}>
           {alert.beat.number}. {t(`narrative:beats.${alert.beat.id}.label`, alert.beat.label)}
         </span>
         {!isMissing && (
-          <span className="text-[11px] font-mono text-slate-500 ml-auto whitespace-nowrap">
+          <span className="text-[11px] font-mono text-atlas-soft ml-auto whitespace-nowrap">
             {alert.actualPct}% · {t('stc.ideal')} {alert.idealPct}%
           </span>
         )}
@@ -47,8 +49,8 @@ export default function AlertCard({ alert, isHovered, onHover }) {
           >
             Ch.{alert.chapterNumber}
             {alert.chapterTitle && (
-              <span className="ml-1 font-sans" style={{ color: '#475569' }}>
-                — {alert.chapterTitle}
+              <span className="ml-1 font-sans" style={{ color: 'var(--color-atlas-mute)' }}>
+                · {alert.chapterTitle}
               </span>
             )}
           </span>

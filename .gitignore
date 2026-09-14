@@ -44,3 +44,6 @@ server/.env
 *.env.local
 .env.prod
 backups/*
+.kiro/settings/
+.ai/mcp/
+.vibe/

@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* ══════════════════════════════════════════════════════════════════
+   Design tokens — identité "Atlas cartographique / éditorial"
+   Serif littéraire + grotesque pour les labels + palette charbon chaud,
+   accents vert sauge & or. (webfont Spectral à ajouter via @fontsource ;
+   fallback système en attendant.)
+   ══════════════════════════════════════════════════════════════════ */
+@theme {
+  --font-serif:   "Spectral", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-grotesk: "Helvetica Neue", "Avenir Next", Helvetica, Arial, sans-serif;
+
+  --color-atlas-ink:    #15171b;  /* fond principal (charbon chaud) */
+  --color-atlas-panel:  #1a1d22;  /* barres, panneaux */
+  --color-atlas-card:   #21252c;  /* cartes */
+  --color-atlas-card2:  #1b1e24;  /* surfaces secondaires (chips) */
+  --color-atlas-line:   #302d28;  /* bordures (chaudes) */
+  --color-atlas-line2:  #26231f;  /* bordures douces */
+  --color-atlas-text:   #ece7db;  /* texte (blanc papier) */
+  --color-atlas-soft:   #a9a291;  /* texte secondaire */
+  --color-atlas-mute:   #9a927f;  /* texte tertiaire / labels — AA (≥4.5) sur ink/panel/card */
+  --color-atlas-green:  #5cae8e;  /* accent principal (vert sauge) */
+  --color-atlas-gold:   #cba15e;  /* accent secondaire (or / laiton) */
+}
+
 /* ── Scrollbar masquée ── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }

@@ -7,9 +7,14 @@ import { useStoreLoader } from '../hooks/useStoreLoader';
 import { useVolumeFilter } from '../hooks/useVolumeFilter';
 import { useVolumeStore }  from '../stores/useVolumeStore';
 import { BEATS } from '../data/beats_config';
+import { VIZ_SEQUENTIAL, VIZ_STATUS } from '../data/viz_palette';
 import { CHART_H, PAD, yToSvg, xToSvg, smoothPath, arcColor } from '../utils/arcUtils';
 import { extractChapters } from '../utils/reviewUtils';
+import { diagnoseArc } from '../utils/craftDiagnostics';
 import CharacterArcView from '../components/arc/CharacterArcView';
+import CraftDiagnostics from '../components/ui/CraftDiagnostics';
+import Term from '../components/ui/Term';
+import { HeaderToggle } from '../components/ui/HeaderButton';
 
 // ── Composant principal ───────────────────────────────────────────────────────
 
@@ -183,41 +188,54 @@ export default function EmotionalArc() {
 
   const color = arcColor(avgIntensity);
 
+  // ── Diagnostics de craft (constats actionnables sur la courbe) ─────────────
+  const arcFindings = useMemo(() => diagnoseArc(allPoints), [allPoints]);
+
   // ── Chapitre actif (slider) ────────────────────────────────────────────────
   const [active, setActive] = useState(null);
   const activePoint = active != null ? allPoints.find(p => p.number === active) : null;
 
+  // ── Plage mise en avant depuis un constat de craft ─────────────────────────
+  // Cliquer un constat surligne sa plage de chapitres sur la courbe, ouvre le
+  // chapitre concerné et ramène le graphe dans la vue (l'effet devient visible).
+  const [highlight, setHighlight] = useState(null);
+  const pickFinding = (f) => {
+    setHighlight(prev => (prev?.id === f.id ? null : f));
+    setActive(f.from);
+    if (containerEl) containerEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  const highlightBand = useMemo(() => {
+    if (!highlight) return null;
+    const xf = svgPoints.find(p => p.number === highlight.from)?.x;
+    const xt = svgPoints.find(p => p.number === highlight.to)?.x;
+    if (xf == null) return null;
+    const a = Math.min(xf, xt ?? xf) - 10;
+    const b = Math.max(xf, xt ?? xf) + 10;
+    return { x: a, w: b - a, color: highlight.severity === 'ok' ? VIZ_STATUS.ok : VIZ_STATUS.warn };
+  }, [highlight, svgPoints]);
+
   // ── Rendu ─────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-hidden">
+    <div className="h-full w-full max-w-[1280px] mx-auto flex flex-col bg-atlas-ink text-slate-200 overflow-hidden">
 
       {/* Header */}
-      <header data-tour="arc-chart" className="flex items-center px-6 py-3 border-b border-white/10 flex-shrink-0 gap-6">
+      <header data-tour="arc-chart" className="flex items-center px-6 py-5 border-b border-atlas-line flex-shrink-0 gap-6">
         <div className="flex-1">
-          <h1 className="text-lg font-black tracking-tight">
-            {t('arc.titlePrefix', 'Arc')} <span style={{ color }}>{t('arc.titleHighlight', '\u00c9motionnel')}</span>
+          <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">{'Écrire · arc émotionnel'}</p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+            <Term id="arc">{t('arc.titlePrefix', 'Arc')} <span className="italic" style={{ color: '#5cae8e' }}>{t('arc.titleHighlight', '\u00c9motionnel')}</span></Term>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">
+          <p className="text-sm text-atlas-soft font-serif italic mt-1">
             {tab === 'global'
               ? `${t('arc.tensionCurve', 'Courbe de tension narrative')} \u00b7 ${chapters.length} ${t('label.chapters', 'chapitre(s)')}${avgIntensity != null ? ` \u00b7 ${t('arc.avgIntensity', 'intensit\u00e9 moy.')} ${avgIntensity.toFixed(1)}/10` : ''}`
               : t('arc.characterEvolution', '\u00c9volution individuelle des personnages par axe')}
           </p>
         </div>
-        <div className="flex items-center gap-1 p-1 rounded-xl flex-shrink-0"
-          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          {TABS.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                backgroundColor: tab === t.id ? 'rgba(99,102,241,0.2)' : 'transparent',
-                border:          tab === t.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
-                color:           tab === t.id ? '#818cf8' : '#64748b',
-              }}
-            >
-              {t.label}
-            </button>
+        <div className="flex items-center gap-5 flex-shrink-0">
+          {TABS.map(tb => (
+            <HeaderToggle key={tb.id} active={tab === tb.id} onClick={() => setTab(tb.id)}>
+              {tb.label}
+            </HeaderToggle>
           ))}
         </div>
       </header>
@@ -239,17 +257,20 @@ export default function EmotionalArc() {
         {/* Tab : Arc global */}
         {tab === 'global' && (chapters.length === 0 ? (
           <div className="h-full flex items-center justify-center">
-            <p className="text-slate-600 font-serif italic">{t('empty.noEvents', 'Aucun chapitre dans la timeline.')}</p>
+            <p className="text-atlas-mute font-serif italic">{t('empty.noEvents', 'Aucun chapitre dans la timeline.')}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+
+            {/* ── Diagnostics de craft ── */}
+            <CraftDiagnostics findings={arcFindings} onPick={pickFinding} dataTour="arc-diagnostics" />
 
             {/* ── Graphe SVG ── */}
             <div
               data-tour="arc-graph"
               ref={setContainerEl}
-              className="relative rounded-2xl overflow-hidden"
-              style={{ height: svgH, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+              className="relative overflow-hidden"
+              style={{ height: svgH, backgroundColor: 'rgba(255,255,255,0.02)' }}
             >
               {svgW > 0 && <svg width={svgW} height={svgH}>
                 <defs>
@@ -304,12 +325,24 @@ export default function EmotionalArc() {
                     strokeLinecap="round" strokeLinejoin="round" />
                 )}
 
+                {/* Plage surlignée depuis un constat de craft */}
+                {highlightBand && (
+                  <g>
+                    <rect x={highlightBand.x} y={PAD.top} width={highlightBand.w} height={CHART_H}
+                      fill={highlightBand.color} opacity="0.10" />
+                    <line x1={highlightBand.x} y1={PAD.top} x2={highlightBand.x} y2={PAD.top + CHART_H}
+                      stroke={highlightBand.color} strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
+                    <line x1={highlightBand.x + highlightBand.w} y1={PAD.top} x2={highlightBand.x + highlightBand.w} y2={PAD.top + CHART_H}
+                      stroke={highlightBand.color} strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
+                  </g>
+                )}
+
                 {/* Points définis */}
                 {svgPoints.filter(p => p.y !== null).map(pt => (
                   <circle key={pt.number}
                     cx={pt.x} cy={pt.y}
                     r={active === pt.number ? 7 : 5}
-                    fill={active === pt.number ? color : '#0B1621'}
+                    fill={active === pt.number ? color : '#15171b'}
                     stroke={color} strokeWidth="2"
                     style={{ cursor: 'pointer' }}
                     onClick={() => setActive(active === pt.number ? null : pt.number)}
@@ -334,22 +367,22 @@ export default function EmotionalArc() {
             {/* ── Slider chapitre actif ── */}
             {activePoint && (
               <div
-                className="rounded-xl p-4 flex flex-col gap-4"
+                className="rounded-none p-4 flex flex-col gap-4"
                 style={{ backgroundColor: `${color}0f`, border: `1px solid ${color}35` }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-black text-slate-200">
-                      {t('arc.chapterLabel', 'Chapitre {{number}} \u2014 {{title}}', { number: activePoint.number, title: activePoint.title })}
+                    <p className="font-serif text-base font-semibold text-atlas-text">
+                      {t('arc.chapterLabel', 'Chapitre {{number}} : {{title}}', { number: activePoint.number, title: activePoint.title })}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5 font-serif italic">
+                    <p className="text-xs text-atlas-soft mt-0.5 font-serif italic">
                       {activePoint.intensity != null
                         ? INTENSITY_LABELS[activePoint.intensity]
                         : t('arc.intensityUndefined', 'Intensit\u00e9 non d\u00e9finie \u2014 d\u00e9place le curseur')}
                     </p>
                   </div>
                   <div className="text-3xl font-black flex-shrink-0" style={{ color, minWidth: 40, textAlign: 'right' }}>
-                    {activePoint.intensity ?? '—'}
+                    {activePoint.intensity ?? '·'}
                   </div>
                 </div>
 
@@ -376,7 +409,7 @@ export default function EmotionalArc() {
                 <button
                   key={pt.number}
                   onClick={() => setActive(active === pt.number ? null : pt.number)}
-                  className="flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl transition-all duration-150"
+                  className="flex flex-col items-center gap-1 px-2 py-2.5 rounded-none transition-all duration-150"
                   style={{
                     backgroundColor: active === pt.number
                       ? `${color}20`
@@ -387,7 +420,7 @@ export default function EmotionalArc() {
                   }}
                 >
                   <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-base"
+                    className="w-9 h-9 rounded-none flex items-center justify-center font-black text-base"
                     style={{
                       backgroundColor: pt.intensity != null
                         ? `${color}${Math.round(pt.intensity / 10 * 40 + 8).toString(16).padStart(2, '0')}`
@@ -397,23 +430,23 @@ export default function EmotionalArc() {
                   >
                     {pt.intensity ?? '·'}
                   </div>
-                  <span className="text-[10px] text-slate-600">Ch.{pt.number}</span>
+                  <span className="text-[10px] text-atlas-mute">Ch.{pt.number}</span>
                 </button>
               ))}
             </div>
 
             {/* ── Légende couleur de courbe ── */}
             <div
-              className="rounded-xl p-4 flex flex-col gap-3"
-              style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+              className="rounded-none p-4 flex flex-col gap-3"
+              style={{ borderTop: '1px solid var(--color-atlas-line)' }}
             >
-              <p className="text-[10px] text-slate-600 uppercase tracking-widest">{t('arc.curveColor', 'Couleur de la courbe')}</p>
+              <p className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em]">{t('arc.curveColor', 'Couleur de la courbe')}</p>
               <div className="flex items-center gap-3">
                 {[
-                  { color: '#60a5fa', label: '< 3', desc: t('arc.calm', 'Calme') },
-                  { color: '#facc15', label: '3\u20135', desc: t('arc.moderate', 'Mod\u00e9r\u00e9') },
-                  { color: '#fb923c', label: '5\u20137', desc: t('arc.dramatic', 'Dramatique') },
-                  { color: '#f87171', label: '\u2265 7', desc: t('arc.intense', 'Intense') },
+                  { color: VIZ_SEQUENTIAL[0], label: '< 3', desc: t('arc.calm', 'Calme') },
+                  { color: VIZ_SEQUENTIAL[1], label: '3\u20135', desc: t('arc.moderate', 'Mod\u00e9r\u00e9') },
+                  { color: VIZ_SEQUENTIAL[2], label: '5\u20137', desc: t('arc.dramatic', 'Dramatique') },
+                  { color: VIZ_SEQUENTIAL[3], label: '\u2265 7', desc: t('arc.intense', 'Intense') },
                 ].map(({ color: c, label, desc }) => (
                   <div key={label} className="flex items-center gap-1.5 flex-1">
                     <div className="w-8 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: c }} />
@@ -432,10 +465,10 @@ export default function EmotionalArc() {
             {/* ── Légende beats ── */}
             {beatMarkers.length > 0 && (
               <div
-                className="rounded-xl p-4"
-                style={{ backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                className="rounded-none p-4"
+                style={{ borderTop: '1px solid var(--color-atlas-line)' }}
               >
-                <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-3">{t('arc.beatsPlaced', 'Beats STC plac\u00e9s')}</p>
+                <p className="font-grotesk text-[10px] font-bold text-atlas-mute uppercase tracking-[0.2em] mb-3">{t('arc.beatsPlaced', 'Beats STC plac\u00e9s')}</p>
                 <div className="flex flex-wrap gap-2">
                   {beatMarkers.map(({ beat, chapterNumber }) => (
                     <span

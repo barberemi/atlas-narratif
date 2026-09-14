@@ -8,8 +8,11 @@ import { BEATS }            from '../../data/beats_config';
 import { OUTCOMES }         from '../../data/outcome_config';
 import { Field, Input, Textarea } from '../ui/FormFields';
 import SidePanel from '../ui/SidePanel';
+import Icon from '../ui/Icon';
+import Term from '../ui/Term';
+import { VIZ_STATUS } from '../../data/viz_palette';
 
-const ACCENT = '#818cf8';
+const ACCENT = '#5cae8e';
 
 // ── Sélecteur multi-entités ────────────────────────────────────────────────────
 
@@ -36,7 +39,7 @@ function EntitySelector({ label, items, selected, onToggle, getColor, getName, g
                 onClick={() => onToggle(item)}
                 title={t('eventEditor.remove')}
               >
-                {getName(item).split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
+                {getName(item).split(' ')[0]} <Icon name="close" size={12} style={{ opacity: 0.5 }} />
               </span>
             );
           })}
@@ -63,13 +66,13 @@ function EntitySelector({ label, items, selected, onToggle, getColor, getName, g
               }}
             >
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: isSelected ? color : '#334155' }} />
-              <span className="text-xs flex-1 truncate" style={{ color: isSelected ? '#e2e8f0' : '#64748b' }}>{getName(item)}</span>
-              {isSelected && <span className="text-[10px]" style={{ color }}>✓</span>}
+              <span className="text-xs flex-1 truncate" style={{ color: isSelected ? '#e2e8f0' : 'var(--color-atlas-soft)' }}>{getName(item)}</span>
+              {isSelected && <Icon name="check" size={13} style={{ color }} />}
             </button>
           );
         })}
         {filtered.length === 0 && (
-          <p className="text-xs text-slate-600 text-center py-2 italic">{t('empty.noSearch')}</p>
+          <p className="text-xs text-atlas-mute text-center py-2 italic">{t('empty.noSearch')}</p>
         )}
       </div>
     </Field>
@@ -99,7 +102,7 @@ function LocationSelector({ locations, locationId, onChange }) {
             onClick={() => onChange(null)}
             title={t('eventEditor.remove')}
           >
-            📍 {selected.name} <span style={{ opacity: 0.5 }}>✕</span>
+            <Icon name="location" size={12} /> {selected.name} <Icon name="close" size={12} style={{ opacity: 0.5 }} />
           </span>
         </div>
       )}
@@ -122,13 +125,13 @@ function LocationSelector({ locations, locationId, onChange }) {
                 border: `1px solid ${isSelected ? 'rgba(96,165,250,0.4)' : 'rgba(255,255,255,0.05)'}`,
               }}
             >
-              <span className="text-xs flex-1 truncate" style={{ color: isSelected ? '#e2e8f0' : '#64748b' }}>📍 {loc.name}</span>
-              {isSelected && <span className="text-[10px]" style={{ color: '#60a5fa' }}>✓</span>}
+              <span className="text-xs flex-1 truncate inline-flex items-center gap-1" style={{ color: isSelected ? '#e2e8f0' : 'var(--color-atlas-soft)' }}><Icon name="location" size={12} /> {loc.name}</span>
+              {isSelected && <Icon name="check" size={13} style={{ color: '#60a5fa' }} />}
             </button>
           );
         })}
         {filtered.length === 0 && (
-          <p className="text-xs text-slate-600 text-center py-2 italic">{t('empty.noSearch')}</p>
+          <p className="text-xs text-atlas-mute text-center py-2 italic">{t('empty.noSearch')}</p>
         )}
       </div>
     </Field>
@@ -286,17 +289,17 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest">
+            <p className="font-grotesk text-[10px] uppercase tracking-[0.16em]" style={{ color: '#cba15e' }}>
               {isEdit ? t('eventEditor.editEvent') : t('eventEditor.newEvent')}
             </p>
-            <h2 className="text-sm font-black text-white mt-0.5">
-              Timeline <span style={{ color: ACCENT }}>Narrative</span>
+            <h2 className="font-serif text-xl font-semibold text-white mt-1">
+              Timeline <span className="italic" style={{ color: ACCENT }}>narrative</span>
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all text-sm"
-          >✕</button>
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-atlas-soft hover:text-white hover:bg-white/10 transition-all text-sm"
+          ><Icon name="close" size={12} /></button>
         </div>
 
         {/* Corps scrollable */}
@@ -358,8 +361,8 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           </Field>
 
           {/* ── Anatomie de scène ── */}
-          <div className="rounded-xl p-4 space-y-4" style={{ backgroundColor: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)' }}>
-            <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>{t('eventEditor.sceneAnatomy')}</p>
+          <div className="rounded-none p-4 space-y-4" style={{ backgroundColor: 'rgba(92,174,142,0.06)', border: '1px solid rgba(92,174,142,0.18)' }}>
+            <p className="font-grotesk text-[10px] uppercase tracking-widest font-bold" style={{ color: ACCENT }}>{t('eventEditor.sceneAnatomy')}</p>
 
             <Field label={t('eventEditor.sceneGoal')}>
               <Textarea
@@ -391,11 +394,11 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                       className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all duration-150"
                       style={{
                         backgroundColor: active ? `${o.color}20` : 'rgba(255,255,255,0.04)',
-                        color:           active ? o.color : '#475569',
+                        color:           active ? o.color : 'var(--color-atlas-mute)',
                         border:          `1px solid ${active ? `${o.color}50` : 'rgba(255,255,255,0.08)'}`,
                       }}
                     >
-                      <span>{o.icon}</span> {t(`outcome.${o.id}`, o.label)}
+                      <span><Icon name={o.icon} size={13} /></span> {t(`outcome.${o.id}`, o.label)}
                     </button>
                   );
                 })}
@@ -411,7 +414,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           />
 
           {/* POV */}
-          <Field label={t('eventEditor.pov')}>
+          <Field label={<Term id="pov">{t('eventEditor.pov')}</Term>}>
             {data.povCharacterId && (() => {
               const pov = allCharacters.find(c => c.id === data.povCharacterId);
               return pov ? (
@@ -422,7 +425,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                     onClick={() => set('povCharacterId', null)}
                     title={t('eventEditor.removePov')}
                   >
-                    👁 {pov.name.split(' ')[0]} <span style={{ opacity: 0.5 }}>✕</span>
+                    <Icon name="pov" size={12} /> {pov.name.split(' ')[0]} <Icon name="close" size={12} style={{ opacity: 0.5 }} />
                   </span>
                 </div>
               ) : null;
@@ -430,10 +433,10 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
             <select
               value={data.povCharacterId ?? ''}
               onChange={e => set('povCharacterId', e.target.value === '' ? null : e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm text-white border border-white/10 outline-none"
-              style={{ backgroundColor: '#0d1b2a' }}
+              className="w-full px-3 py-2 rounded-none text-sm text-white border border-atlas-line outline-none"
+              style={{ backgroundColor: 'var(--color-atlas-ink)' }}
               onFocus={e => { e.currentTarget.style.borderColor = `${ACCENT}80`; }}
-              onBlur={e  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              onBlur={e  => { e.currentTarget.style.borderColor = 'var(--color-atlas-line)'; }}
             >
               <option value="">— {t('eventEditor.noPov')} —</option>
               {allCharacters.map(c => (
@@ -454,7 +457,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           />
 
           {/* Beat STC */}
-          <Field label={t('eventEditor.beatStc')}>
+          <Field label={<Term id="beat">{t('eventEditor.beatStc')}</Term>}>
             {data.beatId && (() => {
               const beat = BEATS.find(b => b.id === data.beatId);
               return beat ? (
@@ -467,7 +470,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                   >
                     <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: beat.color }} />
                     {t(`narrative:beats.${beat.id}.label`, beat.label)}
-                    <span style={{ opacity: 0.5 }}>✕</span>
+                    <Icon name="close" size={12} style={{ opacity: 0.5 }} />
                   </span>
                 </div>
               ) : null;
@@ -475,10 +478,10 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
             <select
               value={data.beatId ?? ''}
               onChange={e => set('beatId', e.target.value === '' ? null : e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm text-white border border-white/10 outline-none"
-              style={{ backgroundColor: '#0d1b2a' }}
+              className="w-full px-3 py-2 rounded-none text-sm text-white border border-atlas-line outline-none"
+              style={{ backgroundColor: 'var(--color-atlas-ink)' }}
               onFocus={e => { e.currentTarget.style.borderColor = `${ACCENT}80`; }}
-              onBlur={e  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              onBlur={e  => { e.currentTarget.style.borderColor = 'var(--color-atlas-line)'; }}
             >
               <option value="">— {t('eventEditor.noBeat')} —</option>
               {BEATS.map(beat => (
@@ -502,7 +505,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
 
           {/* ── Flashback ── */}
           <div
-            className="rounded-xl p-4 space-y-3"
+            className="rounded-none p-4 space-y-3"
             style={{
               backgroundColor: data.isFlashback ? 'rgba(217,119,6,0.06)' : 'rgba(255,255,255,0.02)',
               border: `1px solid ${data.isFlashback ? 'rgba(217,119,6,0.25)' : 'rgba(255,255,255,0.07)'}`,
@@ -517,7 +520,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                   border: `1px solid ${data.isFlashback ? 'rgba(217,119,6,0.9)' : 'rgba(255,255,255,0.15)'}`,
                 }}
               >
-                {data.isFlashback && <span className="text-white text-[9px] font-black">✓</span>}
+                {data.isFlashback && <Icon name="check" size={11} className="text-white" />}
               </span>
               <input
                 type="checkbox"
@@ -526,10 +529,10 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                 onChange={e => set('isFlashback', e.target.checked)}
               />
               <div>
-                <p className="text-xs font-bold" style={{ color: data.isFlashback ? '#fbbf24' : '#64748b' }}>
-                  ↩ {t('eventEditor.flashback')}
+                <p className="text-xs font-bold flex items-center gap-1" style={{ color: data.isFlashback ? '#fbbf24' : 'var(--color-atlas-soft)' }}>
+                  <Icon name="memory" size={13} /> {t('eventEditor.flashback')}
                 </p>
-                <p className="text-[10px] text-slate-600 font-serif italic">
+                <p className="text-[10px] text-atlas-mute font-serif italic">
                   {t('eventEditor.flashbackHint')}
                 </p>
               </div>
@@ -545,7 +548,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                     placeholder="ex : -5, 1, 3…"
                   />
                 </Field>
-                <p className="text-[9px] text-slate-600 mt-1 font-serif italic">
+                <p className="text-[9px] text-atlas-mute mt-1 font-serif italic">
                   {t('eventEditor.diegeticHint')}
                 </p>
               </div>
@@ -571,13 +574,13 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all duration-150"
                       style={{
                         backgroundColor: active ? `${thread.color}20` : 'rgba(255,255,255,0.04)',
-                        color:           active ? thread.color : '#475569',
+                        color:           active ? thread.color : 'var(--color-atlas-mute)',
                         border:          `1px solid ${active ? `${thread.color}50` : 'rgba(255,255,255,0.08)'}`,
                       }}
                     >
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: active ? thread.color : '#334155' }} />
                       {thread.name}
-                      {active && <span style={{ opacity: 0.6 }}>✓</span>}
+                      {active && <Icon name="check" size={12} style={{ opacity: 0.6 }} />}
                     </button>
                   );
                 })}
@@ -595,7 +598,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
             className="w-full py-2.5 rounded-lg text-sm font-black transition-all duration-200"
             style={{
               backgroundColor: canSave ? ACCENT : `${ACCENT}25`,
-              color:           canSave ? '#fff'  : `${ACCENT}60`,
+              color:           canSave ? '#15171b'  : `${ACCENT}60`,
               cursor:          canSave ? 'pointer' : 'not-allowed',
             }}
           >
@@ -605,7 +608,7 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
           {isEdit && !confirmDelete && (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="w-full py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
+              className="w-full py-2 rounded-lg text-xs font-bold text-atlas-mute hover:text-red-400 hover:bg-red-500/08 transition-all duration-150"
               style={{ border: '1px solid rgba(255,255,255,0.05)' }}
             >
               {t('eventEditor.deleteEvent')}
@@ -616,14 +619,14 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmDelete(false)}
-                className="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-white/08 hover:bg-white/05 transition-all"
+                className="flex-1 py-2 rounded-lg text-xs font-bold text-atlas-soft border border-white/08 hover:bg-white/05 transition-all"
               >
                 {t('btn.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 className="flex-1 py-2 rounded-lg text-xs font-black transition-all duration-150"
-                style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.35)' }}
+                style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: VIZ_STATUS.crit, border: '1px solid rgba(239,68,68,0.35)' }}
               >
                 {t('btn.confirm')}
               </button>

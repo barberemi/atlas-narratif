@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import i18n from '../i18n';
 import { useProject } from '../db/ProjectContext';
 import { deleteProject, seedProjectViaApi } from '../api/client';
-import { buildLotrSeedPayload } from '../db/seed.lotr';
 import { toast } from '../lib/toast';
 
 /**
@@ -32,6 +31,7 @@ export function useLotrReseed() {
       try {
         await deleteProject(currentId);
 
+        const { buildLotrSeedPayload } = await import('../db/seed.lotr');
         const payload = await buildLotrSeedPayload({ lang });
         const newId = await seedProjectViaApi(payload.meta, payload.data);
 

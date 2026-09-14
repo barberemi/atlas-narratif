@@ -23,6 +23,7 @@ Point d'entrée unique pour toutes les données côté frontend. Remplace les an
 - `credentials: 'include'` sur tous les appels (cookies Better Auth)
 - Fonctions nommées identiquement aux anciennes `queries.js` (sauf sans le paramètre `db`)
 - Re-exporte `computeAlerts`, `computeAlertsFromEvents` depuis `../db/queries` (calculs purement JS, pas de SQL)
+- `updateProject(projectId, { name?, description? })` → `PUT /api/projects/:projectId` (met à jour nom et/ou logline ; utilisé par la checklist d'onboarding pour enregistrer la logline). Côté serveur : `q.updateProject` + validateur `updateProject`.
 
 ## ProjectContext (src/db/ProjectContext.jsx)
 

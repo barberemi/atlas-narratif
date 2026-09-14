@@ -4,11 +4,13 @@ import { useLoreStore } from '../../stores/useLoreStore';
 import { useVolumeStore } from '../../stores/useVolumeStore';
 import EntityEditor    from './EntityEditor';
 import Skeleton        from '../ui/Skeleton';
+import { HeaderAction, HeaderSep } from '../ui/HeaderButton';
 import GroupEditor     from './GroupEditor';
 import CharacterCard   from './CharacterCard';
 import LocationCard    from './LocationCard';
 import ObjectCard      from './ObjectCard';
 import GroupCard       from './GroupCard';
+import Icon            from '../ui/Icon';
 
 
 const TAB_KEYS = [
@@ -94,29 +96,27 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
   if (!ready) return <Skeleton variant="card" />;
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0B1621] text-slate-200 overflow-y-hidden">
+    <div className="h-full w-full max-w-[1280px] mx-auto flex flex-col bg-atlas-ink text-slate-200 overflow-y-hidden">
       {/* ── Header ── */}
-      <header data-tour="lore-tabs" className="flex items-center justify-between px-6 py-3 border-b border-white/10 flex-shrink-0">
+      <header data-tour="lore-tabs" className="flex items-center justify-between px-6 py-5 border-b border-atlas-line flex-shrink-0">
         <div className="flex-1">
-          <h1 className="text-lg font-black tracking-tight">
-            Lore <span style={{ color: '#3F51B5' }}>Browser</span>
+          <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] text-atlas-gold mb-1.5">{'Univers · encyclopédie'}</p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight leading-none">
+            Lore <span className="italic" style={{ color: '#5cae8e' }}>Browser</span>
           </h1>
-          <p className="text-xs text-slate-500 font-serif italic">
-            {t('lore.subtitle')}{activeVolume ? ` — ${activeVolume.title}` : ''}
+          <p className="text-sm text-atlas-soft font-serif italic mt-1">
+            {t('lore.subtitle')}{activeVolume ? ` · ${activeVolume.title}` : ''}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-slate-600">
+        <div className="flex items-center gap-5">
+          <span className="text-xs font-mono text-atlas-mute">
             {filtered.length} / {currentTab.data.length}
           </span>
-          <button
-            onClick={() => activeTab === 'groups' ? setGroupEditorGrp(null) : setEditorEntity(null)}
-            className="text-xs px-3 py-1.5 rounded-lg font-black transition-all duration-200 flex items-center gap-1.5"
-            style={{ backgroundColor: 'rgba(63,81,181,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
-          >
+          <HeaderSep />
+          <HeaderAction onClick={() => activeTab === 'groups' ? setGroupEditorGrp(null) : setEditorEntity(null)}>
             {t('btn.add')}
-          </button>
+          </HeaderAction>
         </div>
       </header>
 
@@ -126,7 +126,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
         <div className="relative">
           <nav
             ref={tabNavRef}
-            className="flex gap-1 border-b border-white/10 overflow-x-auto no-scrollbar"
+            className="flex gap-1 border-b border-atlas-line overflow-x-auto no-scrollbar"
             onScroll={() => {
               const el = tabNavRef.current;
               if (el) setTabCanScroll(el.scrollWidth - el.scrollLeft - el.clientWidth > 4);
@@ -138,18 +138,18 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
                 <button
                   key={tab.key}
                   onClick={() => { setActiveTab(tab.key); setSearch(''); }}
-                  className="px-4 py-2.5 text-sm font-bold transition-all duration-200 relative flex-shrink-0 whitespace-nowrap"
-                  style={{ color: isActive ? '#fff' : '#475569' }}
+                  className="font-grotesk px-4 py-2.5 text-xs font-bold uppercase tracking-[0.08em] transition-all duration-200 relative flex-shrink-0 whitespace-nowrap"
+                  style={{ color: isActive ? '#ece7db' : 'var(--color-atlas-mute)' }}
                 >
                   {tab.label}
                   <span
                     className="ml-2 text-xs font-mono"
-                    style={{ color: isActive ? '#818cf8' : '#1e293b' }}
+                    style={{ color: isActive ? '#5cae8e' : '#3a352d' }}
                   >
                     {tab.data.length}
                   </span>
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#3F51B5]" />
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5cae8e]" />
                   )}
                 </button>
               );
@@ -157,35 +157,35 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
           </nav>
           {tabCanScroll && (
             <div className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none"
-              style={{ background: 'linear-gradient(to right, transparent, #0B1621)' }} />
+              style={{ background: 'linear-gradient(to right, transparent, #15171b)' }} />
           )}
         </div>
 
         {/* Barre de recherche */}
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-sm">⌕</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-atlas-mute text-sm">⌕</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('search.placeholder')}
-            className="w-full pl-8 pr-4 py-2 text-sm rounded-lg bg-white/5 border border-white/10 text-slate-200 placeholder-slate-600 outline-none focus:border-[#3F51B5]/50 transition-colors"
+            className="w-full pl-8 pr-4 py-2 text-sm bg-white/5 border border-atlas-line text-atlas-text placeholder-atlas-mute outline-none focus:border-[#5cae8e] transition-colors"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-atlas-soft hover:text-white transition-colors"
             >
-              ✕
+              <Icon name="close" size={12} />
             </button>
           )}
         </div>
       </div>
 
       {/* ── Grille ── */}
-      <main data-tour="lore-grid" className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-[#0B1621]">
+      <main data-tour="lore-grid" className="flex-1 overflow-y-auto no-scrollbar px-6 py-6 bg-atlas-ink">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-slate-600">
+          <div className="flex flex-col items-center justify-center h-64 text-atlas-mute">
             <p className="text-4xl mb-4">◯</p>
             <p className="font-serif italic">
               {search ? t('empty.noSearch') : t('empty.noData')}

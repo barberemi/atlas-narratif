@@ -5,22 +5,25 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
 
   test('Ctrl+K fonctionne depuis /lore', async ({ page }) => {
     await page.goto('/lore');
+    await page.waitForLoadState('networkidle');
     await page.keyboard.press('Control+k');
-    await expect(page.getByPlaceholder(/search|recherch/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('textbox', { name: 'Global search' })).toBeVisible({ timeout: 5_000 });
     await page.keyboard.press('Escape');
   });
 
   test('Ctrl+K fonctionne depuis /timeline', async ({ page }) => {
     await page.goto('/timeline');
+    await page.waitForLoadState('networkidle');
     await page.keyboard.press('Control+k');
-    await expect(page.getByPlaceholder(/search|recherch/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('textbox', { name: 'Global search' })).toBeVisible({ timeout: 5_000 });
     await page.keyboard.press('Escape');
   });
 
   test('Ctrl+K fonctionne depuis /map', async ({ page }) => {
     await page.goto('/map');
+    await page.waitForLoadState('networkidle');
     await page.keyboard.press('Control+k');
-    await expect(page.getByPlaceholder(/search|recherch/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('textbox', { name: 'Global search' })).toBeVisible({ timeout: 5_000 });
     await page.keyboard.press('Escape');
   });
 
@@ -50,10 +53,10 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
     await page.goto('/');
     await page.getByRole('button', { name: /building my story/i }).click();
     await page.getByRole('button', { name: /Save the Cat/i }).click();
-    await page.getByPlaceholder('Mon roman').fill('E2E Empty Project');
+    await page.getByPlaceholder(/My novel|Mon roman/i).fill('E2E Empty Project');
     await page.getByRole('button', { name: /Create project/i }).click();
-    // Redirigé vers /savethecat
-    await expect(page).toHaveURL(/\/savethecat/, { timeout: 10_000 });
+    // Redirigé vers /dashboard (cold-start guidé du point 8)
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10_000 });
     await page.keyboard.press('Escape'); // dismiss welcome modal
 
     // Dashboard : le modal de bienvenue ne doit PAS s'afficher sur un projet vide
@@ -67,7 +70,7 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
 
     // Timeline vide : bouton "+ Créer un événement" visible
     await page.goto('/timeline');
-    await expect(page.getByText('📅').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/No events|Aucun événement|无事件/i).first()).toBeVisible({ timeout: 5_000 });
     const addEventBtn = page.getByRole('button', { name: /Create an event|Créer un événement|创建事件/i });
     await expect(addEventBtn).toBeVisible();
 
@@ -77,22 +80,22 @@ test.describe('Phase 10 — Edge cases & robustesse', () => {
     await page.keyboard.press('Escape');
 
     await page.goto('/plants');
-    await expect(page.getByText('🌱').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/No narrative setups|Aucune amorce narrative|无叙事伏笔/i).first()).toBeVisible({ timeout: 5_000 });
 
     await page.goto('/threads');
-    await expect(page.getByText('🧵').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/No narrative threads|Aucun fil narratif|无叙事线索/i).first()).toBeVisible({ timeout: 5_000 });
 
-    // Map : pas d'image → état vide avec emoji et upload
+    // Map : pas d'image → état vide avec zone d'upload
     await page.goto('/map');
-    await expect(page.getByText('🗺️')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/Add map background|Ajouter un fond de carte|添加地图背景/i)).toBeVisible({ timeout: 5_000 });
 
     // Upload une image → le MapCanvas s'affiche (pas juste un <img>)
     const fileInput = page.locator('input[type="file"][accept*="image"]');
     await fileInput.setInputFiles(path.resolve('src/assets/ouest_terre_du_milieu.jpg'));
     await expect(page.getByRole('img', { name: /Carte/i })).toBeVisible({ timeout: 10_000 });
 
-    // L'emoji de l'état vide doit avoir disparu
-    await expect(page.getByText('🗺️')).not.toBeVisible();
+    // La zone d'upload de l'état vide doit avoir disparu
+    await expect(page.getByText(/Add map background|Ajouter un fond de carte|添加地图背景/i)).not.toBeVisible();
 
     // Le bouton "Remplacer le fond" doit être visible
     await expect(page.getByText(/Replace background|Remplacer le fond/i)).toBeVisible();

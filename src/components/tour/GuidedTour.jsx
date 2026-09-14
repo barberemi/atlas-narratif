@@ -166,7 +166,7 @@ export default function GuidedTour() {
           <rect
             style={{ transition: 'x 0.35s ease, y 0.35s ease, width 0.35s ease, height 0.35s ease' }}
             x={animRect.x} y={animRect.y} width={animRect.w} height={animRect.h}
-            rx={8} fill="none" stroke="rgba(99,102,241,0.8)" strokeWidth={2}
+            rx={8} fill="none" stroke="rgba(92,174,142,0.8)" strokeWidth={2}
           />
         )}
       </svg>
@@ -179,9 +179,9 @@ export default function GuidedTour() {
           pointerEvents: waitingForRect ? 'none' : 'all',
           opacity: waitingForRect ? 0 : 1,
           transition: 'opacity 0.15s ease',
-          backgroundColor: 'rgba(11,22,33,0.97)',
-          border: '1px solid rgba(99,102,241,0.35)',
-          borderRadius: 16, padding: '20px 22px',
+          backgroundColor: 'rgba(21,23,27,0.97)',
+          border: '1px solid rgba(92,174,142,0.3)',
+          borderRadius: 0, padding: '20px 22px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
           backdropFilter: 'blur(12px)',
         }}
@@ -190,14 +190,14 @@ export default function GuidedTour() {
         <div className="flex items-center justify-between mb-2 gap-3">
           <div className="flex items-center gap-2">
             <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: 'rgba(63,81,181,0.2)', color: '#818cf8' }}
+              className="font-grotesk text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider"
+              style={{ backgroundColor: 'rgba(92,174,142,0.15)', color: '#5cae8e' }}
             >
               {stepIndex + 1} / {TOUR_STEPS.length}
             </span>
-            <p className="text-sm font-black text-slate-100">{t(`narrative:tour.steps.${step.dataKey?.replace(/-/g, '_')}.title`, step.title)}</p>
+            <p className="font-serif text-base font-semibold text-slate-100">{t(`narrative:tour.steps.${step.dataKey?.replace(/-/g, '_')}.title`, step.title)}</p>
           </div>
-          <button onClick={stop} className="text-slate-600 hover:text-slate-400 transition-colors text-lg leading-none flex-shrink-0">×</button>
+          <button onClick={stop} className="text-atlas-mute hover:text-slate-400 transition-colors text-lg leading-none flex-shrink-0">×</button>
         </div>
 
         <p className="text-xs text-slate-400 leading-relaxed font-serif italic mb-4">
@@ -208,23 +208,23 @@ export default function GuidedTour() {
         <div className="flex gap-1 mb-4">
           {TOUR_STEPS.map((_, i) => (
             <div key={i} className="h-0.5 flex-1 rounded-full transition-all duration-300"
-              style={{ backgroundColor: i <= stepIndex ? '#6366f1' : 'rgba(255,255,255,0.1)' }} />
+              style={{ backgroundColor: i <= stepIndex ? '#5cae8e' : 'rgba(255,255,255,0.1)' }} />
           ))}
         </div>
 
         <div className="flex items-center gap-2">
           {stepIndex > 0 && (
             <button onClick={prev}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150"
+              className="px-3 py-1.5 rounded-none text-xs font-bold transition-all duration-150"
               style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: '#64748b', border: '1px solid rgba(255,255,255,0.08)' }}>
               {t('tour.prev')}
             </button>
           )}
           <div className="flex-1" />
-          <button onClick={stop} className="text-xs text-slate-700 hover:text-slate-500 transition-colors">{t('tour.skip')}</button>
+          <button onClick={stop} className="text-xs text-slate-700 hover:text-atlas-soft transition-colors">{t('tour.skip')}</button>
           <button onClick={next}
-            className="px-4 py-1.5 rounded-lg text-xs font-black transition-all duration-150"
-            style={{ backgroundColor: 'rgba(63,81,181,0.25)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.4)' }}>
+            className="px-4 py-1.5 rounded-none text-xs font-black transition-all duration-150"
+            style={{ backgroundColor: 'rgba(92,174,142,0.18)', color: '#5cae8e', border: '1px solid rgba(92,174,142,0.4)' }}>
             {isLast ? t('tour.finish') : t('tour.next')}
           </button>
         </div>

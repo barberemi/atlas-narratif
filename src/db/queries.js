@@ -1,5 +1,5 @@
 /**
- * Couche d'accès aux données — AtlasNarratif
+ * Couche d'accès aux données — Atlas Narratif
  *
  * Toutes les fonctions prennent un `db` (PGliteWorker) et un `projectId`.
  * Elles retournent des objets au même format que les fichiers JS existants,
