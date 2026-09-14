@@ -276,7 +276,7 @@ Ne génère des entrées que pour les personnages qui suivent un arc héroïque 
 3. Limite les incohérences aux vraies contradictions — pas aux imprécisions stylistiques.
 4. Pour les beats STC : ne pas créer de chapitre si aucun moment du texte ne correspond clairement.
 5. \`journeys\` est toujours un tableau vide \`[]\`.
-6. Les couleurs des personnages doivent être distinctes et lisibles sur fond sombre (#0B1621).
+6. Les couleurs des personnages doivent être distinctes et lisibles sur fond sombre (#15171b).
 7. **Cohérence groupes ↔ personnages** : tout groupe mentionné dans \`characters[].affiliation\` doit être défini dans \`groupsDB\`, et tout personnage listé dans \`groupsDB[].members\` doit figurer dans \`characters[]\`. Les \`characterId\` de \`members\` doivent correspondre exactement aux \`id\` des personnages.
 8. **Cohérence lieux ↔ personnages** : les IDs dans \`locations[].inhabitants\` et \`locations[].visitedBy\` doivent correspondre à des \`id\` existants dans \`characters[]\`.
 9. **Cohérence plants ↔ événements** : les \`plant_event_id\` et \`payoff_event_id\` dans \`plantsDB\` doivent correspondre à des \`id\` existants dans \`timelineDB\`.

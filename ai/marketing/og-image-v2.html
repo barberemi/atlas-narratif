@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>OG image — Atlas Narratif (v2, charte actuelle)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #0a0b0d; }
+
+  /* Palette officielle (src/index.css)
+     ink #15171b · panel #1a1d22 · text #ece7db · soft #a9a291
+     vert sauge #5cae8e · or/laiton #cba15e */
+  .og {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background:
+      radial-gradient(85% 65% at 90% -8%, rgba(92,174,142,.16), transparent 55%),
+      radial-gradient(70% 60% at 96% 108%, rgba(203,161,94,.12), transparent 60%),
+      #15171b;
+    font-family: "Spectral", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    color: #ece7db;
+  }
+
+  /* courbes de niveau (motif atlas) fondues à droite */
+  .og::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: repeating-radial-gradient(circle at 86% 30%,
+      transparent 0, transparent 52px,
+      rgba(203,161,94,.10) 53px, transparent 56px);
+    -webkit-mask-image: linear-gradient(90deg, transparent 8%, #000 72%);
+            mask-image: linear-gradient(90deg, transparent 8%, #000 72%);
+  }
+  /* liseré supérieur bicolore discret */
+  .og::after {
+    content: "";
+    position: absolute; left: 0; top: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, #5cae8e 0%, #5cae8e 42%, #cba15e 58%, #cba15e 100%);
+    opacity: .9;
+  }
+
+  /* rose des vents laiton, débordante */
+  .compass {
+    position: absolute; right: -96px; top: 50%; transform: translateY(-50%);
+    width: 452px; height: 452px; opacity: .5;
+  }
+
+  .content {
+    position: relative; z-index: 2;
+    padding: 70px 84px; height: 100%;
+    display: flex; flex-direction: column;
+  }
+
+  /* marque */
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand .mark {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid #cba15e; position: relative; flex: none;
+  }
+  .brand .mark::after {
+    content: ""; position: absolute; inset: 7px; border-radius: 50%;
+    background: #cba15e;
+  }
+  .brand .name {
+    font-size: 27px; font-weight: 600; letter-spacing: .015em; color: #ece7db;
+  }
+
+  .center { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .kicker {
+    font-style: italic; font-weight: 500;
+    color: #cba15e; font-size: 31px; margin-bottom: 20px; letter-spacing: .005em;
+  }
+  h1 {
+    font-size: 80px; line-height: 1.05; font-weight: 600; letter-spacing: -.018em;
+    max-width: 16ch;
+  }
+  h1 .accent { color: #5cae8e; }
+
+  .sub {
+    margin-top: 26px; font-size: 25px; font-weight: 400;
+    color: #a9a291; max-width: 30ch; line-height: 1.35;
+  }
+
+  .foot {
+    display: flex; align-items: center; gap: 18px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 22px; letter-spacing: .03em; color: #a9a291;
+  }
+  .foot .site { color: #ece7db; }
+  .foot .sep { color: #5cae8e; }
+</style>
+</head>
+<body>
+  <div class="og">
+    <svg class="compass" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="47" stroke="#cba15e" stroke-width="0.5" opacity="0.65"/>
+      <circle cx="50" cy="50" r="36" stroke="#cba15e" stroke-width="0.4" opacity="0.5"/>
+      <circle cx="50" cy="50" r="24" stroke="#5cae8e" stroke-width="0.4" opacity="0.4"/>
+      <path d="M50 5 L57.5 50 L50 95 L42.5 50 Z" fill="#cba15e" opacity="0.34"/>
+      <path d="M5 50 L50 42.5 L95 50 L50 57.5 Z" fill="#cba15e" opacity="0.16"/>
+      <path d="M22 22 L52 48 L78 78 L48 52 Z" fill="#5cae8e" opacity="0.18"/>
+      <circle cx="50" cy="50" r="2.6" fill="#cba15e"/>
+    </svg>
+    <div class="content">
+      <div class="brand">
+        <span class="mark"></span>
+        <span class="name">Atlas Narratif</span>
+      </div>
+      <div class="center">
+        <div class="kicker">L'atlas de ton roman.</div>
+        <h1>Structure ton roman.<br><span class="accent">Garde ta plume.</span></h1>
+        <div class="sub">Save the Cat · Voyage du Héros. Visualise ta saga en entier, repère les incohérences.</div>
+      </div>
+      <div class="foot">
+        <span class="site">atlas-narratif.com</span>
+        <span class="sep">·</span> gratuit
+        <span class="sep">·</span> sans clé API
+      </div>
+    </div>
+  </div>
+</body>
+</html>
