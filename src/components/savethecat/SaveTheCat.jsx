@@ -348,9 +348,9 @@ export default function SaveTheCat() {
       {/* ── Frise(s) ── */}
       <div ref={friseRef}>
       {isSeriesMode && volumeData && activeSeriesTome ? (
-        <div className="px-10 pt-5 pb-2 flex-shrink-0">
+        <div className="px-4 md:px-10 pt-5 pb-2 flex-shrink-0">
           {/* Bande série compacte : sélecteur de tome + couverture (chantier 5) */}
-          <div className="flex gap-2 mb-5" role="tablist" aria-label={t('dashboard.seriesView')}>
+          <div className="flex flex-col md:flex-row gap-2 mb-5" role="tablist" aria-label={t('dashboard.seriesView')}>
             {volumeData.map(vd => {
               const count    = vd.beatEventMap.size;
               const isActive = activeSeriesTome.volume.id === vd.volume.id;
@@ -408,7 +408,7 @@ export default function SaveTheCat() {
           </div>
         </div>
       ) : (
-        <div data-tour="stc-frise" className="px-10 pt-6 pb-2 flex-shrink-0">
+        <div data-tour="stc-frise" className="px-4 md:px-10 pt-6 pb-2 flex-shrink-0">
           <Frise
             chapters={timelineChapters}
             beatEventMap={beatEventMap}
