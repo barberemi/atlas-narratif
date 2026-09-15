@@ -33,6 +33,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog/voyage-du-heros-12-etapes</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog/creer-une-timeline-roman</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://DOMAIN_PLACEHOLDER/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

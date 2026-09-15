@@ -9,9 +9,9 @@ Piliers : **P1** = fondation SEO (fort volume, intention claire) · **P2** = app
 | Mois | Phase | Article | Pilier | Intention / mot-clé cible | Canal d'amorçage |
 |------|-------|---------|--------|---------------------------|------------------|
 | **Sept.** | M1 Fondations | Comment structurer un roman : le guide complet ✅ *(publié)* | P1 | « comment structurer un roman » | r/ecriture, un Discord FR |
-| **Sept.** | M1 | La méthode Save the Cat expliquée (les 15 beats) | P1 | « save the cat beats français » | Reddit + groupe FB écriture |
-| **Oct.** | M2 Rodage | Le Voyage du Héros : les 12 étapes | P1 | « voyage du héros étapes » | CoCyclics, Scribay |
-| **Oct.** | M2 | Créer une timeline pour son roman : méthode + outils | P1 | « timeline roman outil » | Discord + démo `/demo` en appui |
+| **Sept.** | M1 | La méthode Save the Cat expliquée (les 15 beats) ✅ *(publié)* | P1 | « save the cat beats français » | Reddit + groupe FB écriture |
+| **Oct.** | M2 Rodage | Le Voyage du Héros : les 12 étapes ✍️ *(rédigé, PR oct.)* | P1 | « voyage du héros étapes » | CoCyclics, Scribay |
+| **Oct.** | M2 | Créer une timeline pour son roman : méthode + outils ✍️ *(rédigé, PR oct.)* | P1 | « timeline roman outil » | Discord + démo `/demo` en appui |
 | **Nov.** | 🚀 M3 NaNoWriMo | Planifie ton NaNoWriMo avec une méthode *(+ template dédié)* | P1 | « préparer nanowrimo plan » | Groupes NaNoWriMo FR, X #TeamÉcriture |
 | **Nov.** | 🚀 M3 Lancement | La structure du Seigneur des Anneaux décortiquée *(démo déguisée)* | P3 | « structure seigneur des anneaux » | Lancement : Reddit, FB, BookTok, PH/BetaList |
 | **Déc.** | M4 Capitaliser | Détecter les incohérences dans son roman : la checklist | P1 | « incohérences roman vérifier » | Discord (aide), newsletter |
