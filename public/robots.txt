@@ -8,6 +8,7 @@ Allow: /login
 Allow: /register
 Allow: /privacy
 Allow: /terms
+Allow: /blog
 
 Llms-txt: https://DOMAIN_PLACEHOLDER/llms.txt
 

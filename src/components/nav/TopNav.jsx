@@ -46,6 +46,15 @@ export default function TopNav({ onSearchOpen }) {
           Atlas <span style={{ color: 'var(--color-atlas-green)' }}>Narratif</span>
         </button>
 
+        <Link
+          to="/blog"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden md:block font-grotesk text-[11px] font-bold uppercase tracking-[0.08em] ml-3 flex-shrink-0 text-atlas-mute hover:text-atlas-text transition-colors"
+        >
+          Le blog
+        </Link>
+
         {hasProjects && (
           <div className="hidden md:flex items-center gap-1">
             <div className="w-px h-5 bg-white/10 mx-2 flex-shrink-0" />
@@ -185,6 +194,18 @@ export default function TopNav({ onSearchOpen }) {
 
           {/* ── Actions (toujours visibles) ── */}
           <div className="border-t border-white/10 px-3 py-2 flex flex-col gap-1">
+            <a
+              href="/blog"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-semibold transition-all"
+              style={{ color: 'var(--color-atlas-soft)', textDecoration: 'none' }}
+            >
+              <Icon name="book" size={17} />
+              <span>Le blog</span>
+            </a>
+
             {hasProjects && (
               <button
                 onClick={() => { onSearchOpen(); setMobileOpen(false); }}
