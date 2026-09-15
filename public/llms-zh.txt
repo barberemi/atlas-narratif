@@ -4,6 +4,15 @@
 
 Atlas Narratif 帮助作者组织、可视化和验证手稿的一致性。数据存储在安全的PostgreSQL数据库中，支持静态加密。
 
+## 公开页面
+
+- [首页](https://atlas-narratif.com/) : 创建或导入项目
+- [博客](https://atlas-narratif.com/blog) : 关于写作与叙事结构的技巧和指南
+- [登录](https://atlas-narratif.com/login) : 登录已有账户
+- [注册](https://atlas-narratif.com/register) : 创建账户
+- [隐私政策](https://atlas-narratif.com/privacy) : 隐私政策（GDPR）
+- [使用条款](https://atlas-narratif.com/terms) : 使用条款
+
 ## 主要功能
 
 - 叙事时间线：按章节组织事件，支持拖拽排序和按卷筛选
@@ -19,14 +28,11 @@ Atlas Narratif 帮助作者组织、可视化和验证手稿的一致性。数�
 - 多卷支持：按卷全局筛选，跨卷伏笔追踪
 - AI导入：通过兼容ChatGPT、Gemini、Claude的提示词分析手稿
 
-## 公开页面
+## 其他语言
 
-- / : 首页，创建或导入项目
-- /login : 登录
-- /register : 注册
-- /privacy : 隐私政策（GDPR）
-- /terms : 使用条款
+- [Français](https://atlas-narratif.com/llms.txt) : 法语版本
+- [English](https://atlas-narratif.com/llms-en.txt) : 英语版本
 
 ## 联系方式
 
-由 Remi Barbe 开发。
+- [Atlas Narratif](https://atlas-narratif.com/) : 由 Remi Barbe 开发

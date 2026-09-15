@@ -4,6 +4,15 @@
 
 Atlas Narratif aide les auteurs a organiser, visualiser et verifier la coherence de leurs manuscrits. Donnees stockees dans une base PostgreSQL securisee avec chiffrement au repos.
 
+## Pages publiques
+
+- [Accueil](https://atlas-narratif.com/) : creation ou import de projet
+- [Blog](https://atlas-narratif.com/blog) : conseils et guides sur l'ecriture et la structure narrative
+- [Connexion](https://atlas-narratif.com/login) : connexion a un compte existant
+- [Inscription](https://atlas-narratif.com/register) : creation d'un compte
+- [Confidentialite](https://atlas-narratif.com/privacy) : politique de confidentialite (RGPD)
+- [Conditions generales](https://atlas-narratif.com/terms) : conditions generales d'utilisation
+
 ## Fonctionnalites principales
 
 - Timeline narrative : organisation des evenements par chapitre, drag-and-drop, filtrage par tome
@@ -19,19 +28,11 @@ Atlas Narratif aide les auteurs a organiser, visualiser et verifier la coherence
 - Support multi-tomes : filtrage global par volume, plants cross-tomes
 - Import IA : analyse de manuscrit via prompt compatible ChatGPT, Gemini, Claude
 
-## Pages publiques
-
-- / : accueil, creation ou import de projet
-- /login : connexion
-- /register : inscription
-- /privacy : politique de confidentialite (RGPD)
-- /terms : conditions generales d'utilisation
-
 ## Autres langues
 
-- English: /llms-en.txt
-- 中文: /llms-zh.txt
+- [English](https://atlas-narratif.com/llms-en.txt) : version anglaise de ce fichier
+- [中文](https://atlas-narratif.com/llms-zh.txt) : version chinoise de ce fichier
 
 ## Contact
 
-Projet developpe par Remi Barbe.
+- [Atlas Narratif](https://atlas-narratif.com/) : projet developpe par Remi Barbe
