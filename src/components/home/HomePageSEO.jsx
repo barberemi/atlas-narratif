@@ -10,6 +10,7 @@
  *     App.jsx (HomePage), mets à jour ce fichier aussi.
  */
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 const INDEX_ITEMS = [
   { no: '01', titleKey: 'home.idx1Title', catKey: 'home.idx1Cat', descKey: 'home.idx1Desc' },
@@ -201,6 +202,17 @@ export default function HomePageSEO() {
               {t('home.closerCta')}
             </span>
           </section>
+
+          {/* ── Footer : liens + maillage interne (blog, légal) ── */}
+          <footer className="text-center pb-14 pt-4" style={{ borderTop: '1px solid var(--color-atlas-line)' }}>
+            <nav className="flex items-center justify-center gap-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.12em] text-atlas-mute mt-8">
+              <Link to="/blog" target="_blank" rel="noopener noreferrer" className="hover:text-atlas-text transition-colors">Le blog</Link>
+              <span aria-hidden="true">·</span>
+              <Link to="/privacy" className="hover:text-atlas-text transition-colors">Confidentialité</Link>
+              <span aria-hidden="true">·</span>
+              <Link to="/terms" className="hover:text-atlas-text transition-colors">CGU</Link>
+            </nav>
+          </footer>
 
         </div>
       </div>

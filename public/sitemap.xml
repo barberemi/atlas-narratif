@@ -16,6 +16,23 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog/comment-structurer-un-roman</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog/la-methode-save-the-cat-15-beats</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://DOMAIN_PLACEHOLDER/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
