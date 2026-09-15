@@ -357,6 +357,10 @@ ${heroCircleDiagram}
   <li><strong>Les arcs de tome</strong> rejouent, en miniature, leur propre cycle. Chaque volume a son appel, son épreuve, sa récompense partielle, sinon il devient un simple couloir entre deux moments forts.</li>
 </ul>
 <p>Autre subtilité de la saga&#8239;: tu peux faire vivre un Voyage à <strong>plusieurs personnages en parallèle</strong>. Dans <em>Le Seigneur des Anneaux</em>, Frodon, Aragorn et Sam suivent chacun leur propre courbe. Les tenir toutes de tête, en s'assurant qu'aucune ne s'affaisse, devient vite impossible sans une vue d'ensemble. C'est exactement ce que la vue <strong>Voyage du Héros</strong> d'Atlas Narratif permet&#8239;: suivre l'arc de chaque personnage, étape par étape, et repérer celui qui piétine.</p>
+<figure class="blog-figure">
+  <img src="/blog/voyage-du-heros.png" alt="La vue Voyage du Héros dans Atlas Narratif&#8239;: les 12 étapes de l'arc d'Aragorn réparties en trois phases (Départ, Initiation, Retour), chacune reliée à un chapitre." loading="lazy" />
+  <figcaption>Les 12 étapes du Voyage du Héros appliquées à l'arc d'Aragorn (démo LOTR).</figcaption>
+</figure>
 
 <h2>⚠️ Les erreurs classiques à éviter</h2>
 <ul>
@@ -497,6 +501,10 @@ ${timelineDiagram}
   <li><strong>L'outil dédié.</strong> Il visualise la frise, filtre par tome ou par personnage, relie les événements aux chapitres et à la carte, et surtout repère les collisions à ta place. C'est le gain décisif dès que l'histoire grossit.</li>
 </ul>
 <p>La vue <strong>timeline</strong> d'Atlas Narratif fait exactement ça&#8239;: tu poses tes événements chapitre par chapitre, tu les filtres par tome, et tu vois l'arc émotionnel se dessiner par-dessus. Le tout gratuitement, tes textes chiffrés et sans aucun tracking.</p>
+<figure class="blog-figure">
+  <img src="/blog/timeline-roman.png" alt="La vue timeline d'Atlas Narratif&#8239;: les chapitres en colonnes, chacun avec ses événements, ses personnages et son POV, et un onglet pour basculer en ordre chronologique." loading="lazy" />
+  <figcaption>La timeline chapitre par chapitre, et l'onglet «&#8239;chrono&#8239;» pour passer à l'ordre chronologique (démo LOTR).</figcaption>
+</figure>
 
 <h2>✅ En résumé</h2>
 <p>Une timeline, c'est ta mémoire externe d'auteur. Retiens l'essentiel&#8239;: distingue toujours l'ordre où les choses <em>arrivent</em> de l'ordre où tu les <em>racontes</em>, ancre tes événements dans le temps, relie-les à tes chapitres, et prends de la hauteur pour piloter le rythme. Sur une saga, ce n'est plus une option.</p>
