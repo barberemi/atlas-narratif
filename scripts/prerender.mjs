@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const dist = join(root, 'dist');
 
-const routes = ['/', '/login', '/register', '/privacy', '/terms'];
+const staticRoutes = ['/', '/login', '/register', '/privacy', '/terms', '/blog'];
 
 // Vite dev server in middleware mode — just for JSX/ESM transform, no HTTP
 const vite = await createServer({
@@ -30,6 +30,11 @@ const vite = await createServer({
 try {
   const { render } = await vite.ssrLoadModule('/src/entry-prerender.jsx');
   const template = readFileSync(join(dist, 'index.html'), 'utf-8');
+
+  // Articles de blog : slugs importés depuis le registre pour rester synchro.
+  const { blogSlugs } = await vite.ssrLoadModule('/src/data/blog/posts.js');
+  const blogRoutes = blogSlugs.map((slug) => `/blog/${slug}`);
+  const routes = [...staticRoutes, ...blogRoutes];
 
   console.log('Prerendering public pages...');
 

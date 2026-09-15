@@ -20,6 +20,8 @@ const RegisterPage         = lazy(() => import('./pages/auth/RegisterPage'));
 const VerifyEmailPage      = lazy(() => import('./pages/auth/VerifyEmailPage'));
 const ForgotPasswordPage   = lazy(() => import('./pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage    = lazy(() => import('./pages/auth/ResetPasswordPage'));
+const BlogIndexPage        = lazy(() => import('./pages/blog/BlogIndexPage'));
+const BlogPostPage         = lazy(() => import('./pages/blog/BlogPostPage'));
 const EntityGraph          = lazy(() => import('./components/graph/EntityGraph'));
 const IncoherencesBrowser  = lazy(() => import('./components/incoherences/IncoherencesBrowser'));
 const NarrativeDashboard   = lazy(() => import('./components/dashboard/NarrativeDashboard'));
@@ -1056,6 +1058,8 @@ export default function App() {
           <Route path="/reset-password"  element={<ResetPasswordPage />} />
           <Route path="/privacy"         element={<PrivacyPage />} />
           <Route path="/terms"           element={<TermsPage />} />
+          <Route path="/blog"            element={<BlogIndexPage />} />
+          <Route path="/blog/:slug"      element={<BlogPostPage />} />
           <Route path="*"                element={<AppLayout />} />
         </Routes>
       </ProjectProvider>
