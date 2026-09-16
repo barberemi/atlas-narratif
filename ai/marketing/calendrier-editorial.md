@@ -14,8 +14,8 @@ Piliers : **P1** = fondation SEO (fort volume, intention claire) · **P2** = app
 | **Oct.** | M2 | Créer une timeline pour son roman : méthode + outils ✍️ *(rédigé, PR oct.)* | P1 | « timeline roman outil » | Discord + démo `/demo` en appui |
 | **Nov.** | 🚀 M3 NaNoWriMo | Planifie ton NaNoWriMo avec une méthode ✍️ *(rédigé, PR nov.)* | P1 | « préparer nanowrimo plan » | Groupes NaNoWriMo FR, X #TeamÉcriture |
 | **Nov.** | 🚀 M3 Lancement | La structure du Seigneur des Anneaux décortiquée *(démo déguisée)* ✍️ *(rédigé, PR nov.)* | P3 | « structure seigneur des anneaux » | Lancement : Reddit, FB, BookTok, PH/BetaList |
-| **Déc.** | M4 Capitaliser | Détecter les incohérences dans son roman : la checklist | P1 | « incohérences roman vérifier » | Discord (aide), newsletter |
-| **Déc.** | M4 | Comment gérer plusieurs tomes sans perdre le fil | P2 | « écrire une saga plusieurs tomes » | r/fantasy_fr, groupes saga |
+| **Déc.** | M4 Capitaliser | Détecter les incohérences dans son roman : la checklist ✍️ *(rédigé, PR déc.)* | P1 | « incohérences roman vérifier » | Discord (aide), newsletter |
+| **Déc.** | M4 | Comment gérer plusieurs tomes sans perdre le fil ✍️ *(rédigé, PR déc.)* | P2 | « écrire une saga plusieurs tomes » | r/fantasy_fr, groupes saga |
 | **Janv.** | M5 Communauté | Amorces et paiements (plant & payoff) : l'art de préparer ses révélations | P2 | « plant and payoff écriture » | Discord Atlas (si ouvert), X |
 | **Janv.** | M5 | Comment créer une bible d'univers (worldbuilding) pour ta saga | P1 | « bible d'univers worldbuilding » | r/JeuxDeRole, worldbuilders |
 | **Fév.** | M6 Bilan | Save the Cat vs Voyage du Héros : quelle méthode pour ton roman ? | P2 | « save the cat ou voyage du héros » | Reddit, FB |

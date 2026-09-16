@@ -696,7 +696,180 @@ const structureLOTR = {
 `,
 };
 
-export const posts = [commentStructurerUnRoman, saveTheCat15Beats, voyageDuHeros, creerTimeline, planifierNanowrimo, structureLOTR];
+const detecterIncoherences = {
+  slug: 'detecter-incoherences-roman',
+  pillar: 'P1',
+  metaTitle: 'Détecter les incohérences de son roman : la checklist',
+  title: 'Détecter les incohérences dans ton roman : la checklist',
+  description:
+    'La checklist pour détecter les incohérences de ton roman : continuité, chronologie, personnages, univers, intrigue. Repère-les avant tes lecteurs.',
+  excerpt:
+    'Yeux qui changent de couleur, âge qui dérive, amorce oubliée : la checklist des cinq familles d\'incohérences, pour les traquer avant tes lecteurs.',
+  date: '2026-12-01',
+  readingTime: '8 min',
+  tags: ['Incohérences', 'Cohérence', 'Relecture', 'Checklist'],
+  emoji: '🔍',
+  html: `
+<p>Un lecteur pardonne beaucoup de choses. Une intrigue un peu lente, un style perfectible, un personnage secondaire sous-exploité. Mais il y a une faute qui le fait décrocher net&#8239;: l'incohérence. Le personnage aux yeux verts au tome 1, bleus au tome 3. Le trajet qui prend trois jours à l'aller et une semaine au retour. La promesse du chapitre 3 qu'on attend encore à la fin.</p>
+<p>Ces failles cassent l'immersion et, pire, la confiance. Voici comment les traquer méthodiquement, avec une checklist par famille et les bons réflexes de relecture.</p>
+
+<h2>🔍 Pourquoi une incohérence casse tout</h2>
+<p>Quand un lecteur plonge dans ton roman, il signe un pacte&#8239;: il accepte de croire à ton monde. Chaque incohérence rompt ce pacte. Le charme se brise, le lecteur sort de l'histoire, et surtout il commence à <em>douter</em> de tout le reste. Une seule contradiction visible, et il se met à chercher les autres.</p>
+<p>Le problème, c'est que ces failles sont presque invisibles pour toi. Tu connais ton histoire par cœur&#8239;; ton cerveau corrige automatiquement ce qui cloche. C'est justement pour ça qu'une <strong>méthode</strong> vaut mieux qu'une relecture au feeling.</p>
+
+<h2>🧩 Les cinq familles d'incohérences</h2>
+<p>Presque toutes les incohérences se rangent dans cinq familles. Les connaître, c'est savoir où regarder.</p>
+<h3>1. La continuité</h3>
+<p>Les détails physiques et matériels qui changent sans raison&#8239;: couleur des yeux ou des cheveux, cicatrice qui disparaît, objet perdu puis réutilisé, vêtement qui change en pleine scène. Ce sont les plus fréquentes et les plus repérables par le lecteur.</p>
+<h3>2. La chronologie</h3>
+<p>Tout ce qui touche au temps&#8239;: l'âge d'un personnage qui ne colle pas, un temps de voyage incohérent, deux scènes impossibles au même moment, une saison qui saute. Et le piège classique&#8239;: <strong>qui sait quoi, et quand&#8239;?</strong> Un personnage ne peut pas réagir à une information qu'il n'a pas encore reçue.</p>
+<h3>3. Les personnages</h3>
+<p>Un comportement qui trahit la personnalité établie, une voix qui change, une motivation qui s'évapore, un nom mal orthographié d'un chapitre à l'autre. Le lecteur connaît tes personnages&#8239;: il sent tout de suite quand l'un d'eux «&#8239;sort du rôle&#8239;».</p>
+<h3>4. L'univers</h3>
+<p>Les règles de ton monde doivent tenir&#8239;: une magie qui fonctionne autrement selon les besoins de l'intrigue, une technologie qui apparaît puis disparaît, une géographie qui se contredit, une hiérarchie sociale flottante. En fantasy et en SF, c'est le nerf de la crédibilité.</p>
+<h3>5. L'intrigue</h3>
+<p>Les failles de logique narrative&#8239;: une amorce jamais résolue, une solution qui sort de nulle part (le <em>deus ex machina</em>), un problème que le héros aurait pu régler cent pages plus tôt, un enjeu qu'on oublie en route. Ce sont les plus graves, car elles touchent la charpente.</p>
+
+<h2>✅ Ta checklist de relecture cohérence</h2>
+<p>Une fois ton jet terminé, passe l'histoire au crible avec ces questions. Relis en <strong>traquant une famille à la fois</strong>&#8239;: on repère bien mieux en cherchant une seule chose.</p>
+<ol>
+  <li><strong>Fiches personnages.</strong> Chaque trait physique est-il constant du début à la fin&#8239;? Les noms sont-ils toujours orthographiés pareil&#8239;?</li>
+  <li><strong>Ligne du temps.</strong> Les âges, les dates, les durées de trajet s'emboîtent-ils&#8239;? Aucune scène n'en chevauche une autre&#8239;?</li>
+  <li><strong>Qui sait quoi.</strong> Pour chaque révélation, vérifie que ceux qui réagissent l'ont bien apprise avant.</li>
+  <li><strong>Règles du monde.</strong> Ta magie, ta techno, ta géographie obéissent-elles aux mêmes lois d'un bout à l'autre&#8239;?</li>
+  <li><strong>Promesses tenues.</strong> Chaque amorce trouve-t-elle son paiement&#8239;? Chaque objet mis en avant sert-il&#8239;?</li>
+  <li><strong>Comportements.</strong> Chaque personnage agit-il selon ce qu'on sait de lui&#8239;? Ses volte-face sont-elles justifiées&#8239;?</li>
+</ol>
+
+<h2>🤖 Détecter automatiquement</h2>
+<p>Cette relecture est indispensable, mais elle est fastidieuse, surtout sur un long manuscrit. C'est exactement le genre de travail qu'une machine fait sans se fatiguer&#8239;: comparer des centaines de détails et signaler ce qui cloche.</p>
+<p>Le détecteur d'incohérences d'<strong>Atlas Narratif</strong> passe ton histoire au crible avec plus de 12 détecteurs, puis trie les problèmes par gravité&#8239;: du critique au faible. Chaque incohérence est expliquée, reliée aux entités concernées, et accompagnée d'une piste de correction.</p>
+<figure class="blog-figure">
+  <img src="/blog/incoherences-checklist.png" alt="Le détecteur d'incohérences d'Atlas Narratif&#8239;: les incohérences classées par gravité (critique, élevée, moyenne, faible), chacune expliquée avec un bouton pour la corriger." loading="lazy" />
+  <figcaption>Chaque incohérence est expliquée et reliée aux entités concernées (démo LOTR).</figcaption>
+</figure>
+
+<h2>🗺️ Le cas des sagas</h2>
+<p>Sur un roman unique, la relecture manuelle reste tenable. Sur une <strong>saga</strong> de plusieurs tomes et centaines de milliers de mots, c'est une autre affaire&#8239;: les incohérences se glissent entre les tomes, là où ta mémoire lâche. Un personnage vieillit de travers, une règle du monde dérive, une amorce du tome 1 se perd. C'est là qu'une détection outillée devient un vrai garde-fou. On en parle dans notre guide sur <a href="/blog/gerer-plusieurs-tomes-saga">comment gérer plusieurs tomes sans perdre le fil</a>.</p>
+
+<h2>⚠️ Les erreurs classiques</h2>
+<ul>
+  <li><strong>Relire tout en même temps.</strong> Chercher toutes les familles d'un coup, c'est n'en repérer aucune. Une passe = une famille.</li>
+  <li><strong>Relire à chaud.</strong> Juste après avoir écrit, ton cerveau corrige tout seul. Laisse reposer quelques jours avant la passe cohérence.</li>
+  <li><strong>Se fier à sa seule mémoire.</strong> Tiens des fiches, une timeline, un registre d'amorces. La mémoire ment, surtout sur la durée.</li>
+  <li><strong>Confondre incohérence et mystère.</strong> Une zone d'ombre volontaire n'est pas une faille&#8239;: garde une trace de ce qui est intentionnel pour ne pas «&#8239;corriger&#8239;» un vrai ressort.</li>
+</ul>
+
+<h2>🧭 En résumé</h2>
+<p>Une incohérence, c'est une fissure dans le pacte que tu passes avec ton lecteur. Traque-les par famille, continuité, chronologie, personnages, univers, intrigue, une passe à la fois, et appuie-toi sur des fiches plutôt que sur ta mémoire. Sur une saga, une détection automatique devient vite indispensable.</p>
+<p><strong>Atlas Narratif</strong> repère ces failles pour toi&#8239;: plus de 12 détecteurs, un tri par gravité, une piste de correction pour chacune, et un suivi de tes amorces d'un tome à l'autre. Gratuit, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Traque les incohérences de ton roman gratuitement avec Atlas Narratif.</a> Et si tu as déjà un manuscrit, importe-le pour lancer la détection en quelques minutes.</p>
+`,
+};
+
+const sagaArcsDiagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 300" role="img" aria-label="Un grand arc en pointillé qui monte à travers trois tomes, et sous lui l'arc propre à chaque tome, qui monte et redescend en partie." style="width:100%;height:auto">
+    <line x1="60" y1="240" x2="680" y2="240" stroke="#ffffff" stroke-opacity="0.14"/>
+    <line x1="266" y1="60" x2="266" y2="240" stroke="#ffffff" stroke-opacity="0.1"/>
+    <line x1="473" y1="60" x2="473" y2="240" stroke="#ffffff" stroke-opacity="0.1"/>
+    <polyline fill="none" stroke="#cba15e" stroke-width="2.5" stroke-dasharray="6 5" points="60,215 680,66"/>
+    <polyline fill="none" stroke="#5cae8e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+      points="60,215 120,150 200,132 266,178 330,140 400,104 473,150 540,120 610,78 680,66"/>
+    <g font-family="'Spectral',Georgia,serif" fill="#ece7db" font-size="15" text-anchor="middle">
+      <text x="163" y="268">TOME 1</text>
+      <text x="369" y="268">TOME 2</text>
+      <text x="576" y="268">TOME 3</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5">
+      <rect x="150" y="20" width="12" height="12" rx="3" fill="#cba15e"/>
+      <text x="172" y="30" fill="#a9a291">le grand arc, sur toute la saga</text>
+      <rect x="430" y="20" width="12" height="12" rx="3" fill="#5cae8e"/>
+      <text x="452" y="30" fill="#a9a291">l'arc propre à chaque tome</text>
+    </g>
+  </svg>
+  <figcaption>Deux niveaux à tenir en même temps&#8239;: le grand arc qui monte sur toute la saga, et l'arc complet de chaque tome.</figcaption>
+</figure>`;
+
+const gererPlusieursTomes = {
+  slug: 'gerer-plusieurs-tomes-saga',
+  pillar: 'P2',
+  metaTitle: 'Gérer plusieurs tomes : écrire une saga sans se perdre',
+  title: 'Comment gérer plusieurs tomes sans perdre le fil',
+  description:
+    'Écrire une saga en plusieurs tomes sans perdre le fil : grand arc et arcs de tome, amorces cross-tomes, cohérence sur la durée. La méthode complète.',
+  excerpt:
+    'Pourquoi le tome 2 fait caler tant de sagas ? Grand arc, arcs de tome, amorces qui traversent les volumes : la méthode pour tenir une série entière.',
+  date: '2026-12-02',
+  readingTime: '9 min',
+  tags: ['Saga', 'Multi-tomes', 'Cohérence', 'Méthode'],
+  emoji: '📚',
+  html: `
+<p>Écrire <em>un</em> roman est difficile. Écrire <em>une série</em> de trois, cinq, sept tomes qui tiennent ensemble, c'est un autre métier. Beaucoup d'auteurs se lancent, portés par l'élan du premier tome, et s'enlisent au deuxième. Trop de fils à tenir, une intrigue qui se dilue, des détails qu'on ne retrouve plus.</p>
+<p>Écrire une saga, ce n'est pas empiler des romans&#8239;: c'est bâtir une architecture à deux étages. Voici comment garder le fil, du tome 1 au dernier point final.</p>
+
+<h2>📚 Pourquoi le tome 2 est un piège</h2>
+<p>Le premier tome bénéficie de tout&#8239;: l'énergie de la découverte, la nouveauté du monde, un arc que tu as sans doute mûri des années. Le tome 2 n'a rien de tout ça. Il doit relancer sans tout réexpliquer, avancer sans conclure, tenir la tension sans le vernis du neuf.</p>
+<p>C'est le fameux <strong>«&#8239;syndrome du tome 2&#8239;»</strong>&#8239;: un volume qui n'est qu'un long couloir entre l'ouverture éclatante et le grand final. La cause est presque toujours la même&#8239;: le tome n'a pas <em>son propre</em> arc. Ce qui nous amène à la clé de toute saga.</p>
+
+<h2>🏛️ Grand arc et arcs de tome</h2>
+<p>Une saga se pilote sur <strong>deux niveaux à la fois</strong>&#8239;:</p>
+<ul>
+  <li><strong>Le grand arc</strong> traverse toute la série&#8239;: la question centrale posée au tome 1 ne trouve sa réponse qu'au dernier. C'est la destruction de l'Anneau, la chute de l'Empire, la vengeance accomplie.</li>
+  <li><strong>L'arc de chaque tome</strong> est une histoire complète en miniature&#8239;: son propre objectif, son climax, sa résolution partielle. Le tome doit se tenir seul <em>tout en</em> faisant avancer le grand arc.</li>
+</ul>
+<p>Un tome sans arc propre s'affaisse&#8239;; un tome qui ignore le grand arc n'est qu'un épisode hors-sol. La maîtrise, c'est de tenir les deux ensemble.</p>
+${sagaArcsDiagram}
+
+<h2>🌱 Les amorces qui traversent les tomes</h2>
+<p>Sur un roman, une amorce posée au chapitre 3 se paie au chapitre 30. Sur une saga, elle peut se payer <strong>deux tomes plus loin</strong>, et c'est là que naissent les plus beaux effets, comme les plus gros oublis.</p>
+<p>Une lame trouvée dans un tumulus au tome 1, la seule capable de briser le sortilège du Roi-Sorcier deux tomes plus tard. Un cadeau anodin qui sauve un héros deux volumes plus loin. Un détail glissé négligemment qui devient la clé du dénouement. Chaque amorce est une <strong>dette narrative</strong>&#8239;: si tu ne la notes pas, tu finiras par la perdre, et le lecteur, lui, s'en souviendra. Tenir ce registre à l'échelle de la série entière est vital.</p>
+<figure class="blog-figure">
+  <img src="/blog/amorces-paiements.png" alt="Le suivi des amorces et paiements dans Atlas Narratif&#8239;: chaque promesse reliée du tome où elle est posée à celui où elle est résolue, avec son statut." loading="lazy" />
+  <figcaption>Chaque amorce suivie de sa mise en place à son paiement, d'un tome à l'autre (démo LOTR).</figcaption>
+</figure>
+
+<h2>🧭 Tenir la cohérence sur la durée</h2>
+<p>Plus une saga s'étend, plus les incohérences se multiplient, et elles se cachent <em>entre</em> les tomes, là où ta mémoire faiblit. Trois points de vigilance&#8239;:</p>
+<ul>
+  <li><strong>Les âges et le temps.</strong> Si cinq ans séparent le tome 1 du tome 3, tous tes personnages ont vieilli d'autant. Une timeline à l'échelle de la série t'évite le piège de l'enfant resté figé pendant que le monde vieillit.</li>
+  <li><strong>Les règles du monde.</strong> Ta magie, ta géographie, ta politique doivent obéir aux mêmes lois du premier au dernier tome. Une bible d'univers tenue à jour est ta référence.</li>
+  <li><strong>Qui sait quoi, et depuis quand.</strong> Sur des milliers de pages, il est facile de faire réagir un personnage à une information qu'il n'a pas encore.</li>
+</ul>
+<p>Traquer tout ça à la main, sur une série entière, est presque impossible. C'est le rôle d'un <a href="/blog/detecter-incoherences-roman">détecteur d'incohérences</a>, qui compare les détails d'un tome à l'autre et signale ce qui dérive.</p>
+
+<h2>🗺️ La géographie, colonne vertébrale de la saga</h2>
+<p>Dans une série, les personnages se dispersent, se retrouvent, parcourent des continents. Visualiser leurs trajets sur une carte, tome après tome, c'est vérifier d'un coup d'œil la cohérence des distances et des retrouvailles, et repérer qui est où à chaque instant.</p>
+<figure class="blog-figure">
+  <img src="/blog/lotr-carte.png" alt="La carte interactive d'Atlas Narratif&#8239;: les trajets des personnages tracés à travers la Terre du Milieu, d'un tome à l'autre." loading="lazy" />
+  <figcaption>Les trajets des personnages tracés sur toute la saga, tome après tome (démo LOTR).</figcaption>
+</figure>
+
+<h2>🧩 Piloter une saga, pas-à-pas</h2>
+<ol>
+  <li><strong>Définis ton grand arc en une phrase.</strong> La question centrale de toute la série, et sa réponse au dernier tome.</li>
+  <li><strong>Donne à chaque tome son propre arc.</strong> Un objectif, un climax, une résolution partielle qui fait avancer le tout.</li>
+  <li><strong>Tiens un registre d'amorces à l'échelle de la série.</strong> Ce que tu promets, et le tome où tu comptes le payer.</li>
+  <li><strong>Maintiens une bible et une timeline vivantes.</strong> Personnages, règles du monde, chronologie&#8239;: mets-les à jour au fil de l'écriture.</li>
+  <li><strong>Fais une passe cohérence entre chaque tome.</strong> Ne laisse pas les failles s'accumuler d'un volume à l'autre.</li>
+</ol>
+
+<h2>⚠️ Les erreurs classiques</h2>
+<ul>
+  <li><strong>Le tome tunnel.</strong> Un volume sans arc propre, simple pont vers le final. Chaque tome doit tenir debout tout seul.</li>
+  <li><strong>Les amorces oubliées.</strong> Semer sans jamais récolter&#8239;: le lecteur le ressent, même sans savoir nommer sa frustration.</li>
+  <li><strong>La bible dans ta tête.</strong> Sur cinq ans d'écriture, la mémoire ne suffit plus. Écris tes règles, tes fiches, ta chronologie.</li>
+  <li><strong>Résoudre trop tôt.</strong> Vider tous tes enjeux au tome 1 te laisse les mains vides pour la suite. Garde des cartes en réserve.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>Une saga, c'est une architecture à deux étages&#8239;: un grand arc qui court sur toute la série, et un arc complet par tome. Tiens un registre de tes amorces d'un volume à l'autre, maintiens une bible et une timeline vivantes, et fais une passe cohérence entre chaque tome. C'est ainsi qu'on garde le fil sur des milliers de pages.</p>
+<p><strong>Atlas Narratif</strong> a été pensé pour les séries&#8239;: filtre par tome, suis tes amorces d'un volume à l'autre, visualise ta timeline et tes trajets, et repère les incohérences avant tes lecteurs. Gratuit, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Construis ta saga sans perdre le fil avec Atlas Narratif.</a> Un tome, puis deux, puis toute une série, gardés sous tes yeux.</p>
+`,
+};
+
+export const posts = [commentStructurerUnRoman, saveTheCat15Beats, voyageDuHeros, creerTimeline, planifierNanowrimo, structureLOTR, detecterIncoherences, gererPlusieursTomes];
 
 // Articles publiés (hors brouillons) : alimentent l'index /blog, le prerender et le sitemap.
 export const getAllPosts = () =>
