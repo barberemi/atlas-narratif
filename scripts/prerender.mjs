@@ -32,7 +32,12 @@ try {
   const template = readFileSync(join(dist, 'index.html'), 'utf-8');
 
   // Articles de blog : slugs importés depuis le registre pour rester synchro.
-  const { blogSlugs } = await vite.ssrLoadModule('/src/data/blog/posts.js');
+  // `blogSlugs` et `getSitemapEntries` n'incluent que les articles publiés
+  // (garde-fou par date dans posts.js) — les articles programmés entrent au
+  // build suivant leur date de publication.
+  const { blogSlugs, getSitemapEntries } = await vite.ssrLoadModule(
+    '/src/data/blog/posts.js',
+  );
   const blogRoutes = blogSlugs.map((slug) => `/blog/${slug}`);
   const routes = [...staticRoutes, ...blogRoutes];
 
@@ -57,6 +62,28 @@ try {
     } catch (err) {
       console.warn(`  \u2717 ${route} — skipped (${err.message})`);
     }
+  }
+
+  // Sitemap : injecter les articles publiés (gate par date au build) dans le
+  // sitemap statique copié par Vite. DOMAIN_PLACEHOLDER reste (remplacé par
+  // nginx au démarrage du conteneur).
+  try {
+    const sitemapPath = join(dist, 'sitemap.xml');
+    const base = readFileSync(sitemapPath, 'utf-8');
+    const entries = getSitemapEntries();
+    const blogUrls = entries
+      .map(
+        ({ slug, date }) =>
+          `  <url>\n    <loc>https://DOMAIN_PLACEHOLDER/blog/${slug}</loc>\n    <lastmod>${date}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`,
+      )
+      .join('\n');
+    const merged = blogUrls
+      ? base.replace('</urlset>', `${blogUrls}\n</urlset>`)
+      : base;
+    writeFileSync(sitemapPath, merged);
+    console.log(`  ✓ sitemap.xml (${entries.length} article(s) publié(s))`);
+  } catch (err) {
+    console.warn(`  ✗ sitemap.xml — skipped (${err.message})`);
   }
 
   console.log('Prerender done.');

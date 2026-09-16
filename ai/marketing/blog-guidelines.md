@@ -63,4 +63,7 @@ Convention pour illustrer un article. Objectif : des visuels qui **prouvent** qu
 - Les articles vivent dans `src/data/blog/posts.js` (métadonnées + corps HTML first-party).
 - Rendu : `/blog` (index) et `/blog/:slug` (article), pages publiques prérendues (`scripts/prerender.mjs`).
 - Style de corps : classe `.prose-atlas` dans `src/index.css`.
-- Voir `ai/marketing/calendrier-editorial.md` pour le planning 6 mois.
+- **Publication programmée** : le champ `date` fait office de date de sortie. Le garde-fou `isPublished` (`posts.js`) masque tout article dont la date n'est pas atteinte — index, prerender et sitemap. On peut donc committer les articles d'avance ; ils sortent à leur date. `draft: true` masque un article en toutes circonstances.
+- **Sitemap** : généré au build (`getSitemapEntries` → `prerender.mjs`), articles publiés uniquement. Ne pas éditer les URLs d'articles à la main dans `public/sitemap.xml`.
+- Logique couverte par `src/data/blog/posts.test.js`.
+- Voir `ai/marketing/calendrier-editorial.md` pour le planning et le détail du garde-fou par date.

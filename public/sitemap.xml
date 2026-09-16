@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Routes statiques uniquement. Les articles de blog sont injectés au build par
+  scripts/prerender.mjs (getSitemapEntries), qui n'inclut que les articles publiés
+  (date de publication atteinte) — garde-fou dans src/data/blog/posts.js.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://DOMAIN_PLACEHOLDER/</loc>
@@ -19,18 +24,6 @@
     <loc>https://DOMAIN_PLACEHOLDER/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://DOMAIN_PLACEHOLDER/blog/comment-structurer-un-roman</loc>
-    <lastmod>2026-09-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://DOMAIN_PLACEHOLDER/blog/la-methode-save-the-cat-15-beats</loc>
-    <lastmod>2026-09-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://DOMAIN_PLACEHOLDER/privacy</loc>
