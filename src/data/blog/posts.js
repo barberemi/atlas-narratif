@@ -513,7 +513,190 @@ ${timelineDiagram}
 `,
 };
 
-export const posts = [commentStructurerUnRoman, saveTheCat15Beats, voyageDuHeros, creerTimeline];
+const nanoPaceDiagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 300" role="img" aria-label="Deux courbes sur 30 jours : l'objectif régulier de 1667 mots par jour, et la réalité qui plonge au 'mur de la semaine 2' avant de remonter." style="width:100%;height:auto">
+    <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#a9a291">
+      <text x="20" y="30">50 000 MOTS</text>
+      <text x="20" y="250">JOUR 1</text>
+      <text x="628" y="250">JOUR 30</text>
+    </g>
+    <line x1="60" y1="220" x2="680" y2="220" stroke="#ffffff" stroke-opacity="0.14"/>
+    <line x1="60" y1="40" x2="60" y2="220" stroke="#ffffff" stroke-opacity="0.14"/>
+    <polyline fill="none" stroke="#cba15e" stroke-width="2.5" stroke-dasharray="6 5" points="60,220 680,50"/>
+    <polyline fill="none" stroke="#5cae8e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+      points="60,220 130,196 200,172 270,162 320,176 360,182 400,160 470,120 540,96 610,70 680,50"/>
+    <circle cx="340" cy="180" r="4.5" fill="#cba15e"/>
+    <g font-family="'Spectral',Georgia,serif" fill="#a9a291" font-size="12.5" text-anchor="middle">
+      <text x="340" y="205">le mur de la semaine 2</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5">
+      <rect x="470" y="264" width="12" height="12" rx="3" fill="#cba15e"/>
+      <text x="492" y="274" fill="#a9a291">objectif</text>
+      <rect x="560" y="264" width="12" height="12" rx="3" fill="#5cae8e"/>
+      <text x="582" y="274" fill="#a9a291">réalité</text>
+    </g>
+  </svg>
+  <figcaption>1667 mots par jour en théorie&#8239;; en pratique, la motivation plonge vers la semaine 2. Un plan solide, c'est ce qui te fait remonter la pente.</figcaption>
+</figure>`;
+
+const planifierNanowrimo = {
+  slug: 'planifier-nanowrimo-methode',
+  pillar: 'P1',
+  metaTitle: 'Planifier son NaNoWriMo : la méthode complète',
+  title: 'Planifie ton NaNoWriMo : la méthode pour tenir 50 000 mots',
+  description:
+    'Comment planifier ton NaNoWriMo avant le 1er novembre : choisir une structure, poser tes beats et ta timeline pour écrire 50 000 mots sans t\'enliser.',
+  excerpt:
+    'Le secret des auteurs qui finissent le NaNoWriMo ? Ils préparent en octobre. Choisis ta structure, pose tes beats, et écris tes 50 000 mots sans t\'enliser.',
+  date: '2026-11-01',
+  readingTime: '8 min',
+  tags: ['NaNoWriMo', 'Méthode', 'Planification', 'Structure'],
+  emoji: '📅',
+  html: `
+<p>Chaque novembre, des centaines de milliers d'auteurs se lancent le même défi&#8239;: écrire 50 000 mots en 30 jours. C'est le NaNoWriMo. Et chaque année, la même statistique tombe&#8239;: la plupart abandonnent avant la fin. Presque toujours au même endroit, autour de la deuxième semaine, quand l'élan retombe et que l'histoire part dans tous les sens.</p>
+<p>La différence entre ceux qui franchissent la ligne et les autres tient rarement au talent ou au temps libre. Elle tient à une chose&#8239;: <strong>un plan préparé avant le 1er novembre</strong>. Voici comment t'y prendre.</p>
+
+<h2>📅 NaNoWriMo, le défi des 50 000 mots</h2>
+<p>Le principe est simple&#8239;: écrire un premier jet de roman, 50 000 mots, entre le 1er et le 30 novembre. Soit environ <strong>1667 mots par jour</strong>, tous les jours, pendant un mois. L'idée n'est pas d'écrire un chef-d'œuvre, mais de <em>finir un jet</em>, en imposant silence à ton éditeur intérieur.</p>
+<p>Ce rythme paraît tenable sur le papier. Le piège n'est pas la vitesse d'écriture&#8239;: c'est de savoir <em>quoi</em> écrire chaque jour. C'est là que le plan fait toute la différence.</p>
+${nanoPaceDiagram}
+
+<h2>🧭 Planifier ou foncer</h2>
+<p>Dans la communauté, deux écoles s'affrontent&#8239;: les <strong>planners</strong> (qui préparent tout) et les <strong>pantsers</strong> (qui écrivent à l'instinct, «&#8239;au feeling&#8239;»). Les deux peuvent gagner le NaNoWriMo, mais pour un premier, planifier change radicalement les chances.</p>
+<p>Pourquoi&#8239;? Parce que le pantsing t'expose à la panne&#8239;: tu ouvres ton document au jour 12, et tu ne sais pas ce qui se passe ensuite. Chaque jour sans plan, tu paies une «&#8239;taxe de décision&#8239;» avant même d'écrire un mot. Un plan, même léger, supprime cette taxe&#8239;: tu sais quelle scène écrire, tu écris.</p>
+<p>D'où la tradition du <strong>«&#8239;Preptober&#8239;»</strong> (le mois d'octobre consacré à la préparation). Pas besoin d'un mois entier&#8239;: une semaine de prep bien menée suffit largement.</p>
+
+<h2>🗺️ Ton plan en une semaine</h2>
+<p>Voici une prep réaliste, à boucler avant le 1er novembre. Chaque étape prend une soirée, pas plus.</p>
+<ol>
+  <li><strong>Formule ta prémisse en une phrase.</strong> «&#8239;Un jeune fermier découvre un pouvoir et doit affronter un empire.&#8239;» Si tu ne peux pas la résumer, l'histoire n'est pas prête.</li>
+  <li><strong>Choisis une structure.</strong> Save the Cat pour une intrigue rythmée, le Voyage du Héros pour une quête ou une initiation. On les compare dans notre guide <a href="/blog/comment-structurer-un-roman">comment structurer un roman</a>.</li>
+  <li><strong>Place tes grandes bornes.</strong> Ouverture, catalyseur, midpoint, tout est perdu, climax. Cinq points, et ta colonne vertébrale tient.</li>
+  <li><strong>Esquisse tes personnages.</strong> Le héros, ce qui lui manque, ce qu'il veut. Deux ou trois seconds rôles. Pas une bible complète&#8239;: juste de quoi les faire vivre.</li>
+  <li><strong>Découpe en scènes.</strong> Transforme tes beats en une liste de scènes à écrire. C'est ta feuille de route quotidienne&#8239;: chaque jour, tu piques dedans.</li>
+</ol>
+<p>Avec ça, tu n'ouvres jamais une page blanche&#8239;: tu ouvres une scène qui t'attend.</p>
+
+<h2>🏗️ Poser ta structure, concrètement</h2>
+<p>Cette prep, tu peux la faire sur papier ou dans un tableur. Mais un outil qui visualise ta structure te fait gagner un temps précieux&#8239;: tu vois d'un coup d'œil les trous, les temps forts qui manquent, les scènes déjà prêtes.</p>
+<p>Dans <strong>Atlas Narratif</strong>, tu choisis ta méthode (Save the Cat ou Voyage du Héros), tu poses tes beats sur tes futurs chapitres, et tu repères aussitôt ceux qui sonnent creux. Ta feuille de route de novembre est là, sous tes yeux, avant même d'avoir écrit la première ligne.</p>
+<figure class="blog-figure">
+  <img src="/blog/save-the-cat-frise.png" alt="La frise Save the Cat dans Atlas Narratif&#8239;: les beats posés sur les chapitres avant le NaNoWriMo, prêts à guider l'écriture jour après jour." loading="lazy" />
+  <figcaption>Poser ses beats avant le 1er novembre&#8239;: ta feuille de route quotidienne, prête (démo LOTR).</figcaption>
+</figure>
+
+<h2>🏃 Tenir les 30 jours</h2>
+<p>La prep gagne la moitié de la bataille&#8239;; l'autre moitié, c'est la régularité. Quelques repères pour ne pas lâcher&#8239;:</p>
+<ul>
+  <li><strong>Écris tous les jours, même mal.</strong> 1667 mots imparfaits valent mieux que 0 mot parfait. Le premier jet a le droit d'être moche.</li>
+  <li><strong>Ne te relis pas.</strong> Corriger en cours de route est le meilleur moyen de t'enliser. Tu réviseras en décembre.</li>
+  <li><strong>Prends un peu d'avance au début.</strong> L'énergie du jour 1 est un cadeau&#8239;: le coussin de mots que tu te constitues t'amortira le fameux mur de la semaine 2.</li>
+  <li><strong>Appuie-toi sur ton plan quand ça coince.</strong> Panne d'inspiration&#8239;? Retourne à ta liste de scènes et écris la suivante. Ta feuille de route est ton filet.</li>
+</ul>
+
+<h2>⚠️ Les erreurs classiques</h2>
+<ul>
+  <li><strong>Partir sans aucun plan.</strong> C'est le billet le plus court vers l'abandon en semaine 2.</li>
+  <li><strong>Trop planifier.</strong> À l'inverse, passer octobre à peaufiner une bible de 200 pages, c'est fuir l'écriture. Un plan léger suffit&#8239;: garde du carburant pour novembre.</li>
+  <li><strong>Viser la perfection.</strong> Le NaNoWriMo produit un premier jet, pas un manuscrit fini. Confonds les deux et tu cales dès le chapitre 3.</li>
+  <li><strong>Écrire dans le désordre sans repère.</strong> Sauter de scène en scène, c'est permis&#8239;; mais sans timeline, tu perds vite le fil de qui sait quoi et quand.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>Le NaNoWriMo ne se gagne pas au talent, mais à la préparation. Une semaine de prep en octobre&#8239;: une prémisse claire, une structure choisie, cinq bornes posées, tes scènes découpées. Ensuite, tu écris, sans te relire, sans viser la perfection, en t'appuyant sur ton plan les jours difficiles.</p>
+<p><strong>Atlas Narratif</strong> est l'atelier idéal pour ta prep&#8239;: pose ta structure (Save the Cat ou Voyage du Héros), visualise ta timeline et tes personnages, et arrive au 1er novembre avec une carte au lieu d'une page blanche. Gratuit, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Prépare ton NaNoWriMo gratuitement avec Atlas Narratif.</a> Choisis ta méthode, pose tes beats, et lance-toi le 1er novembre avec un plan.</p>
+`,
+};
+
+const structureLOTR = {
+  slug: 'structure-seigneur-des-anneaux',
+  pillar: 'P3',
+  metaTitle: 'La structure du Seigneur des Anneaux décortiquée',
+  title: 'La structure du Seigneur des Anneaux décortiquée',
+  description:
+    'Save the Cat, Voyage du Héros, amorces et paiements : on décortique la structure narrative du Seigneur des Anneaux, tome par tome, comme un cas d\'école.',
+  excerpt:
+    'Pourquoi la saga de Tolkien tient-elle si bien debout ? On décortique sa structure : beats, arcs entrelacés, amorces payées trois tomes plus loin.',
+  date: '2026-11-03',
+  readingTime: '10 min',
+  tags: ['Le Seigneur des Anneaux', 'Étude de cas', 'Structure', 'Saga'],
+  emoji: '💍',
+  html: `
+<p>On peut lire <em>Le Seigneur des Anneaux</em> comme un lecteur, emporté par le souffle. On peut aussi l'ouvrir comme un auteur, pour comprendre <em>pourquoi</em> ça marche. Trois tomes, des dizaines de personnages, une géographie entière, des fils semés au premier chapitre et payés mille pages plus loin&#8239;: et pourtant, tout tient.</p>
+<p>C'est le cas d'école parfait. Décortiquons la structure de la saga de Tolkien avec les mêmes outils que tu appliquerais à la tienne&#8239;: les beats, les arcs de héros, les amorces et paiements. Tout ce que tu vois ici a été passé dans Atlas Narratif&#8239;: c'est la démo que tu peux explorer toi-même.</p>
+
+<h2>💍 Pourquoi LOTR est un cas d'école</h2>
+<p>Une histoire courte pardonne les faiblesses de structure&#8239;: on arrive au bout avant qu'elles ne gênent. Une <strong>saga</strong>, non. Sur trois tomes, la moindre promesse oubliée, le moindre arc qui s'affaisse se paient cash. Que <em>Le Seigneur des Anneaux</em> tienne sur cette distance n'a rien d'un miracle&#8239;: c'est de l'architecture.</p>
+<p>Et cette architecture est lisible. Tolkien n'a pas suivi de méthode moderne (elles sont venues après lui), mais son récit épouse ces schémas avec une précision qui en fait le meilleur terrain d'apprentissage qui soit.</p>
+
+<h2>🎬 LOTR vu par Save the Cat</h2>
+<p>Prends la trame de <em>La Communauté de l'Anneau</em> et pose-la sur les 15 beats de Save the Cat&#8239;: l'emboîtement est frappant.</p>
+<ul>
+  <li><strong>Image d'ouverture</strong>&#8239;: la Comté, paisible, hors du temps. Un paradis qu'on apprend à aimer avant de le voir menacé.</li>
+  <li><strong>Catalyseur</strong>&#8239;: Gandalf révèle la vérité sur l'Anneau. La routine de Frodon vole en éclats.</li>
+  <li><strong>Passage au deuxième acte</strong>&#8239;: Frodon quitte la Comté. Plus de retour possible.</li>
+  <li><strong>Midpoint</strong>&#8239;: la Moria, la chute de Gandalf. Une fausse défaite qui soude et endeuille la Communauté.</li>
+  <li><strong>Tout est perdu</strong>&#8239;: la Communauté se brise à Amon Hen, Boromir tombe.</li>
+  <li><strong>Image finale</strong>&#8239;: Frodon et Sam, seuls, choisissent la route du Mordor. La quête, désormais, sera intime.</li>
+</ul>
+<p>Chaque tome rejoue ensuite sa propre courbe. C'est la clé des sagas&#8239;: un grand arc d'ensemble, et dans chaque tome un arc complet en miniature.</p>
+<figure class="blog-figure">
+  <img src="/blog/save-the-cat-frise.png" alt="La frise Save the Cat dans Atlas Narratif&#8239;: les 15 beats du Seigneur des Anneaux placés sur les chapitres, répartis sur les trois actes." loading="lazy" />
+  <figcaption>Les 15 beats de Save the Cat posés sur la trilogie, chapitre par chapitre (démo LOTR).</figcaption>
+</figure>
+
+<h2>🧭 Les Voyages du Héros entrelacés</h2>
+<p>Le vrai tour de force de Tolkien, c'est de faire vivre <strong>plusieurs Voyages du Héros en parallèle</strong>, décalés dans le temps, qui s'éclairent l'un l'autre&#8239;:</p>
+<ul>
+  <li><strong>Frodon</strong> suit le voyage du porteur du fardeau&#8239;: son épreuve est intérieure, l'Anneau le ronge. Son «&#8239;retour avec l'élixir&#8239;» est doux-amer&#8239;: il sauve la Comté mais ne peut plus y vivre.</li>
+  <li><strong>Aragorn</strong> incarne le voyage du roi réticent&#8239;: du rôdeur dans l'ombre au souverain qui assume sa couronne. Un arc d'acceptation de soi.</li>
+  <li><strong>Sam</strong>, souvent oublié, accomplit peut-être le plus bel arc&#8239;: le jardinier ordinaire qui se révèle le véritable héros de la quête.</li>
+</ul>
+<p>Ces trois courbes ne montent pas au même rythme, et c'est voulu&#8239;: quand l'une redescend, une autre s'élève. C'est ce tressage qui tient le lecteur en haleine sur trois tomes.</p>
+<figure class="blog-figure">
+  <img src="/blog/voyage-du-heros.png" alt="La vue Voyage du Héros dans Atlas Narratif&#8239;: les 12 étapes de l'arc d'Aragorn, du rôdeur au roi, réparties en trois phases." loading="lazy" />
+  <figcaption>L'arc d'Aragorn, du rôdeur au roi, en 12 étapes (démo LOTR).</figcaption>
+</figure>
+
+<h2>🌱 Les amorces payées trois tomes plus loin</h2>
+<p>C'est ici que la maîtrise de Tolkien éclate. Des promesses semées très tôt trouvent leur paiement des centaines de pages plus loin&#8239;:</p>
+<ul>
+  <li><strong>Narsil, l'épée brisée.</strong> Reforgée en Andúril dès Fondcombe, au tome 1, elle accompagne Aragorn tout au long du voyage&#8239;; mais son plein paiement symbolique n'éclate qu'au tome 3, quand il la brandit pour assumer sa couronne. L'amorce et son paiement encadrent toute la saga.</li>
+  <li><strong>La fiole de Galadriel.</strong> Simple cadeau d'adieu au tome 1, elle sauve Frodon et Sam d'Arachne au tome 2. Une promesse discrète, un paiement crucial.</li>
+  <li><strong>La pitié envers Gollum.</strong> Frodon épargne Gollum&#8239;; Gandalf lui souffle que ce dernier a peut-être encore un rôle à jouer. Le paiement&#8239;? Sans Gollum, l'Anneau n'aurait jamais été détruit au Mont Destin.</li>
+</ul>
+<p>Aucune de ces amorces n'est là par hasard. Chacune est une dette narrative que Tolkien contracte tôt et rembourse au moment exact où elle fera le plus d'effet. Tenir ce fil sur trois tomes, de tête, est quasi impossible&#8239;: c'est exactement ce que traque le suivi des amorces et paiements.</p>
+<figure class="blog-figure">
+  <img src="/blog/amorces-paiements.png" alt="Le suivi des amorces et paiements dans Atlas Narratif&#8239;: chaque promesse du Seigneur des Anneaux reliée du chapitre où elle est posée à celui où elle est résolue." loading="lazy" />
+  <figcaption>Chaque amorce reliée à son paiement, d'un tome à l'autre (démo LOTR).</figcaption>
+</figure>
+
+<h2>🗺️ La géographie comme structure</h2>
+<p>Chez Tolkien, la carte n'est pas un décor&#8239;: c'est une colonne vertébrale. La quête <em>est</em> un déplacement, de la Comté au Mont Destin, et la progression géographique épouse la montée de la tension. Plus on approche du Mordor, plus l'étau se resserre.</p>
+<p>Visualiser les trajets de chaque personnage sur une carte, c'est vérifier d'un coup d'œil la cohérence des distances, des temps de voyage, des retrouvailles. Pour une saga à la géographie dense, c'est un garde-fou autant qu'un plaisir.</p>
+<figure class="blog-figure">
+  <img src="/blog/lotr-carte.png" alt="La carte interactive d'Atlas Narratif&#8239;: les trajets des personnages du Seigneur des Anneaux tracés à travers la Terre du Milieu, de la Comté au Mordor." loading="lazy" />
+  <figcaption>Les trajets des personnages tracés sur la Terre du Milieu (démo LOTR).</figcaption>
+</figure>
+
+<h2>📚 Ce que ça t'apprend pour ta saga</h2>
+<p>Tu n'écriras pas <em>Le Seigneur des Anneaux</em>, et c'est très bien. Mais trois leçons de structure valent pour n'importe quelle série&#8239;:</p>
+<ul>
+  <li><strong>Un grand arc, et un arc par tome.</strong> Chaque volume doit se tenir seul tout en servant l'ensemble.</li>
+  <li><strong>Entrelace tes arcs de personnages.</strong> Décale les courbes pour qu'il y ait toujours une tension qui monte quelque part.</li>
+  <li><strong>Tiens le registre de tes promesses.</strong> Chaque amorce est une dette&#8239;: note-la, et paie-la au meilleur moment.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>Si <em>Le Seigneur des Anneaux</em> traverse trois tomes sans faiblir, ce n'est pas magique&#8239;: c'est une structure d'orfèvre. Des beats bien placés, des Voyages du Héros entrelacés, des amorces semées tôt et payées au bon moment, une géographie qui porte la tension. Les mêmes outils sont à ta portée pour ta propre saga.</p>
+<p>Tout ce que tu viens de voir vit dans la <strong>démo d'Atlas Narratif</strong>&#8239;: la trilogie entière, ses beats, ses arcs, ses amorces et sa carte. Explore-la sans créer de compte, puis structure la tienne. L'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com/demo">Explore la structure du Seigneur des Anneaux dans la démo</a>, puis lance ta propre saga gratuitement.</p>
+`,
+};
+
+export const posts = [commentStructurerUnRoman, saveTheCat15Beats, voyageDuHeros, creerTimeline, planifierNanowrimo, structureLOTR];
 
 // Articles publiés (hors brouillons) : alimentent l'index /blog, le prerender et le sitemap.
 export const getAllPosts = () =>

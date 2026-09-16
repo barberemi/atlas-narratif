@@ -45,6 +45,18 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog/planifier-nanowrimo-methode</loc>
+    <lastmod>2026-11-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://DOMAIN_PLACEHOLDER/blog/structure-seigneur-des-anneaux</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://DOMAIN_PLACEHOLDER/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
