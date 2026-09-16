@@ -9,13 +9,13 @@ Piliers : **P1** = fondation SEO (fort volume, intention claire) · **P2** = app
 | Mois | Phase | Article | Pilier | Intention / mot-clé cible | Canal d'amorçage |
 |------|-------|---------|--------|---------------------------|------------------|
 | **Sept.** | M1 Fondations | Comment structurer un roman : le guide complet ✅ *(publié)* | P1 | « comment structurer un roman » | r/ecriture, un Discord FR |
-| **Sept.** | M1 | La méthode Save the Cat expliquée (les 15 beats) | P1 | « save the cat beats français » | Reddit + groupe FB écriture |
-| **Oct.** | M2 Rodage | Le Voyage du Héros : les 12 étapes | P1 | « voyage du héros étapes » | CoCyclics, Scribay |
-| **Oct.** | M2 | Créer une timeline pour son roman : méthode + outils | P1 | « timeline roman outil » | Discord + démo `/demo` en appui |
-| **Nov.** | 🚀 M3 NaNoWriMo | Planifie ton NaNoWriMo avec une méthode *(+ template dédié)* | P1 | « préparer nanowrimo plan » | Groupes NaNoWriMo FR, X #TeamÉcriture |
-| **Nov.** | 🚀 M3 Lancement | La structure du Seigneur des Anneaux décortiquée *(démo déguisée)* | P3 | « structure seigneur des anneaux » | Lancement : Reddit, FB, BookTok, PH/BetaList |
-| **Déc.** | M4 Capitaliser | Détecter les incohérences dans son roman : la checklist | P1 | « incohérences roman vérifier » | Discord (aide), newsletter |
-| **Déc.** | M4 | Comment gérer plusieurs tomes sans perdre le fil | P2 | « écrire une saga plusieurs tomes » | r/fantasy_fr, groupes saga |
+| **Sept.** | M1 | La méthode Save the Cat expliquée (les 15 beats) ✅ *(publié)* | P1 | « save the cat beats français » | Reddit + groupe FB écriture |
+| **Oct.** | M2 Rodage | Le Voyage du Héros : les 12 étapes ✍️ *(rédigé, PR oct.)* | P1 | « voyage du héros étapes » | CoCyclics, Scribay |
+| **Oct.** | M2 | Créer une timeline pour son roman : méthode + outils ✍️ *(rédigé, PR oct.)* | P1 | « timeline roman outil » | Discord + démo `/demo` en appui |
+| **Nov.** | 🚀 M3 NaNoWriMo | Planifie ton NaNoWriMo avec une méthode ✍️ *(rédigé, PR nov.)* | P1 | « préparer nanowrimo plan » | Groupes NaNoWriMo FR, X #TeamÉcriture |
+| **Nov.** | 🚀 M3 Lancement | La structure du Seigneur des Anneaux décortiquée *(démo déguisée)* ✍️ *(rédigé, PR nov.)* | P3 | « structure seigneur des anneaux » | Lancement : Reddit, FB, BookTok, PH/BetaList |
+| **Déc.** | M4 Capitaliser | Détecter les incohérences dans son roman : la checklist ✍️ *(rédigé, PR déc.)* | P1 | « incohérences roman vérifier » | Discord (aide), newsletter |
+| **Déc.** | M4 | Comment gérer plusieurs tomes sans perdre le fil ✍️ *(rédigé, PR déc.)* | P2 | « écrire une saga plusieurs tomes » | r/fantasy_fr, groupes saga |
 | **Janv.** | M5 Communauté | Amorces et paiements (plant & payoff) : l'art de préparer ses révélations | P2 | « plant and payoff écriture » | Discord Atlas (si ouvert), X |
 | **Janv.** | M5 | Comment créer une bible d'univers (worldbuilding) pour ta saga | P1 | « bible d'univers worldbuilding » | r/JeuxDeRole, worldbuilders |
 | **Fév.** | M6 Bilan | Save the Cat vs Voyage du Héros : quelle méthode pour ton roman ? | P2 | « save the cat ou voyage du héros » | Reddit, FB |
@@ -36,6 +36,12 @@ Piliers : **P1** = fondation SEO (fort volume, intention claire) · **P2** = app
 1. Rédaction selon `ai/marketing/blog-guidelines.md`.
 2. Relecture **Expert Écriture de Blog** (`ai/agents/blog-editor.md`).
 3. Relecture **Écrivain** (`ai/agents/writer.md`).
-4. Intégration des retours des deux, ajout à `src/data/blog/posts.js`.
-5. Ajout de l'URL dans `public/sitemap.xml` (robots autorise déjà `/blog`).
-6. `npm run build` (prérend l'article pour le SEO) puis déploiement.
+4. Intégration des retours des deux, ajout à `src/data/blog/posts.js` avec la **date de publication** voulue (champ `date`).
+5. **Pas de sitemap à éditer à la main** : les entrées d'articles sont générées au build par `scripts/prerender.mjs` (seuls les articles publiés). Le `public/sitemap.xml` ne contient que les routes statiques.
+6. `make build` (prérend l'article pour le SEO) puis déploiement.
+
+### Publication programmée (garde-fou par date)
+Un article n'apparaît que lorsque sa `date` est atteinte (garde-fou `isPublished` dans `posts.js`). On peut donc **tout committer d'avance** : chaque article sort tout seul à sa date.
+- **Index `/blog`** : gate évalué au runtime → l'article apparaît à sa date **sans redéploiement**.
+- **Prerender + sitemap (SEO)** : gate évalué au build → l'article entre au **premier build/déploiement postérieur à sa date**. Prévoir un déploiement (ou un rebuild planifié) pour que le référencement suive.
+- **Brouillon** : `draft: true` masque l'article partout, quelle que soit la date.
