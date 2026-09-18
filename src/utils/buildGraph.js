@@ -12,6 +12,7 @@ export const RELATION_COLORS = {
   member_of:   '#10B981',  // Appartient au groupe
   has_member:  '#10B981',  // Membre du groupe
   homeland:    '#0EA5E9',  // Territoire natal du groupe
+  event:       '#A78BFA',  // Co-apparition dans un événement (entités custom)
 };
 
 export const RELATION_LABELS = {
@@ -25,6 +26,7 @@ export const RELATION_LABELS = {
   member_of:   'Membre de',
   has_member:  'Membre',
   homeland:    'Nation',
+  event:       'Événement',
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -54,8 +56,9 @@ function nameIncludes(haystack, needle) {
  * Construit les nœuds et arêtes du graphe centré sur `entityId`.
  * Retourne : { central, satellites, edges } ou null si entité introuvable.
  */
-export function buildGraph(entityId) {
-  const { characters, locations, objects, groups = [] } = getLoreCache();
+export function buildGraph(entityId, events = []) {
+  const { characters, locations, objects, groups = [], customEntities = [], customTypes = [] } = getLoreCache();
+  const customColor = (ce) => customTypes.find(t => t.id === ce?.typeId)?.color || '#a78bfa';
 
   let central = null;
   let centralType = null;
@@ -71,6 +74,9 @@ export function buildGraph(entityId) {
   }
   if (!central) for (const g of groups) {
     if (g.id === entityId) { central = g; centralType = 'group'; break; }
+  }
+  if (!central) for (const ce of customEntities) {
+    if (ce.id === entityId) { central = { ...ce, color: customColor(ce) }; centralType = 'custom'; break; }
   }
 
   if (!central) return null;
@@ -198,10 +204,38 @@ export function buildGraph(entityId) {
     }
   }
 
-  // Tri des satellites : groupes → personnages → lieux → objets
-  const typeOrder = { group: 0, character: 1, location: 2, object: 3 };
+  // ── Entités custom via événements partagés (couche 3) ───────────────────────
+  // On n'ajoute que des arêtes impliquant une entité custom : les graphes des
+  // entités natives restent identiques sauf si une entité custom co-apparaît.
+  if (events.length) {
+    const findById = (id) =>
+      customEntities.find(e => e.id === id) ??
+      characters.find(e => e.id === id) ??
+      locations.find(e => e.id === id) ??
+      objects.find(e => e.id === id);
+    const typeOfRef = (ref) => ref.entityType ?? (customEntities.some(e => e.id === ref.id) ? 'custom' : null);
+
+    for (const ev of events) {
+      const refs = ev.entities ?? [];
+      if (!refs.some(r => r.id === entityId)) continue;
+      for (const ref of refs) {
+        if (ref.id === entityId) continue;
+        const refType = typeOfRef(ref);
+        // Seulement si l'une des deux extrémités est custom.
+        if (centralType !== 'custom' && refType !== 'custom') continue;
+        const ent = findById(ref.id);
+        if (!ent) continue;
+        const enriched = refType === 'custom' ? { ...ent, color: customColor(ent) } : ent;
+        addNode(enriched, refType);
+        addEdge(entityId, ref.id, 'event');
+      }
+    }
+  }
+
+  // Tri des satellites : groupes → personnages → lieux → objets → custom
+  const typeOrder = { group: 0, character: 1, location: 2, object: 3, custom: 4 };
   const satellites = Array.from(nodes.values())
-    .sort((a, b) => typeOrder[a.entityType] - typeOrder[b.entityType]);
+    .sort((a, b) => (typeOrder[a.entityType] ?? 9) - (typeOrder[b.entityType] ?? 9));
 
   // ── Réification des relations : nœuds intermédiaires pour les types ≥ 2 arêtes
   const edgesByType = new Map();

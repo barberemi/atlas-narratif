@@ -68,6 +68,7 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
     journeys = [], groupsDB = [], plantsDB = [], arcPointsDB = [],
     threadsDB = [], eventExtrasDB = {}, characterArcsDB = [],
     heroJourneyDB = [], volumesDB = [],
+    customTypesDB = [], customEntitiesDB = [],
   } = data;
 
   const characters  = loreDB.characters ?? [];
@@ -110,13 +111,14 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const c of characters) {
     await tx`
       INSERT INTO characters
-        (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id)
+        (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id, custom_fields, source)
       VALUES (
         ${c.id}, ${projectId}, ${e(c.name)},
         ${e(c.aliases ?? [])}, ${e(c.race ?? null)}, ${e(c.role ?? null)},
         ${e(c.affiliation ?? c.affiliations ?? [])}, ${e(c.traits ?? [])},
         ${e(c.origin ?? null)}, ${e(c.description ?? null)},
-        ${c.color ?? '#64748b'}, ${c.journeyKey ?? null}, ${c.deathEventId ?? null}
+        ${c.color ?? '#64748b'}, ${c.journeyKey ?? null}, ${c.deathEventId ?? null},
+        ${e(c.customFields ?? {})}, ${c.source ?? 'import'}
       )
     `;
     done++;
@@ -127,12 +129,13 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
   for (const l of locations) {
     await tx`
       INSERT INTO locations
-        (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places)
+        (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places, custom_fields, source)
       VALUES (
         ${l.id}, ${projectId}, ${e(l.name)},
         ${e(l.type ?? null)}, ${e(l.regime ?? null)}, ${e(l.description ?? null)},
         ${l.coordinates ?? null},
-        ${e(l.inhabitants ?? [])}, ${e(l.visitedBy ?? [])}, ${e(l.keyPlaces ?? [])}
+        ${e(l.inhabitants ?? [])}, ${e(l.visitedBy ?? [])}, ${e(l.keyPlaces ?? [])},
+        ${e(l.customFields ?? {})}, ${l.source ?? 'import'}
       )
     `;
     done++;
@@ -144,13 +147,14 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
     await tx`
       INSERT INTO objects
         (id, project_id, name, type, description, creator, current_holder,
-         powers, holders, created_in, inscription, status, status_changed_at_chapter)
+         powers, holders, created_in, inscription, status, status_changed_at_chapter, custom_fields, source)
       VALUES (
         ${o.id}, ${projectId}, ${e(o.name)},
         ${e(o.type ?? null)}, ${e(o.description ?? null)}, ${e(o.creator ?? null)}, ${e(o.currentHolder ?? null)},
         ${e(o.powers ?? [])}, ${o.holders ?? []},
         ${o.createdIn ?? null}, ${e(o.inscription ?? null)},
-        ${o.status ?? 'active'}, ${o.statusChangedAtChapter ?? null}
+        ${o.status ?? 'active'}, ${o.statusChangedAtChapter ?? null},
+        ${e(o.customFields ?? {})}, ${o.source ?? 'import'}
       )
     `;
     done++;
@@ -324,6 +328,27 @@ async function _doSeed(tx, projectId, meta, data, onProgress, { userId, deviceId
     await tx`
       INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
       VALUES (${id}, ${projectId}, ${hj.stageKey}, ${hj.characterId ?? null}, ${hj.chapterNum ?? null}, ${e(hj.summary ?? null)}, ${hj.volumeId ?? null})
+      ON CONFLICT DO NOTHING
+    `;
+    done++;
+  }
+
+  // ── Types & entités custom (couche 3) ─────────────────────────────────────────
+  report('Types custom…');
+  for (const ty of customTypesDB) {
+    await tx`
+      INSERT INTO custom_entity_types (id, project_id, label, icon, color, field_schema, base_behavior, source)
+      VALUES (${ty.id}, ${projectId}, ${e(ty.label)}, ${ty.icon ?? null}, ${ty.color ?? '#64748b'},
+              ${JSON.stringify(ty.fieldSchema ?? [])}, ${ty.baseBehavior ?? 'entity'}, ${ty.source ?? 'import'})
+      ON CONFLICT DO NOTHING
+    `;
+    done++;
+  }
+  for (const ent of customEntitiesDB) {
+    await tx`
+      INSERT INTO custom_entities (id, project_id, type_id, name, aliases, custom_fields, description, source)
+      VALUES (${ent.id}, ${projectId}, ${ent.typeId}, ${e(ent.name)}, ${e(ent.aliases ?? [])},
+              ${e(ent.customFields ?? {})}, ${e(ent.description ?? null)}, ${ent.source ?? 'import'})
       ON CONFLICT DO NOTHING
     `;
     done++;

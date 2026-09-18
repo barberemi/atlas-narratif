@@ -2,17 +2,23 @@ import { ENTITY_VIZ } from '../data/viz_palette';
 
 // Couleurs par type d'entité — dérivées de la palette data-viz unifiée (validée CVD).
 export const ENTITY_COLORS = ENTITY_VIZ;
-export const ENTITY_ICONS  = { character: 'user', location: 'location', object: 'object', group: 'group' }; // noms d'icônes lucide (cf. ui/Icon.jsx)
+export const ENTITY_ICONS  = { character: 'user', location: 'location', object: 'object', group: 'group', custom: 'gem' }; // noms d'icônes lucide (cf. ui/Icon.jsx)
+const CUSTOM_COLOR = '#a78bfa';
 
 // ── Cache module-level (initialisé depuis la DB via DbContext) ────────────────
-let _cache = { characters: [], locations: [], objects: [], groups: [] };
+let _cache = { characters: [], locations: [], objects: [], groups: [], customEntities: [], customTypes: [] };
 
 /**
- * Initialise le cache d'entités depuis les données DB.
- * Appelé une seule fois depuis DbContext après le seed.
+ * Initialise le cache d'entités depuis les données DB (lore).
+ * Préserve les entités custom (alimentées séparément par useCustomEntityStore).
  */
 export function initEntityCache(loreData) {
-  _cache = loreData;
+  _cache = { ...loreData, customEntities: _cache.customEntities ?? [], customTypes: _cache.customTypes ?? [] };
+}
+
+/** Alimente le cache avec les types & entités custom (couche 3). */
+export function setCustomEntityCache(entities = [], types = []) {
+  _cache = { ..._cache, customEntities: entities, customTypes: types };
 }
 
 /** Accès direct au cache — utilisé par buildGraph. */
@@ -45,6 +51,14 @@ export function getEntityMeta(id, type) {
   if (!type || type === 'group') {
     const g = (_cache.groups ?? []).find(e => e.id === id);
     if (g) return { name: g.name, type: 'group', color: g.color || ENTITY_COLORS.group, icon: ENTITY_ICONS.group };
+    if (type) return null;
+  }
+  if (!type || type === 'custom') {
+    const ce = (_cache.customEntities ?? []).find(e => e.id === id);
+    if (ce) {
+      const color = (_cache.customTypes ?? []).find(t => t.id === ce.typeId)?.color || CUSTOM_COLOR;
+      return { name: ce.name, type: 'custom', color, icon: ENTITY_ICONS.custom };
+    }
   }
   return null;
 }

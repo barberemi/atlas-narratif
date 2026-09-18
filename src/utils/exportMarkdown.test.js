@@ -78,6 +78,27 @@ describe('buildMarkdown', () => {
     expect(md).toContain('*« Un Anneau pour les gouverner tous »*');
   });
 
+  it('inclut les champs custom des entités natives', () => {
+    const md = buildMarkdown(payload({
+      characters: [{ id: 'c1', name: 'Bilbo', custom_fields: { 'Âge': '111 ans', Signe: 'Balance' } }],
+    }));
+    expect(md).toContain('**Âge** : 111 ans');
+    expect(md).toContain('**Signe** : Balance');
+  });
+
+  it('inclut une section « Entités custom » groupée par type', () => {
+    const md = buildMarkdown(payload({
+      customEntityTypes: [{ id: 'ctype_langue', label: 'Langue', icon: '🗣️' }],
+      customEntities: [{ id: 'cent_quenya', type_id: 'ctype_langue', name: 'Quenya', aliases: ['haut-elfique'], description: 'Langue elfique.', custom_fields: { famille: 'Eldarine' } }],
+    }));
+    expect(md).toContain('## Entités custom');
+    expect(md).toContain('### 🗣️ Langue');
+    expect(md).toContain('#### Quenya');
+    expect(md).toContain('**Aliases** : haut-elfique');
+    expect(md).toContain('**famille** : Eldarine');
+    expect(md).toContain('> Langue elfique.');
+  });
+
   it('inclut la timeline avec résolution des IDs', () => {
     const md = buildMarkdown(payload({
       characters: [{ id: 'c1', name: 'Frodo' }],

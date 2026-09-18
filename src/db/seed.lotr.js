@@ -9,6 +9,7 @@ import {
   groupsDB, plantsDB, arcPointsDB,
   threadsDB, eventExtrasDB, characterArcsDB,
   heroJourneyDB, gandalfHeroJourneyDB, volumesDB,
+  customTypesDB, customEntitiesDB,
 } from '../data/lotr_seed_data';
 
 import {
@@ -100,6 +101,9 @@ const DATA = {
   characterArcsDB: [...characterArcsDB, ...t2CharacterArcsDB, ...t3CharacterArcsDB],
 
   heroJourneyDB: [...heroJourneyDB, ...gandalfHeroJourneyDB, ...t2HeroJourneyDB, ...t3HeroJourneyDB],
+
+  customTypesDB,
+  customEntitiesDB,
 };
 
 export async function seedLotr(db, { onProgress, lang = 'fr' } = {}) {

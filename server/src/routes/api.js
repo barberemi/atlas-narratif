@@ -15,6 +15,7 @@ import { encrypt, createProjectDek } from '../crypto.js';
 import { requireIdentity, signDeviceId } from '../middleware/requireIdentity.js';
 import { requireProjectOwner } from '../middleware/requireProjectOwner.js';
 import * as v from '../validators.js';
+import { answerAsk, checkRateLimit } from './ask.js';
 
 const api = new Hono();
 
@@ -344,6 +345,92 @@ api.post('/projects/:projectId/objects/restore', wrap(async (c) => {
   if (error) return error;
   await q.restoreObject(snapshot, projectId);
   return c.json({ ok: true });
+}));
+
+// Custom entity types (couche 3)
+api.get('/projects/:projectId/custom-types', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const types = await q.getCustomTypes(projectId);
+  return c.json({ types });
+}));
+
+api.post('/projects/:projectId/custom-types', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.customEntityType);
+  if (error) return error;
+  const id = await q.insertCustomType(body, projectId);
+  return c.json({ id }, 201);
+}));
+
+api.put('/projects/:projectId/custom-types/:typeId', wrap(async (c) => {
+  const { projectId, typeId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.customEntityType);
+  if (error) return error;
+  await q.updateCustomType(typeId, body, projectId);
+  return c.json({ ok: true });
+}));
+
+api.delete('/projects/:projectId/custom-types/:typeId', wrap(async (c) => {
+  const { projectId, typeId } = c.req.param();
+  const snapshot = await q.deleteCustomType(typeId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/custom-types/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreCustomType);
+  if (error) return error;
+  await q.restoreCustomType(snapshot, projectId);
+  return c.json({ ok: true });
+}));
+
+// Custom entities (couche 3)
+api.get('/projects/:projectId/custom-entities', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const entities = await q.getCustomEntities(projectId);
+  return c.json({ entities });
+}));
+
+api.post('/projects/:projectId/custom-entities', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.customEntity);
+  if (error) return error;
+  const id = await q.insertCustomEntity(body, projectId);
+  return c.json({ id }, 201);
+}));
+
+api.put('/projects/:projectId/custom-entities/:entId', wrap(async (c) => {
+  const { projectId, entId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.customEntity);
+  if (error) return error;
+  await q.updateCustomEntity(entId, body, projectId);
+  return c.json({ ok: true });
+}));
+
+api.delete('/projects/:projectId/custom-entities/:entId', wrap(async (c) => {
+  const { projectId, entId } = c.req.param();
+  const snapshot = await q.deleteCustomEntity(entId, projectId);
+  return c.json({ ok: true, snapshot });
+}));
+
+api.post('/projects/:projectId/custom-entities/restore', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: snapshot, error } = await parseBody(c, v.restoreCustomEntity);
+  if (error) return error;
+  await q.restoreCustomEntity(snapshot, projectId);
+  return c.json({ ok: true });
+}));
+
+// Chat de requête — niveau 2 (RAG, provider mock par défaut)
+api.post('/projects/:projectId/ask', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const { data: body, error } = await parseBody(c, v.ask);
+  if (error) return error;
+  if (!checkRateLimit(projectId)) {
+    return c.json({ error: 'Trop de requêtes — réessayez dans une minute.' }, 429);
+  }
+  const result = await answerAsk({ projectId, question: body.question });
+  return c.json(result);
 }));
 
 // Groups
@@ -801,6 +888,8 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     characterArcAxes = [],
     characterArcPoints = [],
     heroJourneyEntries = [],
+    customEntityTypes = [],
+    customEntities = [],
   } = body;
 
   await sql.begin(async (tx) => {
@@ -826,7 +915,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     // 3. characters
     for (const r of characters) {
       await tx`
-        INSERT INTO characters (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id)
+        INSERT INTO characters (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id, custom_fields)
         VALUES (
           ${r.id}, ${newId}, ${enc(r.name)},
           ${enc(r.aliases ?? [])},
@@ -838,7 +927,8 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
           ${enc(r.description ?? null)},
           ${r.color ?? null},
           ${r.journey_key ?? null},
-          ${r.death_event_id ?? null}
+          ${r.death_event_id ?? null},
+          ${enc(r.custom_fields ?? {})}
         )
         ON CONFLICT DO NOTHING
       `;
@@ -847,7 +937,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     // 4. locations
     for (const r of locations) {
       await tx`
-        INSERT INTO locations (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places)
+        INSERT INTO locations (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places, custom_fields)
         VALUES (
           ${r.id}, ${newId}, ${enc(r.name)},
           ${enc(r.type ?? null)},
@@ -856,7 +946,8 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
           ${r.coordinates ?? null},
           ${enc(fromExtra(r, 'inhabitants', 'inhabitants', []))},
           ${enc(fromExtra(r, 'visited_by', 'visitedBy', []))},
-          ${enc(fromExtra(r, 'key_places', 'keyPlaces', []))}
+          ${enc(fromExtra(r, 'key_places', 'keyPlaces', []))},
+          ${enc(r.custom_fields ?? {})}
         )
         ON CONFLICT DO NOTHING
       `;
@@ -865,7 +956,7 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
     // 5. objects
     for (const r of objects) {
       await tx`
-        INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, powers, holders, created_in, inscription, status, status_changed_at_chapter)
+        INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, powers, holders, created_in, inscription, status, status_changed_at_chapter, custom_fields)
         VALUES (
           ${r.id}, ${newId}, ${enc(r.name)},
           ${enc(r.type ?? null)},
@@ -877,7 +968,8 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
           ${r.created_in ?? null},
           ${enc(r.inscription ?? null)},
           ${r.status ?? null},
-          ${r.status_changed_at_chapter ?? null}
+          ${r.status_changed_at_chapter ?? null},
+          ${enc(r.custom_fields ?? {})}
         )
         ON CONFLICT DO NOTHING
       `;
@@ -1062,6 +1154,26 @@ api.post('/import/backup', bodyLimit({ maxSize: 20 * 1024 * 1024 }), wrap(async 
       await tx`
         INSERT INTO hero_journey_entries (id, project_id, stage_key, character_id, chapter_num, summary, volume_id)
         VALUES (${r.id}, ${newId}, ${r.stage_key}, ${r.character_id ?? null}, ${r.chapter_num ?? null}, ${enc(r.summary ?? null)}, ${r.volume_id ?? null})
+        ON CONFLICT DO NOTHING
+      `;
+    }
+
+    // 21. custom_entity_types (couche 3)
+    for (const r of customEntityTypes) {
+      await tx`
+        INSERT INTO custom_entity_types (id, project_id, label, icon, color, field_schema, base_behavior, source)
+        VALUES (${r.id}, ${newId}, ${enc(r.label)}, ${r.icon ?? null}, ${r.color ?? '#64748b'},
+                ${JSON.stringify(r.field_schema ?? [])}, ${r.base_behavior ?? 'entity'}, ${r.source ?? 'import'})
+        ON CONFLICT DO NOTHING
+      `;
+    }
+
+    // 22. custom_entities (couche 3)
+    for (const r of customEntities) {
+      await tx`
+        INSERT INTO custom_entities (id, project_id, type_id, name, aliases, custom_fields, description, source)
+        VALUES (${r.id}, ${newId}, ${r.type_id}, ${enc(r.name)}, ${enc(r.aliases ?? [])},
+                ${enc(r.custom_fields ?? {})}, ${enc(r.description ?? null)}, ${r.source ?? 'import'})
         ON CONFLICT DO NOTHING
       `;
     }

@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
+import { useCustomEntityStore } from '../../stores/useCustomEntityStore';
+import { useProject }        from '../../db/ProjectContext';
 import Icon                 from '../ui/Icon';
 import { VIZ_STATUS }        from '../../data/viz_palette';
 
@@ -12,6 +14,7 @@ const GROUP_DEFS = [
   { id: 'character', i18nKey: 'label.characters', icon: 'user',     color: '#5cae8e' },
   { id: 'location',  i18nKey: 'label.locations',  icon: 'location', color: '#60a5fa' },
   { id: 'object',    i18nKey: 'label.objects',     icon: 'object',  color: '#a78bfa' },
+  { id: 'custom',    i18nKey: 'customEntity.title', icon: 'gem',    color: '#a78bfa' },
   { id: 'event',     i18nKey: 'label.events',      icon: 'event',   color: '#cba15e' },
   { id: 'inco',      i18nKey: 'label.incoherences',icon: 'warning', color: '#ef4444' },
 ];
@@ -79,11 +82,17 @@ export default function GlobalSearch({ onClose }) {
   const inputRef = useRef(null);
   const listRef  = useRef(null);
 
+  const { projectId } = useProject();
   const characters = useLoreStore(s => s.characters);
   const locations  = useLoreStore(s => s.locations);
   const objects    = useLoreStore(s => s.objects);
   const events     = useTimelineStore(s => s.events);
   const incos      = useIncStore(s => s.data);
+  const customTypes    = useCustomEntityStore(s => s.types);
+  const customEntities = useCustomEntityStore(s => s.entities);
+
+  // Charge les entités custom au besoin (store non "core") pour les rendre cherchables partout.
+  useEffect(() => { if (projectId) useCustomEntityStore.getState().load(projectId); }, [projectId]);
 
   const GROUPS = useMemo(() => GROUP_DEFS.map(g => ({ ...g, label: t(g.i18nKey) })), [t]);
 
@@ -99,10 +108,15 @@ export default function GlobalSearch({ onClose }) {
     if (!q) return [];
 
     const match = (str) => (str ?? '').toLowerCase().includes(q);
+    const matchList = (arr) => (arr ?? []).some(v => match(String(v)));
+    // Cherche dans les clés ET les valeurs des champs custom (couche 2).
+    const matchCustom = (fields) => Object.entries(fields ?? {}).some(([k, v]) =>
+      match(k) || match(Array.isArray(v) ? v.join(' ') : (v && typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''))),
+    );
     const out = [];
 
     characters.forEach(c => {
-      if (match(c.name) || match(c.description)) {
+      if (match(c.name) || match(c.description) || matchList(c.aliases) || matchCustom(c.customFields)) {
         out.push({
           id:    c.id,
           group: 'character',
@@ -116,7 +130,7 @@ export default function GlobalSearch({ onClose }) {
     });
 
     locations.forEach(l => {
-      if (match(l.name) || match(l.type) || match(l.description)) {
+      if (match(l.name) || match(l.type) || match(l.description) || matchCustom(l.customFields)) {
         out.push({
           id:    l.id,
           group: 'location',
@@ -130,7 +144,7 @@ export default function GlobalSearch({ onClose }) {
     });
 
     objects.forEach(o => {
-      if (match(o.name) || match(o.type) || match(o.description)) {
+      if (match(o.name) || match(o.type) || match(o.description) || matchCustom(o.customFields)) {
         out.push({
           id:    o.id,
           group: 'object',
@@ -139,6 +153,21 @@ export default function GlobalSearch({ onClose }) {
           badge: o.source !== 'import' ? (o.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
           badgeColor: o.source === 'manual' ? '#34d399' : '#f59e0b',
           action: () => navigate(`/lore?tab=objects&search=${encodeURIComponent(o.name)}`),
+        });
+      }
+    });
+
+    (customEntities ?? []).forEach(ce => {
+      if (match(ce.name) || match(ce.description) || matchList(ce.aliases) || matchCustom(ce.customFields)) {
+        const type = (customTypes ?? []).find(ty => ty.id === ce.typeId);
+        out.push({
+          id:    ce.id,
+          group: 'custom',
+          title: ce.name,
+          sub:   type ? `${type.icon ? `${type.icon} ` : ''}${type.label}` : null,
+          badge: ce.source !== 'import' ? (ce.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
+          badgeColor: ce.source === 'manual' ? '#34d399' : '#f59e0b',
+          action: () => navigate('/custom'),
         });
       }
     });
@@ -172,7 +201,7 @@ export default function GlobalSearch({ onClose }) {
     });
 
     return out;
-  }, [query, characters, locations, objects, events, incos, navigate, t]);
+  }, [query, characters, locations, objects, customEntities, customTypes, events, incos, navigate, t]);
 
   // Reset activeIndex quand les résultats changent
   useEffect(() => { setActiveIndex(0); }, [results]);

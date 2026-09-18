@@ -17,10 +17,13 @@ Outil d'analyse et de construction narrative pour auteurs. SPA React + API Hono 
 |------|-----------|------|
 | `/` | `HomePage` (App.jsx) | Onboarding : créer ou importer un projet |
 | `/demo` | `DemoRoute` (App.jsx) | Lien public partageable : charge la démo LOTR (seed) et redirige vers `/dashboard` |
+| `/import/obsidian` | `VaultImporter` | Import d'un vault Obsidian (.md/.zip) → aperçu staging → seed (crée un projet) |
 | `/review` | `ReviewPage` | Validation après import IA |
 | `/dashboard` | `NarrativeDashboard` | Stats, recommandations, incohérences |
 | `/map` | `AtlasMapView` | Carte interactive + trajets personnages |
 | `/lore` | `LoreBrowser` | Base lore : personnages, lieux, objets |
+| `/custom` | `CustomEntityBrowser` | Types & entités custom (couche 3 : catégories user) |
+| `/chat` | `ChatPanel` | Chat de requête : niveau 1 déterministe (local) + niveau 2 RAG (serveur, mock par défaut) |
 | `/relations` | `EntityGraph` | Graphe de relations entre entités |
 | `/timeline` | `TimelineBrowser` | Timeline narrative par chapitre |
 | `/savethecat` | `SaveTheCat` | Structure Save the Cat (15 beats) |
@@ -60,8 +63,11 @@ Auth client : `src/lib/authClient.js` (better-auth/react, baseURL = `VITE_API_UR
 - `usePlantStore` — amorces narratives (plant / payoff)
 - `useThreadStore` — fils narratifs (subplots)
 - `useHeroJourneyStore` — étapes du Voyage du Héros
+- `useCustomEntityStore` — types & entités custom (couche 3)
 
-**Tables SQL principales** : `projects`, `volumes`, `characters`, `locations`, `objects`, `timeline_events`, `event_entities`, `incoherences`, `stc_chapters`, `arc_points`, `character_journeys`, `chapter_notes`, `character_arc_axes`, `character_arc_points`, `plant_payoffs`, `narrative_threads`, `groups`, `character_groups`, `hero_journey_entries`
+**Tables SQL principales** : `projects`, `volumes`, `characters`, `locations`, `objects`, `timeline_events`, `event_entities`, `incoherences`, `stc_chapters`, `arc_points`, `character_journeys`, `chapter_notes`, `character_arc_axes`, `character_arc_points`, `plant_payoffs`, `narrative_threads`, `groups`, `character_groups`, `hero_journey_entries`, `custom_entity_types`, `custom_entities`
+
+**Extensibilité** : les 3 entités natives portent une colonne JSONB chiffrée `custom_fields` (couche 2) ; `custom_entity_types` + `custom_entities` couvrent les catégories définies par l'utilisateur (couche 3). → `ai/docs/data-layer.md`
 
 → Détails : `ai/docs/data-layer.md`
 
@@ -122,11 +128,16 @@ make server-install # npm install dans le container API
 
 ## Migrations de schéma
 
-**Règle : toute modification de `src/db/schema.js` doit s'accompagner d'un incrément de `SCHEMA_VERSION`.**
+**Règle : toute modification du schéma serveur passe par une migration SQL dans `server/db/migrations/`.**
 
-`SCHEMA_VERSION` est défini à la fin de `schema.js` (ex: `'2026-04-01.1'`). Il contrôle si `applySchema()` est rejoué au démarrage. Sans incrément, les utilisateurs existants ne recevront pas les nouvelles migrations.
+Le schéma réel vit côté serveur (PostgreSQL). `server/src/migrate.js` applique au démarrage tous les fichiers `server/db/migrations/*.sql` triés par nom (chacun dans une transaction, enregistré dans `schema_migrations`).
 
-Format suggéré : `'YYYY-MM-DD.N'` (date + numéro de révision du jour).
+Procédure pour toute modif de schéma :
+1. Créer `server/db/migrations/NNN_description.sql` (DDL **idempotent** : `IF NOT EXISTS`, `DROP CONSTRAINT IF EXISTS`, etc.), en incrémentant le numéro `NNN`.
+2. **Répliquer le même DDL dans `server/db/init.sql`** (schéma des installs Docker neuves).
+3. Relancer l'API (`docker restart atlas-narratif-api-1` ou `make dev`) pour appliquer la migration ; vérifier les logs `[migrate]`.
+
+> ⚠️ L'ancien mécanisme `SCHEMA_VERSION` / `src/db/schema.js` (PGlite legacy) n'existe plus — ne pas s'y référer.
 
 ## Seed de test LOTR (données de démonstration)
 
@@ -189,7 +200,7 @@ Ce prompt est envoyé par l'utilisateur à n'importe quel outil IA (ChatGPT, Gem
 | Si tu modifies… | Mets à jour… |
 |-----------------|-------------|
 | `package.json`, `vite.config.js`, dépendances | `ai/docs/stack.md` |
-| `src/db/schema.js`, `src/db/*.js`, `src/stores/*.js` | `ai/docs/data-layer.md` |
+| `server/db/init.sql`, `server/db/migrations/*.sql`, `server/src/db-queries.js`, `src/db/*.js`, `src/stores/*.js` | `ai/docs/data-layer.md` |
 | `src/components/**`, `src/pages/**` | `ai/docs/components.md` |
 | `src/App.jsx` (routes, guards, navigation) | `ai/docs/routes.md` + `CLAUDE.md` (table des routes) |
 | Ajout d'une nouvelle route ou d'un nouveau store | `CLAUDE.md` (sections Routes et Couche données) |
@@ -203,7 +214,7 @@ Ne pas mettre à jour la doc si le changement est interne à un composant sans i
 | Fichier `.env.example` | Couvre | Variables |
 |------------------------|-------|-----------|
 | `.env.example` | Client Vite (racine) | `VITE_*`, `VITE_CRISP_WEBSITE_ID` |
-| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM`, `ATLAS_ENCRYPTION_KEY` |
+| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM`, `ATLAS_ENCRYPTION_KEY`, `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_MS`, `LLM_MAX_TOKENS`, `LLM_RATE_LIMIT_PER_MIN` |
 | `.env.prod.example` | Docker Compose (prod) | Toutes les variables serveur + `DOMAIN`, `ACME_EMAIL`, `POSTGRES_PASSWORD`, `ATLAS_ENCRYPTION_KEY` |
 
 **Quand tu ajoutes une variable d'environnement :**

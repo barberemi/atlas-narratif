@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS characters (
   color          TEXT DEFAULT '#64748b',
   journey_key    TEXT,
   death_event_id TEXT,
+  custom_fields  JSONB,
   source         TEXT DEFAULT 'import',
   PRIMARY KEY (id, project_id)
 );
@@ -104,6 +105,7 @@ CREATE TABLE IF NOT EXISTS locations (
   inhabitants JSONB DEFAULT '[]',
   visited_by  JSONB DEFAULT '[]',
   key_places  JSONB DEFAULT '[]',
+  custom_fields JSONB,
   source      TEXT DEFAULT 'import',
   PRIMARY KEY (id, project_id)
 );
@@ -123,6 +125,7 @@ CREATE TABLE IF NOT EXISTS objects (
   inscription               TEXT,
   status                    TEXT DEFAULT 'active',
   status_changed_at_chapter INTEGER,
+  custom_fields             JSONB,
   source                    TEXT DEFAULT 'import',
   PRIMARY KEY (id, project_id)
 );
@@ -155,7 +158,7 @@ CREATE TABLE IF NOT EXISTS event_entities (
   event_id    TEXT NOT NULL,
   project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   entity_id   TEXT NOT NULL,
-  entity_type TEXT NOT NULL CHECK (entity_type IN ('character','location','object')),
+  entity_type TEXT NOT NULL CHECK (entity_type IN ('character','location','object','custom')),
   PRIMARY KEY (event_id, project_id, entity_id, entity_type)
 );
 
@@ -203,7 +206,7 @@ CREATE TABLE IF NOT EXISTS stc_chapter_entities (
   chapter_id  TEXT NOT NULL,
   project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   entity_id   TEXT NOT NULL,
-  entity_type TEXT NOT NULL CHECK (entity_type IN ('character','location','object')),
+  entity_type TEXT NOT NULL CHECK (entity_type IN ('character','location','object','custom')),
   PRIMARY KEY (chapter_id, project_id, entity_id, entity_type)
 );
 
@@ -315,6 +318,33 @@ CREATE TABLE IF NOT EXISTS hero_journey_entries (
   summary      TEXT,
   volume_id    TEXT
 );
+
+-- ── Types d'entités custom (couche 3 : catégories définies par l'utilisateur) ─
+CREATE TABLE IF NOT EXISTS custom_entity_types (
+  id            TEXT NOT NULL,
+  project_id    TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  label         TEXT NOT NULL,
+  icon          TEXT,
+  color         TEXT DEFAULT '#64748b',
+  field_schema  JSONB DEFAULT '[]',
+  base_behavior TEXT DEFAULT 'entity',
+  source        TEXT DEFAULT 'import',
+  PRIMARY KEY (id, project_id)
+);
+
+-- ── Instances d'entités custom ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS custom_entities (
+  id            TEXT NOT NULL,
+  project_id    TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  type_id       TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  aliases       JSONB DEFAULT '[]',
+  custom_fields JSONB,
+  description   TEXT,
+  source        TEXT DEFAULT 'import',
+  PRIMARY KEY (id, project_id)
+);
+CREATE INDEX IF NOT EXISTS idx_custom_entities_type ON custom_entities(project_id, type_id);
 
 -- ── Migration : ajout ON DELETE CASCADE manquant sur les tables de jonction ──
 DO $$

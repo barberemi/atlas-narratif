@@ -25,8 +25,9 @@ export const NAV_GROUPS = [
     labelKey: 'nav.universe',
     icon:  'universe',
     items: [
-      { path: '/lore', labelKey: 'nav.lore', icon: 'lore' },
-      { path: '/map',  labelKey: 'nav.map',  icon: 'map' },
+      { path: '/lore',   labelKey: 'nav.lore',   icon: 'lore' },
+      { path: '/custom', labelKey: 'nav.custom', icon: 'gem' },
+      { path: '/map',    labelKey: 'nav.map',    icon: 'map' },
     ],
   },
   {
@@ -36,6 +37,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/timeline',     labelKey: 'nav.timeline',       icon: 'event' },
       { path: '/dashboard',    labelKey: 'nav.dashboard',      icon: 'dashboard' },
+      { path: '/chat',         labelKey: 'nav.chat',           icon: 'search' },
       { path: '/review',       labelKey: 'nav.review',         icon: 'search' },
       { path: '/incoherences', labelKey: 'nav.incoherences',   icon: 'warning' },
     ],

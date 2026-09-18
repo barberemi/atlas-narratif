@@ -63,6 +63,85 @@ function TagInput({ value, onChange, placeholder, testId }) {
   );
 }
 
+// ── Champs custom (couche 2 : bag clé/valeur libre) ────────────────────────────
+function CustomFields({ data, set, accent, t }) {
+  const fields = data.customFields ?? {};
+  const entries = Object.entries(fields);
+  const [newKey, setNewKey] = useState('');
+  const [newVal, setNewVal] = useState('');
+
+  const setValue = (key, value) => set('customFields', { ...fields, [key]: value });
+  const removeKey = (key) => {
+    const next = { ...fields };
+    delete next[key];
+    set('customFields', next);
+  };
+  const addField = () => {
+    const key = newKey.trim();
+    if (!key || Object.prototype.hasOwnProperty.call(fields, key)) { setNewKey(''); setNewVal(''); return; }
+    set('customFields', { ...fields, [key]: newVal.trim() });
+    setNewKey('');
+    setNewVal('');
+  };
+
+  // Une valeur importée peut être un tableau/objet : on l'affiche lisiblement en lecture-écriture texte.
+  const displayVal = (v) => Array.isArray(v) ? v.join(', ') : (v && typeof v === 'object' ? JSON.stringify(v) : (v ?? ''));
+
+  return (
+    <Field label={t('label.customFields')}>
+      <div className="space-y-1.5">
+        {entries.length === 0 && (
+          <p className="text-[11px] text-atlas-mute italic">{t('customFields.empty')}</p>
+        )}
+        {entries.map(([key, val]) => (
+          <div key={key} className="flex items-center gap-1.5">
+            <span
+              className="px-2 py-1.5 rounded-lg text-xs font-bold flex-shrink-0 max-w-[38%] truncate"
+              style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)' }}
+              title={key}
+            >{key}</span>
+            <input
+              value={displayVal(val)}
+              onChange={e => setValue(key, e.target.value)}
+              className="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none"
+              data-testid={`custom-value-${key}`}
+            />
+            <button
+              onClick={() => removeKey(key)}
+              className="w-6 h-6 flex items-center justify-center rounded-lg text-atlas-mute hover:text-red-400 transition-colors flex-shrink-0"
+              title={t('btn.delete')}
+            ><Icon name="close" size={12} /></button>
+          </div>
+        ))}
+        <div className="flex items-center gap-1.5 pt-1">
+          <input
+            value={newKey}
+            onChange={e => setNewKey(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addField(); } }}
+            placeholder={t('customFields.keyPlaceholder')}
+            className="w-[38%] px-2 py-1.5 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600"
+            data-testid="custom-new-key"
+          />
+          <input
+            value={newVal}
+            onChange={e => setNewVal(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addField(); } }}
+            placeholder={t('customFields.valuePlaceholder')}
+            className="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-xs text-slate-300 bg-white/5 border border-white/10 outline-none placeholder-slate-600"
+            data-testid="custom-new-value"
+          />
+          <button
+            onClick={addField}
+            className="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex-shrink-0"
+            style={{ backgroundColor: `${accent}20`, color: accent, border: `1px solid ${accent}45` }}
+            data-testid="custom-add"
+          >{t('customFields.add')}</button>
+        </div>
+      </div>
+    </Field>
+  );
+}
+
 // ── Champs spécifiques au type ─────────────────────────────────────────────────
 function CharacterFields({ data, set, accent, t }) {
   const events = useTimelineStore(s => s.events) ?? [];
@@ -372,15 +451,15 @@ function ObjectFields({ data, set, accent, t }) {
 // ── Données initiales selon le type ───────────────────────────────────────────
 function initData(entityType, entity, groups = []) {
   if (entity) {
-    const base = { ...entity };
+    const base = { ...entity, customFields: entity.customFields ?? {} };
     if (entityType === 'character') {
       base.groupIds = groups.filter(g => g.members.some(m => m.characterId === entity.id)).map(g => g.id);
     }
     return base;
   }
-  if (entityType === 'character') return { name: '', color: '#818cf8', origin: '', aliases: [], affiliations: [], traits: [], description: '', deathEventId: null, groupIds: [] };
-  if (entityType === 'location')  return { name: '', type: '', regime: '', description: '', inhabitants: [], visitedBy: [], keyPlaces: [] };
-  return { name: '', type: '', creator: '', powers: [], currentHolder: '', description: '', status: 'active', statusChangedAtChapter: null };
+  if (entityType === 'character') return { name: '', color: '#818cf8', origin: '', aliases: [], affiliations: [], traits: [], description: '', deathEventId: null, groupIds: [], customFields: {} };
+  if (entityType === 'location')  return { name: '', type: '', regime: '', description: '', inhabitants: [], visitedBy: [], keyPlaces: [], customFields: {} };
+  return { name: '', type: '', creator: '', powers: [], currentHolder: '', description: '', status: 'active', statusChangedAtChapter: null, customFields: {} };
 }
 
 // ── EntityEditor ───────────────────────────────────────────────────────────────
@@ -469,6 +548,9 @@ export default function EntityEditor({ entity, entityType, onClose }) {
           {entityType === 'character' && <CharacterFields data={data} set={set} accent={cfg.accent} characterId={entity?.id} t={t} />}
           {entityType === 'location'  && <LocationFields  data={data} set={set} accent={cfg.accent} t={t} />}
           {entityType === 'object'    && <ObjectFields    data={data} set={set} accent={cfg.accent} t={t} />}
+
+          {/* Champs custom (couche 2) — communs aux 3 types */}
+          <CustomFields data={data} set={set} accent={cfg.accent} t={t} />
         </div>
 
         {/* Footer */}

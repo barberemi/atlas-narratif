@@ -19,7 +19,10 @@ import { encrypt, decrypt, getProjectDek } from './crypto.js';
 const SOURCE_CASE = `source = CASE WHEN source='import' THEN 'modified' ELSE source END`;
 
 function makeId(prefix, projectId) {
-  return `${prefix}_${projectId}_${Date.now()}`;
+  // Suffixe aléatoire court en plus du timestamp : évite les collisions de clé
+  // primaire quand deux insertions tombent dans la même milliseconde.
+  const rand = randomUUID().slice(0, 8);
+  return `${prefix}_${projectId}_${Date.now()}_${rand}`;
 }
 
 /**
@@ -125,6 +128,7 @@ export async function getCharacters(projectId) {
     affiliations: parseJ(decrypt(r.affiliations, dek), []),
     traits:       parseJ(decrypt(r.traits, dek), []),
     deathEventId: r.death_event_id ?? null,
+    customFields: parseJ(decrypt(r.custom_fields, dek), {}),
     source:       r.source ?? 'import',
   })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
@@ -154,7 +158,7 @@ export async function insertCharacter(data, projectId) {
   await sql`
     INSERT INTO characters
       (id, project_id, name, aliases, race, role, affiliations, traits,
-       origin, description, color, death_event_id, source)
+       origin, description, color, death_event_id, custom_fields, source)
     VALUES (
       ${id}, ${projectId}, ${encrypt(data.name, dek)},
       ${encrypt(data.aliases ?? [], dek)},
@@ -166,6 +170,7 @@ export async function insertCharacter(data, projectId) {
       ${encrypt(data.description ?? null, dek)},
       ${data.color       ?? '#64748b'},
       ${data.deathEventId ?? null},
+      ${encrypt(data.customFields ?? {}, dek)},
       'manual'
     )
   `;
@@ -186,6 +191,7 @@ export async function updateCharacter(charId, data, projectId) {
       description  = ${encrypt(data.description ?? null, dek)},
       color        = ${data.color       ?? '#64748b'},
       death_event_id = ${data.deathEventId ?? null},
+      custom_fields = ${encrypt(data.customFields ?? {}, dek)},
       ${sql.unsafe(SOURCE_CASE)}
     WHERE id = ${charId} AND project_id = ${projectId}
   `;
@@ -218,10 +224,10 @@ export async function deleteCharacter(charId, projectId) {
 export async function restoreCharacter(snapshot, projectId) {
   const e = snapshot.entity;
   await sql`
-    INSERT INTO characters (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id, source)
+    INSERT INTO characters (id, project_id, name, aliases, race, role, affiliations, traits, origin, description, color, journey_key, death_event_id, custom_fields, source)
     VALUES (${e.id}, ${projectId}, ${e.name}, ${e.aliases ?? []}, ${e.race ?? null}, ${e.role ?? null},
             ${e.affiliations ?? []}, ${e.traits ?? []}, ${e.origin ?? null}, ${e.description ?? null},
-            ${e.color ?? '#64748b'}, ${e.journey_key ?? null}, ${e.death_event_id ?? null}, ${e.source ?? 'import'})
+            ${e.color ?? '#64748b'}, ${e.journey_key ?? null}, ${e.death_event_id ?? null}, ${e.custom_fields ?? null}, ${e.source ?? 'import'})
     ON CONFLICT DO NOTHING
   `;
   for (const r of (snapshot.eventEntities ?? [])) {
@@ -258,6 +264,7 @@ export async function getLocations(projectId) {
     inhabitants: parseJ(decrypt(r.inhabitants, dek), []),
     visitedBy:   parseJ(decrypt(r.visited_by, dek), []),
     keyPlaces:   parseJ(decrypt(r.key_places, dek), []),
+    customFields: parseJ(decrypt(r.custom_fields, dek), {}),
     source:      r.source ?? 'import',
   })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
@@ -267,7 +274,7 @@ export async function insertLocation(data, projectId) {
   const id = makeId('loc', projectId);
   await sql`
     INSERT INTO locations
-      (id, project_id, name, type, regime, description, inhabitants, visited_by, key_places, source)
+      (id, project_id, name, type, regime, description, inhabitants, visited_by, key_places, custom_fields, source)
     VALUES (
       ${id}, ${projectId}, ${encrypt(data.name, dek)},
       ${encrypt(data.type        ?? null, dek)},
@@ -276,6 +283,7 @@ export async function insertLocation(data, projectId) {
       ${encrypt(data.inhabitants ?? [], dek)},
       ${encrypt(data.visitedBy   ?? [], dek)},
       ${encrypt(data.keyPlaces   ?? [], dek)},
+      ${encrypt(data.customFields ?? {}, dek)},
       'manual'
     )
   `;
@@ -293,6 +301,7 @@ export async function updateLocation(locId, data, projectId) {
       inhabitants = ${encrypt(data.inhabitants ?? [], dek)},
       visited_by  = ${encrypt(data.visitedBy   ?? [], dek)},
       key_places  = ${encrypt(data.keyPlaces   ?? [], dek)},
+      custom_fields = ${encrypt(data.customFields ?? {}, dek)},
       ${sql.unsafe(SOURCE_CASE)}
     WHERE id = ${locId} AND project_id = ${projectId}
   `;
@@ -312,9 +321,9 @@ export async function deleteLocation(locId, projectId) {
 export async function restoreLocation(snapshot, projectId) {
   const e = snapshot.entity;
   await sql`
-    INSERT INTO locations (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places, source)
+    INSERT INTO locations (id, project_id, name, type, regime, description, coordinates, inhabitants, visited_by, key_places, custom_fields, source)
     VALUES (${e.id}, ${projectId}, ${e.name}, ${e.type ?? null}, ${e.regime ?? null}, ${e.description ?? null},
-            ${e.coordinates ?? null}, ${e.inhabitants ?? []}, ${e.visited_by ?? []}, ${e.key_places ?? []}, ${e.source ?? 'import'})
+            ${e.coordinates ?? null}, ${e.inhabitants ?? []}, ${e.visited_by ?? []}, ${e.key_places ?? []}, ${e.custom_fields ?? null}, ${e.source ?? 'import'})
     ON CONFLICT DO NOTHING
   `;
   for (const r of (snapshot.eventEntities ?? [])) {
@@ -342,6 +351,7 @@ export async function getObjects(projectId) {
     inscription:            decrypt(r.inscription, dek) ?? null,
     status:                 r.status ?? 'active',
     statusChangedAtChapter: r.status_changed_at_chapter ?? null,
+    customFields:           parseJ(decrypt(r.custom_fields, dek), {}),
     source:                 r.source ?? 'import',
   })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 }
@@ -352,7 +362,7 @@ export async function insertObject(data, projectId) {
   await sql`
     INSERT INTO objects
       (id, project_id, name, type, description, creator, current_holder,
-       powers, holders, created_in, inscription, status, status_changed_at_chapter, source)
+       powers, holders, created_in, inscription, status, status_changed_at_chapter, custom_fields, source)
     VALUES (
       ${id}, ${projectId}, ${encrypt(data.name, dek)},
       ${encrypt(data.type           ?? null, dek)},
@@ -365,6 +375,7 @@ export async function insertObject(data, projectId) {
       ${encrypt(data.inscription    ?? null, dek)},
       ${data.status         ?? 'active'},
       ${data.statusChangedAtChapter ?? null},
+      ${encrypt(data.customFields ?? {}, dek)},
       'manual'
     )
   `;
@@ -386,6 +397,7 @@ export async function updateObject(objId, data, projectId) {
       inscription             = ${encrypt(data.inscription   ?? null, dek)},
       status                  = ${data.status        ?? 'active'},
       status_changed_at_chapter = ${data.statusChangedAtChapter ?? null},
+      custom_fields           = ${encrypt(data.customFields ?? {}, dek)},
       ${sql.unsafe(SOURCE_CASE)}
     WHERE id = ${objId} AND project_id = ${projectId}
   `;
@@ -405,10 +417,175 @@ export async function deleteObject(objId, projectId) {
 export async function restoreObject(snapshot, projectId) {
   const e = snapshot.entity;
   await sql`
-    INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, powers, holders, created_in, inscription, status, status_changed_at_chapter, source)
+    INSERT INTO objects (id, project_id, name, type, description, creator, current_holder, powers, holders, created_in, inscription, status, status_changed_at_chapter, custom_fields, source)
     VALUES (${e.id}, ${projectId}, ${e.name}, ${e.type ?? null}, ${e.description ?? null}, ${e.creator ?? null},
             ${e.current_holder ?? null}, ${e.powers ?? []}, ${e.holders ?? []}, ${e.created_in ?? null},
-            ${e.inscription ?? null}, ${e.status ?? 'active'}, ${e.status_changed_at_chapter ?? null}, ${e.source ?? 'import'})
+            ${e.inscription ?? null}, ${e.status ?? 'active'}, ${e.status_changed_at_chapter ?? null}, ${e.custom_fields ?? null}, ${e.source ?? 'import'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const r of (snapshot.eventEntities ?? [])) {
+    await sql`INSERT INTO event_entities (event_id, project_id, entity_id, entity_type) VALUES (${r.event_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
+}
+
+// ── Types d'entités custom (couche 3) ─────────────────────────────────────────
+// `label` est chiffré (contenu utilisateur) ; `field_schema` reste en JSONB clair
+// (métadonnée structurelle, introspectable). icon/color/base_behavior en clair.
+
+export async function getCustomTypes(projectId) {
+  const dek = await getProjectDek(projectId);
+  const rows = await sql`
+    SELECT * FROM custom_entity_types WHERE project_id = ${projectId} ORDER BY id
+  `;
+  return rows.map(r => ({
+    id:           r.id,
+    label:        decrypt(r.label, dek),
+    icon:         r.icon ?? null,
+    color:        r.color ?? '#64748b',
+    fieldSchema:  parseJ(r.field_schema, []),
+    baseBehavior: r.base_behavior ?? 'entity',
+    source:       r.source ?? 'import',
+  })).sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+}
+
+export async function insertCustomType(data, projectId) {
+  const dek = await getProjectDek(projectId);
+  const id = makeId('ctype', projectId);
+  await sql`
+    INSERT INTO custom_entity_types
+      (id, project_id, label, icon, color, field_schema, base_behavior, source)
+    VALUES (
+      ${id}, ${projectId}, ${encrypt(data.label, dek)},
+      ${data.icon ?? null}, ${data.color ?? '#64748b'},
+      ${JSON.stringify(data.fieldSchema ?? [])},
+      ${data.baseBehavior ?? 'entity'},
+      'manual'
+    )
+  `;
+  return id;
+}
+
+export async function updateCustomType(typeId, data, projectId) {
+  const dek = await getProjectDek(projectId);
+  await sql`
+    UPDATE custom_entity_types SET
+      label         = ${encrypt(data.label, dek)},
+      icon          = ${data.icon ?? null},
+      color         = ${data.color ?? '#64748b'},
+      field_schema  = ${JSON.stringify(data.fieldSchema ?? [])},
+      base_behavior = ${data.baseBehavior ?? 'entity'},
+      ${sql.unsafe(SOURCE_CASE)}
+    WHERE id = ${typeId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteCustomType(typeId, projectId) {
+  const [entity] = await sql`SELECT * FROM custom_entity_types WHERE id = ${typeId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  // Entités rattachées à ce type + leurs liens events (supprimés en cascade applicative).
+  const entities = await sql`SELECT * FROM custom_entities WHERE type_id = ${typeId} AND project_id = ${projectId}`;
+  const entityIds = entities.map(e => e.id);
+  const eventEntities = entityIds.length
+    ? await sql`SELECT * FROM event_entities WHERE entity_type = 'custom' AND entity_id = ANY(${entityIds}) AND project_id = ${projectId}`
+    : [];
+
+  if (entityIds.length) {
+    await sql`DELETE FROM event_entities WHERE entity_type = 'custom' AND entity_id = ANY(${entityIds}) AND project_id = ${projectId}`;
+  }
+  await sql`DELETE FROM custom_entities WHERE type_id = ${typeId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM custom_entity_types WHERE id = ${typeId} AND project_id = ${projectId}`;
+
+  return { entity, entities, eventEntities };
+}
+
+export async function restoreCustomType(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO custom_entity_types (id, project_id, label, icon, color, field_schema, base_behavior, source)
+    VALUES (${e.id}, ${projectId}, ${e.label}, ${e.icon ?? null}, ${e.color ?? '#64748b'},
+            ${JSON.stringify(e.field_schema ?? [])}, ${e.base_behavior ?? 'entity'}, ${e.source ?? 'import'})
+    ON CONFLICT DO NOTHING
+  `;
+  for (const en of (snapshot.entities ?? [])) {
+    await sql`
+      INSERT INTO custom_entities (id, project_id, type_id, name, aliases, custom_fields, description, source)
+      VALUES (${en.id}, ${projectId}, ${en.type_id}, ${en.name}, ${en.aliases ?? []},
+              ${en.custom_fields ?? null}, ${en.description ?? null}, ${en.source ?? 'import'})
+      ON CONFLICT DO NOTHING
+    `;
+  }
+  for (const r of (snapshot.eventEntities ?? [])) {
+    await sql`INSERT INTO event_entities (event_id, project_id, entity_id, entity_type) VALUES (${r.event_id}, ${projectId}, ${r.entity_id}, ${r.entity_type}) ON CONFLICT DO NOTHING`;
+  }
+}
+
+// ── Entités custom (couche 3) ─────────────────────────────────────────────────
+
+export async function getCustomEntities(projectId) {
+  const dek = await getProjectDek(projectId);
+  const rows = await sql`
+    SELECT * FROM custom_entities WHERE project_id = ${projectId} ORDER BY id
+  `;
+  return rows.map(r => ({
+    id:           r.id,
+    typeId:       r.type_id,
+    name:         decrypt(r.name, dek),
+    aliases:      parseJ(decrypt(r.aliases, dek), []),
+    description:  decrypt(r.description, dek),
+    customFields: parseJ(decrypt(r.custom_fields, dek), {}),
+    source:       r.source ?? 'import',
+  })).sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+}
+
+export async function insertCustomEntity(data, projectId) {
+  const dek = await getProjectDek(projectId);
+  const id = makeId('cent', projectId);
+  await sql`
+    INSERT INTO custom_entities
+      (id, project_id, type_id, name, aliases, custom_fields, description, source)
+    VALUES (
+      ${id}, ${projectId}, ${data.typeId},
+      ${encrypt(data.name, dek)},
+      ${encrypt(data.aliases ?? [], dek)},
+      ${encrypt(data.customFields ?? {}, dek)},
+      ${encrypt(data.description ?? null, dek)},
+      'manual'
+    )
+  `;
+  return id;
+}
+
+export async function updateCustomEntity(entId, data, projectId) {
+  const dek = await getProjectDek(projectId);
+  await sql`
+    UPDATE custom_entities SET
+      type_id       = ${data.typeId},
+      name          = ${encrypt(data.name, dek)},
+      aliases       = ${encrypt(data.aliases ?? [], dek)},
+      custom_fields = ${encrypt(data.customFields ?? {}, dek)},
+      description   = ${encrypt(data.description ?? null, dek)},
+      ${sql.unsafe(SOURCE_CASE)}
+    WHERE id = ${entId} AND project_id = ${projectId}
+  `;
+}
+
+export async function deleteCustomEntity(entId, projectId) {
+  const [entity] = await sql`SELECT * FROM custom_entities WHERE id = ${entId} AND project_id = ${projectId}`;
+  if (!entity) return null;
+  const eventEntities = await sql`SELECT * FROM event_entities WHERE entity_type = 'custom' AND entity_id = ${entId} AND project_id = ${projectId}`;
+
+  await sql`DELETE FROM event_entities WHERE entity_type = 'custom' AND entity_id = ${entId} AND project_id = ${projectId}`;
+  await sql`DELETE FROM custom_entities WHERE id = ${entId} AND project_id = ${projectId}`;
+
+  return { entity, eventEntities };
+}
+
+export async function restoreCustomEntity(snapshot, projectId) {
+  const e = snapshot.entity;
+  await sql`
+    INSERT INTO custom_entities (id, project_id, type_id, name, aliases, custom_fields, description, source)
+    VALUES (${e.id}, ${projectId}, ${e.type_id}, ${e.name}, ${e.aliases ?? []},
+            ${e.custom_fields ?? null}, ${e.description ?? null}, ${e.source ?? 'import'})
     ON CONFLICT DO NOTHING
   `;
   for (const r of (snapshot.eventEntities ?? [])) {
@@ -1461,6 +1638,7 @@ export async function exportProject(projectId) {
     plantPayoffs, arcPoints, narrativeThreads,
     characterArcAxes, characterArcPoints,
     heroJourneyEntries,
+    customEntityTypes, customEntities,
   ] = await Promise.all([
     sql`SELECT * FROM volumes                WHERE project_id = ${projectId} ORDER BY number`,
     sql`SELECT * FROM characters             WHERE project_id = ${projectId} ORDER BY id`,
@@ -1482,6 +1660,8 @@ export async function exportProject(projectId) {
     sql`SELECT * FROM character_arc_axes     WHERE project_id = ${projectId} ORDER BY character_id, id`,
     sql`SELECT * FROM character_arc_points   WHERE project_id = ${projectId} ORDER BY axis_id, chapter_num`,
     sql`SELECT * FROM hero_journey_entries   WHERE project_id = ${projectId} ORDER BY stage_key`,
+    sql`SELECT * FROM custom_entity_types     WHERE project_id = ${projectId} ORDER BY id`,
+    sql`SELECT * FROM custom_entities         WHERE project_id = ${projectId} ORDER BY id`,
   ]);
 
   // Décrypte les champs sensibles pour l'export (doit être en clair dans le JSON)
@@ -1493,9 +1673,9 @@ export async function exportProject(projectId) {
     exportedAt: new Date().toISOString(),
     project: { id: proj.id, name: d(proj.name), description: d(proj.description), mapImage: d(proj.map_image), createdAt: proj.created_at },
     volumes: volumes.map(r => ({ ...r, title: d(r.title), description: d(r.description) })),
-    characters: characters.map(r => ({ ...r, name: d(r.name), aliases: dj(r.aliases), race: d(r.race), role: d(r.role), origin: d(r.origin), description: d(r.description), affiliations: dj(r.affiliations), traits: dj(r.traits) })),
-    locations: locations.map(r => ({ ...r, name: d(r.name), type: d(r.type), regime: d(r.regime), description: d(r.description), inhabitants: dj(r.inhabitants), visited_by: dj(r.visited_by), key_places: dj(r.key_places) })),
-    objects: objects.map(r => ({ ...r, name: d(r.name), type: d(r.type), description: d(r.description), creator: d(r.creator), current_holder: d(r.current_holder), powers: dj(r.powers), inscription: d(r.inscription) })),
+    characters: characters.map(r => ({ ...r, name: d(r.name), aliases: dj(r.aliases), race: d(r.race), role: d(r.role), origin: d(r.origin), description: d(r.description), affiliations: dj(r.affiliations), traits: dj(r.traits), custom_fields: dj(r.custom_fields) })),
+    locations: locations.map(r => ({ ...r, name: d(r.name), type: d(r.type), regime: d(r.regime), description: d(r.description), inhabitants: dj(r.inhabitants), visited_by: dj(r.visited_by), key_places: dj(r.key_places), custom_fields: dj(r.custom_fields) })),
+    objects: objects.map(r => ({ ...r, name: d(r.name), type: d(r.type), description: d(r.description), creator: d(r.creator), current_holder: d(r.current_holder), powers: dj(r.powers), inscription: d(r.inscription), custom_fields: dj(r.custom_fields) })),
     timelineEvents: timelineEvents.map(r => ({ ...r, title: d(r.title), description: d(r.description), chapter_title: d(r.chapter_title), scene_goal: d(r.scene_goal), scene_conflict: d(r.scene_conflict), scene_outcome: d(r.scene_outcome) })),
     eventEntities,
     incoherences: incoherences.map(r => ({ ...r, title: d(r.title), explanation: d(r.explanation), resolution_note: d(r.resolution_note) })),
@@ -1511,6 +1691,8 @@ export async function exportProject(projectId) {
     characterArcAxes: characterArcAxes.map(r => ({ ...r, label: d(r.label) })),
     characterArcPoints: characterArcPoints.map(r => ({ ...r, note: d(r.note) })),
     heroJourneyEntries: heroJourneyEntries.map(r => ({ ...r, summary: d(r.summary) })),
+    customEntityTypes: customEntityTypes.map(r => ({ ...r, label: d(r.label), field_schema: dj(r.field_schema) })),
+    customEntities: customEntities.map(r => ({ ...r, name: d(r.name), aliases: dj(r.aliases), description: d(r.description), custom_fields: dj(r.custom_fields) })),
   };
 }
 

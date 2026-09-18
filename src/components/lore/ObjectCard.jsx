@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
 import DarkCard from '../ui/DarkCard';
+import CustomFieldChips from '../ui/CustomFieldChips';
 
 export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelations }) {
   const { t } = useTranslation();
@@ -20,6 +21,7 @@ export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelat
           {obj.creator && <p className="text-xs text-atlas-soft italic mt-0.5">{t('lore.forgedBy', { name: obj.creator })}</p>}
         </div>
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{obj.description}</p>
+        <CustomFieldChips fields={obj.customFields} />
         {obj.powers?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {obj.powers.map((p, i) => (

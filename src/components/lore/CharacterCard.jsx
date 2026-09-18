@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLoreStore }    from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import DarkCard from '../ui/DarkCard';
+import CustomFieldChips from '../ui/CustomFieldChips';
 
 export default function CharacterCard({ char, highlighted, onRelations }) {
   const { t } = useTranslation();
@@ -52,6 +53,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
         </div>
         <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{char.description}</p>
         {char.origin && <p className="text-xs text-atlas-mute italic">{char.origin}</p>}
+        <CustomFieldChips fields={char.customFields} />
         {/* ── Mémoires / Flashbacks ── */}
         {flashbacks.length > 0 && (
           <div className="border-t pt-2" style={{ borderColor: 'rgba(217,119,6,0.2)' }}>

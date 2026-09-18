@@ -34,6 +34,8 @@ export const loreDB = {
       traits: ['Courageux', 'Humble', 'Déterminé', 'Résistant (partiellement) à l\'Anneau'],
       color: '#10B981',
       journeyKey: 'frodo',
+      // Exemple de champs custom (couche 2) : données worldbuilding hors noyau typé.
+      customFields: { 'Âge au départ': '50 ans', 'Anniversaire': '22 septembre', 'Taille': '1,06 m' },
     },
     {
       id: 'char_aragorn',
@@ -2077,4 +2079,40 @@ export const gandalfHeroJourneyDB = [
   { stageKey: 'road_back',          characterId: 'char_gandalf', chapterNum: 14, summary: "Gandalf libère Théoden de l'emprise de Saroumane, rallie Rohan et orchestre la défense du Gouffre de Helm. La contre-offensive commence.", volumeId: 'vol_deux_tours' },
   { stageKey: 'resurrection',       characterId: 'char_gandalf', chapterNum: 24, summary: "Devant la Porte Noire, Gandalf mène l'armée de l'Ouest dans une diversion suicidaire. Il sait que tout repose sur Frodo — et accepte de mourir une seconde fois s'il le faut.", volumeId: 'vol_retour_roi' },
   { stageKey: 'return_with_elixir', characterId: 'char_gandalf', chapterNum: 28, summary: "L'Anneau détruit, Sauron vaincu. Gandalf couronne Aragorn, accompagne les Hobbits chez eux, puis embarque aux Havres Gris — sa mission en Terre du Milieu est accomplie.", volumeId: 'vol_retour_roi' },
+];
+
+// ── Types & entités custom (couche 3) — démo « Langue » ────────────────────────
+// Illustre une catégorie hors noyau typé (ni personnage, ni lieu, ni objet).
+export const customTypesDB = [
+  {
+    id: 'ctype_langue',
+    label: 'Langue',
+    icon: '🗣️',
+    color: '#a78bfa',
+    baseBehavior: 'entity',
+    fieldSchema: [
+      { key: 'famille', label: 'Famille linguistique', type: 'text' },
+      { key: 'locuteurs', label: 'Locuteurs', type: 'text' },
+      { key: 'systeme', label: "Système d'écriture", type: 'text' },
+    ],
+  },
+];
+
+export const customEntitiesDB = [
+  {
+    id: 'cent_quenya',
+    typeId: 'ctype_langue',
+    name: 'Quenya',
+    aliases: ['haut-elfique', 'langue des Hauts Elfes'],
+    description: "Langue noble des Ñoldor et des Vanyar, apprise comme langue de cérémonie en Terre du Milieu. Le « latin » des Elfes.",
+    customFields: { famille: 'Eldarine', locuteurs: 'Hauts Elfes', systeme: 'Tengwar' },
+  },
+  {
+    id: 'cent_sindarin',
+    typeId: 'ctype_langue',
+    name: 'Sindarin',
+    aliases: ['gris-elfique', 'langue des Elfes gris'],
+    description: "Langue courante des Elfes de Beleriand et du Troisième Âge, parlée aussi par les Dúnedain. La plus répandue des langues elfiques.",
+    customFields: { famille: 'Eldarine', locuteurs: 'Elfes gris, Dúnedain', systeme: 'Tengwar' },
+  },
 ];

@@ -9,6 +9,8 @@ import IncPanel from './IncPanel';
 import Icon from '../ui/Icon';
 import { useIncStore } from '../../stores/useIncStore';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { useTimelineStore } from '../../stores/useTimelineStore';
+import { useCustomEntityStore } from '../../stores/useCustomEntityStore';
 import { useStoreLoader } from '../../hooks/useStoreLoader';
 
 // ── Constantes de rendu ───────────────────────────────────────────────────────
@@ -19,10 +21,10 @@ const REL_H    = 20;
 const REL_R    = 12;
 const NODE_COLORS = ENTITY_COLORS; // couleurs par type d'entité — palette data-viz unifiée
 // icônes de type rendues via TYPE_ICON_NAMES (lucide, en <foreignObject> dans le SVG)
-const TYPE_ICON_NAMES = { character: 'user', location: 'location', object: 'object', group: 'group' };
+const TYPE_ICON_NAMES = { character: 'user', location: 'location', object: 'object', group: 'group', custom: 'gem' };
 
 function getColor(node) {
-  if (node.entityType === 'character' || node.entityType === 'group') return node.color || NODE_COLORS[node.entityType];
+  if (node.entityType === 'character' || node.entityType === 'group' || node.entityType === 'custom') return node.color || NODE_COLORS[node.entityType] || '#a78bfa';
   return NODE_COLORS[node.entityType];
 }
 function truncate(str, n) {
@@ -73,8 +75,10 @@ function GraphTooltip({ pos, node, color, rgb, t }) {
 
 export default function EntityGraph({ entityId, onNodeClick }) {
   const { t } = useTranslation();
-  useStoreLoader([useIncStore, useLoreStore]);
+  useStoreLoader([useIncStore, useLoreStore, useTimelineStore, useCustomEntityStore]);
   const rawIncs = useIncStore(s => s.data);
+  const events  = useTimelineStore(s => s.events);
+  const customEntities = useCustomEntityStore(s => s.entities);
   // Abonnement au lore : buildGraph lit le cache module (getLoreCache), non réactif —
   // on s'abonne aux tableaux du store pour recalculer le graphe quand le lore arrive
   // (sinon un reload direct sur /relations?entity=… reste bloqué sur « introuvable »).
@@ -107,7 +111,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
   // Deps lore volontaires : buildGraph lit getLoreCache() (cache module invisible à ESLint) ;
   // ces refs déclenchent le recalcul quand le lore (re)charge. Ne pas les retirer.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const graph = useMemo(() => buildGraph(currentId), [currentId, characters, locations, objects, groups]);
+  const graph = useMemo(() => buildGraph(currentId, events ?? []), [currentId, characters, locations, objects, groups, events, customEntities]);
 
   // Reset depuis l'extérieur
   useEffect(() => {

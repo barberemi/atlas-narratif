@@ -41,6 +41,8 @@ export async function importFromAiOutputViaApi(file, { projectName, projectDesc,
   data.plantsDB              ??= [];
   data.threadsDB             ??= [];
   data.heroJourneyDB         ??= [];
+  data.customTypesDB         ??= [];
+  data.customEntitiesDB      ??= [];
   data.journeys                = [];
 
   // Extraire les champs extras inline des événements vers eventExtrasDB
@@ -55,6 +57,12 @@ export async function importFromAiOutputViaApi(file, { projectName, projectDesc,
     if (evt.sceneOutcome)     ex.sceneOutcome     = evt.sceneOutcome;
     if (Object.keys(ex).length) eventExtrasDB[evt.id] = ex;
   }
+
+  // ── Point d'insertion staging /review (étape 5, ImportPreview) ────────────────
+  // Ici, `data` est le payload canonique EN MÉMOIRE, avant tout écriture DB.
+  // TODO(étape 5) : monter <ImportPreview data={{...data, volumesDB: data.volumes,
+  //   eventExtrasDB}} /> et n'appeler seedProjectViaApi que sur « Confirmer l'import »
+  //   (dédup via src/import/dedup.js + rapport de liens cassés). Aujourd'hui : seed direct.
 
   onProgress?.('Envoi au serveur…');
 

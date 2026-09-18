@@ -62,9 +62,33 @@ Cartes d'affichage d'une entité. Cliquables pour ouvrir le détail.
 ### `GroupCard`
 Carte d'un groupe / faction avec liste de membres.
 ### `EntityEditor`
-Formulaire d'édition inline d'une entité (création/modification manuelle).
+Formulaire d'édition inline d'une entité (création/modification manuelle). Inclut le sous-composant `CustomFields` (bag clé/valeur, couche 2) commun aux 3 types.
 ### `GroupEditor`
 Formulaire d'édition d'un groupe (nom, description, membres).
+
+---
+
+## src/components/custom/ (types & entités custom — couche 3)
+### `CustomEntityBrowser`
+Page `/custom` : onglets par type, grille d'entités, états vides guidés. Store `useCustomEntityStore`.
+### `CustomTypeEditor`
+Éditeur d'un type custom : label, icône, couleur, constructeur de `field_schema`.
+### `CustomEntityEditor`
+Éditeur d'une entité custom : nom, alias, description, champs du schéma du type + champs custom libres.
+
+## src/components/ui/ (extrait)
+### `CustomFieldChips`
+Affichage lecture seule des champs custom d'une entité (puces clé:valeur). Utilisé par les cartes lore et custom.
+
+## src/components/chat/
+### `ChatPanel`
+Page `/chat`. Niveau 1 : réponses déterministes locales via `src/chat/router.js`. Niveau 2 (toggle « recherche approfondie ») : `POST /projects/:id/ask` (provider mock par défaut).
+
+## src/components/import/ (scaffold — import Obsidian)
+### `VaultImporter`
+Drag-drop de fichiers `.md` d'un vault Obsidian → aperçu (`previewObsidianImport`) → import. TODO : support `.zip` (jszip).
+### `ImportPreview`
+Staging avant seed : lit le payload EN MÉMOIRE, affiche comptages / doublons candidats (`src/import/dedup.js`) / liens cassés + bouton « Confirmer l'import ».
 
 ---
 
