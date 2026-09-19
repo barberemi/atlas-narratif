@@ -18,6 +18,9 @@ const idOpt   = id.nullable().optional();
 const numOpt  = num.nullable().optional();
 const boolOpt = bool.nullable().optional();
 
+/** Bag de champs custom (couche 2) : dictionnaire clé→valeur libre, stocké en JSONB chiffré. */
+const customFields = z.record(z.string().max(200), z.unknown()).nullable().optional();
+
 // ── Projects ─────────────────────────────────────────────────────────────────
 
 export const createProject = z.object({
@@ -32,6 +35,11 @@ export const updateProject = z.object({
 
 export const mapImage = z.object({
   image: z.string().max(10_000_000),  // ~7.5 Mo de données brutes en base64
+}).strict();
+
+// ── Chat de requête (niveau 2) ───────────────────────────────────────────────
+export const ask = z.object({
+  question: z.string().min(1).max(2000),
 }).strict();
 
 // ── Volumes ──────────────────────────────────────────────────────────────────
@@ -56,6 +64,7 @@ export const character = z.object({
   color:          color,
   deathEventId:   idOpt,
   journeyKey:     idOpt,
+  customFields:   customFields,
   source:         strOpt,
 }).strip();
 
@@ -75,6 +84,7 @@ export const location = z.object({
   visited_by:  arr.optional(),
   keyPlaces:   arr.optional(),
   key_places:  arr.optional(),
+  customFields: customFields,
   source:      strOpt,
 }).strip();
 
@@ -99,6 +109,7 @@ export const object = z.object({
   status:                  strOpt,
   statusChangedAtChapter:  numOpt,
   status_changed_at_chapter: numOpt,
+  customFields:            customFields,
   source:                  strOpt,
 }).strip();
 
@@ -265,6 +276,33 @@ export const heroJourneyEntry = z.object({
   volumeId:    idOpt,
 }).strict();
 
+// ── Custom entity types & entities (couche 3) ────────────────────────────────
+
+/** Un champ déclaré dans le field_schema d'un type custom. */
+const customFieldDef = z.object({
+  key:   strReq,
+  label: strOpt,
+  type:  strOpt,   // 'text' | 'number' | 'list' | … (libre, non contraint côté serveur)
+}).strip();
+
+export const customEntityType = z.object({
+  label:        strReq,
+  icon:         strOpt,
+  color:        color,
+  fieldSchema:  z.array(customFieldDef).optional(),
+  baseBehavior: strOpt,   // 'entity' par défaut
+  source:       strOpt,
+}).strip();
+
+export const customEntity = z.object({
+  typeId:       id,
+  name:         strReq,
+  aliases:      arr.optional(),
+  description:  textOpt,
+  customFields: customFields,
+  source:       strOpt,
+}).strip();
+
 // ── Seed ─────────────────────────────────────────────────────────────────────
 
 export const seed = z.object({
@@ -287,6 +325,8 @@ export const seed = z.object({
     characterArcsDB:  z.array(z.record(z.string(), z.unknown())).optional(),
     heroJourneyDB:    z.array(z.record(z.string(), z.unknown())).optional(),
     volumesDB:        z.array(z.record(z.string(), z.unknown())).optional(),
+    customTypesDB:    z.array(z.record(z.string(), z.unknown())).optional(),
+    customEntitiesDB: z.array(z.record(z.string(), z.unknown())).optional(),
   }).strict(),
 }).strict();
 
@@ -361,6 +401,17 @@ export const restoreHeroJourneyEntry = z.object({
   entity: z.object({ id: id, stage_key: strReq }).passthrough(),
 }).strict();
 
+export const restoreCustomType = z.object({
+  entity: z.object({ id: id, label: str }).passthrough(),
+  entities: z.array(entityBase).optional(),
+  eventEntities: z.array(eventEntityRow).optional(),
+}).strict();
+
+export const restoreCustomEntity = z.object({
+  entity: z.object({ id: id, name: strReq }).passthrough(),
+  eventEntities: z.array(eventEntityRow).optional(),
+}).strict();
+
 // ── Import backup ────────────────────────────────────────────────────────────
 
 const backupArray = z.array(z.record(z.string(), z.unknown())).optional();
@@ -388,4 +439,6 @@ export const importBackup = z.object({
   characterArcAxes:     backupArray,
   characterArcPoints:   backupArray,
   heroJourneyEntries:   backupArray,
+  customEntityTypes:    backupArray,
+  customEntities:       backupArray,
 }).strict();

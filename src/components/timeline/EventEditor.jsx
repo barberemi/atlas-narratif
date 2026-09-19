@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoreStore }     from '../../stores/useLoreStore';
+import { useCustomEntityStore } from '../../stores/useCustomEntityStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
 import { useVolumeStore }   from '../../stores/useVolumeStore';
@@ -156,6 +157,7 @@ function initData(event, chapters, defaultBeatId) {
       sceneOutcome:   event.sceneOutcome  ?? null,
       characters:      (event.entities ?? []).filter(e => e.entityType === 'character'),
       objects:         (event.entities ?? []).filter(e => e.entityType === 'object'),
+      customEntities:  (event.entities ?? []).filter(e => e.entityType === 'custom'),
       threadIds:       event.threadIds ?? [],
       isFlashback:     event.isFlashback ?? false,
       storyChapterRef: event.storyChapterRef ?? null,
@@ -176,6 +178,7 @@ function initData(event, chapters, defaultBeatId) {
     sceneOutcome:   null,
     characters:      [],
     objects:         [],
+    customEntities:  [],
     threadIds:       [],
     isFlashback:     false,
     storyChapterRef: null,
@@ -196,6 +199,8 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
   const allLocations  = useLoreStore(s => s.locations);
   const allObjects    = useLoreStore(s => s.objects);
   const allThreads    = useThreadStore(s => s.threads) ?? [];
+  const allCustom     = useCustomEntityStore(s => s.entities) ?? [];
+  const customTypes   = useCustomEntityStore(s => s.types) ?? [];
 
   const [data,          setData]          = useState(() => initData(event, chapters, defaultBeatId));
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -238,8 +243,17 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
     );
   };
 
+  const toggleCustom = (ent) => {
+    const exists = data.customEntities.some(e => e.id === ent.id);
+    set('customEntities', exists
+      ? data.customEntities.filter(e => e.id !== ent.id)
+      : [...data.customEntities, { id: ent.id, entityType: 'custom' }]
+    );
+  };
+
   // Merge entities pour la sauvegarde
   const buildEntities = () => [
+    ...data.customEntities,
     ...data.characters,
     ...data.objects,
     ...(data.locationId ? [{ id: data.locationId, entityType: 'location' }] : []),
@@ -283,6 +297,11 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
   const getCharName   = (c) => allCharacters.find(x => x.id === c.id)?.name ?? c.id;
   const getObjColor   = () => '#a78bfa';
   const getObjName    = (o) => allObjects.find(x => x.id === o.id)?.name ?? o.id;
+  const getCustomColor = (e) => {
+    const full = allCustom.find(x => x.id === e.id);
+    return customTypes.find(t => t.id === full?.typeId)?.color ?? '#a78bfa';
+  };
+  const getCustomName = (e) => allCustom.find(x => x.id === e.id)?.name ?? e.id;
 
   return (
     <SidePanel width={440} onClose={onClose}>
@@ -502,6 +521,19 @@ export default function EventEditor({ event, chapters, onClose, defaultBeatId })
             getName={getObjName}
             getId={o => o.id}
           />
+
+          {/* Entités custom (couche 3) */}
+          {allCustom.length > 0 && (
+            <EntitySelector
+              label={t('eventEditor.presentCustom')}
+              items={allCustom}
+              selected={data.customEntities}
+              onToggle={toggleCustom}
+              getColor={getCustomColor}
+              getName={getCustomName}
+              getId={e => e.id}
+            />
+          )}
 
           {/* ── Flashback ── */}
           <div

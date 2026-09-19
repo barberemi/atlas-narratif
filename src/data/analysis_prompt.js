@@ -51,6 +51,8 @@ Réponds UNIQUEMENT avec un bloc \`\`\`json ... \`\`\` contenant l'objet suivant
   "plantsDB": [],
   "threadsDB": [],
   "heroJourneyDB": [],
+  "customTypesDB": [],
+  "customEntitiesDB": [],
   "journeys": []
 }
 \`\`\`
@@ -85,6 +87,8 @@ Si le texte couvre plusieurs tomes/livres/volumes d'une même série, renseigne 
 - Plants      : préfixe \`plt_\` + slug court en snake_case (ex: \`plt_prophetie_epee\`)
 - Fils narratifs : préfixe \`thr_\` + slug court en snake_case (ex: \`thr_quete_tresor\`)
 - Volumes     : préfixe \`vol_\` + titre court en snake_case (ex: \`vol_l_eveil\`)
+- Types custom : préfixe \`ctype_\` + slug du type en snake_case (ex: \`ctype_langue\`)
+- Entités custom : préfixe \`cent_\` + slug du nom en snake_case (ex: \`cent_quenya\`)
 
 ---
 
@@ -267,6 +271,33 @@ Ne génère des entrées que pour les personnages qui suivent un arc héroïque 
 }
 \`\`\`
 
+### customTypesDB[]
+Types d'entités **custom** : catégories propres à l'univers qui ne sont NI personnage, NI lieu, NI objet (ex: Langue, Véhicule, Sortilège, Créature, Faction technologique…). Ne crée un type que si le texte contient plusieurs entités d'une même catégorie hors noyau typé.
+\`\`\`
+{
+  id: string,                      // préfixe "ctype_" + slug du type (ex: "ctype_langue")
+  label: string,                   // nom du type au singulier (ex: "Langue")
+  icon: string | null,             // un emoji représentatif (ex: "🗣️"), sinon null
+  color: string | null,            // couleur hex lisible sur fond sombre, sinon null
+  fieldSchema: [                    // champs communs aux entités de ce type (peut être [])
+    { key: string, label: string, type: "text" | "number" | "list" }
+  ]
+}
+\`\`\`
+
+### customEntitiesDB[]
+Instances rattachées à un type custom via \`typeId\`.
+\`\`\`
+{
+  id: string,                      // préfixe "cent_" + slug du nom (ex: "cent_quenya")
+  typeId: string,                  // ID du type (customTypesDB[].id)
+  name: string,                    // nom de l'entité
+  aliases: string[],               // autres appellations (peut être [])
+  description: string | null,      // description en 1-2 phrases
+  customFields: object             // dictionnaire clé→valeur, idéalement les clés de fieldSchema du type (peut être {})
+}
+\`\`\`
+
 ---
 
 ## Règles importantes
@@ -282,6 +313,7 @@ Ne génère des entrées que pour les personnages qui suivent un arc héroïque 
 9. **Cohérence plants ↔ événements** : les \`plant_event_id\` et \`payoff_event_id\` dans \`plantsDB\` doivent correspondre à des \`id\` existants dans \`timelineDB\`.
 10. **Cohérence threads ↔ événements** : les \`threadIds\` dans \`timelineDB\` doivent correspondre à des \`id\` existants dans \`threadsDB\`.
 11. **Voyage du Héros** : ne génère des entrées \`heroJourneyDB\` que pour les personnages ayant un arc héroïque marqué. Un personnage secondaire sans transformation claire ne doit pas être forcé dans le schéma de Campbell.
+12. **Entités custom** : n'utilise \`customTypesDB\` / \`customEntitiesDB\` que pour des catégories hors noyau (ni personnage, ni lieu, ni objet). Chaque \`customEntitiesDB[].typeId\` doit correspondre à un \`id\` défini dans \`customTypesDB\`. Ne crée pas de type pour une catégorie ne comptant qu'une seule entité anecdotique.
 
 ---
 

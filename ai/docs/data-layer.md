@@ -147,13 +147,26 @@ Certains stores ont une logique trop spécifique pour la factory et utilisent Zu
 | `hero_journey_entries` | `id` | Étapes du Voyage du Héros |
 | `character_arc_axes` | `(id, project_id)` | Axes d'évolution par personnage |
 | `character_arc_points` | `(project_id, axis_id, chapter_num)` | Valeur (0-10) d'un axe |
+| `custom_entity_types` | `(id, project_id)` | Types d'entités custom (catégories user : Véhicule, Langue…) |
+| `custom_entities` | `(id, project_id)` | Instances d'entités custom (rattachées à un `type_id`) |
 | `schema_migrations` | `name` | Migrations SQL appliquées |
+
+### Extensibilité (migration 005)
+
+Modèle en 3 couches pour ne rien jeter à l'import (Obsidian, IA) :
+1. **Noyau typé** (characters/locations/objects/events…) — inchangé, alimente STC/héros/arcs/graphe.
+2. **Champs custom** — colonne JSONB **chiffrée** `custom_fields` sur `characters`, `locations`, `objects`.
+   Bag clé→valeur libre (âge, signe…). Écriture `encrypt(customFields ?? {}, dek)`, lecture `parseJ(decrypt(r.custom_fields, dek), {})` — même pattern que `aliases`.
+3. **Types custom** — `custom_entity_types` (label, icon, color, `field_schema` JSONB, `base_behavior`) + `custom_entities`
+   (`type_id`, name, aliases, `custom_fields`, description). Reliés aux events/chapitres via `entity_type='custom'`.
+   Le CHECK `entity_type` de `event_entities` / `stc_chapter_entities` est élargi à `('character','location','object','custom')`.
 
 ### Conventions
 
 - Toutes les tables app ont `project_id` → isolation multi-projets
 - `volume_id = NULL` → appartient au tome 1 implicite (rétrocompat mono-tome)
-- `source TEXT` sur characters/locations/objects/timeline_events : `'import'` (IA) ou `'manual'`
+- `source TEXT` sur characters/locations/objects/timeline_events : `'import'` (IA), `'manual'`, `'modified'` ou `'obsidian'`
+- `custom_fields JSONB` (chiffré) sur characters/locations/objects → champs custom (couche 2)
 - `extra JSONB DEFAULT '{}'` pour données arbitraires (utilisé pour beat_id, thread_ids, POV, goal/conflict/outcome sur timeline_events)
 - Champs directs sur `timeline_events` : `pov_character_id`, `scene_order`, `scene_goal`, `scene_conflict`, `scene_outcome`
 

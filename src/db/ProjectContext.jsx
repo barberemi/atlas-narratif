@@ -12,6 +12,7 @@ import { useThreadStore }        from '../stores/useThreadStore';
 import { useArcStore }           from '../stores/useArcStore';
 import { useHeroJourneyStore }   from '../stores/useHeroJourneyStore';
 import { useVolumeStore }        from '../stores/useVolumeStore';
+import { useCustomEntityStore }  from '../stores/useCustomEntityStore';
 
 const LS_KEY = 'atlas_active_project';
 
@@ -40,6 +41,7 @@ function resetAll() {
   useArcStore.getState().reset();
   useHeroJourneyStore.getState().reset();
   useVolumeStore.getState().reset();
+  useCustomEntityStore.getState().reset();
 }
 
 export function ProjectProvider({ children }) {

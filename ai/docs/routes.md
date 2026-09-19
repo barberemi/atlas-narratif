@@ -15,6 +15,9 @@
           /dashboard           ← RequireProject
           /map                 ← RequireProject
           /lore                ← RequireProject
+          /import/obsidian     ← public (crée un projet)
+          /custom              ← RequireProject
+          /chat                ← RequireProject
           /relations           ← RequireProject
           /timeline            ← RequireProject
           /savethecat          ← RequireProject
@@ -85,6 +88,18 @@ Carte interactive + trajets personnages. Navigation sortante :
 
 Query params : `?tab=characters|locations|objects`, `?search=X`
 Navigation sortante : clic entité → `/relations?entity=X`
+
+### `/import/obsidian` — VaultImporter
+
+Import d'un vault Obsidian (route publique, crée un nouveau projet). Drag-drop de fichiers `.md` ou d'un `.zip` → `parseVault(Zip)` → `mapToCanonical` → aperçu de staging (`ImportPreview`, en mémoire, dédup Fuse.js + liens cassés) → `seedObsidianData` (source='obsidian') → redirige vers `/review`.
+
+### `/custom` — CustomEntityBrowser
+
+Types & entités custom (couche 3). Onglets = types (`custom_entity_types`), grille d'entités (`custom_entities`) par type. Éditeurs : `CustomTypeEditor` (label, icône, couleur, `field_schema`) et `CustomEntityEditor` (nom, alias, description, champs du schéma + champs custom libres). Store : `useCustomEntityStore`.
+
+### `/chat` — ChatPanel
+
+Chat de requête. **Niveau 1** (défaut) : routeur déterministe local `src/chat/router.js` (aucune IA) — répond depuis les stores. **Niveau 2** (« recherche approfondie ») : `POST /projects/:id/ask` → retrieval serveur + provider LLM (`server/src/llm/provider.js`, mock par défaut, `LLM_PROVIDER=anthropic` pour le réel).
 
 ### `/relations` — EntityGraph
 

@@ -15,6 +15,7 @@ import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
 import { useArcStore }      from '../../stores/useArcStore';
+import { useCustomEntityStore } from '../../stores/useCustomEntityStore';
 import { useNotesStore }    from '../../stores/useNotesStore';
 import { useVolumeStore }   from '../../stores/useVolumeStore';
 import { useVolumeFilter }  from '../../hooks/useVolumeFilter';
@@ -55,7 +56,7 @@ export default function TimelineBrowser() {
   const navigate = useNavigate();
   const { projectId } = useProject();
 
-  useStoreLoader([useTimelineStore, useIncStore, useThreadStore, useArcStore, useNotesStore]);
+  useStoreLoader([useTimelineStore, useIncStore, useThreadStore, useArcStore, useNotesStore, useCustomEntityStore]);
 
   const allEvents    = useTimelineStore(s => s.events);
   const filterByVolume = useVolumeFilter();
