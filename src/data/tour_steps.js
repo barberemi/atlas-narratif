@@ -53,6 +53,27 @@ export const TOUR_STEPS = [
     description: 'Cliquez sur une carte pour éditer l\'entité. Depuis une carte personnage, vous pouvez ouvrir le graphe de relations ou naviguer vers les incohérences liées.',
   },
 
+  // ── Entités custom ───────────────────────────────────────────────────────────
+  {
+    route:       '/custom',
+    dataKey:     'custom-actions',
+    title:       'Catégories sur mesure',
+    description: 'Au-delà des personnages, lieux et objets, créez vos propres catégories (langues, maisons, sortilèges, vaisseaux…) : d\'abord un type, puis ses entités.',
+  },
+  {
+    route:       '/custom',
+    dataKey:     'custom-tabs',
+    title:       'Un onglet par type',
+    description: 'Chaque type custom devient un onglet. Le compteur indique le nombre d\'entités ; l\'icône ⚙ permet d\'éditer les champs du type sélectionné.',
+  },
+  {
+    route:       '/custom',
+    dataKey:     'custom-grid',
+    maxH:        280,
+    title:       'Vos entités custom',
+    description: 'Les fiches du type actif. Cliquez pour éditer ; les champs personnalisés apparaissent en chips. Ces entités sont citables dans le chat et le graphe de relations.',
+  },
+
   // ── Carte ──────────────────────────────────────────────────────────────────
   {
     route:       '/map',
@@ -160,11 +181,31 @@ export const TOUR_STEPS = [
     description: 'Traitez les Critiques en priorité (blocantes pour la cohérence), puis les Élevées. Les Moyennes et Faibles peuvent attendre une passe de relecture.',
   },
 
+  // ── Chat de requête ──────────────────────────────────────────────────────────
+  {
+    route:       '/chat',
+    dataKey:     'chat-threads',
+    title:       'Interroger votre projet',
+    description: 'Posez des questions sur votre univers en langage naturel. Chaque conversation est sauvegardée ici : créez-en autant que de sujets à explorer.',
+  },
+  {
+    route:       '/chat',
+    dataKey:     'chat-deep',
+    title:       'Deux niveaux de réponse',
+    description: 'Par défaut, Atlas répond instantanément à partir de vos données locales. Activez « Recherche approfondie » pour une réponse générée par IA sur l\'ensemble du manuscrit (plus lente, plus fine).',
+  },
+  {
+    route:       '/chat',
+    dataKey:     'chat-input',
+    title:       'Posez votre question',
+    description: 'Tapez ici : « Où se trouve Frodon au chapitre 12 ? », « Quels personnages apparaissent à Fondcombe ? »… Les entités citées dans la réponse sont cliquables.',
+  },
+
   // ── Fin ────────────────────────────────────────────────────────────────────
   {
     route:       '/',
     dataKey:     'home-cards',
     title:       'À vous de jouer !',
-    description: 'Créez votre propre projet (construction manuelle) ou importez un manuscrit via votre IA favorite pour générer automatiquement timeline, lore et incohérences.',
+    description: 'Trois façons de démarrer : construire votre projet à la main, importer un manuscrit analysé par votre IA favorite, ou importer directement votre vault Obsidian (personnages, lieux, objets et catégories custom).',
   },
 ];

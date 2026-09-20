@@ -15,6 +15,7 @@ const SOURCE_LABELS = {
   import:   { key: 'review.sourceImport',   fallback: 'Import\u00e9',  color: 'var(--color-atlas-soft)', bg: 'rgba(100,116,139,0.1)',  border: 'rgba(100,116,139,0.2)'  },
   manual:   { key: 'review.sourceManual',   fallback: 'Manuel',   color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.25)'  },
   modified: { key: 'review.sourceModified', fallback: 'Modifi\u00e9',  color: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.25)'  },
+  obsidian: { key: 'review.sourceObsidian', fallback: 'Obsidian',  color: '#a78bfa', bg: 'rgba(167,139,250,0.1)',  border: 'rgba(167,139,250,0.28)'  },
 };
 
 function SourceBadge({ source, t }) {
@@ -35,6 +36,7 @@ const FILTER_IDS = [
   { id: 'import',   key: 'review.filterImported',  fallback: 'Import\u00e9s' },
   { id: 'manual',   key: 'review.filterManual',    fallback: 'Manuels' },
   { id: 'modified', key: 'review.filterModified',  fallback: 'Modifi\u00e9s' },
+  { id: 'obsidian', key: 'review.filterObsidian',  fallback: 'Obsidian' },
 ];
 
 // ── Section entités ────────────────────────────────────────────────────────────

@@ -61,7 +61,13 @@
       "threads_cards": { "title": "Détail des fils", "desc": "Chaque fil affiche sa plage de chapitres et les événements rattachés. Un fil sans événements taggés est une sous-intrigue invisible : pensez à l'alimenter." },
       "inc_list": { "title": "Détecteur d'incohérences", "desc": "Atlas scanne automatiquement votre manuscrit : chronologie impossible, personnage au mauvais endroit, objet détenu par quelqu'un qui n'existe pas… Cliquez ⚡ pour relancer." },
       "inc_severity": { "title": "Filtres par sévérité", "desc": "Traitez les Critiques en priorité (blocantes pour la cohérence), puis les Élevées. Les Moyennes et Faibles peuvent attendre une passe de relecture." },
-      "home_cards": { "title": "À vous de jouer !", "desc": "Créez votre propre projet (construction manuelle) ou importez un manuscrit via votre IA favorite pour générer automatiquement timeline, lore et incohérences." }
+      "custom_actions": { "title": "Catégories sur mesure", "desc": "Au-delà des personnages, lieux et objets, créez vos propres catégories (langues, maisons, sortilèges, vaisseaux…) : d'abord un type, puis ses entités." },
+      "custom_tabs": { "title": "Un onglet par type", "desc": "Chaque type custom devient un onglet. Le compteur indique le nombre d'entités ; l'icône ⚙ permet d'éditer les champs du type sélectionné." },
+      "custom_grid": { "title": "Vos entités custom", "desc": "Les fiches du type actif. Cliquez pour éditer ; les champs personnalisés apparaissent en chips. Ces entités sont citables dans le chat et le graphe de relations." },
+      "chat_threads": { "title": "Interroger votre projet", "desc": "Posez des questions sur votre univers en langage naturel. Chaque conversation est sauvegardée ici : créez-en autant que de sujets à explorer." },
+      "chat_deep": { "title": "Deux niveaux de réponse", "desc": "Par défaut, Atlas répond instantanément à partir de vos données locales. Activez « Recherche approfondie » pour une réponse générée par IA sur l'ensemble du manuscrit (plus lente, plus fine)." },
+      "chat_input": { "title": "Posez votre question", "desc": "Tapez ici : « Où se trouve Frodon au chapitre 12 ? », « Quels personnages apparaissent à Fondcombe ? »… Les entités citées dans la réponse sont cliquables." },
+      "home_cards": { "title": "À vous de jouer !", "desc": "Trois façons de démarrer : construire votre projet à la main, importer un manuscrit analysé par votre IA favorite, ou importer directement votre vault Obsidian (personnages, lieux, objets et catégories custom)." }
     }
   }
 }

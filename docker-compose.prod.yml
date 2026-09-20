@@ -121,6 +121,19 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
       ATLAS_ENCRYPTION_KEY: ${ATLAS_ENCRYPTION_KEY:-}
+      # ── Chat niveau 2 (LLM) — mock par défaut si LLM_API_KEY absent ──
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-}
+      LLM_RATE_LIMIT_PER_MIN: ${LLM_RATE_LIMIT_PER_MIN:-}
+      # ── Retrieval sémantique (embeddings) — 'none' = lexical (défaut) ──
+      EMBEDDINGS_PROVIDER: ${EMBEDDINGS_PROVIDER:-none}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-}
+      EMBEDDINGS_TIMEOUT_MS: ${EMBEDDINGS_TIMEOUT_MS:-}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 10s
@@ -128,6 +141,11 @@ services:
       retries: 3
       start_period: 15s
     deploy:
+      # ⚠ Avec 2 réplicas, les états EN MÉMOIRE du chat sont PAR PROCESS (pas
+      # partagés) : rate-limit (→ ~2× la limite/min effective), cache de réponses
+      # et cache d'embeddings (dédoublés). Acceptable à petite échelle. Pour un
+      # comportement strict, passer à replicas: 1 OU externaliser vers Redis
+      # (cf. TODO(multi-instance) dans server/src/routes/ask.js).
       replicas: 2
       update_config:
         order: stop-first
@@ -167,6 +185,31 @@ services:
       restart_policy:
         condition: any
 
+  # ── Ollama (embeddings — retrieval sémantique du chat) ──────────────────────
+  # Interne uniquement (jamais exposé via Traefik/ports). L'API l'utilise si
+  # EMBEDDINGS_PROVIDER=ollama dans .env.prod ; sinon le service reste idle
+  # (~150 Mo : le modèle n'est chargé en RAM qu'à la 1re requête, puis déchargé
+  # après OLLAMA_KEEP_ALIVE). Pull du modèle une fois : `make prod-ollama-pull`.
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+      restart_policy:
+        condition: any
+
 volumes:
   postgres_data:
     external: true
@@ -174,3 +217,5 @@ volumes:
   letsencrypt:
     external: true
     name: atlas-narratif_letsencrypt
+  # Cache des modèles Ollama — géré par Swarm, persiste au stack rm (non supprimé).
+  ollama_models:

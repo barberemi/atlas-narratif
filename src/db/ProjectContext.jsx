@@ -12,18 +12,24 @@ import { useThreadStore }        from '../stores/useThreadStore';
 import { useArcStore }           from '../stores/useArcStore';
 import { useHeroJourneyStore }   from '../stores/useHeroJourneyStore';
 import { useVolumeStore }        from '../stores/useVolumeStore';
+import { useCustomEntityStore }  from '../stores/useCustomEntityStore';
+import { useRelationStore }       from '../stores/useRelationStore';
 
 const LS_KEY = 'atlas_active_project';
 
 const ProjectCtx = createContext(null);
 
-/** Charge uniquement les stores "core" nécessaires partout (lore + volumes).
+/** Charge uniquement les stores "core" nécessaires partout (lore + volumes + entités
+ *  custom). Les entités custom sont référencées depuis les pages lore (wikilinks
+ *  `[[…]]`, graphe de relations), donc leur cache doit être chaud partout.
  *  Les autres stores sont chargés à la demande via useStoreLoader() dans chaque page.
  */
 async function loadCore(projectId) {
   await Promise.all([
     useLoreStore.getState().load(projectId),
     useVolumeStore.getState().load(projectId),
+    useCustomEntityStore.getState().load(projectId),
+    useRelationStore.getState().load(projectId),
   ]);
 }
 
@@ -40,6 +46,8 @@ function resetAll() {
   useArcStore.getState().reset();
   useHeroJourneyStore.getState().reset();
   useVolumeStore.getState().reset();
+  useCustomEntityStore.getState().reset();
+  useRelationStore.getState().reset();
 }
 
 export function ProjectProvider({ children }) {

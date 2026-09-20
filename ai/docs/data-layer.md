@@ -30,6 +30,7 @@ Point d'entrée unique pour toutes les données côté frontend. Remplace les an
 - `<ProjectProvider>` en racine de l'app (dans `App.jsx`, sans `<DbProvider>`)
 - `useProject()` → `{ projects, projectId, setProjectId, reloadProjects, loading }`
 - `projectId` = projet actif (persisté dans `localStorage`)
+- `loadCore(projectId)` — stores chargés partout : lore + volumes + **entités custom** (référencées par les wikilinks et le graphe depuis les pages lore). Les autres stores sont chargés à la demande via `useStoreLoader()`.
 - `loadAll(projectId)` — déclenche le `load(projectId)` de tous les stores
 
 ## Stores Zustand (src/stores/)
@@ -147,13 +148,31 @@ Certains stores ont une logique trop spécifique pour la factory et utilisent Zu
 | `hero_journey_entries` | `id` | Étapes du Voyage du Héros |
 | `character_arc_axes` | `(id, project_id)` | Axes d'évolution par personnage |
 | `character_arc_points` | `(project_id, axis_id, chapter_num)` | Valeur (0-10) d'un axe |
+| `custom_entity_types` | `(id, project_id)` | Types d'entités custom (catégories user : Véhicule, Langue…) |
+| `custom_entities` | `(id, project_id)` | Instances d'entités custom (rattachées à un `type_id`) |
+| `entity_relations` | `(id, project_id)` | Relations explicites entre entités (polymorphe, libellé chiffré) |
 | `schema_migrations` | `name` | Migrations SQL appliquées |
+
+### Extensibilité (migration 005)
+
+Modèle en 3 couches pour ne rien jeter à l'import (Obsidian, IA) :
+1. **Noyau typé** (characters/locations/objects/events…) — inchangé, alimente STC/héros/arcs/graphe.
+2. **Champs custom** — colonne JSONB **chiffrée** `custom_fields` sur `characters`, `locations`, `objects`.
+   Bag clé→valeur libre (âge, signe…). Écriture `encrypt(customFields ?? {}, dek)`, lecture `parseJ(decrypt(r.custom_fields, dek), {})` — même pattern que `aliases`.
+3. **Types custom** — `custom_entity_types` (label, icon, color, `field_schema` JSONB, `base_behavior`) + `custom_entities`
+   (`type_id`, name, aliases, `custom_fields`, description). Reliés aux events/chapitres via `entity_type='custom'`.
+   Le CHECK `entity_type` de `event_entities` / `stc_chapter_entities` est élargi à `('character','location','object','custom')`.
+
+### Relations explicites (migration 006 — Niveau 3)
+
+`entity_relations` (`source_id/source_type`, `target_id/target_type`, `label` **chiffré**, `directed`, `source`) : liens explicites, orientés ou symétriques, entre deux entités quelconques (noyau ou custom). Polymorphe (types en TEXT libre, pas de FK sur source/target). Alimentés à l'import Obsidian (les wikilinks résolus → relations, `source='obsidian'`) et, à terme, via une UI manuelle. `buildGraph` lit ces relations (cache `setRelationCache`, chargé partout par `loadCore`) et **prime** sur les arêtes dérivées des champs pour une même paire. Libellé libre affiché tel quel dans le graphe (ou traduit si une clé `graph.rel_<label>` existe). CRUD `*Relation` (préfixe `rel`) + routes `/projects/:id/relations`.
 
 ### Conventions
 
 - Toutes les tables app ont `project_id` → isolation multi-projets
 - `volume_id = NULL` → appartient au tome 1 implicite (rétrocompat mono-tome)
-- `source TEXT` sur characters/locations/objects/timeline_events : `'import'` (IA) ou `'manual'`
+- `source TEXT` sur characters/locations/objects/timeline_events : `'import'` (IA), `'manual'`, `'modified'` ou `'obsidian'`
+- `custom_fields JSONB` (chiffré) sur characters/locations/objects → champs custom (couche 2)
 - `extra JSONB DEFAULT '{}'` pour données arbitraires (utilisé pour beat_id, thread_ids, POV, goal/conflict/outcome sur timeline_events)
 - Champs directs sur `timeline_events` : `pov_character_id`, `scene_order`, `scene_goal`, `scene_conflict`, `scene_outcome`
 
@@ -198,6 +217,15 @@ Certains stores ont une logique trop spécifique pour la factory et utilisent Zu
 2. L'utilisateur importe le JSON résultant via `src/api/importFromAiOutputViaApi.js`
 3. Le JSON est validé + normalisé côté frontend
 4. `POST /api/seed` → `server/src/seed.js` → transaction PostgreSQL
+
+## Chat de requête — retrieval (server/src/routes/ask.js)
+
+`answerAsk({ projectId, question })` (niveau 2, RAG) :
+1. `buildContext` → passages depuis les entités déchiffrées (persos/lieux/objets/custom).
+2. **Retrieval** : sémantique si `EMBEDDINGS_PROVIDER=ollama` (embeddings via `server/src/llm/embeddings.js`, cosinus en mémoire, cache par process non persisté), sinon **lexical** (recouvrement de mots) ; repli lexical auto si les embeddings échouent.
+3. `getProvider()` (`server/src/llm/provider.js`, mock par défaut / hébergé Groq) → réponse citée `[id]`.
+
+Le niveau 1 (`src/chat/router.js`, déterministe local) n'utilise ni embeddings ni LLM. Rate-limit + caches (réponses, embeddings) sont **en mémoire par process** (cf. note réplicas dans `docker-compose.prod.yml`). Config : `EMBEDDINGS_PROVIDER`, `OLLAMA_*`, `LLM_*` (voir `.env.example`).
 
 ## Flux export backup
 

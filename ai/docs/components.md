@@ -62,9 +62,54 @@ Cartes d'affichage d'une entité. Cliquables pour ouvrir le détail.
 ### `GroupCard`
 Carte d'un groupe / faction avec liste de membres.
 ### `EntityEditor`
-Formulaire d'édition inline d'une entité (création/modification manuelle).
+Formulaire d'édition inline d'une entité (création/modification manuelle). Inclut le sous-composant `CustomFields` (bag clé/valeur, couche 2) commun aux 3 types.
 ### `GroupEditor`
 Formulaire d'édition d'un groupe (nom, description, membres).
+
+---
+
+## src/components/custom/ (types & entités custom — couche 3)
+### `CustomEntityBrowser`
+Page `/custom` : onglets par type, grille d'entités, états vides guidés. Store `useCustomEntityStore`.
+### `CustomTypeEditor`
+Éditeur d'un type custom : label, icône, couleur, constructeur de `field_schema`.
+### `CustomEntityEditor`
+Éditeur d'une entité custom : nom, alias, description, champs du schéma du type + champs custom libres.
+
+## src/components/ui/ (extrait)
+### `CustomFieldChips`
+Affichage lecture seule des champs custom d'une entité (puces clé:valeur). Utilisé par les cartes lore et custom. Masque les clés internes préfixées `__` (ex. `__links`).
+### `RelationsSection` (relations/)
+Édition manuelle des relations explicites (Niveau 3) d'une entité, embarquée dans les fiches (`EntityEditor`, `CustomEntityEditor`, mode édition). Liste (libellé éditable + toggle sens →/←/↔ + suppression undoable) + formulaire d'ajout (recherche d'une cible parmi toutes les entités, libellé libre, orienté/symétrique). Sauvegarde immédiate via `useRelationStore`.
+### `WikiText`
+Rend un texte en transformant les wikilinks `[[Cible]]` / `[[Cible|alias]]` (hérités d'un import Obsidian) en liens cliquables vers la **fiche** de l'entité, même convention que la recherche globale : `/lore?tab=<type>&search=<nom>` (noyau typé) ou `/custom?type=<typeId>&entity=<id>` (deep-link entité custom : onglet présélectionné + fiche ouverte). Résolution via `resolveEntityByName` (entityUtils ; le cache custom est chargé partout via `ProjectContext.loadCore`). Cible non résolue → texte brut sans crochets. Utilisé dans les descriptions des cartes lore (Character/Location/Object) et custom.
+
+## src/components/chat/
+### `ChatPanel`
+Page `/chat`, **multi-discussions** : colonne gauche `ChatThreadList` (threads persistés par projet via `useChatStore`/localStorage), colonne droite la conversation active. Niveau 1 : réponses déterministes locales via `src/chat/router.js` (les noms d'entités cités sont émis en wikilinks `[[Nom]]` → liens cliquables) ; niveau 2 (toggle « recherche approfondie ») : `POST /projects/:id/ask` (provider mock par défaut). Les deux niveaux rendent le texte via `AnswerText` et affichent les **sources** (entités citées) en chips cliquables → fiche de l'entité.
+### `ChatThreadList` (chat/)
+Liste des discussions : sélection, création (`+ Nouvelle`), renommage inline, suppression (confirmation en deux temps), horodatage relatif + compteur de messages.
+### `AnswerText` (chat/)
+Rendu enrichi d'une réponse de chat : `**gras**`, wikilinks `[[Nom]]` (résolus par nom) et citations `[entity_id]` / `[id1, id2]` (résolues par id, affichent le nom) → liens cliquables vers la fiche (`hrefForEntity`/`entityHrefById`). Références non résolues → texte brut.
+
+## src/components/import/ (import Obsidian)
+### `VaultImporter`
+Drag-drop de fichiers `.md` / `.zip` d'un vault Obsidian → aperçu (`previewObsidianImport` / `previewObsidianZip`) → import (`seedObsidianData`).
+### `ImportPreview`
+Staging avant seed : lit le payload EN MÉMOIRE, affiche comptages (personnages, lieux, objets, entités custom, **scènes, chapitres**) / doublons candidats (`src/import/dedup.js`) / liens cassés + panneau **« Ajuster le mapping des champs »** + bouton « Confirmer l'import ».
+
+Le panneau de mapping (repliable) liste les champs frontmatter/inline détectés (`collectFields`) avec exemple, fréquence et cible auto devinée ; un `<select>` par champ permet de forcer un champ du noyau (`CANONICAL_FIELDS`), un champ personnalisé (`__custom`) ou l'ignorer (`__ignore`). Les choix (`overrideMap`) sont passés à `mapToCanonical` et l'aperçu se recalcule à la volée (VaultImporter garde les notes parsées et re-mappe via `useMemo`).
+
+### Pipeline `src/import/obsidian/`
+`parseVault(Zip)` → notes structurées (frontmatter YAML, champs inline Dataview `::`, tags, wikilinks, corps) → `mapToCanonical` → JSON canonique (`analysis_prompt.js`) → `seedProjectViaApi`.
+
+`mapToCanonical` classifie chaque note dans cet ordre : **narrative** (`classifyNarrative` → `scene`/`chapter`) → **noyau typé** (`classifyType` → character/location/object) → **type custom** (couche 3). Les notes narratives produisent :
+- `type: scène` → 1 événement `timelineDB` + `eventExtrasDB[id]` (pov, beat, threads, goal/conflict/outcome, sceneOrder). `event_entities` = union du frontmatter (`personnages`/`lieux`/`objets`) ET des wikilinks `[[…]]` du corps ; `pov` → `povCharacterId`, `lieu` (1er) → `locationId`.
+- `type: chapitre` → 1 entrée `chaptersDB` (Save the Cat) ; son titre alimente le `chapterTitle` des scènes du même chapitre/tome.
+- Multi-tome : frontmatter `tome`/`volume` → `volumesDB` (id `vol_<slug>`, numéro incrémental ou valeur numérique). Timeline triée par tome → chapitre → ordre de scène.
+Synonymes de champs scène/chapitre : `src/import/obsidian/fieldMap.js` (`SCENE_FIELD_SYNONYMS`, `NARRATIVE_HINTS`).
+
+`mapToCanonical(notes, { overrideMap })` : l'auto-mapping reste le défaut ; `overrideMap` (clé normalisée → champ canonique / `__custom` / `__ignore`) permet à l'utilisateur de corriger le mapping depuis `ImportPreview`. `collectFields(notes)` recense les champs remappables (lore/custom, hors notes narratives) ; `CANONICAL_FIELDS` liste les cibles du noyau.
 
 ---
 
@@ -148,11 +193,9 @@ Chip cliquable vers une entité liée à une incohérence.
 
 ## src/components/tour/
 ### `GuidedTour`
-Overlay spotlight pour le tour guidé. Masque SVG, tooltip repositionnable, auto-scroll vers l'élément cible. Boutons prev/next/skip + barre de progression. Lit/écrit `useTourStore`.
+Overlay spotlight pour le tour guidé. Masque SVG, tooltip repositionnable, auto-scroll vers l'élément cible. Boutons prev/next/skip + barre de progression. Lit/écrit `useTourStore`. Les étapes (route + `dataKey` d'ancre `data-tour` + titre/desc) sont définies dans `src/data/tour_steps.js` ; textes traduits sous `narrative:tour.steps.<dataKey>`. Pages couvertes : `/dashboard`, `/timeline`, `/lore`, `/custom`, `/map`, `/savethecat`, `/heros`, `/arc`, `/plants`, `/threads`, `/incoherences`, `/chat`, puis `/` (étape finale). Si l'ancre est absente (ex. état vide de `/custom`), la tooltip s'affiche centrée sans spotlight.
 ### `WelcomeModal`
-Modal d'accueil affichée au premier chargement d'un projet (4 features présentées). Boutons "Lancer le tour" / "Explorer seul". Persisté dans localStorage (`atlas_tour_seen_${projectId}`).
-### `TourPageButton`
-Bouton contextuel pour relancer le tour sur la page courante (stub actuellement).
+Modal d'accueil affichée au premier chargement d'un projet (4 features présentées). Boutons "Lancer le tour" / "Explorer seul". Persisté dans localStorage (`atlas_tour_seen_${projectId}`). Le bouton pour relancer le tour d'une page est rendu par `TopNav` (le « ? », visible si la page courante a des étapes).
 ### `tourUtils.js`
 Helpers : `shouldShowWelcome(projectId)`, `markWelcomeSeen(projectId)`.
 

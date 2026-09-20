@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLoreStore }     from '../../stores/useLoreStore';
 import { useTimelineStore } from '../../stores/useTimelineStore';
 import { useIncStore }      from '../../stores/useIncStore';
+import { useCustomEntityStore } from '../../stores/useCustomEntityStore';
+import { useProject }        from '../../db/ProjectContext';
 import Icon                 from '../ui/Icon';
 import { VIZ_STATUS }        from '../../data/viz_palette';
 
@@ -12,6 +14,7 @@ const GROUP_DEFS = [
   { id: 'character', i18nKey: 'label.characters', icon: 'user',     color: '#5cae8e' },
   { id: 'location',  i18nKey: 'label.locations',  icon: 'location', color: '#60a5fa' },
   { id: 'object',    i18nKey: 'label.objects',     icon: 'object',  color: '#a78bfa' },
+  { id: 'custom',    i18nKey: 'customEntity.title', icon: 'gem',    color: '#a78bfa' },
   { id: 'event',     i18nKey: 'label.events',      icon: 'event',   color: '#cba15e' },
   { id: 'inco',      i18nKey: 'label.incoherences',icon: 'warning', color: '#ef4444' },
 ];
@@ -20,18 +23,47 @@ const SEVERITY_COLORS = {
   critical: VIZ_STATUS.crit, high: VIZ_STATUS.serious, medium: VIZ_STATUS.warn, low: 'var(--color-atlas-soft)',
 };
 
+// ── Pertinence d'un résultat ────────────────────────────────────────────────────
+// Score décroissant : nom exact > début de nom > début d'un mot du nom > nom inclus
+// > alias (exact/début/inclus) > match faible (description, type, champs custom).
+// 0 = pas de correspondance (exclu). Sert à trier chaque section : « Harry » →
+// « Harry Potter » avant « Albus Dumbledore » (qui ne matche que via sa description).
+// Minuscule + suppression des diacritiques → recherche insensible aux accents
+// (« eowyn » matche « Éowyn », « aragorn » matche « Aragôrn »).
+export const deburr = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/gu, '');
+
+export function scoreText(rawQ, name, aliases = [], rest = '') {
+  const q = deburr(rawQ);
+  const n = deburr(name);
+  if (n === q) return 100;
+  if (n.startsWith(q)) return 85;
+  if (n.split(/[^\p{L}\p{N}]+/u).some(w => w && w.startsWith(q))) return 70;
+  if (n.includes(q)) return 60;
+  const a = (aliases ?? []).map(deburr);
+  if (a.some(x => x === q)) return 55;
+  if (a.some(x => x.startsWith(q))) return 45;
+  if (a.some(x => x.includes(q))) return 40;
+  if (deburr(rest).includes(q)) return 20;
+  return 0;
+}
+
 // ── Highlight du terme recherché ───────────────────────────────────────────────
+// Déaccentue caractère par caractère (longueur préservée) → les offsets restent
+// alignés sur le texte original pour surligner même quand seuls les accents diffèrent.
+const deburrKeepLen = (s) => [...String(s)].map(c => (c.normalize('NFD')[0] || c)).join('').toLowerCase();
+
 function Highlight({ text, query }) {
   if (!query || !text) return <>{text}</>;
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  const idx = deburrKeepLen(text).indexOf(deburrKeepLen(query));
   if (idx === -1) return <>{text}</>;
+  const len = [...String(query)].length;
   return (
     <>
       {text.slice(0, idx)}
       <mark className="bg-transparent font-black" style={{ color: '#5cae8e' }}>
-        {text.slice(idx, idx + query.length)}
+        {text.slice(idx, idx + len)}
       </mark>
-      {text.slice(idx + query.length)}
+      {text.slice(idx + len)}
     </>
   );
 }
@@ -79,11 +111,17 @@ export default function GlobalSearch({ onClose }) {
   const inputRef = useRef(null);
   const listRef  = useRef(null);
 
+  const { projectId } = useProject();
   const characters = useLoreStore(s => s.characters);
   const locations  = useLoreStore(s => s.locations);
   const objects    = useLoreStore(s => s.objects);
   const events     = useTimelineStore(s => s.events);
   const incos      = useIncStore(s => s.data);
+  const customTypes    = useCustomEntityStore(s => s.types);
+  const customEntities = useCustomEntityStore(s => s.entities);
+
+  // Charge les entités custom au besoin (store non "core") pour les rendre cherchables partout.
+  useEffect(() => { if (projectId) useCustomEntityStore.getState().load(projectId); }, [projectId]);
 
   const GROUPS = useMemo(() => GROUP_DEFS.map(g => ({ ...g, label: t(g.i18nKey) })), [t]);
 
@@ -98,14 +136,19 @@ export default function GlobalSearch({ onClose }) {
     const q = query.trim().toLowerCase();
     if (!q) return [];
 
-    const match = (str) => (str ?? '').toLowerCase().includes(q);
+    // Concatène clés + valeurs des champs custom (couche 2) pour le match faible.
+    const cf = (fields) => Object.entries(fields ?? {}).map(([k, v]) =>
+      `${k} ${Array.isArray(v) ? v.join(' ') : (v && typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''))}`,
+    ).join(' ');
     const out = [];
 
     characters.forEach(c => {
-      if (match(c.name) || match(c.description)) {
+      const score = scoreText(q, c.name, c.aliases, `${c.description ?? ''} ${cf(c.customFields)}`);
+      if (score > 0) {
         out.push({
           id:    c.id,
           group: 'character',
+          score,
           title: c.name,
           sub:   null,
           badge: c.source !== 'import' ? (c.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
@@ -116,10 +159,12 @@ export default function GlobalSearch({ onClose }) {
     });
 
     locations.forEach(l => {
-      if (match(l.name) || match(l.type) || match(l.description)) {
+      const score = scoreText(q, l.name, [], `${l.type ?? ''} ${l.description ?? ''} ${cf(l.customFields)}`);
+      if (score > 0) {
         out.push({
           id:    l.id,
           group: 'location',
+          score,
           title: l.name,
           sub:   l.type ?? null,
           badge: l.source !== 'import' ? (l.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
@@ -130,10 +175,12 @@ export default function GlobalSearch({ onClose }) {
     });
 
     objects.forEach(o => {
-      if (match(o.name) || match(o.type) || match(o.description)) {
+      const score = scoreText(q, o.name, [], `${o.type ?? ''} ${o.description ?? ''} ${cf(o.customFields)}`);
+      if (score > 0) {
         out.push({
           id:    o.id,
           group: 'object',
+          score,
           title: o.name,
           sub:   o.type ?? null,
           badge: o.source !== 'import' ? (o.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
@@ -143,11 +190,30 @@ export default function GlobalSearch({ onClose }) {
       }
     });
 
+    (customEntities ?? []).forEach(ce => {
+      const score = scoreText(q, ce.name, ce.aliases, `${ce.description ?? ''} ${cf(ce.customFields)}`);
+      if (score > 0) {
+        const type = (customTypes ?? []).find(ty => ty.id === ce.typeId);
+        out.push({
+          id:    ce.id,
+          group: 'custom',
+          score,
+          title: ce.name,
+          sub:   type ? `${type.icon ? `${type.icon} ` : ''}${type.label}` : null,
+          badge: ce.source !== 'import' ? (ce.source === 'manual' ? t('review.sourceManual') : t('review.sourceModified')) : null,
+          badgeColor: ce.source === 'manual' ? '#34d399' : '#f59e0b',
+          action: () => navigate('/custom'),
+        });
+      }
+    });
+
     (events ?? []).forEach(e => {
-      if (match(e.title) || match(e.description) || match(e.chapterTitle)) {
+      const score = scoreText(q, e.title, [], `${e.description ?? ''} ${e.chapterTitle ?? ''}`);
+      if (score > 0) {
         out.push({
           id:    e.id,
           group: 'event',
+          score,
           title: e.title,
           sub:   `Ch.${e.chapter}${e.chapterTitle ? ` · ${e.chapterTitle}` : ''}`,
           badge: null,
@@ -158,10 +224,12 @@ export default function GlobalSearch({ onClose }) {
 
     (incos ?? []).forEach(i => {
       const translatedType = i.type ? t(`incType.${i.type}`, { defaultValue: i.type }) : '';
-      if (match(i.title) || match(i.explanation) || match(i.type) || match(translatedType)) {
+      const score = scoreText(q, i.title, [], `${i.explanation ?? ''} ${i.type ?? ''} ${translatedType}`);
+      if (score > 0) {
         out.push({
           id:         i.id,
           group:      'inco',
+          score,
           title:      i.title,
           sub:        translatedType || null,
           badge:      t(`severity.${i.severity}`, { defaultValue: i.severity }),
@@ -171,8 +239,16 @@ export default function GlobalSearch({ onClose }) {
       }
     });
 
+    // Groupes dans l'ordre de GROUP_DEFS ; DANS chaque groupe : score décroissant,
+    // puis titre. Le tableau plat reste donc groupé + trié (nav clavier cohérente).
+    const groupOrder = Object.fromEntries(GROUP_DEFS.map((g, i) => [g.id, i]));
+    out.sort((a, b) =>
+      (groupOrder[a.group] - groupOrder[b.group]) ||
+      (b.score - a.score) ||
+      String(a.title).localeCompare(String(b.title)),
+    );
     return out;
-  }, [query, characters, locations, objects, events, incos, navigate, t]);
+  }, [query, characters, locations, objects, customEntities, customTypes, events, incos, navigate, t]);
 
   // Reset activeIndex quand les résultats changent
   useEffect(() => { setActiveIndex(0); }, [results]);

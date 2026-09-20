@@ -141,7 +141,7 @@ export default function GuidedTour() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, pointerEvents: 'none' }}>
+    <div data-testid="guided-tour" style={{ position: 'fixed', inset: 0, zIndex: 9000, pointerEvents: 'none' }}>
 
       {/* Overlay SVG avec trou spotlight */}
       <svg

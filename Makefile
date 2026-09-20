@@ -136,6 +136,12 @@ prod-health: ## Health check de l'API
 		&& echo "✅ API OK" \
 		|| (echo "❌ API KO" && exit 1)
 
+prod-ollama-pull: ## Télécharge le modèle d'embeddings dans le service Ollama (m=modèle, défaut paraphrase-multilingual)
+	@docker exec $$(docker ps -q -f name=$(STACK)_ollama) \
+		ollama pull $(or $(m),paraphrase-multilingual) \
+		&& echo "✅ Modèle prêt" \
+		|| (echo "❌ Service ollama introuvable — déploie d'abord avec 'make prod-up'" && exit 1)
+
 prod-backup: ## Backup de la base PostgreSQL
 	@mkdir -p backups
 	docker exec $$(docker ps -q -f name=$(STACK)_postgres) \

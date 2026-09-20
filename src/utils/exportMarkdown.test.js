@@ -78,6 +78,42 @@ describe('buildMarkdown', () => {
     expect(md).toContain('*« Un Anneau pour les gouverner tous »*');
   });
 
+  it('inclut les champs custom des entités natives', () => {
+    const md = buildMarkdown(payload({
+      characters: [{ id: 'c1', name: 'Bilbo', custom_fields: { 'Âge': '111 ans', Signe: 'Balance' } }],
+    }));
+    expect(md).toContain('**Âge** : 111 ans');
+    expect(md).toContain('**Signe** : Balance');
+  });
+
+  it('inclut une section « Entités custom » groupée par type', () => {
+    const md = buildMarkdown(payload({
+      customEntityTypes: [{ id: 'ctype_langue', label: 'Langue', icon: '🗣️' }],
+      customEntities: [{ id: 'cent_quenya', type_id: 'ctype_langue', name: 'Quenya', aliases: ['haut-elfique'], description: 'Langue elfique.', custom_fields: { famille: 'Eldarine' } }],
+    }));
+    expect(md).toContain('## Entités custom');
+    expect(md).toContain('### 🗣️ Langue');
+    expect(md).toContain('#### Quenya');
+    expect(md).toContain('**Aliases** : haut-elfique');
+    expect(md).toContain('**famille** : Eldarine');
+    expect(md).toContain('> Langue elfique.');
+  });
+
+  it('inclut une section « Relations » avec résolution des noms et sens', () => {
+    const md = buildMarkdown(payload({
+      characters: [{ id: 'c1', name: 'Aragorn' }],
+      objects: [{ id: 'o1', name: 'Andúril' }],
+      customEntities: [{ id: 'cent_quenya', type_id: 'ctype_langue', name: 'Quenya' }],
+      entityRelations: [
+        { id: 'r1', source_id: 'c1', source_type: 'character', target_id: 'o1', target_type: 'object', label: 'manie', directed: true },
+        { id: 'r2', source_id: 'c1', source_type: 'character', target_id: 'cent_quenya', target_type: 'custom', label: null, directed: false },
+      ],
+    }));
+    expect(md).toContain('## Relations');
+    expect(md).toContain('Aragorn → Andúril *(manie)*');
+    expect(md).toContain('Aragorn ↔ Quenya');
+  });
+
   it('inclut la timeline avec résolution des IDs', () => {
     const md = buildMarkdown(payload({
       characters: [{ id: 'c1', name: 'Frodo' }],

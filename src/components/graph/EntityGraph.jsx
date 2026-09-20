@@ -9,6 +9,9 @@ import IncPanel from './IncPanel';
 import Icon from '../ui/Icon';
 import { useIncStore } from '../../stores/useIncStore';
 import { useLoreStore } from '../../stores/useLoreStore';
+import { useTimelineStore } from '../../stores/useTimelineStore';
+import { useCustomEntityStore } from '../../stores/useCustomEntityStore';
+import { useRelationStore } from '../../stores/useRelationStore';
 import { useStoreLoader } from '../../hooks/useStoreLoader';
 
 // ── Constantes de rendu ───────────────────────────────────────────────────────
@@ -19,10 +22,10 @@ const REL_H    = 20;
 const REL_R    = 12;
 const NODE_COLORS = ENTITY_COLORS; // couleurs par type d'entité — palette data-viz unifiée
 // icônes de type rendues via TYPE_ICON_NAMES (lucide, en <foreignObject> dans le SVG)
-const TYPE_ICON_NAMES = { character: 'user', location: 'location', object: 'object', group: 'group' };
+const TYPE_ICON_NAMES = { character: 'user', location: 'location', object: 'object', group: 'group', custom: 'gem' };
 
 function getColor(node) {
-  if (node.entityType === 'character' || node.entityType === 'group') return node.color || NODE_COLORS[node.entityType];
+  if (node.entityType === 'character' || node.entityType === 'group' || node.entityType === 'custom') return node.color || NODE_COLORS[node.entityType] || '#a78bfa';
   return NODE_COLORS[node.entityType];
 }
 function truncate(str, n) {
@@ -72,9 +75,15 @@ function GraphTooltip({ pos, node, color, rgb, t }) {
 }
 
 export default function EntityGraph({ entityId, onNodeClick }) {
-  const { t } = useTranslation();
-  useStoreLoader([useIncStore, useLoreStore]);
+  const { t, i18n } = useTranslation();
+  useStoreLoader([useIncStore, useLoreStore, useTimelineStore, useCustomEntityStore, useRelationStore]);
   const rawIncs = useIncStore(s => s.data);
+  const events  = useTimelineStore(s => s.events);
+  const customEntities = useCustomEntityStore(s => s.entities);
+  const relations = useRelationStore(s => s.relations);
+  // Libellé d'une relation : traduit si la clé i18n existe (types connus), sinon
+  // le libellé libre saisi/importé tel quel.
+  const relLabel = (key) => (i18n.exists(`graph.rel_${key}`) ? t(`graph.rel_${key}`) : key);
   // Abonnement au lore : buildGraph lit le cache module (getLoreCache), non réactif —
   // on s'abonne aux tableaux du store pour recalculer le graphe quand le lore arrive
   // (sinon un reload direct sur /relations?entity=… reste bloqué sur « introuvable »).
@@ -107,7 +116,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
   // Deps lore volontaires : buildGraph lit getLoreCache() (cache module invisible à ESLint) ;
   // ces refs déclenchent le recalcul quand le lore (re)charge. Ne pas les retirer.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const graph = useMemo(() => buildGraph(currentId), [currentId, characters, locations, objects, groups]);
+  const graph = useMemo(() => buildGraph(currentId, events ?? []), [currentId, characters, locations, objects, groups, events, customEntities, relations]);
 
   // Reset depuis l'extérieur
   useEffect(() => {
@@ -263,7 +272,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
             const x1 = from.x + ux * r1, y1 = from.y + uy * r1;
             const x2 = to.x   - ux * r2, y2 = to.y   - uy * r2;
             const showLabel = !fRel && !tRel;
-            const label = showLabel ? (t(`graph.rel_${edge.relType}`) || '') : '';
+            const label = showLabel ? (relLabel(edge.relType) || '') : '';
             const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
             const lw = label.length * 6 + 10;
             return (
@@ -356,7 +365,7 @@ export default function EntityGraph({ entityId, onNodeClick }) {
                   fill={relNode.color} fontSize="8" fontWeight="800"
                   style={{ letterSpacing: '0.06em', textTransform: 'uppercase' }}
                 >
-                  {(t(`graph.rel_${relNode.relType}`) || relNode.label).toUpperCase()}
+                  {relLabel(relNode.relType).toUpperCase()}
                 </text>
               </g>
             );
@@ -437,8 +446,8 @@ export default function EntityGraph({ entityId, onNodeClick }) {
             <div className="space-y-1.5">
               {usedRelTypes.map(key => (
                 <div key={key} className="flex items-center gap-2">
-                  <div className="w-4" style={{ backgroundColor: RELATION_COLORS[key], height: '1.5px', boxShadow: `0 0 4px ${RELATION_COLORS[key]}` }} />
-                  <span className="text-[11px] text-slate-400">{t(`graph.rel_${key}`)}</span>
+                  <div className="w-4" style={{ backgroundColor: RELATION_COLORS[key] || '#64748b', height: '1.5px', boxShadow: `0 0 4px ${RELATION_COLORS[key] || '#64748b'}` }} />
+                  <span className="text-[11px] text-slate-400">{relLabel(key)}</span>
                 </div>
               ))}
             </div>

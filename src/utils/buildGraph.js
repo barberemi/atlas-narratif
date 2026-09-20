@@ -12,6 +12,8 @@ export const RELATION_COLORS = {
   member_of:   '#10B981',  // Appartient au groupe
   has_member:  '#10B981',  // Membre du groupe
   homeland:    '#0EA5E9',  // Territoire natal du groupe
+  event:       '#A78BFA',  // Co-apparition dans un événement (entités custom)
+  wikilink:    '#E879F9',  // Lien explicite [[wikilink]] importé d'Obsidian
 };
 
 export const RELATION_LABELS = {
@@ -25,6 +27,8 @@ export const RELATION_LABELS = {
   member_of:   'Membre de',
   has_member:  'Membre',
   homeland:    'Nation',
+  event:       'Événement',
+  wikilink:    'Lié à',
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -54,8 +58,9 @@ function nameIncludes(haystack, needle) {
  * Construit les nœuds et arêtes du graphe centré sur `entityId`.
  * Retourne : { central, satellites, edges } ou null si entité introuvable.
  */
-export function buildGraph(entityId) {
-  const { characters, locations, objects, groups = [] } = getLoreCache();
+export function buildGraph(entityId, events = []) {
+  const { characters, locations, objects, groups = [], customEntities = [], customTypes = [], relations = [] } = getLoreCache();
+  const customColor = (ce) => customTypes.find(t => t.id === ce?.typeId)?.color || '#a78bfa';
 
   let central = null;
   let centralType = null;
@@ -71,6 +76,9 @@ export function buildGraph(entityId) {
   }
   if (!central) for (const g of groups) {
     if (g.id === entityId) { central = g; centralType = 'group'; break; }
+  }
+  if (!central) for (const ce of customEntities) {
+    if (ce.id === entityId) { central = { ...ce, color: customColor(ce) }; centralType = 'custom'; break; }
   }
 
   if (!central) return null;
@@ -92,6 +100,32 @@ export function buildGraph(entityId) {
       edges.push({ fromId, toId, relType });
     }
   };
+
+  // ── Relations explicites (Niveau 3 : table entity_relations) ────────────────
+  // Passe EN PREMIER : le libellé saisi/importé par l'auteur prime sur une arête
+  // dérivée (dédup premier-gagnant). Une arête par relation impliquant le central
+  // (source OU cible) ; sans libellé (wikilink importé) → type 'wikilink'.
+  {
+    const buckets = [
+      [characters, 'character'], [locations, 'location'], [objects, 'object'],
+      [groups, 'group'], [customEntities, 'custom'],
+    ];
+    const byId = new Map();
+    for (const [list, type] of buckets) for (const e of list) byId.set(e.id, { e, type });
+
+    for (const rel of relations) {
+      let otherId = null;
+      if (rel.sourceId === entityId) otherId = rel.targetId;
+      else if (rel.targetId === entityId) otherId = rel.sourceId;
+      else continue;
+      const hit = byId.get(otherId);
+      if (!hit || hit.e.id === entityId) continue;
+      const enriched = hit.type === 'custom' ? { ...hit.e, color: customColor(hit.e) } : hit.e;
+      addNode(enriched, hit.type);
+      const relType = (rel.label && String(rel.label).trim()) ? String(rel.label).trim() : 'wikilink';
+      addEdge(entityId, otherId, relType);
+    }
+  }
 
   // ── Personnage ────────────────────────────────────────────────────────────
   if (centralType === 'character') {
@@ -198,10 +232,38 @@ export function buildGraph(entityId) {
     }
   }
 
-  // Tri des satellites : groupes → personnages → lieux → objets
-  const typeOrder = { group: 0, character: 1, location: 2, object: 3 };
+  // ── Entités custom via événements partagés (couche 3) ───────────────────────
+  // On n'ajoute que des arêtes impliquant une entité custom : les graphes des
+  // entités natives restent identiques sauf si une entité custom co-apparaît.
+  if (events.length) {
+    const findById = (id) =>
+      customEntities.find(e => e.id === id) ??
+      characters.find(e => e.id === id) ??
+      locations.find(e => e.id === id) ??
+      objects.find(e => e.id === id);
+    const typeOfRef = (ref) => ref.entityType ?? (customEntities.some(e => e.id === ref.id) ? 'custom' : null);
+
+    for (const ev of events) {
+      const refs = ev.entities ?? [];
+      if (!refs.some(r => r.id === entityId)) continue;
+      for (const ref of refs) {
+        if (ref.id === entityId) continue;
+        const refType = typeOfRef(ref);
+        // Seulement si l'une des deux extrémités est custom.
+        if (centralType !== 'custom' && refType !== 'custom') continue;
+        const ent = findById(ref.id);
+        if (!ent) continue;
+        const enriched = refType === 'custom' ? { ...ent, color: customColor(ent) } : ent;
+        addNode(enriched, refType);
+        addEdge(entityId, ref.id, 'event');
+      }
+    }
+  }
+
+  // Tri des satellites : groupes → personnages → lieux → objets → custom
+  const typeOrder = { group: 0, character: 1, location: 2, object: 3, custom: 4 };
   const satellites = Array.from(nodes.values())
-    .sort((a, b) => typeOrder[a.entityType] - typeOrder[b.entityType]);
+    .sort((a, b) => (typeOrder[a.entityType] ?? 9) - (typeOrder[b.entityType] ?? 9));
 
   // ── Réification des relations : nœuds intermédiaires pour les types ≥ 2 arêtes
   const edgesByType = new Map();
