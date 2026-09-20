@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
 import DarkCard from '../ui/DarkCard';
+import CustomFieldChips from '../ui/CustomFieldChips';
+import WikiText from '../ui/WikiText';
 
 export default function LocationCard({ loc, highlighted, onCharacterClick, onRelations }) {
   const { t } = useTranslation();
@@ -23,7 +25,8 @@ export default function LocationCard({ loc, highlighted, onCharacterClick, onRel
           <h3 className="font-serif text-lg font-semibold text-atlas-text">{loc.name}</h3>
           <p className="text-xs text-atlas-soft italic mt-0.5">{loc.regime}</p>
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3">{loc.description}</p>
+        <p className="text-xs text-slate-400 leading-relaxed font-serif line-clamp-3"><WikiText text={loc.description} /></p>
+        <CustomFieldChips fields={loc.customFields} />
         {loc.inhabitants?.filter(Boolean).length > 0 && (
           <div>
             <p className="text-xs text-atlas-mute uppercase tracking-widest mb-1">{t('label.inhabitants')}</p>

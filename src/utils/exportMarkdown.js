@@ -17,6 +17,8 @@ export function buildMarkdown(payload) {
     groups = [], characterGroups = [],
     plantPayoffs = [], narrativeThreads = [],
     heroJourneyEntries = [],
+    customEntityTypes = [], customEntities = [],
+    entityRelations = [],
   } = payload;
 
   // ── Lookup maps ─────────────────────────────────────────────────────────────
@@ -25,12 +27,14 @@ export function buildMarkdown(payload) {
   const objMap  = Object.fromEntries(objects.map(o => [o.id, o.name]));
   const volMap  = Object.fromEntries(volumes.map(v => [v.id, v.title]));
   const threadMap = Object.fromEntries(narrativeThreads.map(t => [t.id, t.name]));
+  const centMap = Object.fromEntries(customEntities.map(e => [e.id, e.name]));
   const entityName = (id, type) => {
     if (type === 'character') return charMap[id];
     if (type === 'location')  return locMap[id];
     if (type === 'object')    return objMap[id];
     return id;
   };
+  const nameOfAny = (id) => charMap[id] ?? locMap[id] ?? objMap[id] ?? centMap[id] ?? id;
 
   // event_entities grouped by event
   const entitiesByEvent = {};
@@ -64,6 +68,19 @@ export function buildMarkdown(payload) {
     if (typeof v === 'string') { try { return JSON.parse(v); } catch { return []; } }
     return [];
   };
+  // Champs custom (couche 2) : objet {clé: valeur} → lignes markdown.
+  const parseObj = (v) => {
+    if (!v) return {};
+    if (typeof v === 'string') { try { return JSON.parse(v); } catch { return {}; } }
+    return typeof v === 'object' ? v : {};
+  };
+  const pushCustomFields = (v) => {
+    const obj = parseObj(v);
+    for (const [k, val] of Object.entries(obj)) {
+      const disp = Array.isArray(val) ? val.join(', ') : (val && typeof val === 'object' ? JSON.stringify(val) : val);
+      if (disp !== '' && disp != null) push(`- **${k}** : ${disp}`);
+    }
+  };
 
   // ── Header ────────────────────────────────────────────────────────────────────
   push(`# ${project.name}`);
@@ -78,6 +95,8 @@ export function buildMarkdown(payload) {
   if (characters.length) toc.push('- [Personnages](#personnages)');
   if (locations.length)  toc.push('- [Lieux](#lieux)');
   if (objects.length)    toc.push('- [Objets & Artefacts](#objets--artefacts)');
+  if (customEntities.length) toc.push('- [Entités custom](#entités-custom)');
+  if (entityRelations.length) toc.push('- [Relations](#relations)');
   if (groups.length)     toc.push('- [Groupes & Factions](#groupes--factions)');
   if (timelineEvents.length) toc.push('- [Timeline](#timeline)');
   if (stcChapters.length) toc.push('- [Structure Save the Cat](#structure-save-the-cat)');
@@ -125,6 +144,7 @@ export function buildMarkdown(payload) {
       if (traits.length)   push(`- **Traits** : ${j(traits)}`);
       if (affil.length)    push(`- **Affiliations** : ${j(affil)}`);
       if (cGroups.length)  push(`- **Groupes** : ${j(cGroups)}`);
+      pushCustomFields(c.custom_fields ?? c.customFields);
       if (c.description) { blank(); push(`> ${c.description}`); }
       blank();
     }
@@ -144,6 +164,7 @@ export function buildMarkdown(payload) {
       if (l.regime)      push(`- **Régime** : ${l.regime}`);
       if (inhab.length)  push(`- **Habitants** : ${j(inhab)}`);
       if (kp.length)     push(`- **Lieux notables** : ${j(kp)}`);
+      pushCustomFields(l.custom_fields ?? l.customFields);
       if (l.description) { blank(); push(`> ${l.description}`); }
       blank();
     }
@@ -165,10 +186,48 @@ export function buildMarkdown(payload) {
       if (powers.length)    push(`- **Pouvoirs** : ${j(powers)}`);
       if (holders.length)   push(`- **Détenteurs successifs** : ${j(holders)}`);
       if (o.status && o.status !== 'active') push(`- **Statut** : ${o.status}`);
+      pushCustomFields(o.custom_fields ?? o.customFields);
       if (o.description)  { blank(); push(`> ${o.description}`); }
       if (o.inscription)  { blank(); push(`> *« ${o.inscription} »*`); }
       blank();
     }
+    push('---');
+    blank();
+  }
+
+  // ── Entités custom (couche 3) ───────────────────────────────────────────────
+  if (customEntities.length) {
+    push('## Entités custom', '');
+    const typeById = Object.fromEntries(customEntityTypes.map(t => [t.id, t]));
+    const byType = {};
+    for (const e of customEntities) (byType[e.type_id ?? e.typeId] ??= []).push(e);
+    for (const [typeId, ents] of Object.entries(byType)) {
+      const type = typeById[typeId];
+      const icon = type?.icon ? `${type.icon} ` : '';
+      push(`### ${icon}${type?.label ?? 'Type inconnu'}`, '');
+      for (const e of ents) {
+        push(`#### ${e.name}`);
+        blank();
+        const aliases = parseJ(e.aliases);
+        if (aliases.length) push(`- **Aliases** : ${j(aliases)}`);
+        pushCustomFields(e.custom_fields ?? e.customFields);
+        if (e.description) { blank(); push(`> ${e.description}`); }
+        blank();
+      }
+    }
+    push('---');
+    blank();
+  }
+
+  // ── Relations (Niveau 3) ────────────────────────────────────────────────────
+  if (entityRelations.length) {
+    push('## Relations', '');
+    for (const r of entityRelations) {
+      const arrow = r.directed === false ? '↔' : '→';
+      const lbl = r.label ? ` *(${r.label})*` : '';
+      push(`- ${nameOfAny(r.source_id)} ${arrow} ${nameOfAny(r.target_id)}${lbl}`);
+    }
+    blank();
     push('---');
     blank();
   }

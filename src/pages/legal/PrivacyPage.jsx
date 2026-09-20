@@ -83,7 +83,19 @@ export default function PrivacyPage() {
               h&eacute;bergeur du serveur (OVHcloud, 2 rue Kellermann, 59100 Roubaix), service d&rsquo;envoi d&rsquo;emails transactionnels (Resend).
             </p>
 
-            <h2 className="font-serif text-lg font-semibold text-white mt-4">8. Cookies</h2>
+            <h2 className="font-serif text-lg font-semibold text-white mt-4">8. Intelligence artificielle (chat de requ&ecirc;te)</h2>
+            <p>
+              La fonctionnalit&eacute; de chat propose deux modes. Le <strong className="text-white">mode standard</strong> r&eacute;pond
+              localement, sur nos serveurs, sans transmettre vos donn&eacute;es &agrave; un tiers. Le mode
+              <strong className="text-white"> &laquo;&nbsp;recherche approfondie&nbsp;&raquo;</strong>, si vous l&rsquo;activez, transmet des
+              extraits pertinents de votre projet (personnages, lieux, objets&hellip;) &agrave; un fournisseur
+              d&rsquo;IA tiers afin de g&eacute;n&eacute;rer une r&eacute;ponse. Ces extraits sont d&eacute;chiffr&eacute;s le temps de la
+              requ&ecirc;te et ne sont pas conserv&eacute;s par Atlas Narratif au-del&agrave; d&rsquo;un cache technique temporaire.
+              Nous s&eacute;lectionnons des fournisseurs n&rsquo;utilisant pas vos contenus pour entra&icirc;ner leurs mod&egrave;les.
+              Ce mode est d&eacute;sactiv&eacute; par d&eacute;faut&nbsp;; vous gardez le contr&ocirc;le de son usage.
+            </p>
+
+            <h2 className="font-serif text-lg font-semibold text-white mt-4">9. Cookies</h2>
             <p>Atlas Narratif utilise les cookies suivants :</p>
             <ul className="list-disc pl-5 flex flex-col gap-1 mt-1">
               <li><strong className="text-white">Cookies essentiels</strong> : session d&rsquo;authentification et pr&eacute;f&eacute;rences
@@ -99,7 +111,7 @@ export default function PrivacyPage() {
               en bas &agrave; gauche de l&rsquo;&eacute;cran.
             </p>
 
-            <h2 className="font-serif text-lg font-semibold text-white mt-4">9. Contact</h2>
+            <h2 className="font-serif text-lg font-semibold text-white mt-4">10. Contact</h2>
             <p>
               Pour toute question relative &agrave; la protection de vos donn&eacute;es : barbe.remi25[at]gmail[dot]com.
               Vous pouvez &eacute;galement introduire une r&eacute;clamation aupr&egrave;s de la CNIL (www.cnil.fr).

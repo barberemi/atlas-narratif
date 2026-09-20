@@ -61,7 +61,13 @@
       "threads_cards": { "title": "Thread Details", "desc": "Each thread displays its chapter range and attached events. A thread with no tagged events is an invisible subplot: consider filling it." },
       "inc_list": { "title": "Inconsistency Detector", "desc": "Atlas automatically scans your manuscript: impossible chronology, character in the wrong place, object held by someone who doesn't exist… Click ⚡ to re-scan." },
       "inc_severity": { "title": "Severity Filters", "desc": "Address Critical issues first (blocking for coherence), then High. Medium and Low can wait for a proofreading pass." },
-      "home_cards": { "title": "Your turn!", "desc": "Create your own project (manual construction) or import a manuscript via your favorite AI to automatically generate timeline, lore and inconsistencies." }
+      "custom_actions": { "title": "Tailor-made categories", "desc": "Beyond characters, locations and objects, create your own categories (languages, houses, spells, ships…): first a type, then its entities." },
+      "custom_tabs": { "title": "One tab per type", "desc": "Each custom type becomes a tab. The counter shows the number of entities; the ⚙ icon lets you edit the selected type's fields." },
+      "custom_grid": { "title": "Your custom entities", "desc": "The cards for the active type. Click to edit; custom fields appear as chips. These entities can be cited in chat and the relationship graph." },
+      "chat_threads": { "title": "Query your project", "desc": "Ask questions about your world in natural language. Every conversation is saved here: create as many as you have topics to explore." },
+      "chat_deep": { "title": "Two levels of answer", "desc": "By default, Atlas answers instantly from your local data. Turn on \"Deep search\" for an AI-generated answer over the whole manuscript (slower, more thorough)." },
+      "chat_input": { "title": "Ask your question", "desc": "Type here: \"Where is Frodo in chapter 12?\", \"Which characters appear in Rivendell?\"… Entities cited in the answer are clickable." },
+      "home_cards": { "title": "Your turn!", "desc": "Three ways to start: build your project by hand, import a manuscript analyzed by your favorite AI, or import your Obsidian vault directly (characters, locations, objects and custom categories)." }
     }
   }
 }

@@ -237,6 +237,87 @@ export async function restoreObject(snapshot, projectId) {
   return post(`/api/projects/${projectId}/objects/restore`, snapshot);
 }
 
+// ── Types d'entités custom (couche 3) ─────────────────────────────────────────
+
+export async function getCustomTypes(projectId) {
+  const { types } = await get(`/api/projects/${projectId}/custom-types`);
+  return types;
+}
+
+export async function insertCustomType(data, projectId) {
+  const { id } = await post(`/api/projects/${projectId}/custom-types`, data);
+  return id;
+}
+
+export async function updateCustomType(typeId, data, projectId) {
+  return put(`/api/projects/${projectId}/custom-types/${typeId}`, data);
+}
+
+export async function deleteCustomType(typeId, projectId) {
+  const res = await del(`/api/projects/${projectId}/custom-types/${typeId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreCustomType(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/custom-types/restore`, snapshot);
+}
+
+// ── Entités custom (couche 3) ─────────────────────────────────────────────────
+
+export async function getCustomEntities(projectId) {
+  const { entities } = await get(`/api/projects/${projectId}/custom-entities`);
+  return entities;
+}
+
+export async function insertCustomEntity(data, projectId) {
+  const { id } = await post(`/api/projects/${projectId}/custom-entities`, data);
+  return id;
+}
+
+export async function updateCustomEntity(entId, data, projectId) {
+  return put(`/api/projects/${projectId}/custom-entities/${entId}`, data);
+}
+
+export async function deleteCustomEntity(entId, projectId) {
+  const res = await del(`/api/projects/${projectId}/custom-entities/${entId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreCustomEntity(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/custom-entities/restore`, snapshot);
+}
+
+// ── Relations explicites entre entités (Niveau 3) ─────────────────────────────
+
+export async function getRelations(projectId) {
+  const { relations } = await get(`/api/projects/${projectId}/relations`);
+  return relations;
+}
+
+export async function insertRelation(data, projectId) {
+  const { id } = await post(`/api/projects/${projectId}/relations`, data);
+  return id;
+}
+
+export async function updateRelation(relId, data, projectId) {
+  return put(`/api/projects/${projectId}/relations/${relId}`, data);
+}
+
+export async function deleteRelation(relId, projectId) {
+  const res = await del(`/api/projects/${projectId}/relations/${relId}`);
+  return res?.snapshot ?? null;
+}
+
+export async function restoreRelation(snapshot, projectId) {
+  return post(`/api/projects/${projectId}/relations/restore`, snapshot);
+}
+
+// ── Chat de requête (niveau 2 — RAG serveur, provider mock par défaut) ────────
+
+export async function askProject(question, projectId) {
+  return post(`/api/projects/${projectId}/ask`, { question });
+}
+
 // ── Groupes ───────────────────────────────────────────────────────────────────
 
 export async function getGroups(projectId) {

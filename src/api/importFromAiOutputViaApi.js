@@ -41,6 +41,9 @@ export async function importFromAiOutputViaApi(file, { projectName, projectDesc,
   data.plantsDB              ??= [];
   data.threadsDB             ??= [];
   data.heroJourneyDB         ??= [];
+  data.customTypesDB         ??= [];
+  data.customEntitiesDB      ??= [];
+  data.relationsDB           ??= [];
   data.journeys                = [];
 
   // Extraire les champs extras inline des événements vers eventExtrasDB
@@ -56,15 +59,29 @@ export async function importFromAiOutputViaApi(file, { projectName, projectDesc,
     if (Object.keys(ex).length) eventExtrasDB[evt.id] = ex;
   }
 
+  // ── Point d'insertion staging /review (étape 5, ImportPreview) ────────────────
+  // Ici, `data` est le payload canonique EN MÉMOIRE, avant tout écriture DB.
+  // TODO(étape 5) : monter <ImportPreview data={{...data, volumesDB: data.volumes,
+  //   eventExtrasDB}} /> et n'appeler seedProjectViaApi que sur « Confirmer l'import »
+  //   (dédup via src/import/dedup.js + rapport de liens cassés). Aujourd'hui : seed direct.
+
   onProgress?.('Envoi au serveur…');
 
   const projectId = slugify(projectName);
-  await seedProjectViaApi(
-    { id: projectId, name: projectName, description: projectDesc || null, mapImage: null },
-    { ...data, volumesDB: data.volumes, eventExtrasDB },
+  // Le validateur seed est strict : `volumes` n'y figure pas (seul `volumesDB`),
+  // et `meta.description` doit être une string (pas null). On mappe donc
+  // `volumes` → `volumesDB` et on n'inclut la description que si elle est fournie.
+  const { volumes, ...rest } = data;
+  const meta = { id: projectId, name: projectName, mapImage: null };
+  if (projectDesc) meta.description = projectDesc;
+  // Le serveur suffixe l'id (`_d_<device>` / `_u_<user>`) : renvoyer l'id RÉSOLU,
+  // pas le slug de base — sinon l'app charge un projet inexistant (404).
+  const seededId = await seedProjectViaApi(
+    meta,
+    { ...rest, volumesDB: volumes, eventExtrasDB },
   );
 
-  return projectId;
+  return seededId;
 }
 
 function slugify(str) {

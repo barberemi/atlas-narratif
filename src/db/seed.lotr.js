@@ -9,6 +9,7 @@ import {
   groupsDB, plantsDB, arcPointsDB,
   threadsDB, eventExtrasDB, characterArcsDB,
   heroJourneyDB, gandalfHeroJourneyDB, volumesDB,
+  customTypesDB, customEntitiesDB,
 } from '../data/lotr_seed_data';
 
 import {
@@ -100,6 +101,18 @@ const DATA = {
   characterArcsDB: [...characterArcsDB, ...t2CharacterArcsDB, ...t3CharacterArcsDB],
 
   heroJourneyDB: [...heroJourneyDB, ...gandalfHeroJourneyDB, ...t2HeroJourneyDB, ...t3HeroJourneyDB],
+
+  customTypesDB,
+  customEntitiesDB,
+
+  // Relations explicites (Niveau 3) — illustrent la table entity_relations.
+  relationsDB: [
+    { id: 'rel_lotr_frodo_ring',   sourceId: 'char_frodo',   sourceType: 'character', targetId: 'obj_one_ring', targetType: 'object',    label: 'porte',   directed: true },
+    { id: 'rel_lotr_aragorn_and',  sourceId: 'char_aragorn', sourceType: 'character', targetId: 'obj_anduril',  targetType: 'object',    label: 'manie',   directed: true },
+    { id: 'rel_lotr_gandalf_narya',sourceId: 'char_gandalf', sourceType: 'character', targetId: 'obj_narya',    targetType: 'object',    label: 'porte',   directed: true },
+    { id: 'rel_lotr_sam_frodo',    sourceId: 'char_sam',     sourceType: 'character', targetId: 'char_frodo',   targetType: 'character', label: 'ami de',  directed: false },
+    { id: 'rel_lotr_aragorn_quenya', sourceId: 'char_aragorn', sourceType: 'character', targetId: 'cent_quenya', targetType: 'custom',   label: 'parle',   directed: true },
+  ],
 };
 
 export async function seedLotr(db, { onProgress, lang = 'fr' } = {}) {

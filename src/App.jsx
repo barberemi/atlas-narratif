@@ -9,12 +9,14 @@ import Icon from './components/ui/Icon';
 const GuidedTour   = lazy(() => import('./components/tour/GuidedTour'));
 const WelcomeModal = lazy(() => import('./components/tour/WelcomeModal'));
 import { shouldShowWelcome } from './components/tour/tourUtils';
-const TourPageButton = lazy(() => import('./components/tour/TourPageButton'));
 const CookieConsent = lazy(() => import('./components/ui/CookieConsent'));
 import { loadCrisp } from './utils/crisp';
 import { useLotrReseed } from './hooks/useLotrReseed';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
 const LoreBrowser          = lazy(() => import('./components/lore/LoreBrowser'));
+const CustomEntityBrowser  = lazy(() => import('./components/custom/CustomEntityBrowser'));
+const ChatPanel            = lazy(() => import('./components/chat/ChatPanel'));
+const VaultImporter        = lazy(() => import('./components/import/VaultImporter'));
 const LoginPage            = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage         = lazy(() => import('./pages/auth/RegisterPage'));
 const VerifyEmailPage      = lazy(() => import('./pages/auth/VerifyEmailPage'));
@@ -494,6 +496,20 @@ function HomePage() {
                   <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.analyzeDesc')}</p>
                 </div>
                 <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-gold whitespace-nowrap md:justify-self-end md:self-center">{t('home.analyzeAction')}</span>
+              </button>
+
+              {/* Choix importer un vault Obsidian */}
+              <button
+                onClick={() => navigate('/import/obsidian')}
+                className="group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
+                style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+              >
+                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>03</div>
+                <div>
+                  <h3 className="font-serif text-xl font-semibold text-atlas-text leading-snug transition-colors group-hover:text-atlas-green">{t('home.obsidianTitle')}</h3>
+                  <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.obsidianDesc')}</p>
+                </div>
+                <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] whitespace-nowrap md:justify-self-end md:self-center" style={{ color: '#a78bfa' }}>{t('home.obsidianAction')}</span>
               </button>
             </div>
 
@@ -977,8 +993,11 @@ function AppLayout() {
         <Routes>
           <Route path="/"                 element={<HomePage />} />
           <Route path="/demo"         element={<DemoRoute />} />
+          <Route path="/import/obsidian" element={<VaultImporter />} />
           <Route path="/map"          element={<RequireProject><MapRoute /></RequireProject>} />
           <Route path="/lore"         element={<RequireProject><LoreRoute /></RequireProject>} />
+          <Route path="/custom"       element={<RequireProject><CustomEntityBrowser /></RequireProject>} />
+          <Route path="/chat"         element={<RequireProject><ChatPanel /></RequireProject>} />
           <Route path="/relations"    element={<RequireProject><GraphRoute /></RequireProject>} />
           <Route path="/timeline"     element={<RequireProject><TimelineBrowser /></RequireProject>} />
           <Route path="/dashboard"    element={<RequireProject><DashboardRoute /></RequireProject>} />
@@ -998,7 +1017,6 @@ function AppLayout() {
       <Footer onCookieClick={openCookieBanner} />
       {searchOpen && <Suspense fallback={null}><GlobalSearch onClose={() => setSearchOpen(false)} /></Suspense>}
       <Suspense fallback={null}><GuidedTour /></Suspense>
-      <Suspense fallback={null}><TourPageButton /></Suspense>
       <Suspense fallback={null}><CookieConsent hasAuthBar={showAuthBar} onReady={setOpenCookieBanner} /></Suspense>
       {showWelcome && <Suspense fallback={null}><WelcomeModal projectId={projectId} onClose={() => setShowWelcome(false)} /></Suspense>}
       {showAuthBar && (
