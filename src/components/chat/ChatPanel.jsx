@@ -9,6 +9,7 @@ import { useStoreLoader } from '../../hooks/useStoreLoader';
 import { useProject } from '../../db/ProjectContext';
 import { answerQuery } from '../../chat/router';
 import { askProject } from '../../api/client';
+import { toast } from '../../lib/toast';
 import { entityHrefById } from '../../utils/entityUtils';
 import Icon from '../ui/Icon';
 import AnswerText from './AnswerText';
@@ -65,7 +66,7 @@ export default function ChatPanel() {
   const [navOpen, setNavOpen] = useState(false);
   const listRef = useRef(null);
 
-  useEffect(() => { listRef.current?.scrollTo(0, listRef.current.scrollHeight); }, [messages]);
+  useEffect(() => { listRef.current?.scrollTo(0, listRef.current.scrollHeight); }, [messages, busy]);
 
   const send = async () => {
     const question = input.trim();
@@ -79,7 +80,10 @@ export default function ChatPanel() {
         const res = await askProject(question, projectId);
         addMessage({ role: 'bot', text: res.answer, meta: `${res.provider}${res.context?.length ? ` · ${res.context.length} source(s)` : ''}`, sources: res.context ?? [] });
       } catch (e) {
-        addMessage({ role: 'bot', text: String(e.message ?? e) });
+        // Message localisé et lisible plutôt que l'erreur brute (« Gateway Timeout »).
+        const msg = e?.code === 'TIMEOUT' ? t('chat.errorTimeout') : t('chat.error');
+        toast.error(msg);
+        addMessage({ role: 'bot', text: msg, error: true });
       } finally {
         setBusy(false);
       }
@@ -159,7 +163,9 @@ export default function ChatPanel() {
                 className="max-w-[80%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed"
                 style={m.role === 'user'
                   ? { backgroundColor: `${ACCENT}22`, color: '#e2e8f0', border: `1px solid ${ACCENT}44` }
-                  : { backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  : m.error
+                    ? { backgroundColor: 'rgba(239,68,68,0.10)', color: '#fecaca', border: '1px solid rgba(239,68,68,0.35)' }
+                    : { backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                 data-testid={m.role === 'bot' ? 'chat-answer' : undefined}
               >
                 {m.role === 'bot' ? <AnswerText text={m.text} /> : m.text}
@@ -176,7 +182,7 @@ export default function ChatPanel() {
                   </div>
                 )}
                 {m.meta && <span className="block mt-1 text-[10px] text-atlas-mute uppercase tracking-wider">{m.meta}</span>}
-                {m.role === 'bot' && (
+                {m.role === 'bot' && !m.error && (
                   <button onClick={() => copyAnswer(m.text, i)} data-testid="chat-copy"
                     title={t('chat.copy')} className="mt-1 flex items-center gap-1 text-[10px] text-atlas-mute hover:text-atlas-soft transition-colors">
                     <Icon name={copiedIdx === i ? 'checkmark' : 'doc'} size={11} /> {copiedIdx === i ? t('chat.copied') : t('chat.copy')}
@@ -185,6 +191,23 @@ export default function ChatPanel() {
               </div>
             </div>
           ))}
+          {busy && (
+            <div className="flex justify-start" data-testid="chat-waiting">
+              <div className="max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed"
+                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <span className="flex items-center gap-2">
+                  <span className="flex gap-1" aria-hidden="true">
+                    {[0, 1, 2].map(i => (
+                      <span key={i} className="w-1.5 h-1.5 rounded-full animate-pulse"
+                        style={{ backgroundColor: ACCENT, animationDelay: `${i * 0.18}s` }} />
+                    ))}
+                  </span>
+                  <span className="text-atlas-soft">{t('chat.waiting')}</span>
+                </span>
+                <span className="block mt-1 text-[10px] text-atlas-mute">{t('chat.waitingHint')}</span>
+              </div>
+            </div>
+          )}
         </main>
 
         <div data-tour="chat-input" className="flex-shrink-0 border-t border-atlas-line p-4 flex gap-2">
