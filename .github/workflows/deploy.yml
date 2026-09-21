@@ -29,23 +29,12 @@ jobs:
               pg_dump --clean --if-exists -U atlas atlas \
               | gzip > backups/atlas_$(date +%Y%m%d_%H%M%S)_pre-deploy.sql.gz
 
-            echo "── Pull du code ──"
-            git pull origin main
-
-            echo "── Build des images (services toujours en ligne) ──"
-            docker compose -f docker-compose.prod.yml --env-file .env.prod build
-
-            TAG=$(date +%s)
-            docker tag atlas-narratif-api:latest atlas-narratif-api:$TAG
-            docker tag atlas-narratif-frontend:latest atlas-narratif-frontend:$TAG
-
-            echo "── Rolling update API ──"
-            docker service update --image atlas-narratif-api:$TAG --detach=false atlas_api
-
-            echo "── Rolling update Frontend ──"
-            docker service update --image atlas-narratif-frontend:$TAG --detach=false atlas_frontend
-
-            echo "── Nettoyage images orphelines ──"
-            docker image prune -f
+            # Déploiement via `make prod-deploy` (source unique de vérité) :
+            # git pull + build + `docker stack deploy` → applique TOUTE la config de
+            # docker-compose.prod.yml (labels Traefik/basicauth, timeouts, replicas,
+            # env) EN PLUS des images. Un simple `service update --image` (ancien
+            # comportement) laissait la config du compose non appliquée.
+            echo "── Déploiement (pull + build + stack deploy) ──"
+            make prod-deploy
 
             echo "✓ Déploiement terminé"
