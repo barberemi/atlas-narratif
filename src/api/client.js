@@ -44,7 +44,14 @@ export function ensureDeviceRegistered() {
 
 // ── Fetch helper ──────────────────────────────────────────────────────────────
 
-async function api(method, path, body) {
+/**
+ * @param {object} [options]
+ * @param {boolean} [options.silent]   n'affiche pas le toast d'erreur global
+ *   (l'appelant gère lui-même le feedback — ex. le chat de requête).
+ * @param {number}  [options.timeoutMs] annule la requête après ce délai ;
+ *   l'erreur levée porte alors `code: 'TIMEOUT'`.
+ */
+async function api(method, path, body, { silent = false, timeoutMs } = {}) {
   if (path.includes('[object Object]')) {
     const err = new Error(`[API] path contains invalid projectId: ${path}`);
     console.error(err.message, err.stack);
@@ -64,7 +71,27 @@ async function api(method, path, body) {
   };
   if (body !== undefined) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${BASE}${path}`, opts);
+  let timer;
+  if (timeoutMs) {
+    const controller = new AbortController();
+    opts.signal = controller.signal;
+    timer = setTimeout(() => controller.abort(), timeoutMs);
+  }
+
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, opts);
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      const e = new Error('timeout');
+      e.code = 'TIMEOUT';
+      throw e;
+    }
+    throw err;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+
   if (!res.ok) {
     const payload = await res.json().catch(() => ({ error: res.statusText }));
     const message = payload.error ?? `HTTP ${res.status}`;
@@ -72,7 +99,7 @@ async function api(method, path, body) {
       // Token expiré ou invalide → forcer re-registration au prochain appel
       localStorage.removeItem('atlas_device_token');
       _registerPromise = null;
-    } else {
+    } else if (!silent) {
       import('./toast-bridge.js').then(m => m.showError(message));
     }
     throw new Error(message);
@@ -82,10 +109,10 @@ async function api(method, path, body) {
   return res.json();
 }
 
-const get  = (path)        => api('GET',    path);
-const post = (path, body)  => api('POST',   path, body);
-const put  = (path, body)  => api('PUT',    path, body);
-const del  = (path)        => api('DELETE', path);
+const get  = (path)               => api('GET',    path);
+const post = (path, body, opts)   => api('POST',   path, body, opts);
+const put  = (path, body)         => api('PUT',    path, body);
+const del  = (path)               => api('DELETE', path);
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 
@@ -315,7 +342,10 @@ export async function restoreRelation(snapshot, projectId) {
 // ── Chat de requête (niveau 2 — RAG serveur, provider mock par défaut) ────────
 
 export async function askProject(question, projectId) {
-  return post(`/api/projects/${projectId}/ask`, { question });
+  // Le chat gère son propre feedback d'erreur (bulle + toast localisés) → silent.
+  // timeoutMs = filet de sécurité au-dessus de la chaîne de proxys (~95s) pour ne
+  // jamais laisser l'UI tourner indéfiniment si le réseau reste bloqué.
+  return post(`/api/projects/${projectId}/ask`, { question }, { silent: true, timeoutMs: 100_000 });
 }
 
 // ── Groupes ───────────────────────────────────────────────────────────────────

@@ -18,9 +18,14 @@ services:
       - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-      # Timeouts — fail fast pendant les rolling updates
+      # Timeouts. dialTimeout=2s = le vrai fail-fast des rolling updates (backend
+      # injoignable → 502 immédiat). responseHeaderTimeout doit en revanche couvrir
+      # la requête la plus lente exposée : POST /api/…/ask (chat RAG niveau 2) fait
+      # un appel LLM synchrone (LLM_TIMEOUT_MS=60s + embeddings 30s côté serveur).
+      # À 5s, toute vraie recherche approfondie renvoyait un 504 Gateway Timeout.
+      # Doit rester ≥ au read_timeout /api/ de nginx (95s) — cf. nginx.prod.conf.
       - --serversTransport.forwardingTimeouts.dialTimeout=2s
-      - --serversTransport.forwardingTimeouts.responseHeaderTimeout=5s
+      - --serversTransport.forwardingTimeouts.responseHeaderTimeout=95s
       # Dashboard (exposé via labels, pas sur :8080)
       - --api.dashboard=true
       - --api.insecure=false
