@@ -54,6 +54,32 @@ describe('OpenAICompatibleProvider', () => {
     assert.equal(r.degraded, true);
     assert.equal(r.provider, 'mock');
   });
+
+  it('inclut reasoning_effort quand LLM_REASONING_EFFORT est défini', async () => {
+    process.env.LLM_BASE_URL = 'https://api.example.com';
+    process.env.LLM_API_KEY = 'k';
+    process.env.LLM_REASONING_EFFORT = 'none';
+    let sentBody = null;
+    globalThis.fetch = async (url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ choices: [{ message: { content: 'ok [a]' } }] }) };
+    };
+    await new OpenAICompatibleProvider().ask({ question: 'q', context: [{ id: 'a', name: 'A', text: 't' }] });
+    assert.equal(sentBody.reasoning_effort, 'none');
+  });
+
+  it('n\'envoie PAS reasoning_effort si l\'env est absente (endpoints qui rejettent le champ)', async () => {
+    process.env.LLM_BASE_URL = 'https://api.example.com';
+    process.env.LLM_API_KEY = 'k';
+    delete process.env.LLM_REASONING_EFFORT;
+    let sentBody = null;
+    globalThis.fetch = async (url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ choices: [{ message: { content: 'ok [a]' } }] }) };
+    };
+    await new OpenAICompatibleProvider().ask({ question: 'q', context: [{ id: 'a', name: 'A', text: 't' }] });
+    assert.ok(!('reasoning_effort' in sentBody));
+  });
 });
 
 describe('getProvider', () => {

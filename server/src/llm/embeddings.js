@@ -57,6 +57,12 @@ class OllamaEmbeddingsProvider {
     this.baseUrl = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
     this.model   = process.env.OLLAMA_EMBED_MODEL || 'paraphrase-multilingual';
     this.timeout = Number(process.env.EMBEDDINGS_TIMEOUT_MS) || 30_000;
+    // Durée pendant laquelle Ollama garde le modèle chargé en RAM après un appel.
+    // Sans ça, le modèle est déchargé après ~5 min (défaut Ollama) → cold-start
+    // (rechargement disque→RAM sur CPU) coûteux à chaque nouvelle vague de requêtes.
+    // '30m' garde le chat réactif sans épingler la RAM en permanence ; '-1' = jamais
+    // décharger ; '0' = décharger aussitôt (comportement Ollama par défaut).
+    this.keepAlive = process.env.OLLAMA_KEEP_ALIVE || '30m';
     this.prefixes = defaultPrefixes(this.model);
   }
   get name() { return 'ollama'; }
@@ -77,7 +83,7 @@ class OllamaEmbeddingsProvider {
       const res = await fetch(`${this.baseUrl}/api/embed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: this.model, input }),
+        body: JSON.stringify({ model: this.model, input, keep_alive: this.keepAlive }),
         signal: controller.signal,
       });
       if (!res.ok) {

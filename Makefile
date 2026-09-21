@@ -88,40 +88,34 @@ prod-up: ## Build + déployer la stack Swarm
 	$(DC_PROD) build
 	@echo "🚀 Déploiement Swarm…"
 	@set -a; . ./.env.prod; set +a; \
-	docker stack deploy -c docker-compose.prod.yml $(STACK)
+	docker stack deploy --resolve-image=never -c docker-compose.prod.yml $(STACK)
 	@echo "✅ Stack déployée"
 
 prod-down: ## Supprimer la stack Swarm
 	@echo "🛑 Suppression de la stack…"
 	docker stack rm $(STACK)
 
-prod-deploy: ## Déploiement zero downtime (pull + build + rolling update)
+prod-deploy: ## Déploiement zero downtime (pull + build + stack deploy : config + images)
 	@echo "📥 Pull du code…"
 	git pull origin main
 	@TAG=$$(date +%s); \
 	echo "🔨 Build des images (tag: $$TAG)…"; \
-	$(DC_PROD) build; \
-	docker tag atlas-narratif-api:latest atlas-narratif-api:$$TAG; \
-	docker tag atlas-narratif-frontend:latest atlas-narratif-frontend:$$TAG; \
-	echo "🚀 Rolling update API…"; \
-	docker service update --image atlas-narratif-api:$$TAG --detach=false $(STACK)_api; \
-	echo "🚀 Rolling update Frontend…"; \
-	docker service update --image atlas-narratif-frontend:$$TAG --detach=false $(STACK)_frontend
-	@echo "🧹 Nettoyage images orphelines…"
+	IMAGE_TAG=$$TAG $(DC_PROD) build; \
+	echo "🚀 Redéploiement de la stack (config docker-compose.prod.yml + images)…"; \
+	set -a; . ./.env.prod; set +a; \
+	IMAGE_TAG=$$TAG docker stack deploy --resolve-image=never --detach=false -c docker-compose.prod.yml $(STACK); \
+	echo "🧹 Nettoyage images orphelines…"; \
 	docker image prune -f
 	@echo "✅ Déploiement terminé"
 
-prod-swap: ## Swap rapide (sans git pull) — pour modifs directes sur le VPS
+prod-swap: ## Swap rapide (sans git pull) — build + stack deploy (config + images) sur le VPS
 	@TAG=$$(date +%s); \
 	echo "🔨 Build des images (tag: $$TAG)…"; \
-	$(DC_PROD) build; \
-	docker tag atlas-narratif-api:latest atlas-narratif-api:$$TAG; \
-	docker tag atlas-narratif-frontend:latest atlas-narratif-frontend:$$TAG; \
-	echo "🚀 Rolling update API…"; \
-	docker service update --image atlas-narratif-api:$$TAG --detach=false $(STACK)_api; \
-	echo "🚀 Rolling update Frontend…"; \
-	docker service update --image atlas-narratif-frontend:$$TAG --detach=false $(STACK)_frontend
-	@echo "✅ Swap terminé"
+	IMAGE_TAG=$$TAG $(DC_PROD) build; \
+	echo "🚀 Redéploiement de la stack (config docker-compose.prod.yml + images)…"; \
+	set -a; . ./.env.prod; set +a; \
+	IMAGE_TAG=$$TAG docker stack deploy --resolve-image=never --detach=false -c docker-compose.prod.yml $(STACK); \
+	echo "✅ Swap terminé"
 
 prod-ps: ## État des services
 	docker stack services $(STACK)

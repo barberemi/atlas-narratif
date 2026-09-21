@@ -44,6 +44,12 @@ class OpenAICompatibleProvider {
     this.model   = process.env.LLM_MODEL || 'qwen/qwen3.8-27b';
     this.timeout = Number(process.env.LLM_TIMEOUT_MS) || 60_000;
     this.maxTokens = Number(process.env.LLM_MAX_TOKENS) || 512;
+    // Modèles « à raisonnement » (Qwen3, DeepSeek-R1…) : le thinking est activé par
+    // défaut → une longue chaîne <think> avant la réponse, très coûteuse en tokens
+    // et en temps. Envoyé UNIQUEMENT si LLM_REASONING_EFFORT est défini, pour ne pas
+    // faire échouer (400) les endpoints qui ignorent ce champ. 'none' coupe le
+    // thinking sur Groq/Qwen3 ; autres valeurs possibles : 'low' | 'medium' | 'high'.
+    this.reasoningEffort = process.env.LLM_REASONING_EFFORT || '';
     this._mock = new MockProvider();
   }
   get name() { return 'hosted'; }
@@ -58,13 +64,16 @@ class OpenAICompatibleProvider {
       { role: 'user', content: `CONTEXTE :\n${ctx || '(vide)'}\n\nQUESTION : ${question}` },
     ];
 
+    const body = { model: this.model, messages, temperature: 0.2, max_tokens: this.maxTokens };
+    if (this.reasoningEffort) body.reasoning_effort = this.reasoningEffort;
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeout);
     try {
       const res = await fetch(`${this.baseUrl}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiKey}` },
-        body: JSON.stringify({ model: this.model, messages, temperature: 0.2, max_tokens: this.maxTokens }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
       if (!res.ok) {

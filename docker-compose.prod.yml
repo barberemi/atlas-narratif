@@ -58,8 +58,12 @@ services:
         condition: any
 
   # ── Frontend React (nginx) + proxy /api/ /auth/ → api ──────────────────────
+  # IMAGE_TAG : injecté par le Makefile (make prod-deploy / prod-swap) avec un tag
+  # horodaté, pour forcer Swarm à détecter le nouveau build. `docker stack deploy`
+  # réconcilie ALORS toute la config du fichier (timeouts Traefik, labels, env)
+  # en même temps que les images. Défaut `latest` = build/deploy manuel local.
   frontend:
-    image: atlas-narratif-frontend:latest
+    image: atlas-narratif-frontend:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -110,7 +114,7 @@ services:
 
   # ── API Hono ────────────────────────────────────────────────────────────────
   api:
-    image: atlas-narratif-api:latest
+    image: atlas-narratif-api:${IMAGE_TAG:-latest}
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -134,11 +138,15 @@ services:
       LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-}
       LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-}
       LLM_RATE_LIMIT_PER_MIN: ${LLM_RATE_LIMIT_PER_MIN:-}
+      # 'none' coupe le thinking des modèles raisonnants (Qwen3…) → gros gain latence
+      LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT:-}
       # ── Retrieval sémantique (embeddings) — 'none' = lexical (défaut) ──
       EMBEDDINGS_PROVIDER: ${EMBEDDINGS_PROVIDER:-none}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-}
       EMBEDDINGS_TIMEOUT_MS: ${EMBEDDINGS_TIMEOUT_MS:-}
+      # Garde le modèle d'embeddings chaud en RAM (évite les cold-starts CPU)
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 10s
@@ -146,18 +154,23 @@ services:
       retries: 3
       start_period: 15s
     deploy:
-      # ⚠ Avec 2 réplicas, les états EN MÉMOIRE du chat sont PAR PROCESS (pas
-      # partagés) : rate-limit (→ ~2× la limite/min effective), cache de réponses
-      # et cache d'embeddings (dédoublés). Acceptable à petite échelle. Pour un
-      # comportement strict, passer à replicas: 1 OU externaliser vers Redis
-      # (cf. TODO(multi-instance) dans server/src/routes/ask.js).
-      replicas: 2
+      # replicas: 1 — un seul process API ⇒ un seul cache EN MÉMOIRE partagé :
+      #   • cache d'embeddings payé UNE fois (le cold-start Ollama est le vrai goulot
+      #     de latence du chat — cf. logs [ask] : retrieval ≫ llm) ;
+      #   • rate-limit et cache de réponses corrects (plus de dédoublement ~2×).
+      # Déploiement SANS coupure malgré replicas:1 grâce à order: start-first : Swarm
+      # démarre le nouveau conteneur et attend qu'il soit healthy AVANT de stopper
+      # l'ancien (bref recouvrement → ~2× 512M pendant le swap uniquement).
+      # Seule perte vs replicas:2 : la redondance sur crash runtime (restart_policy
+      # relance en quelques secondes). Acceptable à petite échelle ; pour scaler,
+      # externaliser l'état vers Redis (cf. TODO(multi-instance) dans routes/ask.js).
+      replicas: 1
       update_config:
-        order: stop-first
+        order: start-first
         parallelism: 1
         delay: 5s
       rollback_config:
-        order: stop-first
+        order: start-first
       resources:
         limits:
           memory: 512M
