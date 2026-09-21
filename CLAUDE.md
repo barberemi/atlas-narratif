@@ -216,7 +216,7 @@ Ne pas mettre à jour la doc si le changement est interne à un composant sans i
 | Fichier `.env.example` | Couvre | Variables |
 |------------------------|-------|-----------|
 | `.env.example` | Client Vite (racine) | `VITE_*`, `VITE_CRISP_WEBSITE_ID` |
-| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM`, `ATLAS_ENCRYPTION_KEY`, `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_MS`, `LLM_MAX_TOKENS`, `LLM_RATE_LIMIT_PER_MIN`, `EMBEDDINGS_PROVIDER`, `OLLAMA_BASE_URL`, `OLLAMA_EMBED_MODEL`, `EMBEDDINGS_TIMEOUT_MS` |
+| `server/.env.example` | Serveur Express (dev) | `DATABASE_URL`, `PORT`, `FRONTEND_URL`, `BETTER_AUTH_*`, `GOOGLE_*`, `RESEND_*`, `EMAIL_FROM`, `ATLAS_ENCRYPTION_KEY`, `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_MS`, `LLM_MAX_TOKENS`, `LLM_RATE_LIMIT_PER_MIN`, `LLM_REASONING_EFFORT`, `EMBEDDINGS_PROVIDER`, `OLLAMA_BASE_URL`, `OLLAMA_EMBED_MODEL`, `EMBEDDINGS_TIMEOUT_MS`, `OLLAMA_KEEP_ALIVE` |
 | `.env.prod.example` | Docker Compose (prod) | Toutes les variables serveur + `DOMAIN`, `ACME_EMAIL`, `POSTGRES_PASSWORD`, `ATLAS_ENCRYPTION_KEY` |
 
 **Quand tu ajoutes une variable d'environnement :**

@@ -135,11 +135,13 @@ async function semanticRank(projectId, question, passages, topK) {
 
   // Deux appels : la question (rôle 'query') et les passages en cache-miss
   // (rôle 'document') — les préfixes de tâche diffèrent (cf. embeddings.js).
-  const [queryVec] = await provider.embed([question], 'query');
-  if (missing.length) {
-    const docVecs = await provider.embed(missing.map(passageText), 'document');
-    missing.forEach((p, i) => embCacheSet(keyOf(hashById.get(p.id)), docVecs[i]));
-  }
+  // Lancés EN PARALLÈLE : indépendants, on économise un aller-retour réseau
+  // (≈ la latence du plus lent au lieu de la somme des deux).
+  const [[queryVec], docVecs] = await Promise.all([
+    provider.embed([question], 'query'),
+    missing.length ? provider.embed(missing.map(passageText), 'document') : Promise.resolve([]),
+  ]);
+  missing.forEach((p, i) => embCacheSet(keyOf(hashById.get(p.id)), docVecs[i]));
 
   const vecById = new Map();
   for (const p of passages) vecById.set(p.id, _embCache.get(keyOf(hashById.get(p.id))));
@@ -156,7 +158,9 @@ export async function answerAsk({ projectId, question, topK = 5 }) {
   const cached = cacheGet(cacheKey);
   if (cached) return { ...cached, cached: true };
 
+  const t0 = Date.now();
   const passages = await buildContext(projectId);
+  const tCtx = Date.now();
 
   // Retrieval sémantique (embeddings) si activé, sinon/en cas d'échec → lexical.
   let ranked = null;
@@ -168,9 +172,16 @@ export async function answerAsk({ projectId, question, topK = 5 }) {
     ranked = null; // embeddings indisponibles → repli lexical, jamais de crash
   }
   if (!ranked) ranked = keywordRank(passages, question, topK);
+  const tRetrieval = Date.now();
 
   const provider = getProvider();
   const { answer, citations, degraded } = await provider.ask({ question, context: ranked });
+  const tLlm = Date.now();
+
+  // Répartition du temps → indispensable pour savoir quel poste optimiser
+  // (contexte DB / retrieval embeddings / appel LLM). Une ligne par requête.
+  console.log(`[ask] ${retrieval} · ${passages.length} passages · ctx=${tCtx - t0}ms retrieval=${tRetrieval - tCtx}ms llm=${tLlm - tRetrieval}ms total=${tLlm - t0}ms · provider=${provider.name}${degraded ? ' (degraded)' : ''}`);
+
   const result = { answer, citations, provider: provider.name, retrieval, degraded: degraded ?? false, context: ranked.map(p => ({ id: p.id, name: p.name, type: p.type })) };
   cacheSet(cacheKey, result);
   return result;

@@ -45,10 +45,35 @@ describe('getEmbeddingsProvider', () => {
 describe('OllamaEmbeddingsProvider.embed', () => {
   const savedFetch = globalThis.fetch;
   const savedModel = process.env.OLLAMA_EMBED_MODEL;
+  const savedKeepAlive = process.env.OLLAMA_KEEP_ALIVE;
   afterEach(() => {
     globalThis.fetch = savedFetch;
     if (savedModel === undefined) delete process.env.OLLAMA_EMBED_MODEL;
     else process.env.OLLAMA_EMBED_MODEL = savedModel;
+    if (savedKeepAlive === undefined) delete process.env.OLLAMA_KEEP_ALIVE;
+    else process.env.OLLAMA_KEEP_ALIVE = savedKeepAlive;
+  });
+
+  it('envoie keep_alive (défaut 30m) pour garder le modèle chaud', async () => {
+    let sentBody = null;
+    globalThis.fetch = async (url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ embeddings: sentBody.input.map(() => [1]) }) };
+    };
+    delete process.env.OLLAMA_KEEP_ALIVE;
+    await new OllamaEmbeddingsProvider().embed(['x']);
+    assert.equal(sentBody.keep_alive, '30m');
+  });
+
+  it('respecte OLLAMA_KEEP_ALIVE', async () => {
+    let sentBody = null;
+    globalThis.fetch = async (url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ embeddings: sentBody.input.map(() => [1]) }) };
+    };
+    process.env.OLLAMA_KEEP_ALIVE = '-1';
+    await new OllamaEmbeddingsProvider().embed(['x']);
+    assert.equal(sentBody.keep_alive, '-1');
   });
 
   it('poste input=array et retourne un vecteur par entrée', async () => {
