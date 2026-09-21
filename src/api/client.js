@@ -348,6 +348,15 @@ export async function askProject(question, projectId) {
   return post(`/api/projects/${projectId}/ask`, { question }, { silent: true, timeoutMs: 100_000 });
 }
 
+/**
+ * Pré-chauffe le cache d'embeddings du projet côté serveur (à l'ouverture du chat
+ * en mode approfondi), pour que la 1re question ne paie pas le cold-start Ollama.
+ * Fire-and-forget : jamais d'erreur remontée à l'UI (best-effort, silencieux).
+ */
+export async function warmProject(projectId) {
+  return post(`/api/projects/${projectId}/ask/warm`, {}, { silent: true, timeoutMs: 100_000 }).catch(() => null);
+}
+
 // ── Groupes ───────────────────────────────────────────────────────────────────
 
 export async function getGroups(projectId) {

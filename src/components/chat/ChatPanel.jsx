@@ -8,7 +8,7 @@ import { useChatStore } from '../../stores/useChatStore';
 import { useStoreLoader } from '../../hooks/useStoreLoader';
 import { useProject } from '../../db/ProjectContext';
 import { answerQuery } from '../../chat/router';
-import { askProject } from '../../api/client';
+import { askProject, warmProject } from '../../api/client';
 import { toast } from '../../lib/toast';
 import { entityHrefById } from '../../utils/entityUtils';
 import Icon from '../ui/Icon';
@@ -67,6 +67,11 @@ export default function ChatPanel() {
   const listRef = useRef(null);
 
   useEffect(() => { listRef.current?.scrollTo(0, listRef.current.scrollHeight); }, [messages, busy]);
+
+  // Dès que l'utilisateur active la recherche approfondie, on pré-chauffe le cache
+  // d'embeddings côté serveur (fire-and-forget) : pendant qu'il rédige sa question,
+  // le serveur calcule les vecteurs → la 1re requête évite le cold-start Ollama.
+  useEffect(() => { if (deep && projectId) warmProject(projectId); }, [deep, projectId]);
 
   const send = async () => {
     const question = input.trim();
