@@ -1177,8 +1177,8 @@
     "termsPageTitle": "Conditions générales d'utilisation"
   },
   "cookie": {
-    "title": "Je suis un cookie !",
-    "message": "On m'utilise avec mes copains pour le chat d'assistance et l'amélioration du service, mais on voulait vous demander avant.",
+    "title": "Un cookie, et c'est tout.",
+    "message": "Il sert au chat d'assistance. Aucun traceur publicitaire, aucun entraînement d'IA sur ton texte.",
     "accept": "OK pour moi",
     "refuse": "Non merci",
     "privacyLink": "En savoir plus",

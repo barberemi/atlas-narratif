@@ -1191,8 +1191,8 @@
     "termsPageTitle": "服务条款与条件"
   },
   "cookie": {
-    "title": "我是一个Cookie！",
-    "message": "我和我的小伙伴们被用于在线客服和改善服务体验，但想先征求您的同意。",
+    "title": "只有一个 Cookie。",
+    "message": "它仅用于在线客服。没有广告追踪，不会用您的文本训练 AI。",
     "accept": "没问题",
     "refuse": "不用了",
     "privacyLink": "了解更多",

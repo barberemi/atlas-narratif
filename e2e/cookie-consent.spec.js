@@ -51,6 +51,30 @@ test.describe('Cookie Consent Banner', () => {
     expect(consent.accepted).toBe(true);
   });
 
+  // Régression : le bandeau était une carte verticale (~500 px de haut) ancrée
+  // en bas ; sur mobile elle recouvrait les deux CTA du hero de la home.
+  test('compact banner does not cover the home CTAs on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.evaluate(() => localStorage.removeItem('atlas_cookie_consent'));
+    await page.reload();
+
+    await expect(banner(page)).toHaveCSS('opacity', '1', { timeout: 5000 });
+    const bannerBox = await banner(page).boundingBox();
+
+    for (const name of [/start for free/i, /explore the demo/i]) {
+      const cta = page.getByRole('button', { name });
+      await expect(cta).toBeVisible();
+      const box = await cta.boundingBox();
+      const overlaps =
+        box.x < bannerBox.x + bannerBox.width &&
+        box.x + box.width > bannerBox.x &&
+        box.y < bannerBox.y + bannerBox.height &&
+        box.y + box.height > bannerBox.y;
+      expect(overlaps, `le bandeau cookies recouvre le CTA ${name}`).toBe(false);
+    }
+  });
+
   test('banner hidden when consent already given', async ({ page }) => {
     await page.evaluate(() =>
       localStorage.setItem('atlas_cookie_consent', JSON.stringify({ accepted: true, timestamp: Date.now() }))

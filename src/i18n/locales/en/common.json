@@ -1195,8 +1195,8 @@
     "termsPageTitle": "Terms and Conditions"
   },
   "cookie": {
-    "title": "I'm a cookie!",
-    "message": "My friends and I are used for the support chat and to improve the service, but we wanted to ask you first.",
+    "title": "One cookie, that's all.",
+    "message": "It powers the support chat. No advertising trackers, no AI training on your text.",
     "accept": "Sounds good",
     "refuse": "No thanks",
     "privacyLink": "Learn more",
