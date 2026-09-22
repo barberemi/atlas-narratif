@@ -15,7 +15,7 @@ import { encrypt, createProjectDek } from '../crypto.js';
 import { requireIdentity, signDeviceId } from '../middleware/requireIdentity.js';
 import { requireProjectOwner } from '../middleware/requireProjectOwner.js';
 import * as v from '../validators.js';
-import { answerAsk, checkRateLimit } from './ask.js';
+import { answerAsk, warmupProject, checkRateLimit } from './ask.js';
 
 const api = new Hono();
 
@@ -467,6 +467,15 @@ api.post('/projects/:projectId/ask', wrap(async (c) => {
     return c.json({ error: 'Trop de requêtes — réessayez dans une minute.' }, 429);
   }
   const result = await answerAsk({ projectId, question: body.question });
+  return c.json(result);
+}));
+
+// Pré-chauffe le cache d'embeddings du projet (déclenché à l'ouverture du chat en
+// mode approfondi) → la 1re vraie question ne paie pas le cold-start Ollama.
+// Aucun appel LLM, idempotent, non bloquant côté client (fire-and-forget).
+api.post('/projects/:projectId/ask/warm', wrap(async (c) => {
+  const { projectId } = c.req.param();
+  const result = await warmupProject(projectId).catch(() => ({ enabled: false, warmed: 0 }));
   return c.json(result);
 }));
 

@@ -119,12 +119,15 @@ export function rankByVectors(passages, queryVec, vecById, topK) {
  * retombe sur le lexical). Un seul appel embed() par requête (question + passages
  * en cache-miss), l'ordre des vecteurs étant préservé.
  */
-async function semanticRank(projectId, question, passages, topK) {
-  const provider = getEmbeddingsProvider();
-  if (!provider.enabled || passages.length === 0) return null;
+/**
+ * Garantit que TOUS les passages ont leur vecteur en cache : n'embedde (rôle
+ * 'document') que les passages absents du cache. Idempotent → un 2e appel avec le
+ * même contenu ne déclenche aucun appel réseau. Partagé par semanticRank (requête
+ * utilisateur) et warmupProject (pré-chauffe). Retourne de quoi relire le cache.
+ */
+async function ensurePassageVectors(projectId, passages, provider) {
   const model = provider.model ?? provider.name;
   const keyOf = (h) => `${projectId}::${model}::${h}`;
-
   const hashById = new Map();
   const missing = [];
   for (const p of passages) {
@@ -132,20 +135,43 @@ async function semanticRank(projectId, question, passages, topK) {
     hashById.set(p.id, h);
     if (!_embCache.has(keyOf(h))) missing.push(p);
   }
+  if (missing.length) {
+    const docVecs = await provider.embed(missing.map(passageText), 'document');
+    missing.forEach((p, i) => embCacheSet(keyOf(hashById.get(p.id)), docVecs[i]));
+  }
+  return { keyOf, hashById, warmed: missing.length };
+}
 
-  // Deux appels : la question (rôle 'query') et les passages en cache-miss
-  // (rôle 'document') — les préfixes de tâche diffèrent (cf. embeddings.js).
-  // Lancés EN PARALLÈLE : indépendants, on économise un aller-retour réseau
-  // (≈ la latence du plus lent au lieu de la somme des deux).
-  const [[queryVec], docVecs] = await Promise.all([
+async function semanticRank(projectId, question, passages, topK) {
+  const provider = getEmbeddingsProvider();
+  if (!provider.enabled || passages.length === 0) return null;
+
+  // Passages (rôle 'document') et question (rôle 'query') embeddés EN PARALLÈLE :
+  // indépendants, préfixes de tâche différents (cf. embeddings.js) → on économise
+  // un aller-retour réseau (≈ la latence du plus lent au lieu de la somme).
+  const [{ keyOf, hashById }, [queryVec]] = await Promise.all([
+    ensurePassageVectors(projectId, passages, provider),
     provider.embed([question], 'query'),
-    missing.length ? provider.embed(missing.map(passageText), 'document') : Promise.resolve([]),
   ]);
-  missing.forEach((p, i) => embCacheSet(keyOf(hashById.get(p.id)), docVecs[i]));
 
   const vecById = new Map();
   for (const p of passages) vecById.set(p.id, _embCache.get(keyOf(hashById.get(p.id))));
   return rankByVectors(passages, queryVec, vecById, topK);
+}
+
+/**
+ * Pré-chauffe le cache d'embeddings d'un projet SANS appel LLM ni question :
+ * embedde tous ses passages une fois, pour que la 1re vraie question ne paie pas
+ * le cold-start Ollama (chargement modèle + embedding de tous les passages, qui
+ * peut prendre ~30 s sur CPU contraint). Déclenché à l'ouverture du chat.
+ * No-op si les embeddings sont désactivés. Idempotent (cache par hash de contenu).
+ */
+export async function warmupProject(projectId) {
+  const provider = getEmbeddingsProvider();
+  if (!provider.enabled) return { enabled: false, warmed: 0, total: 0 };
+  const passages = await buildContext(projectId);
+  const { warmed } = await ensurePassageVectors(projectId, passages, provider);
+  return { enabled: true, warmed, total: passages.length };
 }
 
 /**
