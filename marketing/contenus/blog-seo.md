@@ -105,11 +105,11 @@ C'est exactement là que la structure « dans la tête » atteint ses limites �
 
 Ces cinq étapes, tu peux les faire dans des fichiers Word, des tableaux Excel, des post-it sur un mur. Beaucoup d'auteurs le font — jusqu'à ce que ça devienne ingérable.
 
-C'est précisément pour ça qu'on a construit **[Atlas Narratif](https://atlas-narratif.com?ref=blog)** : un endroit unique où tu poses ta structure (Save the Cat ou Voyage du Héros, guidés et illustrés), où tu **vois** ton histoire sous tous les angles — timeline, carte, relations, arc émotionnel — et où plus de 12 détecteurs traquent les incohérences pendant que le tracker d'amorces te rappelle tes promesses non tenues.
+C'est précisément pour ça qu'on a construit **[Atlas Narratif](https://atlas-narratif.com)** : un endroit unique où tu poses ta structure (Save the Cat ou Voyage du Héros, guidés et illustrés), où tu **vois** ton histoire sous tous les angles — timeline, carte, relations, arc émotionnel — et où plus de 12 détecteurs traquent les incohérences pendant que le tracker d'amorces te rappelle tes promesses non tenues.
 
 C'est gratuit, en français, et ça n'écrit pas une ligne à ta place : l'outil structure, c'est toi qui crées.
 
-**Le plus simple pour voir ce que ça donne : va sur [atlas-narratif.com](https://atlas-narratif.com?ref=blog) et charge la démo — on y a passé *Le Seigneur des Anneaux* en entier, sans que tu aies à créer de compte.**
+**Le plus simple pour voir ce que ça donne : va sur [atlas-narratif.com](https://atlas-narratif.com) et charge la démo — on y a passé *Le Seigneur des Anneaux* en entier, sans que tu aies à créer de compte.**
 
 ---
 
@@ -134,5 +134,5 @@ C'est gratuit, en français, et ça n'écrit pas une ligne à ta place : l'outil
 - **1 mot-clé principal par article**, dans le titre, l'URL, le 1er paragraphe et un H2.
 - **Maillage interne** : chaque article lie 2-3 autres articles du blog.
 - **Longueur** : 1200-2000 mots pour les articles piliers.
-- **CTA démo** (`?ref=blog`) systématique en fin d'article, jamais agressif.
+- **CTA démo** (``) systématique en fin d'article, jamais agressif.
 - Une **image/capture** par article (og-image dédiée pour le partage social).

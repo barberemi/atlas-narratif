@@ -15,12 +15,12 @@ Les contenus sont déjà personnalisés avec ces valeurs :
 |---------|--------|
 | Site & démo | **`https://atlas-narratif.com`** — pas de page démo dédiée : **depuis l'accueil, on charge la démo (Le Seigneur des Anneaux) en un clic, sans compte** |
 | Prénom | **Rémi** |
-| Tracking | suffixe `?ref=<canal>` sur les liens partagés (voir plus bas) |
+| Tracking | **aucun** — pas d'analytics, pas de `?ref`, liens propres (voir « Mesurer sans tracker ») |
 | Compte X | **`@Rem_Barbe`** |
 
 > ⚠️ Rappel de l'artefact : figer **« Atlas Narratif »** en deux mots partout, et corriger le `<title>` de l'app (dette SEO à chaque contenu publié avec la mauvaise graphie).
 >
-> ✅ Comme la démo se charge **depuis l'accueil**, chaque lien partagé (`atlas-narratif.com?ref=…`) amène directement sur la home où le visiteur clique « charger la démo » — zéro friction, zéro compte.
+> ✅ Comme la démo se charge **depuis l'accueil**, chaque lien partagé (`atlas-narratif.com`) amène directement sur la home où le visiteur clique « charger la démo » — zéro friction, zéro compte.
 
 ---
 
@@ -87,19 +87,20 @@ prêt       LE moment de l'année   lancement public    convertir
 
 ## 🔎 Autres détails
 
-### Mesurer sans tracker (cohérent avec la promesse privacy)
-On n'installe **aucun** Google Analytics. On ajoute un suffixe `?ref=` aux liens partagés, lisible côté serveur (logs / PostgreSQL) :
+### Mesurer sans rien tracker — et l'assumer comme argument de vente
+Vérifié dans le code : **zéro analytics** (ni GA, ni Plausible, ni Matomo, ni PostHog…). Le seul cookie tiers est le widget de support **Crisp**, déjà derrière le `CookieConsent`. On ne rajoute donc **aucun `?ref`** ni pixel — les liens partagés restent propres : `https://atlas-narratif.com`.
 
-| Lien à partager | Suffixe |
-|-----------------|---------|
-| Discord | `https://atlas-narratif.com?ref=discord` |
-| Reddit | `https://atlas-narratif.com?ref=reddit` |
-| X | `https://atlas-narratif.com?ref=x` |
-| Facebook | `https://atlas-narratif.com?ref=fb` |
-| Product Hunt | `https://atlas-narratif.com?ref=ph` |
-| Blog (CTA) | `https://atlas-narratif.com?ref=blog` |
+Ce n'est pas un manque, c'est **cohérent avec la promesse** « ton IA, tes données, ta plume ». Autant le dire dans la com : « zéro tracking » rassure exactement ta cible.
 
-> 🛠️ *Petite tâche dev optionnelle mais rentable : logguer le param `ref` à l'inscription pour savoir quel canal amène des gens qui **restent** (pas juste qui cliquent).*
+**Ce qu'on regarde quand même**, sans pister personne : tes propres données produit dans PostgreSQL (données first-party, pas du suivi de visiteurs).
+
+| Question | Comment y répondre (une requête SQL) |
+|----------|--------------------------------------|
+| Combien d'inscrits ? | `count(*)` sur la table `user` |
+| Combien activent (créent un vrai projet) ? | inscrits ayant ≥ 1 `projects` avec du contenu |
+| Reviennent-ils ? | date de dernière activité par utilisateur |
+
+Pour savoir *d'où* viennent les gens : pas besoin d'outil, **corrèle à la main**. Tu postes sur un Discord un mardi → tu regardes s'il y a un pic d'inscriptions le mercredi. Amplement suffisant à ton échelle. *(Le header `Referer` est peu fiable : beaucoup de plateformes le suppriment.)*
 
 ### La charte de voix — on dit / on ne dit pas
 | ✅ On dit | ✕ On ne dit pas |

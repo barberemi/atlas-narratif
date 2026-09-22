@@ -11,7 +11,7 @@
 
 > Rémi · dev & auteur 🗺️
 > Je construis **Atlas Narratif** : l'atlas de ton roman — structure ta saga (Save the Cat / Voyage du Héros), visualise ton histoire, traque les incohérences. Gratuit, FR, sans IA qui écrit à ta place.
-> 👉 https://atlas-narratif.com?ref=x
+> 👉 https://atlas-narratif.com
 
 > 💡 Épingle un tweet de présentation du projet en haut du profil (reprends le Tweet 1 du thread de lancement, ou une version courte).
 
@@ -39,7 +39,7 @@ La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format ve
 ### Build-in-public / accroche
 > J'ai un problème : je ne sais pas écrire un roman sans d'abord dessiner la carte de son monde 🗺️
 > Alors j'ai codé l'outil que je rêvais d'avoir. Timeline, carte, arcs, détection d'incohérences — pour ma saga et la tienne.
-> Gratuit, en français : https://atlas-narratif.com?ref=x
+> Gratuit, en français : https://atlas-narratif.com
 > #TeamÉcriture
 
 ### Douleur → solution (avec GIF timeline)
@@ -60,7 +60,7 @@ La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format ve
 ### Preuve sociale / LOTR
 > On a passé *Le Seigneur des Anneaux* — les 3 tomes — dans Atlas Narratif.
 > Beats, arcs, amorces, trajets sur la carte. Tu peux tout explorer sans créer de compte 👇
-> https://atlas-narratif.com?ref=x
+> https://atlas-narratif.com
 
 ---
 
@@ -92,7 +92,7 @@ La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format ve
 
 **Tweet 7 (CTA)**
 > Le mieux : essaie sans même créer de compte. J'y ai passé *Le Seigneur des Anneaux* en entier 👇
-> https://atlas-narratif.com?ref=x
+> https://atlas-narratif.com
 > C'est gratuit et je construis la suite avec vos retours. RT si ça peut aider un pote qui écrit 🙏
 
 ---

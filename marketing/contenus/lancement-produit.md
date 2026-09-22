@@ -34,7 +34,7 @@
 > 1. **It never writes a single line for you.** The tool structures; you create.
 > 2. **Privacy by default** — encrypted at rest, no tracking, self-hostable.
 >
-> Best way to get it: try the demo with no account — I loaded the entire *Lord of the Rings* trilogy into it 👉 https://atlas-narratif.com?ref=ph
+> Best way to get it: try the demo with no account — I loaded the entire *Lord of the Rings* trilogy into it 👉 https://atlas-narratif.com
 >
 > It's free and I'm building the roadmap with your feedback. Would love to hear how you keep track of a long project! 🙏
 
