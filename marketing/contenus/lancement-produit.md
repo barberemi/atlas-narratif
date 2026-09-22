@@ -1,6 +1,6 @@
 # Contenus — Lancement produit (Product Hunt / BetaList / IndieHackers)
 
-> À dégainer sur **une seule journée** (le 1er nov. idéalement, jour 1 du NaNoWriMo).
+> À dégainer sur **une seule journée** (le 1er nov. idéalement, jour 1 du défi d'écriture de novembre — Novel November & co.).
 > Product Hunt est anglophone → ces textes sont en anglais. Le reste de la com reste FR.
 > **Prépare tout la semaine d'avant (S6)** ; le jour J, tu ne fais que publier et répondre.
 
@@ -61,7 +61,7 @@
 ## IndieHackers — post « build-in-public »
 
 ### Titre
-> I built a free tool to structure novels and catch plot holes — launching during NaNoWriMo
+> I built a free tool to structure novels and catch plot holes — launching for Novel November
 
 ### Corps
 > After two years on a fantasy saga, I realized my problem wasn't writing — it was holding hundreds of narrative threads in my head at once.
@@ -73,7 +73,7 @@
 > - **Privacy-first.** Encrypted at rest, no tracking, self-hostable. My analytics are literally SQL queries on my own DB.
 > - **French-first**, because almost every serious competitor is English-only and paid — that's my moat.
 >
-> Launching on Product Hunt on Nov 1st (day 1 of NaNoWriMo — when my whole audience starts *planning* a novel). Demo, no signup: https://atlas-narratif.com
+> Launching on Product Hunt on Nov 1st (day 1 of Novel November — the community-run NaNoWriMo successor — when my whole audience starts *planning* a novel). Demo, no signup: https://atlas-narratif.com
 >
 > Happy to answer anything about the stack (React 19 / Hono / Postgres) or the go-to-market. What would you check first on a launch like this?
 

@@ -1,7 +1,7 @@
 # Contenus — Réseaux sociaux (X / Instagram / TikTok / BookTok)
 
 > Ton : enjoué, complice, visuel. Sur les réseaux, **le visuel fait 80 % du travail** — un GIF de la carte ou de la timeline vaut mille mots.
-> Hashtags FR de la cible : `#TeamÉcriture` `#ProjetÉcriture` `#écriture` `#roman` `#NaNoWriMoFR` `#BookTok` `#worldbuilding`
+> Hashtags FR de la cible : `#TeamÉcriture` `#ProjetÉcriture` `#écriture` `#roman` `#BookTok` `#worldbuilding` (+ `#NovelNovember` en nov.)
 
 ---
 

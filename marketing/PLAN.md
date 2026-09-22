@@ -34,11 +34,13 @@ Les contenus sont déjà personnalisés avec ces valeurs :
 
 ## 📍 OÙ — les canaux, par température
 
+> 📖 **Le détail communauté par communauté** (serveurs Discord FR nommés, subs Reddit, forums, règles self-promo, première action) est dans **[`CANAUX.md`](./CANAUX.md)**. Ci-dessous, la vue d'ensemble.
+
 ### 🔥 Canaux chauds (tu y es déjà, tu peux agir cette semaine)
 
 | Canal | Ce qu'on y fait | Rythme | Règle d'or |
 |-------|-----------------|--------|------------|
-| **Discord** (serveurs écriture FR : Plume & Café, NaNoWriMo FR, BookTok) | Présence humaine, entraide, partage de la démo au bon moment | Quasi quotidien (léger) | Être un membre, pas une pub ambulante |
+| **Discord** (serveurs écriture FR : *J'écris un Roman*, *Pluméa*, *Forum des Auteurs* — voir `CANAUX.md`) | Présence humaine, entraide, partage de la démo au bon moment | Quasi quotidien (léger) | Être un membre, pas une pub ambulante |
 | **Reddit** (r/ecriture, r/fantasy_fr, r/Fantasy, r/worldbuilding) | Commentaires utiles + 1-2 posts « valeur » par mois | 2-3 commentaires/sem, 1 post/mois | Lis les règles self-promo de CHAQUE sub |
 | **X / Twitter** (#TeamÉcriture, #ProjetÉcriture) | Démos visuelles, GIFs, threads, build-in-public | 3-5 posts/sem | Le visuel fait tout le travail |
 | **Instagram / TikTok / BookTok** | Vidéos courtes « une histoire, 4 vues » | 1-2/sem | Format vertical, 15-30 s, hook en 2 s |
@@ -50,7 +52,7 @@ Les contenus sont déjà personnalisés avec ces valeurs :
 |-------|-------|---------|
 | **Product Hunt / BetaList / IndieHackers** | Lancement (début nov.) | Voir `contenus/lancement-produit.md` |
 | **Blog SEO** (`https://atlas-narratif.com/blog`) | Dès S2, 2 articles/mois | Voir `contenus/blog-seo.md` |
-| **BookTubeurs / créateurs FR** | Oct.-nov. (Preptober/NaNo) | Démo offerte, angle « outil gratuit FR » |
+| **BookTubeurs / créateurs FR** | Oct.-nov. (Preptober / défi de nov.) | Démo offerte, angle « outil gratuit FR » |
 
 ---
 
@@ -59,13 +61,15 @@ Les contenus sont déjà personnalisés avec ces valeurs :
 Détail semaine par semaine dans **[`CALENDRIER.md`](./CALENDRIER.md)**. La colonne vertébrale :
 
 ```
-SEPT  ──▶  OCT (PREPTOBER)  ──▶  NOV (NaNoWriMo)  ──▶  DÉC-FÉV
-prêt       LE moment de l'année   lancement public    convertir
-           où les auteurs         + pic de trafic      l'afflux en
-           PLANIFIENT un roman                          rétention
+SEPT  ──▶  OCT (PREPTOBER)  ──▶  NOV (DÉFI D'ÉCRITURE)  ──▶  DÉC-FÉV
+prêt       LE moment de l'année   lancement public         convertir
+           où les auteurs         + pic de trafic          l'afflux en
+           PLANIFIENT un roman                              rétention
 ```
 
-> 💡 **L'insight timing le plus important :** on parle toujours de *novembre* (NaNoWriMo = écriture), mais **octobre = « Preptober »**, le mois où les auteurs *planifient* leur roman. Or Atlas est un outil de **planification/structure**. **Octobre est donc encore plus sur-mesure que novembre.** On charge fort dès mi-octobre.
+> 💡 **L'insight timing le plus important :** on parle toujours de *novembre* (le défi d'écriture = écriture), mais **octobre = « Preptober »**, le mois où les auteurs *planifient* leur roman. Or Atlas est un outil de **planification/structure**. **Octobre est donc encore plus sur-mesure que novembre.** On charge fort dès mi-octobre.
+>
+> ⚠️ **NaNoWriMo (l'orga) a fermé en mars 2025.** La tradition de novembre continue via des successeurs (**Novel November**, Reedsy Novel Sprint) et les défis des communautés FR. Détails et ciblage dans **[`CANAUX.md`](./CANAUX.md)**.
 
 - **M1 (fin sept → oct)** : être prêt (landing, démo sans compte, 2 articles), s'installer dans les communautés *sans vendre*, recruter 5-10 beta-testeurs.
 - **PIC (mi-oct → début nov)** : Preptober + lancement public coordonné.
@@ -82,6 +86,8 @@ prêt       LE moment de l'année   lancement public    convertir
 | [`contenus/lancement-produit.md`](./contenus/lancement-produit.md) | Product Hunt / BetaList / IndieHackers : titre, tagline, description, 1er commentaire |
 | [`contenus/emails-onboarding.md`](./contenus/emails-onboarding.md) | Séquence de 3 emails (bienvenue → 1er atlas → détection) |
 | [`contenus/blog-seo.md`](./contenus/blog-seo.md) | Calendrier éditorial + 1er article rédigé en entier + plan du 2e |
+| [`contenus/insights-lotr.md`](./contenus/insights-lotr.md) | Insights structurels réels du seed LOTR (punchlines, beats, arcs, plants) pour les posts « analyse » |
+| [`CANAUX.md`](./CANAUX.md) | Le détail communauté par communauté : serveurs Discord FR, subs Reddit, forums, règles, playbook |
 
 ---
 
@@ -122,7 +128,7 @@ Personnalité : **le pote scénariste qui a lu tous les bouquins de dramaturgie.
 ## ✅ Checklist Semaine 1 (22-28 sept.)
 
 - [x] ~~Config appliquée~~ (URL, prénom, handle X déjà injectés)
-- [ ] Vérifier que **la démo se charge depuis l'accueil sans compte** (sinon → priorité dev n°1)
+- [x] ~~Vérifier que la démo se charge sans compte~~ ✅ confirmé (code : `RequireProject` ne teste que `projectId`, jamais la session)
 - [ ] Figer « Atlas Narratif » + corriger le `<title>`
 - [ ] Créer/soigner le compte X + bio (voir `reseaux-sociaux.md`)
 - [ ] Rejoindre (ou réveiller) 3-4 communautés et s'y **présenter sans vendre**

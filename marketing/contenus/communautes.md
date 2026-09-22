@@ -94,17 +94,18 @@ Un post qui apporte de la valeur (analyse d'une œuvre connue) et montre l'outil
 ### Reddit r/Fantasy / r/fantasy_fr — titre
 > J'ai décortiqué la structure des trois tomes du Seigneur des Anneaux (beats, arcs, amorces) — voici ce que ça révèle
 
-### Corps (extrait d'amorce)
-> Par curiosité, j'ai mappé *Le Seigneur des Anneaux* entier : les 15 beats de Save the Cat sur chaque tome, l'arc émotionnel de Frodon vs celui d'Aragorn, et toutes les amorces plantées au tome 1 qui paient au tome 3 (le verre de Galadriel, hello).
+### Corps (rédigé — insights réels tirés de l'analyse)
+> Par curiosité, j'ai mappé *Le Seigneur des Anneaux* entier : les 15 beats de Save the Cat sur chaque tome, les arcs émotionnels chiffrés des persos, et toutes les amorces plantées dans un tome qui paient dans un autre. Trois trucs qui m'ont scié sur la construction de Tolkien :
 >
-> Trois trucs que ça révèle sur la construction de Tolkien :
-> - [insight 1 : la structure du "tout est perdu" décalée sur Frodon vs Aragorn]
-> - [insight 2 : la densité d'amorces cross-tomes]
-> - [insight 3 : l'arc émotionnel en dents de scie du tome 2]
+> **1. Le couteau le plus patient de la fantasy.** L'épée qui tue le Roi-Sorcier au ch. 24 du Tome 3, c'est Tom Bombadil qui la donne à Merry au ch. 3 du Tome 1. Tolkien plante ce Chekhov's gun à l'échelle de *toute la trilogie* — et sans lui, le coup d'Éowyn ne suffit littéralement pas.
 >
-> J'ai fait ça dans l'outil que je développe (chargeable direct depuis l'accueil, sans compte, si ça intéresse quelqu'un : https://atlas-narratif.com), mais l'analyse tient debout toute seule. Ça donne surtout envie de regarder ses *propres* tomes comme ça.
+> **2. Le héros échoue au dernier mètre — exprès.** Si tu traces les courbes de Frodon, au bord de la Crevasse du Destin son courage est au max mais sa résistance à l'Anneau est tombée à zéro : « L'Anneau est à moi. » Ce qui sauve le monde, ce n'est pas lui — c'est la pitié qu'il a eue pour Gollum (posée au Tome 2) et le dévouement de Sam, dont l'arc culmine *pile* à ce moment. Le vrai « retour du héros » (rentrer, planter le mallorn, « Eh bien, j'y suis ») est vécu par Sam, pas par Frodon.
+>
+> **3. Gandalf tient le point médian des trois tomes.** Il tombe (Moria, T1), il ressuscite (T2), il tient seul la porte face au Roi-Sorcier (Siège de Gondor, T3). Son « moment de récompense » n'est pas un trésor — c'est sa propre résurrection.
+>
+> J'ai fait cette carto dans l'outil que je développe (chargeable direct depuis l'accueil, sans compte, si ça intéresse quelqu'un : https://atlas-narratif.com), mais l'analyse tient debout toute seule. Ça donne surtout envie de regarder ses *propres* tomes comme ça — quelles amorces tu as laissées sans paiement ?
 
-> 💡 Complète les [insights] avec de vraies observations tirées du seed LOTR de l'app — c'est ce qui rend le post crédible et non-robotique.
+> 💡 Détails, chiffres et autres exemples dans `insights-lotr.md`. Adapte selon le sub (r/fantasy_fr en FR ; r/Fantasy en EN). Mets le lien en **commentaire** si le sub l'exige.
 
 ---
 

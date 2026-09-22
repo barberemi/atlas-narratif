@@ -38,7 +38,7 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ### Semaine 5 · 20-26 oct. — *cœur du Preptober*
 - [ ] 🔴 📝 Publier l'article #3 « Le Voyage du Héros : les 12 étapes » (`blog-seo.md`)
-- [ ] 🔴 📝 Contenu « Planifie ton NaNoWriMo avec une méthode » (X thread + post communautés)
+- [ ] 🔴 📝 Contenu « Planifie ton roman de novembre avec une méthode » (X thread + post communautés)
 - [ ] 🟠 Récolter 3-4 témoignages beta → les mettre sur la landing
 - [ ] 🟠 Préparer le kit de lancement (`lancement-produit.md`) : textes, visuels, comptes créés
 
@@ -46,11 +46,11 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ## 🚀 PIC — Lancement public (fin oct. → nov.)
 
-*But : capter la vague NaNoWriMo. Des dizaines de milliers d'auteurs FR planifient un roman.*
+*But : capter la vague du défi d'écriture de novembre (ex-NaNoWriMo → Novel November & défis des communautés FR). Des milliers d'auteurs FR planifient un roman.*
 
 ### Semaine 6 · 27 oct. - 2 nov. — *veille du lancement*
 - [ ] 🔴 Finaliser le kit Product Hunt (visuels, tagline, 1er commentaire prêt)
-- [ ] 🔴 Programmer le post de lancement pour le **1er nov.** (jour 1 du NaNoWriMo)
+- [ ] 🔴 Programmer le post de lancement pour le **1er nov.** (jour 1 du défi d'écriture de novembre)
 - [ ] 🟠 Prévenir les beta-testeurs → leur demander un upvote/partage le jour J
 - [ ] 🟠 💬 Chauffer : teaser « demain on lance » sur X + Discord
 
@@ -69,7 +69,7 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 ### Semaine 9 · 17-23 nov.
 - [ ] 🟠 Activer la **séquence email onboarding** (`emails-onboarding.md`) pour les nouveaux
 - [ ] ⚪ 📝 X : retours d'usage, captures d'utilisateurs (avec accord)
-- [ ] ⚪ 💬 Répondre aux questions dans les communautés (le trafic NaNo bat son plein)
+- [ ] ⚪ 💬 Répondre aux questions dans les communautés (le trafic de novembre bat son plein)
 
 ### Semaine 10 · 24-30 nov.
 - [ ] 🟠 📝 Article #5 « Détecter les incohérences dans son roman : la checklist »
