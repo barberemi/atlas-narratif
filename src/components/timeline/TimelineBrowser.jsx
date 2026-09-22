@@ -22,6 +22,7 @@ import { useVolumeFilter }  from '../../hooks/useVolumeFilter';
 import { useSaveIndicator } from '../../stores/useSaveIndicator';
 import { useProject }       from '../../db/ProjectContext';
 import { useStoreLoader }   from '../../hooks/useStoreLoader';
+import { useFocusFlash }    from '../../hooks/useFocusFlash';
 import { reorderEvents }    from '../../api/client';
 import { toast }            from '../../lib/toast';
 import { BEATS }            from '../../data/beats_config';
@@ -86,6 +87,24 @@ export default function TimelineBrowser() {
   const [noteOpen,      setNoteOpen]      = useState(null); // chapter number
   const [viewMode,      setViewMode]      = useState('chapters'); // 'chapters' | 'series'
   const [timeOrder,     setTimeOrder]     = useState('narrative'); // 'narrative' | 'chronological'
+
+  // Deep-link « aller pile sur un événement » (?focus=<id> depuis le chat).
+  const flashId = useFocusFlash(allEvents != null);
+  useEffect(() => {
+    if (!flashId) return;
+    // Repasser en vue chapitres (les cartes n'existent qu'ici) et lever les
+    // filtres qui pourraient masquer l'événement ciblé.
+    setViewMode('chapters');
+    setFocusedCharId(null);
+    setOutcomeFilter(null);
+    setThreadFilter(null);
+    // Si l'événement est dans un autre tome, lever le filtre de tome global.
+    const target = (allEvents ?? []).find(e => e.id === flashId);
+    if (target && activeVolumeId && target.volumeId && target.volumeId !== activeVolumeId) {
+      setActiveVolume(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flashId]);
 
   // Revenir en vue chapitres si on sélectionne un tome
   const handleSelectVolume = (id) => {
@@ -809,6 +828,7 @@ export default function TimelineBrowser() {
                           event={evt}
                           isHighlighted={isHighlighted}
                           isDimmed={isDimmed}
+                          flash={evt.id === flashId}
                           onEntityClick={handleEntityClick}
                           onEdit={setEditorEvent}
                           allIncoherences={incoherences}

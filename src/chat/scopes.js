@@ -11,10 +11,27 @@
  * pour les autres, le local invite à passer en recherche approfondie.
  */
 
-/** Ordre d'affichage des chips. 'all' en premier. */
+/** Ordre d'affichage des chips. 'all' en premier ; entités regroupées (custom après objets). */
 export const SCOPE_KEYS = [
-  'all', 'characters', 'locations', 'objects', 'events', 'plot', 'notes', 'incoherences', 'custom',
+  'all', 'characters', 'locations', 'objects', 'custom', 'events', 'plot', 'notes', 'incoherences',
 ];
+
+/**
+ * Icône par portée (chips de filtre du chat) — reprend l'iconographie de l'app
+ * (cf. ui/Icon.jsx) pour rester raccord avec les tags de sources typés.
+ * `plot` agrège beat/plant/thread/hero → icône « écriture » (groupe structure).
+ */
+export const SCOPE_ICONS = {
+  all:          'grid',
+  characters:   'user',
+  locations:    'location',
+  objects:      'object',
+  events:       'event',
+  plot:         'write',
+  notes:        'note',
+  incoherences: 'warning',
+  custom:       'gem',
+};
 
 /** Types d'entités résolvables par le niveau 1 local, par portée. */
 export const SCOPE_ENTITY_TYPES = {

@@ -17,7 +17,10 @@ test.describe('Chat de requête — niveau 1 (déterministe)', () => {
     await expect(answer).toBeVisible({ timeout: 5_000 });
     await expect(answer).toContainText('Aragorn');
     // Parité avec le mode approfondi : entités citées cliquables (pucettes sources).
-    await expect(answer.getByTestId('chat-sources')).toBeVisible();
+    const sources = answer.getByTestId('chat-sources');
+    await expect(sources).toBeVisible();
+    // Chaque tag de source porte une icône de type (couleur + icône par type).
+    await expect(sources.locator('svg').first()).toBeVisible();
   });
 
   test('répond « chapitre N » avec les événements', async ({ page }) => {

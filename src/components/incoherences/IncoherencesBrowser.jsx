@@ -9,6 +9,7 @@ import { usePlantStore }    from '../../stores/usePlantStore';
 import { useThreadStore }   from '../../stores/useThreadStore';
 import { useVolumeStore }   from '../../stores/useVolumeStore';
 import { useStoreLoader }   from '../../hooks/useStoreLoader';
+import { useFocusFlash }    from '../../hooks/useFocusFlash';
 import { DETECTOR_CATALOG } from '../../db/detectIncoherences';
 import EntityEditor      from '../lore/EntityEditor';
 import IncoherenceCard   from './IncoherenceCard';
@@ -53,6 +54,16 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
   const typeDropRef = useRef(null);
 
   useEffect(() => { setSeverityFilter(initialFilter); }, [initialFilter]);
+
+  // Deep-link « aller pile sur une incohérence » (?focus=<id> depuis le chat).
+  const flashId = useFocusFlash(incoherences != null);
+  useEffect(() => {
+    if (!flashId) return;
+    // Filtres neutres pour garantir que l'incohérence ciblée est visible.
+    setSeverityFilter('all');
+    setTypeFilter('all');
+    setEntityFilter(null);
+  }, [flashId]);
 
   // Détecter si le nav sévérité déborde au montage / resize
   useEffect(() => {
@@ -310,6 +321,7 @@ export default function IncoherencesBrowser({ onEntityClick, initialFilter = 'al
                 key={inc.id}
                 inc={inc}
                 resolved={inc.resolved}
+                flash={inc.id === flashId}
                 onToggleResolved={toggle}
                 onEntityClick={onEntityClick}
                 onEntityFilter={handleEntityFilter}

@@ -89,7 +89,11 @@ export function getEntityInfo(id) {
  */
 export function hrefForEntity({ id, name, type, typeId }) {
   const tab = { character: 'characters', location: 'locations', object: 'objects' }[type];
-  if (tab) return `/lore?tab=${tab}&search=${encodeURIComponent(name ?? '')}`;
+  if (tab) {
+    // `search` filtre + surligne (glow) ; `focus` déclenche le flash + scroll.
+    const base = `/lore?tab=${tab}&search=${encodeURIComponent(name ?? '')}`;
+    return id ? `${base}&focus=${encodeURIComponent(id)}` : base;
+  }
   if (type === 'custom') {
     return typeId
       ? `/custom?type=${encodeURIComponent(typeId)}&entity=${encodeURIComponent(id)}`
@@ -116,13 +120,51 @@ const CHAT_SOURCE_ROUTE = {
   thread: '/threads', hero: '/heros', incoherence: '/incoherences', note: '/timeline',
 };
 
+// Types dont l'id désigne un élément précis, adressable par `?focus=<id>` sur la
+// page cible (scroll + flash). `beat` (= un chapitre, pas un beat Save the Cat)
+// et `note` (pas d'élément individuel) atterrissent sur la page sans focus.
+const FOCUSABLE_SOURCE = new Set(['event', 'plant', 'thread', 'hero', 'incoherence']);
+
 /**
  * URL de destination pour une source citée par le chat ({ id, type }).
- * Entité (perso/lieu/objet/custom) → sa fiche ; autre type → la vue dédiée.
+ * Entité (perso/lieu/objet/custom) → sa fiche (avec focus). Autre type → la vue
+ * dédiée, avec `?focus=<id>` quand l'élément est adressable (event/plant/thread/
+ * hero/incoherence) pour scroller dessus et le faire clignoter.
  * Retourne null si non navigable (→ affiché non cliquable).
  */
 export function chatSourceHref({ id, type } = {}) {
-  return entityHrefById(id) ?? CHAT_SOURCE_ROUTE[type] ?? null;
+  const entityHref = entityHrefById(id);
+  if (entityHref) return entityHref;
+  const route = CHAT_SOURCE_ROUTE[type];
+  if (!route) return null;
+  return id && FOCUSABLE_SOURCE.has(type) ? `${route}?focus=${encodeURIComponent(id)}` : route;
+}
+
+// Couleur + icône par type de source NON-entité. Les icônes reprennent celles
+// déjà utilisées dans l'app (cf. navConfig.js) ; les couleurs distinguent les
+// types au scan (l'icône lève toute ambiguïté). Les entités passent par le cache
+// (couleur/icône de l'entité, cf. getEntityMeta / ENTITY_ICONS).
+const SOURCE_TYPE_META = {
+  event:       { color: '#e07a5f', icon: 'event'   }, // corail
+  beat:        { color: '#8a9a5b', icon: 'cat'     }, // olive (icône Save the Cat)
+  plant:       { color: '#3fb0a0', icon: 'plant'   }, // sarcelle
+  thread:      { color: '#b56e9e', icon: 'thread'  }, // rose
+  hero:        { color: '#7c83db', icon: 'hero'    }, // indigo
+  incoherence: { color: '#e5544b', icon: 'warning' }, // rouge
+  note:        { color: '#9a927f', icon: 'note'    }, // neutre
+};
+
+/**
+ * Métadonnées visuelles d'une source citée par le chat → `{ type, color, icon }`.
+ * Entité (perso/lieu/objet/custom) : résolue via le cache (couleur/icône propres) ;
+ * sinon mappée par `type`. Fallback neutre (vert accent) si type inconnu.
+ */
+export function chatSourceMeta({ id, type } = {}) {
+  const meta = getEntityMeta(id);
+  if (meta) return { type: meta.type, color: meta.color, icon: meta.icon };
+  const byType = SOURCE_TYPE_META[type];
+  if (byType) return { type, color: byType.color, icon: byType.icon };
+  return { type: type ?? 'unknown', color: '#5cae8e', icon: 'link' };
 }
 
 /** Normalise un nom pour comparaison : minuscules, sans accents, séparateurs unifiés. */

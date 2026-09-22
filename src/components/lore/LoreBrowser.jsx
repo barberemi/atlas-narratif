@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoreStore } from '../../stores/useLoreStore';
 import { useVolumeStore } from '../../stores/useVolumeStore';
+import { useFocusFlash } from '../../hooks/useFocusFlash';
 import EntityEditor    from './EntityEditor';
 import Skeleton        from '../ui/Skeleton';
 import { HeaderAction, HeaderSep } from '../ui/HeaderButton';
@@ -92,6 +93,9 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
     );
     return found?.id ?? null;
   }, [initialSearch, currentTab]);
+
+  // Deep-link « aller pile sur la fiche » (?focus=<id> depuis le chat) → flash.
+  const flashId = useFocusFlash(ready);
 
   if (!ready) return <Skeleton variant="card" />;
 
@@ -196,7 +200,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             {activeTab === 'characters' &&
               filtered.map((item) => (
                 <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
-                  <CharacterCard char={item} highlighted={item.id === highlightedId}
+                  <CharacterCard char={item} highlighted={item.id === highlightedId} flash={item.id === flashId}
                     onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
                   />
                 </div>
@@ -204,7 +208,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             {activeTab === 'locations' &&
               filtered.map((item) => (
                 <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
-                  <LocationCard loc={item} highlighted={item.id === highlightedId} onCharacterClick={handleCharacterClick}
+                  <LocationCard loc={item} highlighted={item.id === highlightedId} flash={item.id === flashId} onCharacterClick={handleCharacterClick}
                     onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
                   />
                 </div>
@@ -212,7 +216,7 @@ export default function LoreBrowser({ initialTab = 'characters', initialSearch =
             {activeTab === 'objects' &&
               filtered.map((item) => (
                 <div key={item.id} style={{ cursor: 'pointer' }} onClick={() => setEditorEntity(item)}>
-                  <ObjectCard obj={item} highlighted={item.id === highlightedId} onCharacterClick={handleCharacterClick}
+                  <ObjectCard obj={item} highlighted={item.id === highlightedId} flash={item.id === flashId} onCharacterClick={handleCharacterClick}
                     onRelations={onEntityClick ? () => onEntityClick(item.id) : undefined}
                   />
                 </div>

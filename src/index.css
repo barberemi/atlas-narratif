@@ -43,6 +43,31 @@
   animation: fadeSlideIn 0.4s ease forwards;
 }
 
+/* ── Flash « aller pile sur l'élément » (deep-link depuis le chat, etc.) ──
+   Anneau vert sauge qui pulse 3 fois puis s'éteint. Le box-shadow animé
+   l'emporte sur un éventuel box-shadow inline (DarkCard) le temps de l'anim. */
+@keyframes atlasFlash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(92, 174, 142, 0); }
+  8%       { box-shadow: 0 0 0 3px rgba(92, 174, 142, 0.75), 0 0 22px 4px rgba(92, 174, 142, 0.35); }
+  25%      { box-shadow: 0 0 0 0 rgba(92, 174, 142, 0); }
+  33%      { box-shadow: 0 0 0 3px rgba(92, 174, 142, 0.75), 0 0 22px 4px rgba(92, 174, 142, 0.35); }
+  50%      { box-shadow: 0 0 0 0 rgba(92, 174, 142, 0); }
+  58%      { box-shadow: 0 0 0 3px rgba(92, 174, 142, 0.75), 0 0 22px 4px rgba(92, 174, 142, 0.35); }
+  75%      { box-shadow: 0 0 0 0 rgba(92, 174, 142, 0); }
+}
+.atlas-flash {
+  animation: atlasFlash 2.4s ease-out 1;
+  border-radius: inherit;
+  position: relative;
+  z-index: 5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-flash {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(92, 174, 142, 0.75);
+  }
+}
+
 /* ── Slider personnalisé pour la timeline ── */
 .journey-slider {
   -webkit-appearance: none;
