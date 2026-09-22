@@ -117,6 +117,24 @@ async function buildContext(projectId) {
   return passages;
 }
 
+// Cache des passages construits, PAR PROJET (TTL court). buildContext refait 11
+// requêtes SQL + déchiffre tout le projet → coûteux à répéter à chaque question.
+// Invalidé explicitement à chaque mutation (cf. invalidateContext, appelé par un
+// middleware sur les écritures) ; le TTL borne la péremption en filet de sécurité.
+const _ctxCache = new Map(); // projectId → { at, passages }
+const CTX_TTL_MS = 60_000;
+
+async function buildContextCached(projectId) {
+  const hit = _ctxCache.get(projectId);
+  if (hit && Date.now() - hit.at < CTX_TTL_MS) return hit.passages;
+  const passages = await buildContext(projectId);
+  _ctxCache.set(projectId, { at: Date.now(), passages });
+  return passages;
+}
+
+/** Vide le cache de contexte d'un projet (à appeler après toute mutation de données). */
+export function invalidateContext(projectId) { _ctxCache.delete(projectId); }
+
 /** Restreint les passages à une portée (type). 'all'/inconnu → tout. */
 function filterByScope(passages, scope) {
   const types = SCOPE_TYPES[scope];
@@ -245,7 +263,7 @@ async function semanticRank(projectId, question, passages, topK) {
 export async function warmupProject(projectId) {
   const provider = getEmbeddingsProvider();
   if (!provider.enabled) return { enabled: false, warmed: 0, total: 0 };
-  const passages = await buildContext(projectId);
+  const passages = await buildContextCached(projectId);
   const { warmed } = await ensurePassageVectors(projectId, passages, provider);
   return { enabled: true, warmed, total: passages.length };
 }
@@ -280,7 +298,7 @@ export async function answerAsk({ projectId, question, scope = 'all', history = 
   if (cached) return { ...cached, cached: true };
 
   const t0 = Date.now();
-  const allPassages = await buildContext(projectId);
+  const allPassages = await buildContextCached(projectId);
   const passages = filterByScope(allPassages, scope);
   const tCtx = Date.now();
 

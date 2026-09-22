@@ -15,7 +15,7 @@ import { encrypt, createProjectDek } from '../crypto.js';
 import { requireIdentity, signDeviceId } from '../middleware/requireIdentity.js';
 import { requireProjectOwner } from '../middleware/requireProjectOwner.js';
 import * as v from '../validators.js';
-import { answerAsk, warmupProject, checkRateLimit } from './ask.js';
+import { answerAsk, warmupProject, invalidateContext, checkRateLimit } from './ask.js';
 
 const api = new Hono();
 
@@ -73,6 +73,20 @@ api.get('/health', async (c) => {
 // ── Middlewares globaux ──────────────────────────────────────────────────────
 api.use('*', requireIdentity);
 api.use('/projects/:projectId/*', requireProjectOwner);
+
+// Invalide le cache de contexte du chat après toute MUTATION des données d'un
+// projet (POST/PUT/PATCH/DELETE), pour que la prochaine question reparte de données
+// fraîches. On exclut /ask et /ask/warm (POST mais sans mutation de données) afin de
+// ne pas casser le cache à chaque requête de chat.
+api.use('/projects/:projectId/*', async (c, next) => {
+  await next();
+  const method = c.req.method;
+  if (method === 'GET' || method === 'HEAD') return;
+  const path = c.req.path;
+  if (path.endsWith('/ask') || path.endsWith('/ask/warm')) return;
+  const { projectId } = c.req.param();
+  if (projectId) invalidateContext(projectId);
+});
 api.use('/projects/:projectId', requireProjectOwner);
 
 // ── Limite de taille par défaut (10 Mo) ──────────────────────────────────────
