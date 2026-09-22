@@ -1,34 +1,34 @@
-# Contenus — Réseaux sociaux (X / Instagram / TikTok / BookTok)
+# Contenus : Réseaux sociaux (X / Instagram / TikTok / BookTok)
 
-> Ton : enjoué, complice, visuel. Sur les réseaux, **le visuel fait 80 % du travail** — un GIF de la carte ou de la timeline vaut mille mots.
+> Ton : enjoué, complice, visuel. Sur les réseaux, **le visuel fait 80 % du travail** : un GIF de la carte ou de la timeline vaut mille mots.
 > Hashtags FR de la cible : `#TeamÉcriture` `#ProjetÉcriture` `#écriture` `#roman` `#BookTok` `#worldbuilding` (+ `#NovelNovember` en nov.)
 
 ---
 
-## Bio du compte X — `@Rem_Barbe` (S1)
+## Bio du compte X : `@Rem_Barbe` (S1)
 
-> C'est un compte **perso** (Rémi), pas un compte marque : parfait pour le build-in-public. On parle à la première personne, on montre les coulisses. Le produit est le fil rouge, pas le seul sujet.
+> C'est un compte **perso** (Rémi), pas un compte marque : parfait pour le build-in-public. Je parle à la première personne, je montre les coulisses. Le produit est le fil rouge, pas le seul sujet.
 
 > Rémi · dev & auteur 🗺️
-> Je construis **Atlas Narratif** : l'atlas de ton roman — structure ta saga (Save the Cat / Voyage du Héros), visualise ton histoire, traque les incohérences. Gratuit, FR, sans IA qui écrit à ta place.
+> Je construis **Atlas Narratif** : l'atlas de ton roman : structure ta saga (Save the Cat / Voyage du Héros), visualise ton histoire, traque les incohérences. Gratuit, FR, sans IA qui écrit à ta place.
 > 👉 https://atlas-narratif.com
 
 > 💡 Épingle un tweet de présentation du projet en haut du profil (reprends le Tweet 1 du thread de lancement, ou une version courte).
 
 ---
 
-## Script — vidéo démo 60-90 s (S2)
+## Script : vidéo démo 60-90 s (S2)
 
 La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format vertical 9:16, hook dans les 2 premières secondes.
 
 | Temps | Écran | Voix off / texte à l'écran |
 |-------|-------|----------------------------|
 | 0-2 s | Page blanche qui clignote | « 60 000 mots écrits. Et cette question : *est-ce que ça tient ?* » |
-| 2-10 s | On crée un projet, on choisit « Save the Cat » | « Tu choisis ta méthode. Save the Cat, ou le Voyage du Héros. » |
-| 10-25 s | On remplit 2-3 beats | « Tu poses ta trame, beat par beat. Chaque étape est expliquée. » |
+| 2-10 s | Je crée un projet, je choisis « Save the Cat » | « Tu choisis ta méthode. Save the Cat, ou le Voyage du Héros. » |
+| 10-25 s | Je remplis 2-3 beats | « Tu poses ta trame, beat par beat. Chaque étape est expliquée. » |
 | 25-45 s | Bascule timeline → carte → graphe de relations | « Et là, ton histoire apparaît. Sous tous les angles. » |
-| 45-60 s | On lance la détection d'incohérences | « L'outil repère les failles. L'amorce du chapitre 3 qui n'a jamais payé ? Il te le dit. » |
-| 60-75 s | Logo + CTA | « Atlas Narratif. Gratuit. L'outil structure — c'est toi qui écris. » |
+| 45-60 s | Je lance la détection d'incohérences | « L'outil repère les failles. L'amorce du chapitre 3 qui n'a jamais payé ? Il te le dit. » |
+| 60-75 s | Logo + CTA | « Atlas Narratif. Gratuit. L'outil structure, c'est toi qui écris. » |
 
 > 💡 Enregistre-la sur la **démo LOTR** : c'est déjà rempli et visuellement riche.
 
@@ -38,7 +38,7 @@ La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format ve
 
 ### Build-in-public / accroche
 > J'ai un problème : je ne sais pas écrire un roman sans d'abord dessiner la carte de son monde 🗺️
-> Alors j'ai codé l'outil que je rêvais d'avoir. Timeline, carte, arcs, détection d'incohérences — pour ma saga et la tienne.
+> Alors j'ai codé l'outil que je rêvais d'avoir. Timeline, carte, arcs, détection d'incohérences, pour ma saga et la tienne.
 > Gratuit, en français : https://atlas-narratif.com
 > #TeamÉcriture
 
@@ -58,7 +58,7 @@ La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format ve
 > #écriture
 
 ### Preuve sociale / LOTR
-> On a passé *Le Seigneur des Anneaux* — les 3 tomes — dans Atlas Narratif.
+> J'ai passé *Le Seigneur des Anneaux* (les 3 tomes) dans Atlas Narratif.
 > Beats, arcs, amorces, trajets sur la carte. Tu peux tout explorer sans créer de compte 👇
 > https://atlas-narratif.com
 
@@ -99,17 +99,17 @@ La vidéo pilier, réutilisable partout (X, TikTok, landing, groupes). Format ve
 
 ## Idées de vidéos courtes (TikTok / Reels / Shorts)
 
-1. **« POV : ton tome 2 part en vrille »** — écran chaotique de notes → bascule sur la timeline propre d'Atlas.
-2. **« 4 façons de voir la même histoire »** — timeline → carte → graphe → arc, en 15 s montées cut.
-3. **« J'ai demandé à une IA d'analyser mon manuscrit sans clé API »** — le flux import, effet « truc malin ».
-4. **« La structure secrète de LOTR »** — carrousel/vidéo éducative, démo déguisée.
-5. **« Save the Cat en 30 secondes »** — les 15 beats défilent sur des exemples cultes.
+1. **« POV : ton tome 2 part en vrille »** : écran chaotique de notes → bascule sur la timeline propre d'Atlas.
+2. **« 4 façons de voir la même histoire »** : timeline → carte → graphe → arc, en 15 s montées cut.
+3. **« J'ai demandé à une IA d'analyser mon manuscrit sans clé API »** : le flux import, effet « truc malin ».
+4. **« La structure secrète de LOTR »** : carrousel/vidéo éducative, démo déguisée.
+5. **« Save the Cat en 30 secondes »** : les 15 beats défilent sur des exemples cultes.
 
 > 💡 Sur TikTok/BookTok, l'angle *éducatif* (« apprends un truc sur la structure ») performe mieux que l'angle *produit*. Enseigne, montre l'outil en passant.
 
 ---
 
-## Instagram — idées de posts
+## Instagram : idées de posts
 
 - **Carrousel** « Les 15 beats de Save the Cat » (1 slide/beat + exemple) → CTA en dernière slide.
 - **Reel** de la vidéo démo pilier.

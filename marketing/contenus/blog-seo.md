@@ -1,8 +1,8 @@
-# Contenus — Blog & SEO
+# Contenus : Blog & SEO
 
 > Le SEO paie en 3-6 mois → **commencer maintenant est l'urgence n°1.** Le technique est déjà là (SSR/perf), il manque le contenu.
 > Rythme soutenu : **2 articles/mois de qualité**. Chaque article capte une intention de recherche réelle et se termine en montrant l'outil qui *fait* ce qu'il explique.
-> URL : `https://atlas-narratif.com/blog`. Ton : le pote scénariste érudit — on enseigne pour de vrai, l'outil arrive naturellement à la fin.
+> URL : `https://atlas-narratif.com/blog`. Ton : le pote scénariste érudit, j'enseigne pour de vrai, l'outil arrive naturellement à la fin.
 
 ---
 
@@ -27,7 +27,7 @@
 
 ---
 
-## 📝 Article #1 — rédigé en entier
+## 📝 Article #1 : rédigé en entier
 
 **Titre SEO :** Comment structurer un roman : le guide complet (méthodes + étapes)
 **Slug :** `/blog/comment-structurer-un-roman`
@@ -39,13 +39,13 @@
 
 Tu as une histoire plein la tête. Des personnages qui te parlent, des scènes qui te hantent, une fin qui te donne des frissons. Et pourtant, dès que tu ouvres ton document, quelque chose coince. Par où commencer ? Dans quel ordre ? Et surtout : **est-ce que tout ça va tenir debout sur 300 pages ?**
 
-Cette angoisse a un nom : le manque de structure. Bonne nouvelle — c'est le problème le plus soluble de l'écriture. Voici comment t'y prendre, méthode par méthode, sans transformer ton roman en tableur froid.
+Cette angoisse a un nom : le manque de structure. Bonne nouvelle : c'est le problème le plus soluble de l'écriture. Voici comment t'y prendre, méthode par méthode, sans transformer ton roman en tableur froid.
 
 #### Faut-il vraiment structurer ? (architecte vs jardinier)
 
 Le débat est vieux comme la littérature. D'un côté les **architectes** (« plotters ») qui planifient tout avant d'écrire. De l'autre les **jardiniers** (« pantsers ») qui plantent une graine et voient ce qui pousse.
 
-La vérité, c'est que **presque personne n'est 100 % l'un ou l'autre.** Même le jardinier le plus instinctif a besoin, à un moment, de reculer et de vérifier que son intrigue a une colonne vertébrale. Structurer, ce n'est pas emprisonner ta créativité — c'est lui donner un terrain de jeu où elle ne se perd pas.
+La vérité, c'est que **presque personne n'est 100 % l'un ou l'autre.** Même le jardinier le plus instinctif a besoin, à un moment, de reculer et de vérifier que son intrigue a une colonne vertébrale. Structurer, ce n'est pas emprisonner ta créativité, c'est lui donner un terrain de jeu où elle ne se perd pas.
 
 Retiens ça : **la structure, c'est la charpente ; ton histoire, c'est ce que tu construis dessus.** Une charpente solide te laisse *plus* de liberté, pas moins, parce que tu n'as plus à te demander à chaque scène « est-ce que je vais dans le mur ? ».
 
@@ -55,9 +55,9 @@ Retiens ça : **la structure, c'est la charpente ; ton histoire, c'est ce que tu
 
 C'est la grammaire de base de presque toutes les histoires occidentales, depuis Aristote :
 
-- **Acte 1 — la mise en place (25 %)** : on rencontre le héros dans son monde ordinaire, un événement déclencheur le pousse à l'aventure.
-- **Acte 2 — la confrontation (50 %)** : les obstacles s'enchaînent, les enjeux montent, le héros est mis à l'épreuve jusqu'à un point bas.
-- **Acte 3 — la résolution (25 %)** : climax, dénouement, nouveau monde.
+- **Acte 1, la mise en place (25 %)** : on rencontre le héros dans son monde ordinaire, un événement déclencheur le pousse à l'aventure.
+- **Acte 2, la confrontation (50 %)** : les obstacles s'enchaînent, les enjeux montent, le héros est mis à l'épreuve jusqu'à un point bas.
+- **Acte 3, la résolution (25 %)** : climax, dénouement, nouveau monde.
 
 Simple, mais parfois *trop* : le fameux « ventre mou » du deuxième acte vient de là. D'où les méthodes plus fines ci-dessous.
 
@@ -81,7 +81,7 @@ Formalisé par Joseph Campbell puis Christopher Vogler, le **Voyage du Héros** 
 
 C'est moins un gabarit rigide qu'une **carte des transformations intérieures** de ton personnage. Idéal si ton histoire est portée par l'évolution du héros (fantasy, quête initiatique, coming-of-age).
 
-> **Save the Cat ou Voyage du Héros ?** Grossièrement : Save the Cat structure surtout *l'intrigue* (quoi, quand), le Voyage du Héros structure surtout *l'arc du personnage* (comment il change). Beaucoup d'auteurs utilisent les deux en parallèle. On y consacre un article entier bientôt.
+> **Save the Cat ou Voyage du Héros ?** Grossièrement : Save the Cat structure surtout *l'intrigue* (quoi, quand), le Voyage du Héros structure surtout *l'arc du personnage* (comment il change). Beaucoup d'auteurs utilisent les deux en parallèle. J'y consacre un article entier bientôt.
 
 #### Structurer une saga : le vrai boss de fin
 
@@ -91,7 +91,7 @@ Structurer *un* roman est déjà un défi. Structurer **une série** en est un a
 - **Les amorces et paiements cross-tomes** : une promesse plantée au tome 1 (« cet objet a l'air important ») qui doit payer au tome 3. Oublie-la, et le lecteur, lui, ne l'oubliera pas.
 - **La cohérence factuelle** : les yeux de ton héros, la géographie de ton monde, la chronologie des événements. Sur 900 pages, ton cerveau lâche. C'est mathématique.
 
-C'est exactement là que la structure « dans la tête » atteint ses limites — et qu'un support externe devient indispensable.
+C'est exactement là que la structure « dans la tête » atteint ses limites, et qu'un support externe devient indispensable.
 
 #### Une méthode concrète en 5 étapes
 
@@ -103,17 +103,17 @@ C'est exactement là que la structure « dans la tête » atteint ses limites �
 
 #### Et si tu voyais toute ton histoire d'un coup ?
 
-Ces cinq étapes, tu peux les faire dans des fichiers Word, des tableaux Excel, des post-it sur un mur. Beaucoup d'auteurs le font — jusqu'à ce que ça devienne ingérable.
+Ces cinq étapes, tu peux les faire dans des fichiers Word, des tableaux Excel, des post-it sur un mur. Beaucoup d'auteurs le font, jusqu'à ce que ça devienne ingérable.
 
-C'est précisément pour ça qu'on a construit **[Atlas Narratif](https://atlas-narratif.com)** : un endroit unique où tu poses ta structure (Save the Cat ou Voyage du Héros, guidés et illustrés), où tu **vois** ton histoire sous tous les angles — timeline, carte, relations, arc émotionnel — et où plus de 12 détecteurs traquent les incohérences pendant que le tracker d'amorces te rappelle tes promesses non tenues.
+C'est précisément pour ça que j'ai construit **[Atlas Narratif](https://atlas-narratif.com)** : un endroit unique où tu poses ta structure (Save the Cat ou Voyage du Héros, guidés et illustrés), où tu **vois** ton histoire sous tous les angles (timeline, carte, relations, arc émotionnel) et où plus de 12 détecteurs traquent les incohérences pendant que le tracker d'amorces te rappelle tes promesses non tenues.
 
 C'est gratuit, en français, et ça n'écrit pas une ligne à ta place : l'outil structure, c'est toi qui crées.
 
-**Le plus simple pour voir ce que ça donne : va sur [atlas-narratif.com](https://atlas-narratif.com) et charge la démo — on y a passé *Le Seigneur des Anneaux* en entier, sans que tu aies à créer de compte.**
+**Le plus simple pour voir ce que ça donne : va sur [atlas-narratif.com](https://atlas-narratif.com) et charge la démo : j'y ai passé *Le Seigneur des Anneaux* en entier, sans que tu aies à créer de compte.**
 
 ---
 
-## 📋 Article #2 — plan détaillé (à rédiger en S3)
+## 📋 Article #2 : plan détaillé (à rédiger en S3)
 
 **Titre :** La méthode Save the Cat expliquée : les 15 beats (avec exemples)
 **Slug :** `/blog/methode-save-the-cat-15-beats`

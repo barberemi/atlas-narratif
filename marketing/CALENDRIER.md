@@ -1,4 +1,4 @@
-# Calendrier de publication — semaine par semaine
+# Calendrier de publication : semaine par semaine
 
 Dates réelles, du 22 sept. 2026 à fin février 2027. Coche au fur et à mesure.
 Chaque contenu référencé est rédigé dans `contenus/`.
@@ -7,9 +7,9 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ---
 
-## 🏗️ M1 — Fondations (fin sept. → oct.)
+## 🏗️ M1 : Fondations (fin sept. → oct.)
 
-*But : que le produit se vende tout seul dès qu'on le découvre, et s'installer dans les communautés en ami.*
+*But : que le produit se vende tout seul dès que tu le découvres, et s'installer dans les communautés en ami.*
 
 ### Semaine 1 · 22-28 sept.
 - [ ] 🔴 Config placeholders + vérifier démo sans compte + `<title>` (voir `PLAN.md`)
@@ -24,7 +24,7 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 - [ ] 🟠 💬 Reddit : 2-3 commentaires *utiles* (pas de lien) pour chauffer le compte
 - [ ] ⚪ 📝 Programmer 3 posts X de la semaine (`reseaux-sociaux.md` § banque)
 
-### Semaine 3 · 6-12 oct. — *Preptober commence*
+### Semaine 3 · 6-12 oct. : *Preptober commence*
 - [ ] 🔴 💬 Recruter 5-10 beta-testeurs dans les communautés (message dans `communautes.md` § beta)
 - [ ] 🟠 📝 Publier l'article #2 « La méthode Save the Cat expliquée » (`blog-seo.md`)
 - [ ] 🟠 📝 X : mini-thread « Preptober : planifie ton roman avec une méthode »
@@ -32,11 +32,11 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ### Semaine 4 · 13-19 oct.
 - [ ] 🔴 Récolter le feedback beta → lister les frictions d'onboarding
-- [ ] 🟠 📝 Reddit r/ecriture : post « valeur » (retour d'expérience, pas pub — `communautes.md`)
+- [ ] 🟠 📝 Reddit r/ecriture : post « valeur » (retour d'expérience, pas pub : `communautes.md`)
 - [ ] 🟠 📝 TikTok/Reels : 2e vidéo courte (angle « détecter les incohérences »)
 - [ ] ⚪ 🛠️ Corriger les 2-3 pires frictions d'onboarding remontées
 
-### Semaine 5 · 20-26 oct. — *cœur du Preptober*
+### Semaine 5 · 20-26 oct. : *cœur du Preptober*
 - [ ] 🔴 📝 Publier l'article #3 « Le Voyage du Héros : les 12 étapes » (`blog-seo.md`)
 - [ ] 🔴 📝 Contenu « Planifie ton roman de novembre avec une méthode » (X thread + post communautés)
 - [ ] 🟠 Récolter 3-4 témoignages beta → les mettre sur la landing
@@ -44,17 +44,17 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ---
 
-## 🚀 PIC — Lancement public (fin oct. → nov.)
+## 🚀 PIC : Lancement public (fin oct. → nov.)
 
 *But : capter la vague du défi d'écriture de novembre (ex-NaNoWriMo → Novel November & défis des communautés FR). Des milliers d'auteurs FR planifient un roman.*
 
-### Semaine 6 · 27 oct. - 2 nov. — *veille du lancement*
+### Semaine 6 · 27 oct. - 2 nov. : *veille du lancement*
 - [ ] 🔴 Finaliser le kit Product Hunt (visuels, tagline, 1er commentaire prêt)
 - [ ] 🔴 Programmer le post de lancement pour le **1er nov.** (jour 1 du défi d'écriture de novembre)
 - [ ] 🟠 Prévenir les beta-testeurs → leur demander un upvote/partage le jour J
-- [ ] 🟠 💬 Chauffer : teaser « demain on lance » sur X + Discord
+- [ ] 🟠 💬 Chauffer : teaser « demain je lance » sur X + Discord
 
-### Semaine 7 · 3-9 nov. — 🎉 **LANCEMENT**
+### Semaine 7 · 3-9 nov. : 🎉 **LANCEMENT**
 - [ ] 🔴 📝 **Product Hunt / BetaList / IndieHackers** (`lancement-produit.md`)
 - [ ] 🔴 📝 Posts de lancement soignés : r/ecriture, gros groupes FB, Discords (`communautes.md` § lancement)
 - [ ] 🔴 📝 Thread de lancement X (`reseaux-sociaux.md` § thread lancement)
@@ -64,7 +64,7 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 ### Semaine 8 · 10-16 nov.
 - [ ] 🟠 📝 Publier l'article #4 « Comment gérer plusieurs tomes sans perdre le fil »
 - [ ] 🟠 💬 Partager les premiers retours/chiffres du lancement (build-in-public)
-- [ ] ⚪ 📝 Reddit : « la structure de LOTR décortiquée » (démo déguisée — `communautes.md`)
+- [ ] ⚪ 📝 Reddit : « la structure de LOTR décortiquée » (démo déguisée : `communautes.md`)
 
 ### Semaine 9 · 17-23 nov.
 - [ ] 🟠 Activer la **séquence email onboarding** (`emails-onboarding.md`) pour les nouveaux
@@ -77,7 +77,7 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ---
 
-## 🌱 M2 — Convertir la vague en habitude (déc. → fév.)
+## 🌱 M2 : Convertir la vague en habitude (déc. → fév.)
 
 *But : transformer l'afflux de novembre en rétention et en ambassadeurs.*
 
@@ -92,7 +92,7 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 - [ ] 🟠 📝 2 articles SEO ; mesurer le trafic des 1ers articles (ils commencent à ranker)
 - [ ] ⚪ 📝 Contenu social proof « La structure de LOTR dans Atlas »
 
-### Fév. (S19-22) — *Bilan & décision*
+### Fév. (S19-22) : *Bilan & décision*
 - [ ] 🔴 Bilan KPIs : nb d'actifs récurrents ? rétention W4 ? canaux qui retiennent ?
 - [ ] 🟠 Doubler la mise sur le canal qui marche, **couper** le reste
 - [ ] ⚪ Si noyau engagé → commencer à réfléchir à la monétisation (freemium)
