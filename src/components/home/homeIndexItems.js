@@ -17,6 +17,8 @@ export const INDEX_ITEMS = [
     catKey: 'home.idx1Cat',
     descKey: 'home.idx1Desc',
     shot: '/home/savethecat.webp',
+    shotW: 1600,
+    shotH: 775,
     altKey: 'home.idx1Alt',
   },
   {
@@ -25,6 +27,8 @@ export const INDEX_ITEMS = [
     catKey: 'home.idx2Cat',
     descKey: 'home.idx2Desc',
     shot: '/home/carte.webp',
+    shotW: 1600,
+    shotH: 828,
     altKey: 'home.idx2Alt',
   },
   {
@@ -33,6 +37,8 @@ export const INDEX_ITEMS = [
     catKey: 'home.idx3Cat',
     descKey: 'home.idx3Desc',
     shot: '/home/incoherences.webp',
+    shotW: 1600,
+    shotH: 775,
     altKey: 'home.idx3Alt',
   },
 ];

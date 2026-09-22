@@ -878,7 +878,7 @@ function HomePage() {
             <span>{t('home.indexLabel')}</span>
             <span>{t('home.indexToc')}</span>
           </div>
-          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey, shot, altKey }) => (
+          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey, shot, shotW, shotH, altKey }) => (
             <div key={no} className="py-7" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
               <div className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline">
                 <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
@@ -898,8 +898,8 @@ function HomePage() {
                 src={shot}
                 alt={t(altKey)}
                 loading="lazy"
-                width="1600"
-                height="775"
+                width={shotW}
+                height={shotH}
                 className="w-full h-auto mt-6 md:ml-16 md:w-[calc(100%-4rem)]"
                 style={{ border: '1px solid var(--color-atlas-line)' }}
               />
