@@ -11,7 +11,8 @@
  */
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { INDEX_ITEMS, HERO_SHOT } from './homeIndexItems';
+import { INDEX_ITEMS, HERO_SHOT, FAQ_KEYS } from './homeIndexItems';
+import HomeBlogTeaser from './HomeBlogTeaser';
 
 
 
@@ -33,12 +34,11 @@ export default function HomePageSEO() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "mainEntity": [
-          { "@type": "Question", "name": "Mes données restent-elles privées ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Vos données narratives sont stockées dans une base PostgreSQL sécurisée. Les mots de passe sont hashés et les données sensibles sont chiffrées au repos (AES-256-GCM). Aucun outil d'analytics ou de tracking n'est utilisé." } },
-          { "@type": "Question", "name": "Quels outils narratifs sont disponibles ?", "acceptedAnswer": { "@type": "Answer", "text": "Atlas Narratif propose une timeline interactive, un graphe de relations, une carte des lieux, la structure Save the Cat (15 beats), le Voyage du Héros (12 étapes), un arc émotionnel, un détecteur d'incohérences, un tracker d'amorces narratives et la gestion de fils narratifs." } },
-          { "@type": "Question", "name": "Puis-je importer un manuscrit existant ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Générez un prompt d'analyse avec Atlas Narratif, envoyez-le à votre IA favorite (ChatGPT, Gemini, Claude), puis importez le résultat JSON pour extraire automatiquement la timeline, les personnages et les lieux." } },
-          { "@type": "Question", "name": "Atlas Narratif supporte-t-il les séries en plusieurs tomes ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Le support multi-tomes permet de filtrer par volume, de suivre les amorces narratives entre les tomes et de visualiser les arcs sur l'ensemble de la série." } },
-        ],
+        "mainEntity": FAQ_KEYS.map(({ q, a }) => ({
+          "@type": "Question",
+          "name": t(q),
+          "acceptedAnswer": { "@type": "Answer", "text": t(a) },
+        })),
       }) }} />
 
       {/* Pas de `no-scrollbar` : miroir de App.jsx, voir le commentaire là-bas. */}
@@ -175,7 +175,7 @@ export default function HomePageSEO() {
                   className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
                   style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
                 >
-                  <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>01</div>
+                  <div className="text-lg leading-none pt-1" style={{ color: 'var(--color-atlas-gold)' }} aria-hidden="true">◆</div>
                   <div>
                     <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.buildTitle')}</h2>
                     <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.buildDesc')}</p>
@@ -187,7 +187,7 @@ export default function HomePageSEO() {
                   className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
                   style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
                 >
-                  <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>02</div>
+                  <div className="text-lg leading-none pt-1" style={{ color: 'var(--color-atlas-gold)' }} aria-hidden="true">◆</div>
                   <div>
                     <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.analyzeTitle')}</h2>
                     <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.analyzeDesc')}</p>
@@ -208,6 +208,44 @@ export default function HomePageSEO() {
               </div>
             </div>
           </section>
+
+
+          {/* ── Pourquoi cet outil (D4) ── */}
+          <section className="py-14 md:py-16" style={{ borderTop: '1px solid var(--color-atlas-line)' }}>
+            <div className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute mb-6">
+              {t('home.whyLabel')}
+            </div>
+            <div className="grid md:grid-cols-[1fr_1fr] gap-8 md:gap-14 items-start">
+              <h2 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: 'clamp(1.6rem, 3.2vw, 2.2rem)' }}>
+                {t('home.whyTitle')}
+              </h2>
+              <p className="font-serif text-atlas-soft leading-relaxed" style={{ fontSize: '1.05rem' }}>
+                {t('home.whyBody')}
+              </p>
+            </div>
+          </section>
+
+          {/* ── FAQ (D2) ──
+              Ces quatre questions existaient déjà en JSON-LD : Google les lisait,
+              pas le visiteur. Le JSON-LD est maintenant construit depuis les mêmes
+              clés i18n, les deux ne peuvent plus diverger. */}
+          <section className="py-14 md:py-16" style={{ borderTop: '1px solid var(--color-atlas-line)' }}>
+            <div className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
+              style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}>
+              {t('home.faqLabel')}
+            </div>
+            {FAQ_KEYS.map(({ q, a }) => (
+              <div key={q} className="grid md:grid-cols-[1fr_1.3fr] gap-x-10 gap-y-2 py-6"
+                style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+                <h3 className="font-serif font-semibold text-atlas-text leading-snug" style={{ fontSize: '1.15rem' }}>
+                  {t(q)}
+                </h3>
+                <p className="text-sm text-atlas-soft font-serif leading-relaxed">{t(a)}</p>
+              </div>
+            ))}
+          </section>
+
+          <HomeBlogTeaser />
 
           {/* ── Closer ── */}
           <section className="text-center py-16 md:py-20">

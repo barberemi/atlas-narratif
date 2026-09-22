@@ -51,3 +51,12 @@ export const HERO_SHOT = {
   altKey: 'home.heroShotAlt',
   captionKey: 'home.heroShotCaption',
 };
+
+/** Questions de la FAQ : rendues à l'écran ET injectées dans le JSON-LD,
+ *  pour que la donnée structurée et le texte visible ne divergent jamais. */
+export const FAQ_KEYS = [
+  { q: 'home.faq1Q', a: 'home.faq1A' },
+  { q: 'home.faq2Q', a: 'home.faq2A' },
+  { q: 'home.faq3Q', a: 'home.faq3A' },
+  { q: 'home.faq4Q', a: 'home.faq4A' },
+];
