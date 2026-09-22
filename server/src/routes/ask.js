@@ -46,9 +46,31 @@ function norm(s) {
   return String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-/** Découpe une question en mots significatifs (≥ 3 caractères). */
-function keywords(question) {
-  return [...new Set(norm(question).split(/[^a-z0-9]+/).filter(w => w.length >= 3))];
+// Mots vides FR/EN (≥ 3 lettres) : sans ce filtre, « est »/« que »/« pour »… étaient
+// comptés comme mots-clés et noyaient le terme rare de la question (« palantir »),
+// faisant remonter des passages sans rapport qui contiennent juste ces mots.
+const STOPWORDS = new Set([
+  'est', 'sont', 'etre', 'suis', 'ete', 'ont', 'avons', 'avez', 'aux', 'des', 'une', 'les',
+  'que', 'qui', 'quoi', 'dont', 'quel', 'quelle', 'quels', 'quelles', 'quand', 'comment',
+  'pourquoi', 'combien', 'pour', 'par', 'dans', 'sur', 'sous', 'avec', 'sans', 'vers', 'chez',
+  'entre', 'cet', 'cette', 'ces', 'son', 'sic', 'ses', 'leur', 'leurs', 'mon', 'mes', 'ton',
+  'tes', 'notre', 'votre', 'nos', 'vos', 'elle', 'ils', 'elles', 'nous', 'vous', 'pas', 'plus',
+  'moins', 'tres', 'comme', 'mais', 'donc', 'car', 'ainsi', 'aussi', 'tout', 'tous', 'toute',
+  'the', 'and', 'but', 'are', 'was', 'were', 'for', 'what', 'who', 'which', 'how', 'why', 'when',
+  'this', 'that', 'with', 'from', 'about',
+]);
+
+/** Découpe une question en mots significatifs : ≥ 3 lettres et non mots vides. */
+export function keywords(question) {
+  return [...new Set(
+    norm(question).split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !STOPWORDS.has(w)),
+  )];
+}
+
+/** Numéro de chapitre mentionné dans la question, ou null. */
+export function chapterNumber(question) {
+  const m = /(?:chapitre|chapter|chap\.?|ch\.?)\s*(\d+)/.exec(norm(question));
+  return m ? Number(m[1]) : null;
 }
 
 /**
@@ -65,6 +87,17 @@ export const SCOPE_TYPES = {
   notes:        ['note'],
   incoherences: ['incoherence'],
   custom:       ['custom'],
+};
+
+// Libellés lisibles des étapes du Voyage du héros (les clés brutes comme
+// « inmost_cave » sont illisibles dans une réponse). Aligné sur HERO_STAGES
+// (src/data/hero_journey_config.js), dupliqué ici car le serveur n'importe pas src/.
+const HERO_STAGE_LABELS = {
+  ordinary_world: 'Monde Ordinaire', call_to_adventure: "Appel à l'Aventure",
+  refusal: "Refus de l'Appel", mentor: 'Rencontre du Mentor', threshold: 'Franchissement du Seuil',
+  tests: 'Épreuves & Alliés', inmost_cave: 'Approche de la Caverne', ordeal: 'Épreuve Suprême',
+  reward: 'Récompense', road_back: 'Chemin du Retour', resurrection: 'Résurrection',
+  return_with_elixir: "Retour avec l'Élixir",
 };
 
 /**
@@ -100,11 +133,29 @@ async function buildContext(projectId) {
   for (const ch of stc)           push(ch.id, 'beat', ch.title ? `Chapitre ${ch.number} — ${ch.title}` : `Chapitre ${ch.number}`, [ch.summary]);
   for (const p of plants)         push(p.id, 'plant', p.label, [`amorce/payoff (${p.type ?? ''}, ${p.status ?? ''})`, p.plantChapterNum != null ? `plant ch.${p.plantChapterNum}` : null, p.payoffChapterNum != null ? `payoff ch.${p.payoffChapterNum}` : null, p.notes]);
   for (const t of threads)        push(t.id, 'thread', t.name, [`fil narratif (${t.role ?? ''})`, t.description]);
-  for (const h of hero)           push(h.id, 'hero', `Voyage du héros — ${h.stageKey}`, [h.chapterNum != null ? `chapitre ${h.chapterNum}` : null, h.summary]);
+  for (const h of hero)           push(h.id, 'hero', `Voyage du héros — ${HERO_STAGE_LABELS[h.stageKey] ?? h.stageKey}`, [h.chapterNum != null ? `chapitre ${h.chapterNum}` : null, h.summary]);
   for (const inc of incoherences) push(inc.id, 'incoherence', inc.title, [`incohérence (${inc.severity ?? ''}${inc.resolved ? ', résolue' : ''})`, inc.explanation, inc.resolutionNote]);
   for (const [chapterNum, content] of Object.entries(notes ?? {})) push(`note_ch${chapterNum}`, 'note', `Note chapitre ${chapterNum}`, [content]);
   return passages;
 }
+
+// Cache des passages construits, PAR PROJET (TTL court). buildContext refait 11
+// requêtes SQL + déchiffre tout le projet → coûteux à répéter à chaque question.
+// Invalidé explicitement à chaque mutation (cf. invalidateContext, appelé par un
+// middleware sur les écritures) ; le TTL borne la péremption en filet de sécurité.
+const _ctxCache = new Map(); // projectId → { at, passages }
+const CTX_TTL_MS = 60_000;
+
+async function buildContextCached(projectId) {
+  const hit = _ctxCache.get(projectId);
+  if (hit && Date.now() - hit.at < CTX_TTL_MS) return hit.passages;
+  const passages = await buildContext(projectId);
+  _ctxCache.set(projectId, { at: Date.now(), passages });
+  return passages;
+}
+
+/** Vide le cache de contexte d'un projet (à appeler après toute mutation de données). */
+export function invalidateContext(projectId) { _ctxCache.delete(projectId); }
 
 /** Restreint les passages à une portée (type). 'all'/inconnu → tout. */
 function filterByScope(passages, scope) {
@@ -133,16 +184,27 @@ export function dominantScope(ranked) {
 }
 
 /** Score un passage par recouvrement de mots-clés avec la question. */
-function scorePassage(passage, kws) {
+export function scorePassage(passage, kws) {
+  const name = norm(passage.name);
+  const text = norm(passage.text);
+  // Une correspondance dans le NOM pèse plus (l'objet « Le Palantír » doit primer
+  // sur un personnage qui mentionne « palantir » dans sa description).
+  return kws.reduce((s, kw) => s + (name.includes(kw) ? 3 : text.includes(kw) ? 1 : 0), 0);
+}
+
+/** Boost fort d'un passage citant explicitement « chapitre N » (word-boundary → 7 ≠ 17). */
+function chapterBoost(passage, chap) {
+  if (chap == null) return 0;
   const hay = norm(`${passage.name} ${passage.text}`);
-  return kws.reduce((s, kw) => s + (hay.includes(kw) ? 1 : 0), 0);
+  return new RegExp(`chapitre ${chap}\\b`).test(hay) ? 5 : 0;
 }
 
 /** Retrieval lexical (déterministe, aucun réseau). */
-function keywordRank(passages, question, topK) {
+export function keywordRank(passages, question, topK) {
   const kws = keywords(question);
+  const chap = chapterNumber(question);
   return passages
-    .map(p => ({ p, score: scorePassage(p, kws) }))
+    .map(p => ({ p, score: scorePassage(p, kws) + chapterBoost(p, chap) }))
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
@@ -234,7 +296,7 @@ async function semanticRank(projectId, question, passages, topK) {
 export async function warmupProject(projectId) {
   const provider = getEmbeddingsProvider();
   if (!provider.enabled) return { enabled: false, warmed: 0, total: 0 };
-  const passages = await buildContext(projectId);
+  const passages = await buildContextCached(projectId);
   const { warmed } = await ensurePassageVectors(projectId, passages, provider);
   return { enabled: true, warmed, total: passages.length };
 }
@@ -269,7 +331,7 @@ export async function answerAsk({ projectId, question, scope = 'all', history = 
   if (cached) return { ...cached, cached: true };
 
   const t0 = Date.now();
-  const allPassages = await buildContext(projectId);
+  const allPassages = await buildContextCached(projectId);
   const passages = filterByScope(allPassages, scope);
   const tCtx = Date.now();
 

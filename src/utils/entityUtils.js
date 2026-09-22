@@ -108,6 +108,23 @@ export function entityHrefById(id) {
   return hrefForEntity({ id, name: meta.name, type: meta.type, typeId });
 }
 
+// Route de destination par type de source de chat NON-entité → pont du chat vers
+// la vue correspondante. Les types entité (character/location/object/custom) sont
+// gérés par entityHrefById (fiche). Aligné avec les types de passages serveur.
+const CHAT_SOURCE_ROUTE = {
+  event: '/timeline', beat: '/savethecat', plant: '/plants',
+  thread: '/threads', hero: '/heros', incoherence: '/incoherences', note: '/timeline',
+};
+
+/**
+ * URL de destination pour une source citée par le chat ({ id, type }).
+ * Entité (perso/lieu/objet/custom) → sa fiche ; autre type → la vue dédiée.
+ * Retourne null si non navigable (→ affiché non cliquable).
+ */
+export function chatSourceHref({ id, type } = {}) {
+  return entityHrefById(id) ?? CHAT_SOURCE_ROUTE[type] ?? null;
+}
+
 /** Normalise un nom pour comparaison : minuscules, sans accents, séparateurs unifiés. */
 function normalizeName(str) {
   return String(str ?? '')

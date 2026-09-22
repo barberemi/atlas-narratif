@@ -11,7 +11,7 @@ import { answerQuery } from '../../chat/router';
 import { SCOPE_KEYS, INTENT_SCOPE } from '../../chat/scopes';
 import { askProject, warmProject } from '../../api/client';
 import { toast } from '../../lib/toast';
-import { entityHrefById } from '../../utils/entityUtils';
+import { chatSourceHref } from '../../utils/entityUtils';
 import Icon from '../ui/Icon';
 import AnswerText from './AnswerText';
 import ChatThreadList from './ChatThreadList';
@@ -210,11 +210,11 @@ export default function ChatPanel() {
                 data-testid={m.role === 'bot' ? 'chat-answer' : undefined}
               >
                 {m.hint && <p className="text-[10px] text-atlas-mute italic mb-1" data-testid="chat-hint">ℹ️ {m.hint}</p>}
-                {m.role === 'bot' ? <AnswerText text={m.text} /> : m.text}
+                {m.role === 'bot' ? <AnswerText text={m.text} sources={m.sources} /> : m.text}
                 {m.sources?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2" data-testid="chat-sources">
                     {m.sources.map((s) => {
-                      const href = entityHrefById(s.id);
+                      const href = chatSourceHref(s);
                       const cls = 'text-[10px] px-1.5 py-0.5 rounded-full';
                       const style = { backgroundColor: `${ACCENT}18`, color: ACCENT, border: `1px solid ${ACCENT}40` };
                       return href
