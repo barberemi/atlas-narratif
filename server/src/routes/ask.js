@@ -67,6 +67,17 @@ export const SCOPE_TYPES = {
   custom:       ['custom'],
 };
 
+// Libellés lisibles des étapes du Voyage du héros (les clés brutes comme
+// « inmost_cave » sont illisibles dans une réponse). Aligné sur HERO_STAGES
+// (src/data/hero_journey_config.js), dupliqué ici car le serveur n'importe pas src/.
+const HERO_STAGE_LABELS = {
+  ordinary_world: 'Monde Ordinaire', call_to_adventure: "Appel à l'Aventure",
+  refusal: "Refus de l'Appel", mentor: 'Rencontre du Mentor', threshold: 'Franchissement du Seuil',
+  tests: 'Épreuves & Alliés', inmost_cave: 'Approche de la Caverne', ordeal: 'Épreuve Suprême',
+  reward: 'Récompense', road_back: 'Chemin du Retour', resurrection: 'Résurrection',
+  return_with_elixir: "Retour avec l'Élixir",
+};
+
 /**
  * Construit les passages candidats à partir de TOUTES les sources du projet
  * (« chat sur tout ») : entités natives + custom, timeline, structure (STC,
@@ -100,7 +111,7 @@ async function buildContext(projectId) {
   for (const ch of stc)           push(ch.id, 'beat', ch.title ? `Chapitre ${ch.number} — ${ch.title}` : `Chapitre ${ch.number}`, [ch.summary]);
   for (const p of plants)         push(p.id, 'plant', p.label, [`amorce/payoff (${p.type ?? ''}, ${p.status ?? ''})`, p.plantChapterNum != null ? `plant ch.${p.plantChapterNum}` : null, p.payoffChapterNum != null ? `payoff ch.${p.payoffChapterNum}` : null, p.notes]);
   for (const t of threads)        push(t.id, 'thread', t.name, [`fil narratif (${t.role ?? ''})`, t.description]);
-  for (const h of hero)           push(h.id, 'hero', `Voyage du héros — ${h.stageKey}`, [h.chapterNum != null ? `chapitre ${h.chapterNum}` : null, h.summary]);
+  for (const h of hero)           push(h.id, 'hero', `Voyage du héros — ${HERO_STAGE_LABELS[h.stageKey] ?? h.stageKey}`, [h.chapterNum != null ? `chapitre ${h.chapterNum}` : null, h.summary]);
   for (const inc of incoherences) push(inc.id, 'incoherence', inc.title, [`incohérence (${inc.severity ?? ''}${inc.resolved ? ', résolue' : ''})`, inc.explanation, inc.resolutionNote]);
   for (const [chapterNum, content] of Object.entries(notes ?? {})) push(`note_ch${chapterNum}`, 'note', `Note chapitre ${chapterNum}`, [content]);
   return passages;

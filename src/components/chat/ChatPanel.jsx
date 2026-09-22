@@ -210,7 +210,7 @@ export default function ChatPanel() {
                 data-testid={m.role === 'bot' ? 'chat-answer' : undefined}
               >
                 {m.hint && <p className="text-[10px] text-atlas-mute italic mb-1" data-testid="chat-hint">ℹ️ {m.hint}</p>}
-                {m.role === 'bot' ? <AnswerText text={m.text} /> : m.text}
+                {m.role === 'bot' ? <AnswerText text={m.text} sources={m.sources} /> : m.text}
                 {m.sources?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2" data-testid="chat-sources">
                     {m.sources.map((s) => {
