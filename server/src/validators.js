@@ -41,6 +41,12 @@ export const mapImage = z.object({
 export const ask = z.object({
   question: z.string().min(1).max(2000),
   scope: z.enum(['all', 'characters', 'locations', 'objects', 'events', 'plot', 'notes', 'incoherences', 'custom']).optional(),
+  // Historique récent du fil (mémoire conversationnelle) — du plus ancien au plus
+  // récent, hors question courante. Borné pour garder le prompt raisonnable.
+  history: z.array(z.object({
+    role: z.enum(['user', 'bot']),
+    text: z.string().max(4000),
+  }).strict()).max(20).optional(),
 }).strict();
 
 // ── Volumes ──────────────────────────────────────────────────────────────────

@@ -239,13 +239,32 @@ export async function warmupProject(projectId) {
   return { enabled: true, warmed, total: passages.length };
 }
 
+/** Fusionne deux listes de passages en préservant l'ordre et sans doublon (cap). */
+export function mergeUnique(lists, cap) {
+  const seen = new Set();
+  const out = [];
+  for (const p of lists.flat()) {
+    if (p && !seen.has(p.id)) { seen.add(p.id); out.push(p); if (out.length >= cap) break; }
+  }
+  return out;
+}
+
 /**
- * @param {{ projectId: string, question: string, scope?: string, topK?: number }} params
+ * @param {{ projectId, question, scope?, history?, topK? }} params
+ *   history: tours récents du fil [{role:'user'|'bot', text}] (mémoire conversationnelle)
  * @returns {Promise<{ answer, citations, provider, retrieval, scope, guessedScope, context }>}
  */
-export async function answerAsk({ projectId, question, scope = 'all', topK = 5 }) {
-  // Cache : mêmes (projet, portée, question) → réponse instantanée, aucun LLM.
-  const cacheKey = `${projectId}::${scope}::${question.trim().toLowerCase()}`;
+export async function answerAsk({ projectId, question, scope = 'all', history = [], topK = 8 }) {
+  // Requête de RETRIEVAL enrichie du contexte récent : « et qui le possède ? »
+  // seul ne retrouve rien ; préfixé des derniers tours utilisateur, il retrouve
+  // « Cor de Gondor ». (Le LLM, lui, reçoit l'historique complet ci-dessous.)
+  const recent = (history ?? []).slice(-6);
+  const recentUser = recent.filter(m => m.role === 'user').map(m => m.text).slice(-2);
+  const retrievalQuery = [...recentUser, question].join('\n');
+
+  // Cache : la clé inclut l'historique récent (une même question dans deux fils
+  // distincts n'a pas la même réponse).
+  const cacheKey = `${projectId}::${scope}::${hashText(retrievalQuery)}::${hashText(question)}`;
   const cached = cacheGet(cacheKey);
   if (cached) return { ...cached, cached: true };
 
@@ -254,20 +273,27 @@ export async function answerAsk({ projectId, question, scope = 'all', topK = 5 }
   const passages = filterByScope(allPassages, scope);
   const tCtx = Date.now();
 
-  // Retrieval sémantique (embeddings) si activé, sinon/en cas d'échec → lexical.
+  // Retrieval HYBRIDE : sémantique (embeddings) pour la pertinence + lexical pour
+  // garantir les correspondances EXACTES de nom (« Cor de Gondor »), que le
+  // sémantique peut noyer parmi 250 passages. Le lexical est placé en tête (slots
+  // réservés) puis complété par le sémantique jusqu'à topK.
   let ranked = null;
   let retrieval = 'keyword';
   try {
-    ranked = await semanticRank(projectId, question, passages, topK);
-    if (ranked) retrieval = 'semantic';
+    const semantic = await semanticRank(projectId, retrievalQuery, passages, topK);
+    if (semantic) {
+      retrieval = 'hybrid';
+      const lexical = keywordRank(passages, retrievalQuery, 3);
+      ranked = mergeUnique([lexical, semantic], topK);
+    }
   } catch {
     ranked = null; // embeddings indisponibles → repli lexical, jamais de crash
   }
-  if (!ranked) ranked = keywordRank(passages, question, topK);
+  if (!ranked) ranked = keywordRank(passages, retrievalQuery, topK);
   const tRetrieval = Date.now();
 
   const provider = getProvider();
-  const { answer, citations, degraded } = await provider.ask({ question, context: ranked });
+  const { answer, citations, degraded } = await provider.ask({ question, context: ranked, history: recent });
   const tLlm = Date.now();
 
   // En portée « all », on remonte le type dominant des passages classés → simple

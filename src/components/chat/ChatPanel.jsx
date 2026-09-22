@@ -90,7 +90,13 @@ export default function ChatPanel() {
     if (deep) {
       setBusy(true);
       try {
-        const res = await askProject(question, projectId, scope);
+        // Mémoire conversationnelle : les tours du fil AVANT la question courante
+        // (hors bulles d'erreur). `messages` est le snapshot d'avant l'ajout.
+        const history = messages
+          .filter(m => !m.error && m.text)
+          .slice(-10)
+          .map(m => ({ role: m.role, text: m.text }));
+        const res = await askProject(question, projectId, scope, history);
         addMessage({ role: 'bot', text: res.answer, meta: `${res.provider}${res.context?.length ? ` · ${res.context.length} source(s)` : ''}`, sources: res.context ?? [], hint: scopeHint(res.guessedScope) });
       } catch (e) {
         // Message localisé et lisible plutôt que l'erreur brute (« Gateway Timeout »).

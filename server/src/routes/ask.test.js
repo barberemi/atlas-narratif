@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://atlas:atlas_dev@localhost:5432/atlas';
 process.env.LLM_RATE_LIMIT_PER_MIN = process.env.LLM_RATE_LIMIT_PER_MIN || '20';
 
-const { checkRateLimit, rankByVectors, dominantScope, SCOPE_TYPES } = await import('./ask.js');
+const { checkRateLimit, rankByVectors, dominantScope, mergeUnique, SCOPE_TYPES } = await import('./ask.js');
 
 describe('rankByVectors (retrieval sémantique)', () => {
   const passages = [
@@ -55,6 +55,24 @@ describe('dominantScope (indice de portée d\'après les résultats)', () => {
       ['characters', 'custom', 'events', 'incoherences', 'locations', 'notes', 'objects', 'plot'],
     );
     assert.deepEqual(SCOPE_TYPES.plot, ['beat', 'plant', 'thread', 'hero']);
+  });
+});
+
+describe('mergeUnique (retrieval hybride)', () => {
+  it('place le lexical en tête, complète par le sémantique, sans doublon', () => {
+    const lex = [{ id: 'cor_gondor' }];
+    const sem = [{ id: 'cor_helm' }, { id: 'cor_gondor' }, { id: 'anneau' }];
+    const merged = mergeUnique([lex, sem], 8);
+    assert.deepEqual(merged.map(p => p.id), ['cor_gondor', 'cor_helm', 'anneau']);
+  });
+
+  it('tronque au cap', () => {
+    const a = [{ id: '1' }, { id: '2' }, { id: '3' }];
+    assert.equal(mergeUnique([a], 2).length, 2);
+  });
+
+  it('ignore les entrées nulles', () => {
+    assert.deepEqual(mergeUnique([[null, { id: 'x' }]], 5).map(p => p.id), ['x']);
   });
 });
 
