@@ -41,7 +41,8 @@ export default function HomePageSEO() {
         ],
       }) }} />
 
-      <div className="h-full overflow-y-auto no-scrollbar bg-atlas-ink text-atlas-text">
+      {/* Pas de `no-scrollbar` : miroir de App.jsx, voir le commentaire là-bas. */}
+      <div className="h-full overflow-y-auto bg-atlas-ink text-atlas-text">
         <div className="max-w-5xl mx-auto px-6 md:px-10">
 
           {/* ── Hero éditorial (split) ── */}
@@ -78,8 +79,8 @@ export default function HomePageSEO() {
                   {t('home.ctaStart')}
                 </span>
                 <span
-                  className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] pb-0.5 text-atlas-text"
-                  style={{ borderBottom: '2px solid var(--color-atlas-gold)' }}
+                  className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] px-6 py-3 text-atlas-text"
+                  style={{ border: '2px solid var(--color-atlas-gold)' }}
                 >
                   {t('home.ctaDemo')}
                 </span>
@@ -105,55 +106,6 @@ export default function HomePageSEO() {
                 {t(HERO_SHOT.captionKey)}
               </figcaption>
             </figure>
-          </section>
-
-          {/* ── Commencer : choix du flux (statique) ── */}
-          <section className="max-w-2xl mx-auto py-14 md:py-16 flex flex-col gap-10">
-            <div className="flex flex-col">
-              <div
-                className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3"
-                style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
-              >
-                {t('home.startQuestion')}
-              </div>
-
-              <div className="flex flex-col">
-                <div
-                  className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
-                  style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
-                >
-                  <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>01</div>
-                  <div>
-                    <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.buildTitle')}</h2>
-                    <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.buildDesc')}</p>
-                  </div>
-                  <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green whitespace-nowrap md:justify-self-end md:self-center">{t('home.buildAction')}</span>
-                </div>
-
-                <div
-                  className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
-                  style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
-                >
-                  <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>02</div>
-                  <div>
-                    <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.analyzeTitle')}</h2>
-                    <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.analyzeDesc')}</p>
-                  </div>
-                  <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-gold whitespace-nowrap md:justify-self-end md:self-center">{t('home.analyzeAction')}</span>
-                </div>
-              </div>
-
-              {/* Démo LOTR (statique) */}
-              <div className="flex items-center gap-4 py-6">
-                <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center">
-                  <span className="text-2xl">&#128141;</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-serif text-base font-semibold text-atlas-text">{t('home.demoTitle')}</p>
-                  <p className="text-xs text-atlas-mute font-serif italic mt-0.5">{t('home.demoDesc')}</p>
-                </div>
-              </div>
-            </div>
           </section>
 
           {/* ── Bande citation ── */}
@@ -206,6 +158,55 @@ export default function HomePageSEO() {
                 />
               </div>
             ))}
+          </section>
+
+          {/* ── Commencer : choix du flux (statique) ── */}
+          <section className="max-w-2xl mx-auto py-14 md:py-16 flex flex-col gap-10">
+            <div className="flex flex-col">
+              <div
+                className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3"
+                style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
+              >
+                {t('home.startQuestion')}
+              </div>
+
+              <div className="flex flex-col">
+                <div
+                  className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
+                  style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+                >
+                  <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>01</div>
+                  <div>
+                    <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.buildTitle')}</h2>
+                    <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.buildDesc')}</p>
+                  </div>
+                  <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green whitespace-nowrap md:justify-self-end md:self-center">{t('home.buildAction')}</span>
+                </div>
+
+                <div
+                  className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
+                  style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+                >
+                  <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>02</div>
+                  <div>
+                    <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.analyzeTitle')}</h2>
+                    <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.analyzeDesc')}</p>
+                  </div>
+                  <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-gold whitespace-nowrap md:justify-self-end md:self-center">{t('home.analyzeAction')}</span>
+                </div>
+              </div>
+
+              {/* Démo LOTR (statique) */}
+              <div className="flex items-center gap-4 py-6">
+                <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center">
+                  <span className="text-2xl">&#128141;</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-serif text-base font-semibold text-atlas-text">{t('home.demoTitle')}</p>
+                  <p className="text-xs text-atlas-mute font-serif italic mt-0.5">{t('home.demoDesc')}</p>
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* ── Closer ── */}

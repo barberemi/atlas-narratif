@@ -399,7 +399,11 @@ function HomePage() {
           { "@type": "Question", "name": "Atlas Narratif supporte-t-il les séries en plusieurs tomes ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Le support multi-tomes permet de filtrer par volume, de suivre les amorces narratives entre les tomes et de visualiser les arcs sur l'ensemble de la série." } },
         ],
       }) }} />
-    <div className="h-full overflow-y-auto no-scrollbar" style={{ backgroundColor: 'var(--color-atlas-ink)' }}>
+    {/* Pas de `no-scrollbar` ici, contrairement au reste de l'app : la home
+        fait plus de trois écrans et son premier écran ne déborde pas
+        visuellement. Sans barre de défilement, plus rien n'indique au
+        visiteur qu'il y a une suite. Ailleurs, la masquer reste voulu. */}
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--color-atlas-ink)' }}>
       <div className="max-w-5xl mx-auto px-6 md:px-10">
 
         {/* ── Hero éditorial (split) ── */}
@@ -436,10 +440,13 @@ function HomePage() {
               >
                 {t('home.ctaStart')}
               </button>
+              {/* Même encombrement que « Commencer » : pour un visiteur venu
+                  d'un lien, explorer la démo sans rien créer est le chemin le
+                  moins coûteux — il ne doit pas passer pour un lien secondaire. */}
               <button
                 onClick={handleLoadDemo}
-                className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] pb-0.5 text-atlas-text transition-colors hover:text-atlas-green"
-                style={{ borderBottom: '2px solid var(--color-atlas-gold)' }}
+                className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] px-6 py-3 text-atlas-text transition-colors hover:border-atlas-green hover:text-atlas-green"
+                style={{ border: '2px solid var(--color-atlas-gold)' }}
               >
                 {t('home.ctaDemo')}
               </button>
@@ -469,6 +476,58 @@ function HomePage() {
               {t(HERO_SHOT.captionKey)}
             </figcaption>
           </figure>
+        </section>
+
+        {/* ── Bande citation ── */}
+        <section
+          className="py-14 md:py-20"
+          style={{ borderTop: '1px solid var(--color-atlas-line)', borderBottom: '1px solid var(--color-atlas-line)' }}
+        >
+          <p
+            className="font-serif font-medium text-atlas-text"
+            style={{ fontSize: 'clamp(1.5rem, 3.4vw, 2.1rem)', lineHeight: 1.4, maxWidth: '26ch' }}
+          >
+            <span style={{ color: 'var(--color-atlas-green)' }}>{t('home.bandQuoteLead')}</span>{' '}
+            {t('home.bandQuoteRest')}
+          </p>
+        </section>
+
+        {/* ── Sommaire : ce que fait l'outil ── */}
+        <section className="py-14 md:py-16">
+          <div
+            className="flex items-center justify-between font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
+            style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
+          >
+            <span>{t('home.indexLabel')}</span>
+            <span>{t('home.indexToc')}</span>
+          </div>
+          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey, shot, shotW, shotH, altKey }) => (
+            <div key={no} className="py-7" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+              <div className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline">
+                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
+                <div>
+                  <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
+                    {t(titleKey)}
+                  </h3>
+                  <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
+                    {t(catKey)}
+                  </p>
+                </div>
+                <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
+                  {t(descKey)}
+                </div>
+              </div>
+              <img
+                src={shot}
+                alt={t(altKey)}
+                loading="lazy"
+                width={shotW}
+                height={shotH}
+                className="w-full h-auto mt-6 md:ml-16 md:w-[calc(100%-4rem)]"
+                style={{ border: '1px solid var(--color-atlas-line)' }}
+              />
+            </div>
+          ))}
         </section>
 
         {/* ── Commencer : onboarding ── */}
@@ -853,58 +912,6 @@ function HomePage() {
           </div>
         )}
 
-        </section>
-
-        {/* ── Bande citation ── */}
-        <section
-          className="py-14 md:py-20"
-          style={{ borderTop: '1px solid var(--color-atlas-line)', borderBottom: '1px solid var(--color-atlas-line)' }}
-        >
-          <p
-            className="font-serif font-medium text-atlas-text"
-            style={{ fontSize: 'clamp(1.5rem, 3.4vw, 2.1rem)', lineHeight: 1.4, maxWidth: '26ch' }}
-          >
-            <span style={{ color: 'var(--color-atlas-green)' }}>{t('home.bandQuoteLead')}</span>{' '}
-            {t('home.bandQuoteRest')}
-          </p>
-        </section>
-
-        {/* ── Sommaire : ce que fait l'outil ── */}
-        <section className="py-14 md:py-16">
-          <div
-            className="flex items-center justify-between font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
-            style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
-          >
-            <span>{t('home.indexLabel')}</span>
-            <span>{t('home.indexToc')}</span>
-          </div>
-          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey, shot, shotW, shotH, altKey }) => (
-            <div key={no} className="py-7" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
-              <div className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline">
-                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
-                <div>
-                  <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
-                    {t(titleKey)}
-                  </h3>
-                  <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
-                    {t(catKey)}
-                  </p>
-                </div>
-                <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
-                  {t(descKey)}
-                </div>
-              </div>
-              <img
-                src={shot}
-                alt={t(altKey)}
-                loading="lazy"
-                width={shotW}
-                height={shotH}
-                className="w-full h-auto mt-6 md:ml-16 md:w-[calc(100%-4rem)]"
-                style={{ border: '1px solid var(--color-atlas-line)' }}
-              />
-            </div>
-          ))}
         </section>
 
         {/* ── Closer ── */}
