@@ -89,3 +89,28 @@ describe('answerQuery — intents', () => {
     expect(['unknown', 'lookup']).toContain(r.intent);
   });
 });
+
+describe('answerQuery — portées (scope)', () => {
+  it('resolveEntity restreint aux types de la portée', () => {
+    expect(resolveEntity('Aragorn', DATA, 'locations')).toBeNull();   // perso hors portée lieux
+    expect(resolveEntity('La Moria', DATA, 'characters')).toBeNull(); // lieu hors portée persos
+    expect(resolveEntity('Aragorn', DATA, 'characters').entity.id).toBe('char_aragorn');
+  });
+
+  it('portée non résolvable en local (plot/notes/incoherences) → deepOnly', () => {
+    expect(answerQuery('les amorces', DATA, 'plot').intent).toBe('deepOnly');
+    expect(answerQuery('mes notes', DATA, 'notes').intent).toBe('deepOnly');
+    expect(answerQuery('des contradictions ?', DATA, 'incoherences').intent).toBe('deepOnly');
+  });
+
+  it('intent chapitre gaté par la portée', () => {
+    expect(answerQuery('chapitre 7', DATA, 'events').intent).toBe('chapter'); // compatible
+    expect(answerQuery('chapitre 7', DATA, 'objects').intent).not.toBe('chapter'); // hors portée
+  });
+
+  it('« qui est X » restreint à la portée personnages', () => {
+    expect(answerQuery('qui est Aragorn', DATA, 'characters').intent).toBe('who');
+    // même question mais portée lieux → l'entité perso n'est pas résolue
+    expect(answerQuery('qui est Aragorn', DATA, 'locations').answer).toContain('trouve pas');
+  });
+});

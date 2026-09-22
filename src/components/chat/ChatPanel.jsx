@@ -8,6 +8,7 @@ import { useChatStore } from '../../stores/useChatStore';
 import { useStoreLoader } from '../../hooks/useStoreLoader';
 import { useProject } from '../../db/ProjectContext';
 import { answerQuery } from '../../chat/router';
+import { SCOPE_KEYS, INTENT_SCOPE } from '../../chat/scopes';
 import { askProject, warmProject } from '../../api/client';
 import { toast } from '../../lib/toast';
 import { entityHrefById } from '../../utils/entityUtils';
@@ -62,6 +63,7 @@ export default function ChatPanel() {
 
   const [input, setInput] = useState('');
   const [deep, setDeep] = useState(false);
+  const [scope, setScope] = useState('all');
   const [busy, setBusy] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const listRef = useRef(null);
@@ -79,11 +81,23 @@ export default function ChatPanel() {
     setInput('');
     addMessage({ role: 'user', text: question });
 
+    // Indice de portée (« recherche surtout dans : X ») : seulement en mode « Tous »
+    // et si une portée dominante se dégage. Purement indicatif, ne restreint rien.
+    const scopeHint = (guessed) => (scope === 'all' && guessed)
+      ? t('chat.scopeHint', { scope: t(`chat.scopes.${guessed}`) })
+      : null;
+
     if (deep) {
       setBusy(true);
       try {
-        const res = await askProject(question, projectId);
-        addMessage({ role: 'bot', text: res.answer, meta: `${res.provider}${res.context?.length ? ` · ${res.context.length} source(s)` : ''}`, sources: res.context ?? [] });
+        // Mémoire conversationnelle : les tours du fil AVANT la question courante
+        // (hors bulles d'erreur). `messages` est le snapshot d'avant l'ajout.
+        const history = messages
+          .filter(m => !m.error && m.text)
+          .slice(-10)
+          .map(m => ({ role: m.role, text: m.text }));
+        const res = await askProject(question, projectId, scope, history);
+        addMessage({ role: 'bot', text: res.answer, meta: `${res.provider}${res.context?.length ? ` · ${res.context.length} source(s)` : ''}`, sources: res.context ?? [], hint: scopeHint(res.guessedScope) });
       } catch (e) {
         // Message localisé et lisible plutôt que l'erreur brute (« Gateway Timeout »).
         const msg = e?.code === 'TIMEOUT' ? t('chat.errorTimeout') : t('chat.error');
@@ -93,12 +107,12 @@ export default function ChatPanel() {
         setBusy(false);
       }
     } else {
-      const res = answerQuery(question, { characters, locations, objects, events, customEntities });
+      const res = answerQuery(question, { characters, locations, objects, events, customEntities }, scope);
       // Mêmes pucettes de sources cliquables que le niveau 2 : les entités citées.
       const sources = (res.matches ?? [])
         .map(m => ({ id: m.id, name: m.name ?? m.title }))
         .filter(s => s.id && s.name);
-      addMessage({ role: 'bot', text: res.answer, meta: res.intent, sources });
+      addMessage({ role: 'bot', text: res.answer, meta: res.intent, sources, hint: scopeHint(INTENT_SCOPE[res.intent]) });
     }
   };
 
@@ -151,6 +165,28 @@ export default function ChatPanel() {
           <Link to="/privacy" className="underline hover:text-atlas-soft">{t('chat.disclaimerLink')}</Link>
         </p>
 
+        {/* Filtres de portée : restreignent la recherche à un type de contenu. */}
+        <div className="px-6 pt-3 flex gap-1.5 overflow-x-auto flex-shrink-0" data-testid="chat-scopes">
+          {SCOPE_KEYS.map((key) => {
+            const activeChip = scope === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setScope(key)}
+                data-testid={`chat-scope-${key}`}
+                aria-pressed={activeChip}
+                className="text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap border transition hover:brightness-125"
+                style={activeChip
+                  ? { backgroundColor: `${ACCENT}22`, color: ACCENT, borderColor: `${ACCENT}66` }
+                  : { backgroundColor: 'transparent', color: 'var(--color-atlas-mute)', borderColor: 'rgba(255,255,255,0.12)' }}
+              >
+                {t(`chat.scopes.${key}`)}
+              </button>
+            );
+          })}
+        </div>
+
         <main ref={listRef} className="flex-1 overflow-y-auto px-6 py-6 space-y-3">
           {messages.length === 0 && (
             <div className="text-atlas-mute text-sm space-y-1">
@@ -173,6 +209,7 @@ export default function ChatPanel() {
                     : { backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                 data-testid={m.role === 'bot' ? 'chat-answer' : undefined}
               >
+                {m.hint && <p className="text-[10px] text-atlas-mute italic mb-1" data-testid="chat-hint">ℹ️ {m.hint}</p>}
                 {m.role === 'bot' ? <AnswerText text={m.text} /> : m.text}
                 {m.sources?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2" data-testid="chat-sources">

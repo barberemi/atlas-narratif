@@ -80,6 +80,25 @@ describe('OpenAICompatibleProvider', () => {
     await new OpenAICompatibleProvider().ask({ question: 'q', context: [{ id: 'a', name: 'A', text: 't' }] });
     assert.ok(!('reasoning_effort' in sentBody));
   });
+
+  it('injecte l\'historique comme messages (bot→assistant, user→user) avant la question', async () => {
+    process.env.LLM_BASE_URL = 'https://api.example.com';
+    process.env.LLM_API_KEY = 'k';
+    let sentBody = null;
+    globalThis.fetch = async (url, opts) => {
+      sentBody = JSON.parse(opts.body);
+      return { ok: true, json: async () => ({ choices: [{ message: { content: 'ok [a]' } }] }) };
+    };
+    await new OpenAICompatibleProvider().ask({
+      question: 'et qui le possède ?',
+      context: [{ id: 'a', name: 'A', text: 't' }],
+      history: [{ role: 'user', text: 'le cor de gondor ?' }, { role: 'bot', text: 'Porté par Boromir.' }],
+    });
+    const roles = sentBody.messages.map(m => m.role);
+    assert.deepEqual(roles, ['system', 'user', 'assistant', 'user']);
+    assert.match(sentBody.messages[1].content, /cor de gondor/);
+    assert.match(sentBody.messages[3].content, /et qui le poss/); // question courante en dernier
+  });
 });
 
 describe('getProvider', () => {

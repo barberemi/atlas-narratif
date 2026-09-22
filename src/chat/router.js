@@ -9,6 +9,8 @@
  * Retour : { intent, answer, matches } (matches = entités/événements cités).
  */
 
+import { SCOPE_ENTITY_TYPES } from './scopes.js';
+
 function norm(s) {
   return String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 }
@@ -21,15 +23,18 @@ function norm(s) {
 const wiki = (name) => `[[${name}]]`;
 
 /** Résout une entité (perso/lieu/objet/custom) par nom ou alias. */
-export function resolveEntity(name, data) {
+export function resolveEntity(name, data, scope = 'all') {
   const q = norm(name);
   if (!q) return null;
+  // 'all' → toutes ; portée entité → seulement ses types ; portée non-entité
+  // (events/plot/notes/incoherences) → [] → aucune résolution locale.
+  const allow = scope === 'all' ? null : (SCOPE_ENTITY_TYPES[scope] ?? []);
   const pools = [
     ['character', data.characters ?? []],
     ['location', data.locations ?? []],
     ['object', data.objects ?? []],
     ['custom', data.customEntities ?? []],
-  ];
+  ].filter(([type]) => !allow || allow.includes(type));
   // Passe 1 : égalité exacte nom/alias.
   for (const [type, pool] of pools) {
     const hit = pool.find(e => norm(e.name) === q || (e.aliases ?? []).some(a => norm(a) === q));
@@ -50,12 +55,20 @@ function eventsForCharacter(charId, events) {
     .sort((a, b) => (a.chapter ?? 0) - (b.chapter ?? 0));
 }
 
-export function answerQuery(question, data = {}) {
+export function answerQuery(question, data = {}, scope = 'all') {
   const q = norm(question);
   if (!q) return { intent: 'empty', answer: 'Posez une question sur votre projet.', matches: [] };
 
+  // Portées non résolvables en local (structure, notes, incohérences) → le niveau 1
+  // déterministe n'a pas ces données ; on invite à la recherche approfondie (RAG).
+  if (['plot', 'notes', 'incoherences'].includes(scope)) {
+    return { intent: 'deepOnly', answer: 'Cette recherche n’est disponible qu’en mode « recherche approfondie » (active le bouton en haut).', matches: [] };
+  }
+
   // ── Intent : événements d'un chapitre ────────────────────────────────────────
-  const chapMatch = /(?:chapitre|chapter|chap\.?|ch\.?)\s*(\d+)/.exec(q);
+  const chapMatch = (scope === 'all' || scope === 'events')
+    ? /(?:chapitre|chapter|chap\.?|ch\.?)\s*(\d+)/.exec(q)
+    : null;
   if (chapMatch) {
     const n = Number(chapMatch[1]);
     const evts = (data.events ?? []).filter(e => Number(e.chapter) === n);
@@ -73,7 +86,7 @@ export function answerQuery(question, data = {}) {
 
   // ── Intent : où est X ────────────────────────────────────────────────────────
   if (/\b(où est|ou est|où se trouve|where is)\b/.test(q) && candidateName) {
-    const res = resolveEntity(candidateName, data);
+    const res = resolveEntity(candidateName, data, scope);
     if (!res) return { intent: 'where', answer: `Je ne trouve pas « ${candidateName} » dans le projet.`, matches: [] };
     if (res.type === 'character') {
       const evts = eventsForCharacter(res.entity.id, data.events).filter(e => e.locationId);
@@ -89,7 +102,7 @@ export function answerQuery(question, data = {}) {
 
   // ── Intent : objets portés par X ─────────────────────────────────────────────
   if (/\bobjets?\b|\bporte\b|\bcarries\b|\bheld by\b/.test(q) && candidateName) {
-    const res = resolveEntity(candidateName, data);
+    const res = resolveEntity(candidateName, data, scope);
     if (!res) return { intent: 'objects', answer: `Je ne trouve pas « ${candidateName} » dans le projet.`, matches: [] };
     const held = (data.objects ?? []).filter(o => norm(o.currentHolder) === norm(res.entity.name));
     if (held.length === 0) return { intent: 'objects', answer: `${wiki(res.entity.name)} ne détient aucun objet référencé.`, matches: [res.entity] };
@@ -98,7 +111,7 @@ export function answerQuery(question, data = {}) {
 
   // ── Intent : qui est X ───────────────────────────────────────────────────────
   if (/\b(qui est|who is|c'est qui)\b/.test(q) && candidateName) {
-    const res = resolveEntity(candidateName, data);
+    const res = resolveEntity(candidateName, data, scope);
     if (!res) return { intent: 'who', answer: `Je ne trouve pas « ${candidateName} » dans le projet.`, matches: [] };
     const e = res.entity;
     const bits = [e.description, (e.aliases ?? []).length ? `Alias : ${e.aliases.join(', ')}.` : null].filter(Boolean);
@@ -106,7 +119,7 @@ export function answerQuery(question, data = {}) {
   }
 
   // ── Fallback : recherche libre par nom ───────────────────────────────────────
-  const res = resolveEntity(question, data);
+  const res = resolveEntity(question, data, scope);
   if (res) {
     const e = res.entity;
     return { intent: 'lookup', answer: `${wiki(e.name)} (${res.type}) — ${e.description ?? 'aucune description.'}`, matches: [e] };

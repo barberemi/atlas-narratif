@@ -54,13 +54,20 @@ class OpenAICompatibleProvider {
   }
   get name() { return 'hosted'; }
 
-  async ask({ question, context = [] }) {
+  async ask({ question, context = [], history = [] }) {
     // Repli gracieux si mal configuré : jamais de crash pour l'utilisateur.
     if (!this.baseUrl || !this.apiKey) return this._mock.ask({ question, context });
 
     const ctx = context.map(c => `[${c.id}] ${c.name ? `${c.name}: ` : ''}${c.text ?? ''}`).join('\n');
+    // Historique de conversation → le modèle résout les références (« le », « il »,
+    // « et qui le possède ? »). Borné et tronqué pour garder le prompt raisonnable.
+    const priorMessages = (history ?? []).slice(-8).map(m => ({
+      role: m.role === 'bot' ? 'assistant' : 'user',
+      content: String(m.text ?? '').slice(0, 2000),
+    })).filter(m => m.content);
     const messages = [
-      { role: 'system', content: "Tu réponds à des questions sur un projet narratif, UNIQUEMENT à partir du CONTEXTE fourni. Cite entre crochets les identifiants [id] des passages utilisés. Si le contexte ne contient pas la réponse, dis-le clairement. Sois concis." },
+      { role: 'system', content: "Tu réponds à des questions sur un projet narratif, UNIQUEMENT à partir du CONTEXTE fourni. Appuie-toi sur l'historique de la conversation pour résoudre les références (pronoms, « le/la », sujet implicite). Cite entre crochets les identifiants [id] des passages utilisés. Si le contexte ne contient pas la réponse, dis-le clairement. Sois concis." },
+      ...priorMessages,
       { role: 'user', content: `CONTEXTE :\n${ctx || '(vide)'}\n\nQUESTION : ${question}` },
     ];
 

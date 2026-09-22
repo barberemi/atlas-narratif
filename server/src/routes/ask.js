@@ -51,20 +51,85 @@ function keywords(question) {
   return [...new Set(norm(question).split(/[^a-z0-9]+/).filter(w => w.length >= 3))];
 }
 
-/** Construit les passages candidats à partir des entités du projet. */
+/**
+ * Portées (« scope ») exposées au chat → types de passages correspondants.
+ * 'all' (ou inconnu) = pas de filtre. Doit rester aligné avec les chips de
+ * ChatPanel et l'enum du validateur `ask`.
+ */
+export const SCOPE_TYPES = {
+  characters:   ['character'],
+  locations:    ['location'],
+  objects:      ['object'],
+  events:       ['event'],
+  plot:         ['beat', 'plant', 'thread', 'hero'],
+  notes:        ['note'],
+  incoherences: ['incoherence'],
+  custom:       ['custom'],
+};
+
+/**
+ * Construit les passages candidats à partir de TOUTES les sources du projet
+ * (« chat sur tout ») : entités natives + custom, timeline, structure (STC,
+ * plants, fils, Voyage du héros), notes, incohérences. Chaque passage porte un
+ * `type` (→ filtrage par portée). Le warm-up embedde l'ensemble une fois.
+ */
 async function buildContext(projectId) {
-  const [characters, locations, objects, customEntities] = await Promise.all([
+  const [characters, locations, objects, customEntities, events, stc, plants, threads, hero, incoherences, notes] = await Promise.all([
     q.getCharacters(projectId),
     q.getLocations(projectId),
     q.getObjects(projectId),
     q.getCustomEntities(projectId),
+    q.getTimelineEvents(projectId),
+    q.getStcChapters(projectId),
+    q.getPlants(projectId),
+    q.getThreads(projectId),
+    q.getHeroJourneyEntries(projectId),
+    q.getIncoherences(projectId),
+    q.getChapterNotes(projectId),
   ]);
   const passages = [];
-  for (const c of characters) passages.push({ id: c.id, type: 'character', name: c.name, text: [c.description, (c.aliases ?? []).join(', '), c.role].filter(Boolean).join(' — ') });
-  for (const l of locations) passages.push({ id: l.id, type: 'location', name: l.name, text: [l.description, l.type].filter(Boolean).join(' — ') });
-  for (const o of objects) passages.push({ id: o.id, type: 'object', name: o.name, text: [o.description, o.currentHolder ? `détenu par ${o.currentHolder}` : null].filter(Boolean).join(' — ') });
-  for (const e of customEntities) passages.push({ id: e.id, type: 'custom', name: e.name, text: [e.description, (e.aliases ?? []).join(', ')].filter(Boolean).join(' — ') });
+  const push = (id, type, name, parts) => {
+    const text = parts.filter(Boolean).join(' — ');
+    if (name || text) passages.push({ id, type, name: name ?? '', text });
+  };
+  for (const c of characters)     push(c.id, 'character', c.name, [c.description, (c.aliases ?? []).join(', '), c.role]);
+  for (const l of locations)      push(l.id, 'location', l.name, [l.description, l.type]);
+  for (const o of objects)        push(o.id, 'object', o.name, [o.description, o.currentHolder ? `détenu par ${o.currentHolder}` : null]);
+  for (const e of customEntities) push(e.id, 'custom', e.name, [e.description, (e.aliases ?? []).join(', ')]);
+  for (const ev of events)        push(ev.id, 'event', ev.title, [ev.chapter != null ? `Chapitre ${ev.chapter}` : null, ev.description, ev.sceneGoal, ev.sceneConflict, ev.sceneOutcome]);
+  for (const ch of stc)           push(ch.id, 'beat', ch.title ? `Chapitre ${ch.number} — ${ch.title}` : `Chapitre ${ch.number}`, [ch.summary]);
+  for (const p of plants)         push(p.id, 'plant', p.label, [`amorce/payoff (${p.type ?? ''}, ${p.status ?? ''})`, p.plantChapterNum != null ? `plant ch.${p.plantChapterNum}` : null, p.payoffChapterNum != null ? `payoff ch.${p.payoffChapterNum}` : null, p.notes]);
+  for (const t of threads)        push(t.id, 'thread', t.name, [`fil narratif (${t.role ?? ''})`, t.description]);
+  for (const h of hero)           push(h.id, 'hero', `Voyage du héros — ${h.stageKey}`, [h.chapterNum != null ? `chapitre ${h.chapterNum}` : null, h.summary]);
+  for (const inc of incoherences) push(inc.id, 'incoherence', inc.title, [`incohérence (${inc.severity ?? ''}${inc.resolved ? ', résolue' : ''})`, inc.explanation, inc.resolutionNote]);
+  for (const [chapterNum, content] of Object.entries(notes ?? {})) push(`note_ch${chapterNum}`, 'note', `Note chapitre ${chapterNum}`, [content]);
   return passages;
+}
+
+/** Restreint les passages à une portée (type). 'all'/inconnu → tout. */
+function filterByScope(passages, scope) {
+  const types = SCOPE_TYPES[scope];
+  return types ? passages.filter(p => types.includes(p.type)) : passages;
+}
+
+// Portée « dominante » d'un ensemble de passages classés → sert d'INDICE à l'UI
+// (« recherche surtout dans : X »), ne restreint JAMAIS rien. Basé sur les
+// RÉSULTATS réels du retrieval → indépendant de la langue de la question
+// (FR/EN/ZH) et plus fidèle qu'une devinette par mots-clés.
+const TYPE_TO_SCOPE = Object.fromEntries(
+  Object.entries(SCOPE_TYPES).flatMap(([scope, types]) => types.map(t => [t, scope])),
+);
+
+/** Portée majoritaire parmi les passages classés (≥ 2 du même type), sinon null. */
+export function dominantScope(ranked) {
+  const counts = {};
+  for (const p of ranked ?? []) {
+    const s = TYPE_TO_SCOPE[p.type];
+    if (s) counts[s] = (counts[s] ?? 0) + 1;
+  }
+  let best = null, bestN = 0;
+  for (const [s, n] of Object.entries(counts)) if (n > bestN) { best = s; bestN = n; }
+  return bestN >= 2 ? best : null;
 }
 
 /** Score un passage par recouvrement de mots-clés avec la question. */
@@ -174,41 +239,72 @@ export async function warmupProject(projectId) {
   return { enabled: true, warmed, total: passages.length };
 }
 
+/** Fusionne deux listes de passages en préservant l'ordre et sans doublon (cap). */
+export function mergeUnique(lists, cap) {
+  const seen = new Set();
+  const out = [];
+  for (const p of lists.flat()) {
+    if (p && !seen.has(p.id)) { seen.add(p.id); out.push(p); if (out.length >= cap) break; }
+  }
+  return out;
+}
+
 /**
- * @param {{ projectId: string, question: string, topK?: number }} params
- * @returns {Promise<{ answer, citations, provider, context }>}
+ * @param {{ projectId, question, scope?, history?, topK? }} params
+ *   history: tours récents du fil [{role:'user'|'bot', text}] (mémoire conversationnelle)
+ * @returns {Promise<{ answer, citations, provider, retrieval, scope, guessedScope, context }>}
  */
-export async function answerAsk({ projectId, question, topK = 5 }) {
-  // Cache : mêmes (projet, question) → réponse instantanée, aucun appel LLM.
-  const cacheKey = `${projectId}::${question.trim().toLowerCase()}`;
+export async function answerAsk({ projectId, question, scope = 'all', history = [], topK = 8 }) {
+  // Requête de RETRIEVAL enrichie du contexte récent : « et qui le possède ? »
+  // seul ne retrouve rien ; préfixé des derniers tours utilisateur, il retrouve
+  // « Cor de Gondor ». (Le LLM, lui, reçoit l'historique complet ci-dessous.)
+  const recent = (history ?? []).slice(-6);
+  const recentUser = recent.filter(m => m.role === 'user').map(m => m.text).slice(-2);
+  const retrievalQuery = [...recentUser, question].join('\n');
+
+  // Cache : la clé inclut l'historique récent (une même question dans deux fils
+  // distincts n'a pas la même réponse).
+  const cacheKey = `${projectId}::${scope}::${hashText(retrievalQuery)}::${hashText(question)}`;
   const cached = cacheGet(cacheKey);
   if (cached) return { ...cached, cached: true };
 
   const t0 = Date.now();
-  const passages = await buildContext(projectId);
+  const allPassages = await buildContext(projectId);
+  const passages = filterByScope(allPassages, scope);
   const tCtx = Date.now();
 
-  // Retrieval sémantique (embeddings) si activé, sinon/en cas d'échec → lexical.
+  // Retrieval HYBRIDE : sémantique (embeddings) pour la pertinence + lexical pour
+  // garantir les correspondances EXACTES de nom (« Cor de Gondor »), que le
+  // sémantique peut noyer parmi 250 passages. Le lexical est placé en tête (slots
+  // réservés) puis complété par le sémantique jusqu'à topK.
   let ranked = null;
   let retrieval = 'keyword';
   try {
-    ranked = await semanticRank(projectId, question, passages, topK);
-    if (ranked) retrieval = 'semantic';
+    const semantic = await semanticRank(projectId, retrievalQuery, passages, topK);
+    if (semantic) {
+      retrieval = 'hybrid';
+      const lexical = keywordRank(passages, retrievalQuery, 3);
+      ranked = mergeUnique([lexical, semantic], topK);
+    }
   } catch {
     ranked = null; // embeddings indisponibles → repli lexical, jamais de crash
   }
-  if (!ranked) ranked = keywordRank(passages, question, topK);
+  if (!ranked) ranked = keywordRank(passages, retrievalQuery, topK);
   const tRetrieval = Date.now();
 
   const provider = getProvider();
-  const { answer, citations, degraded } = await provider.ask({ question, context: ranked });
+  const { answer, citations, degraded } = await provider.ask({ question, context: ranked, history: recent });
   const tLlm = Date.now();
+
+  // En portée « all », on remonte le type dominant des passages classés → simple
+  // INDICE pour l'UI (indépendant de la langue, basé sur les résultats réels).
+  const guessedScope = scope === 'all' ? dominantScope(ranked) : null;
 
   // Répartition du temps → indispensable pour savoir quel poste optimiser
   // (contexte DB / retrieval embeddings / appel LLM). Une ligne par requête.
-  console.log(`[ask] ${retrieval} · ${passages.length} passages · ctx=${tCtx - t0}ms retrieval=${tRetrieval - tCtx}ms llm=${tLlm - tRetrieval}ms total=${tLlm - t0}ms · provider=${provider.name}${degraded ? ' (degraded)' : ''}`);
+  console.log(`[ask] ${retrieval} · scope=${scope} · ${passages.length}/${allPassages.length} passages · ctx=${tCtx - t0}ms retrieval=${tRetrieval - tCtx}ms llm=${tLlm - tRetrieval}ms total=${tLlm - t0}ms · provider=${provider.name}${degraded ? ' (degraded)' : ''}`);
 
-  const result = { answer, citations, provider: provider.name, retrieval, degraded: degraded ?? false, context: ranked.map(p => ({ id: p.id, name: p.name, type: p.type })) };
+  const result = { answer, citations, provider: provider.name, retrieval, scope, guessedScope, degraded: degraded ?? false, context: ranked.map(p => ({ id: p.id, name: p.name, type: p.type })) };
   cacheSet(cacheKey, result);
   return result;
 }

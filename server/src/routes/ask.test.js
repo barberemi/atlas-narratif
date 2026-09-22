@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://atlas:atlas_dev@localhost:5432/atlas';
 process.env.LLM_RATE_LIMIT_PER_MIN = process.env.LLM_RATE_LIMIT_PER_MIN || '20';
 
-const { checkRateLimit, rankByVectors } = await import('./ask.js');
+const { checkRateLimit, rankByVectors, dominantScope, mergeUnique, SCOPE_TYPES } = await import('./ask.js');
 
 describe('rankByVectors (retrieval sémantique)', () => {
   const passages = [
@@ -28,6 +28,51 @@ describe('rankByVectors (retrieval sémantique)', () => {
     const partial = new Map([['b', [0, 1, 0]]]);
     const ranked = rankByVectors(passages, queryVec, partial, 5);
     assert.deepEqual(ranked.map(p => p.id), ['b']);
+  });
+});
+
+describe('dominantScope (indice de portée d\'après les résultats)', () => {
+  it('remonte le type majoritaire (≥ 2 passages) — indépendant de la langue', () => {
+    const ranked = [
+      { id: 'e1', type: 'event' }, { id: 'e2', type: 'event' }, { id: 'c1', type: 'character' },
+    ];
+    assert.equal(dominantScope(ranked), 'events');
+  });
+
+  it('mappe les types « intrigue » vers la portée plot', () => {
+    assert.equal(dominantScope([{ type: 'plant' }, { type: 'thread' }]), 'plot');
+  });
+
+  it('retourne null sans majorité nette (< 2 d\'un même type)', () => {
+    assert.equal(dominantScope([{ type: 'character' }, { type: 'location' }]), null);
+    assert.equal(dominantScope([]), null);
+    assert.equal(dominantScope(undefined), null);
+  });
+
+  it('SCOPE_TYPES couvre toutes les portées non-"all"', () => {
+    assert.deepEqual(
+      Object.keys(SCOPE_TYPES).sort(),
+      ['characters', 'custom', 'events', 'incoherences', 'locations', 'notes', 'objects', 'plot'],
+    );
+    assert.deepEqual(SCOPE_TYPES.plot, ['beat', 'plant', 'thread', 'hero']);
+  });
+});
+
+describe('mergeUnique (retrieval hybride)', () => {
+  it('place le lexical en tête, complète par le sémantique, sans doublon', () => {
+    const lex = [{ id: 'cor_gondor' }];
+    const sem = [{ id: 'cor_helm' }, { id: 'cor_gondor' }, { id: 'anneau' }];
+    const merged = mergeUnique([lex, sem], 8);
+    assert.deepEqual(merged.map(p => p.id), ['cor_gondor', 'cor_helm', 'anneau']);
+  });
+
+  it('tronque au cap', () => {
+    const a = [{ id: '1' }, { id: '2' }, { id: '3' }];
+    assert.equal(mergeUnique([a], 2).length, 2);
+  });
+
+  it('ignore les entrées nulles', () => {
+    assert.deepEqual(mergeUnique([[null, { id: 'x' }]], 5).map(p => p.id), ['x']);
   });
 });
 
