@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://atlas:atlas_dev@localhost:5432/atlas';
 process.env.LLM_RATE_LIMIT_PER_MIN = process.env.LLM_RATE_LIMIT_PER_MIN || '20';
 
-const { checkRateLimit, rankByVectors, dominantScope, mergeUnique, SCOPE_TYPES } = await import('./ask.js');
+const { checkRateLimit, rankByVectors, dominantScope, mergeUnique, keywords, keywordRank, chapterNumber, SCOPE_TYPES } = await import('./ask.js');
 
 describe('rankByVectors (retrieval sémantique)', () => {
   const passages = [
@@ -55,6 +55,47 @@ describe('dominantScope (indice de portée d\'après les résultats)', () => {
       ['characters', 'custom', 'events', 'incoherences', 'locations', 'notes', 'objects', 'plot'],
     );
     assert.deepEqual(SCOPE_TYPES.plot, ['beat', 'plant', 'thread', 'hero']);
+  });
+});
+
+describe('keywords (mots vides)', () => {
+  it('filtre les mots vides → ne garde que le terme rare', () => {
+    assert.deepEqual(keywords("Qu'est-ce que le Palantir ?"), ['palantir']);
+    assert.deepEqual(keywords('Qui est Boromir ?'), ['boromir']);
+  });
+});
+
+describe('chapterNumber', () => {
+  it('extrait le numéro de chapitre', () => {
+    assert.equal(chapterNumber('que se passe-t-il au chapitre 7 ?'), 7);
+    assert.equal(chapterNumber('ch 12'), 12);
+    assert.equal(chapterNumber('parle-moi de Frodon'), null);
+  });
+});
+
+describe('keywordRank (lexical amélioré)', () => {
+  it('privilégie la correspondance de NOM (objet Palantír avant un perso qui le mentionne)', () => {
+    const passages = [
+      { id: 'char_x', type: 'character', name: 'Truc', text: 'il est vrai que le palantir est cité ici' },
+      { id: 'obj_palantir', type: 'object', name: 'Le Palantír', text: 'pierre de vision' },
+    ];
+    const r = keywordRank(passages, "Qu'est-ce que le Palantir ?", 5);
+    assert.equal(r[0].id, 'obj_palantir');
+  });
+
+  it('les mots vides seuls ne remontent aucun passage', () => {
+    const passages = [{ id: 'a', type: 'character', name: 'A', text: 'ceci est une phrase avec que et pour' }];
+    // "raconte une histoire" → keywords ['raconte','histoire'] absents du passage
+    assert.equal(keywordRank(passages, 'est-ce que pour les', 5).length, 0);
+  });
+
+  it('booste le bon chapitre (7 ≠ 17)', () => {
+    const passages = [
+      { id: 'e17', type: 'event', name: 'Évt', text: 'Chapitre 17 : bataille' },
+      { id: 'e7', type: 'event', name: 'Évt', text: 'Chapitre 7 : la Moria' },
+    ];
+    const r = keywordRank(passages, 'que se passe-t-il au chapitre 7', 5);
+    assert.equal(r[0].id, 'e7');
   });
 });
 

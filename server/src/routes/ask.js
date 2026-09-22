@@ -46,9 +46,31 @@ function norm(s) {
   return String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-/** Découpe une question en mots significatifs (≥ 3 caractères). */
-function keywords(question) {
-  return [...new Set(norm(question).split(/[^a-z0-9]+/).filter(w => w.length >= 3))];
+// Mots vides FR/EN (≥ 3 lettres) : sans ce filtre, « est »/« que »/« pour »… étaient
+// comptés comme mots-clés et noyaient le terme rare de la question (« palantir »),
+// faisant remonter des passages sans rapport qui contiennent juste ces mots.
+const STOPWORDS = new Set([
+  'est', 'sont', 'etre', 'suis', 'ete', 'ont', 'avons', 'avez', 'aux', 'des', 'une', 'les',
+  'que', 'qui', 'quoi', 'dont', 'quel', 'quelle', 'quels', 'quelles', 'quand', 'comment',
+  'pourquoi', 'combien', 'pour', 'par', 'dans', 'sur', 'sous', 'avec', 'sans', 'vers', 'chez',
+  'entre', 'cet', 'cette', 'ces', 'son', 'sic', 'ses', 'leur', 'leurs', 'mon', 'mes', 'ton',
+  'tes', 'notre', 'votre', 'nos', 'vos', 'elle', 'ils', 'elles', 'nous', 'vous', 'pas', 'plus',
+  'moins', 'tres', 'comme', 'mais', 'donc', 'car', 'ainsi', 'aussi', 'tout', 'tous', 'toute',
+  'the', 'and', 'but', 'are', 'was', 'were', 'for', 'what', 'who', 'which', 'how', 'why', 'when',
+  'this', 'that', 'with', 'from', 'about',
+]);
+
+/** Découpe une question en mots significatifs : ≥ 3 lettres et non mots vides. */
+export function keywords(question) {
+  return [...new Set(
+    norm(question).split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !STOPWORDS.has(w)),
+  )];
+}
+
+/** Numéro de chapitre mentionné dans la question, ou null. */
+export function chapterNumber(question) {
+  const m = /(?:chapitre|chapter|chap\.?|ch\.?)\s*(\d+)/.exec(norm(question));
+  return m ? Number(m[1]) : null;
 }
 
 /**
@@ -162,16 +184,27 @@ export function dominantScope(ranked) {
 }
 
 /** Score un passage par recouvrement de mots-clés avec la question. */
-function scorePassage(passage, kws) {
+export function scorePassage(passage, kws) {
+  const name = norm(passage.name);
+  const text = norm(passage.text);
+  // Une correspondance dans le NOM pèse plus (l'objet « Le Palantír » doit primer
+  // sur un personnage qui mentionne « palantir » dans sa description).
+  return kws.reduce((s, kw) => s + (name.includes(kw) ? 3 : text.includes(kw) ? 1 : 0), 0);
+}
+
+/** Boost fort d'un passage citant explicitement « chapitre N » (word-boundary → 7 ≠ 17). */
+function chapterBoost(passage, chap) {
+  if (chap == null) return 0;
   const hay = norm(`${passage.name} ${passage.text}`);
-  return kws.reduce((s, kw) => s + (hay.includes(kw) ? 1 : 0), 0);
+  return new RegExp(`chapitre ${chap}\\b`).test(hay) ? 5 : 0;
 }
 
 /** Retrieval lexical (déterministe, aucun réseau). */
-function keywordRank(passages, question, topK) {
+export function keywordRank(passages, question, topK) {
   const kws = keywords(question);
+  const chap = chapterNumber(question);
   return passages
-    .map(p => ({ p, score: scorePassage(p, kws) }))
+    .map(p => ({ p, score: scorePassage(p, kws) + chapterBoost(p, chap) }))
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
