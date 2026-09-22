@@ -23,7 +23,7 @@
 ### First comment (le maker, à poster juste après le launch)
 > Hi Product Hunt! 👋
 >
-> I'm {{PRENOM}}, a writer *and* developer. I've been working on a fantasy saga for two years, and my real wall was never the blank page — it was keeping *everything* in my head. Which thread did I leave open in book 1? Did that chapter-3 setup ever pay off?
+> I'm Rémi, a writer *and* developer. I've been working on a fantasy saga for two years, and my real wall was never the blank page — it was keeping *everything* in my head. Which thread did I leave open in book 1? Did that chapter-3 setup ever pay off?
 >
 > So I built the tool I wished existed:
 > - 🧭 **Structure first** — Save the Cat (15 beats) or the Hero's Journey (12 steps), each explained and illustrated with stories you know.
@@ -34,7 +34,7 @@
 > 1. **It never writes a single line for you.** The tool structures; you create.
 > 2. **Privacy by default** — encrypted at rest, no tracking, self-hostable.
 >
-> Best way to get it: try the demo with no account — I loaded the entire *Lord of the Rings* trilogy into it 👉 {{DEMO_URL}}?ref=ph
+> Best way to get it: try the demo with no account — I loaded the entire *Lord of the Rings* trilogy into it 👉 https://atlas-narratif.com?ref=ph
 >
 > It's free and I'm building the roadmap with your feedback. Would love to hear how you keep track of a long project! 🙏
 
@@ -73,7 +73,7 @@
 > - **Privacy-first.** Encrypted at rest, no tracking, self-hostable. My analytics are literally SQL queries on my own DB.
 > - **French-first**, because almost every serious competitor is English-only and paid — that's my moat.
 >
-> Launching on Product Hunt on Nov 1st (day 1 of NaNoWriMo — when my whole audience starts *planning* a novel). Demo, no signup: {{DEMO_URL}}
+> Launching on Product Hunt on Nov 1st (day 1 of NaNoWriMo — when my whole audience starts *planning* a novel). Demo, no signup: https://atlas-narratif.com
 >
 > Happy to answer anything about the stack (React 19 / Hono / Postgres) or the go-to-market. What would you check first on a launch like this?
 

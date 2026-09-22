@@ -2,7 +2,7 @@
 
 > Le SEO paie en 3-6 mois → **commencer maintenant est l'urgence n°1.** Le technique est déjà là (SSR/perf), il manque le contenu.
 > Rythme soutenu : **2 articles/mois de qualité**. Chaque article capte une intention de recherche réelle et se termine en montrant l'outil qui *fait* ce qu'il explique.
-> URL : `{{SITE_URL}}/blog`. Ton : le pote scénariste érudit — on enseigne pour de vrai, l'outil arrive naturellement à la fin.
+> URL : `https://atlas-narratif.com/blog`. Ton : le pote scénariste érudit — on enseigne pour de vrai, l'outil arrive naturellement à la fin.
 
 ---
 
@@ -105,11 +105,11 @@ C'est exactement là que la structure « dans la tête » atteint ses limites �
 
 Ces cinq étapes, tu peux les faire dans des fichiers Word, des tableaux Excel, des post-it sur un mur. Beaucoup d'auteurs le font — jusqu'à ce que ça devienne ingérable.
 
-C'est précisément pour ça qu'on a construit **[Atlas Narratif]({{SITE_URL}}?ref=blog)** : un endroit unique où tu poses ta structure (Save the Cat ou Voyage du Héros, guidés et illustrés), où tu **vois** ton histoire sous tous les angles — timeline, carte, relations, arc émotionnel — et où plus de 12 détecteurs traquent les incohérences pendant que le tracker d'amorces te rappelle tes promesses non tenues.
+C'est précisément pour ça qu'on a construit **[Atlas Narratif](https://atlas-narratif.com?ref=blog)** : un endroit unique où tu poses ta structure (Save the Cat ou Voyage du Héros, guidés et illustrés), où tu **vois** ton histoire sous tous les angles — timeline, carte, relations, arc émotionnel — et où plus de 12 détecteurs traquent les incohérences pendant que le tracker d'amorces te rappelle tes promesses non tenues.
 
 C'est gratuit, en français, et ça n'écrit pas une ligne à ta place : l'outil structure, c'est toi qui crées.
 
-**Le plus simple pour voir ce que ça donne : [explore la démo]({{DEMO_URL}}?ref=blog) — on y a passé *Le Seigneur des Anneaux* en entier, sans que tu aies à créer de compte.**
+**Le plus simple pour voir ce que ça donne : va sur [atlas-narratif.com](https://atlas-narratif.com?ref=blog) et charge la démo — on y a passé *Le Seigneur des Anneaux* en entier, sans que tu aies à créer de compte.**
 
 ---
 

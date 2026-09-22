@@ -16,16 +16,16 @@
 >
 > Le plus rapide pour comprendre ce que ça donne : jette un œil à la démo, on y a passé *Le Seigneur des Anneaux* en entier.
 >
-> 👉 **[Explorer la démo]({{DEMO_URL}})**
+> 👉 **[Charger la démo (depuis l'accueil)](https://atlas-narratif.com)**
 >
 > Et quand tu es prêt à attaquer *ton* histoire :
 >
-> 👉 **[Créer mon premier projet]({{SITE_URL}})**
+> 👉 **[Créer mon premier projet](https://atlas-narratif.com)**
 >
 > Une question, un bug, une idée ? Réponds directement à ce mail, c'est moi qui lis.
 >
 > À très vite,
-> {{PRENOM}}
+> Rémi
 >
 > *L'outil structure. C'est toi qui écris.*
 
@@ -45,9 +45,9 @@
 >
 > C'est tout. Tu as déjà une timeline, un début de carte, un graphe qui prend forme. La sensation « ok, ça tient » commence là.
 >
-> 👉 **[Je crée mon projet]({{SITE_URL}})**
+> 👉 **[Je crée mon projet](https://atlas-narratif.com)**
 >
-> {{PRENOM}}
+> Rémi
 
 ---
 
@@ -65,11 +65,11 @@
 >
 > C'est exactement le genre de faille qu'un cerveau humain ne peut pas suivre sur 300 pages. Va y jeter un œil sur ton projet :
 >
-> 👉 **[Voir mes incohérences]({{SITE_URL}}/incoherences)**
+> 👉 **[Voir mes incohérences](https://atlas-narratif.com/incoherences)**
 >
 > Et dis-moi ce que tu en penses — tes retours orientent vraiment la suite.
 >
-> {{PRENOM}}
+> Rémi
 >
 > PS : si Atlas t'est utile, le partager à un pote qui écrit, c'est le plus beau des coups de pouce 🙏
 

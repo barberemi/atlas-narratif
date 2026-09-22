@@ -12,7 +12,7 @@
 
 ### Version Discord
 > Salut tout le monde 👋
-> Moi c'est {{PRENOM}}. Je suis un grand malade de structure narrative — le genre à relire *Save the Cat* et *Le Voyage du Héros* pour le plaisir, et à faire des tableaux Excel pour suivre les arcs de mes persos sur trois tomes 😅
+> Moi c'est Rémi. Je suis un grand malade de structure narrative — le genre à relire *Save the Cat* et *Le Voyage du Héros* pour le plaisir, et à faire des tableaux Excel pour suivre les arcs de mes persos sur trois tomes 😅
 > Du coup j'ai fini par me coder un outil pour arrêter de me noyer dans mes propres fichiers. Mais avant tout je suis là pour parler bouquins et galères d'écriture avec vous. C'est quoi vos projets en ce moment ?
 
 ### Version courte (bio / one-liner)
@@ -30,7 +30,7 @@
 >
 > Je cherche **5-6 personnes** qui écrivent en ce moment (surtout des sagas / séries) pour l'essayer et me dire *sans filtre* ce qui coince. En échange : accès à tout, et j'implémente vos retours en priorité.
 >
-> Si ça te tente, réponds ici ou en MP 🙂 (et si tu veux juste jeter un œil, y'a une démo qui charge *Le Seigneur des Anneaux* en entier, sans créer de compte : {{DEMO_URL}}?ref=discord)
+> Si ça te tente, réponds ici ou en MP 🙂 (et si tu veux juste jeter un œil, depuis l'accueil tu peux charger la démo — *Le Seigneur des Anneaux* en entier — en un clic, sans créer de compte : https://atlas-narratif.com?ref=discord)
 
 > 💡 Le lien démo est en toute fin, entre parenthèses, en option. C'est ça la nuance « aide d'abord ».
 
@@ -70,7 +70,7 @@ Là on assume le lancement. Ton fier mais humble, build-in-public.
 >
 > Pensé pour les projets longs et multi-tomes, en français, sans pub, sans IA qui écrit à ta place (l'outil structure, c'est *toi* qui écris).
 >
-> Tu peux te faire une idée en 10 s avec la démo — j'y ai passé *Le Seigneur des Anneaux* en entier, pas besoin de compte : {{DEMO_URL}}?ref=discord
+> Tu peux te faire une idée en 10 s : depuis l'accueil, clique « charger la démo » — j'y ai passé *Le Seigneur des Anneaux* en entier, pas besoin de compte : https://atlas-narratif.com?ref=discord
 >
 > C'est le début, je construis la suite avec vos retours. N'hésitez pas à me dire tout ce qui cloche 🙏
 
@@ -81,7 +81,7 @@ Là on assume le lancement. Ton fier mais humble, build-in-public.
 >
 > Il n'écrit rien à ta place : il t'aide à *voir* et à *organiser*. Tes contenus t'appartiennent, tout est chiffré.
 >
-> Pour voir ce que ça donne sans même créer de compte, il y a une démo avec *Le Seigneur des Anneaux* en entier : {{DEMO_URL}}?ref=fb
+> Pour voir ce que ça donne sans même créer de compte : va sur l'accueil et clique « charger la démo » — j'y ai passé *Le Seigneur des Anneaux* en entier : https://atlas-narratif.com?ref=fb
 >
 > Je suis le développeur (et auteur), je réponds à toutes vos questions ici avec plaisir !
 
@@ -102,7 +102,7 @@ Un post qui apporte de la valeur (analyse d'une œuvre connue) et montre l'outil
 > - [insight 2 : la densité d'amorces cross-tomes]
 > - [insight 3 : l'arc émotionnel en dents de scie du tome 2]
 >
-> J'ai fait ça dans l'outil que je développe (visible sans compte si ça intéresse quelqu'un : {{DEMO_URL}}?ref=reddit), mais l'analyse tient debout toute seule. Ça donne surtout envie de regarder ses *propres* tomes comme ça.
+> J'ai fait ça dans l'outil que je développe (chargeable direct depuis l'accueil, sans compte, si ça intéresse quelqu'un : https://atlas-narratif.com?ref=reddit), mais l'analyse tient debout toute seule. Ça donne surtout envie de regarder ses *propres* tomes comme ça.
 
 > 💡 Complète les [insights] avec de vraies observations tirées du seed LOTR de l'app — c'est ce qui rend le post crédible et non-robotique.
 

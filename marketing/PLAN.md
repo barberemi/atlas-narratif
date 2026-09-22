@@ -7,25 +7,27 @@
 
 ---
 
-## ⚙️ À configurer avant de commencer (2 min)
+## ⚙️ Config appliquée
 
-Tous les contenus utilisent des placeholders. Fais un chercher-remplacer global dans le dossier `marketing/` :
+Les contenus sont déjà personnalisés avec ces valeurs :
 
-| Placeholder | Remplacer par | Exemple |
-|-------------|---------------|---------|
-| `{{SITE_URL}}` | L'URL de prod (sans slash final) | `https://atlas-narratif.com` |
-| `{{DEMO_URL}}` | Le lien démo LOTR | `{{SITE_URL}}/demo` |
-| `{{PRENOM}}` | Comment tu te présentes | `Rémi` |
-| `{{X_HANDLE}}` | Ton @ sur X | `@atlasnarratif` |
+| Élément | Valeur |
+|---------|--------|
+| Site & démo | **`https://atlas-narratif.com`** — pas de page démo dédiée : **depuis l'accueil, on charge la démo (Le Seigneur des Anneaux) en un clic, sans compte** |
+| Prénom | **Rémi** |
+| Tracking | suffixe `?ref=<canal>` sur les liens partagés (voir plus bas) |
+| Compte X | **`@Rem_Barbe`** |
 
 > ⚠️ Rappel de l'artefact : figer **« Atlas Narratif »** en deux mots partout, et corriger le `<title>` de l'app (dette SEO à chaque contenu publié avec la mauvaise graphie).
+>
+> ✅ Comme la démo se charge **depuis l'accueil**, chaque lien partagé (`atlas-narratif.com?ref=…`) amène directement sur la home où le visiteur clique « charger la démo » — zéro friction, zéro compte.
 
 ---
 
 ## 🎯 Les 3 règles qui gouvernent tout
 
 1. **Aide d'abord, vends jamais.** Dans les communautés, on répond à des questions, on partage un article utile, on montre une démo *quand c'est pertinent*. Le lien vient en bonus, pas en accroche. Un post « regardez mon outil » = mort sociale + ban.
-2. **Le lien qu'on partage = la démo, pas l'inscription.** `{{DEMO_URL}}` se voit en 10 s sans compte. On envoie les curieux vers ça en priorité, l'inscription vient après le « waouh ».
+2. **Le lien qu'on partage = la démo, pas l'inscription.** `https://atlas-narratif.com` se voit en 10 s sans compte. On envoie les curieux vers ça en priorité, l'inscription vient après le « waouh ».
 3. **Une seule voix : le pote scénariste.** Tutoiement, enthousiaste, jamais corporate. On parle *histoire* (« ton monde », « ta saga »), jamais *données*. Voir la charte de voix plus bas.
 
 ---
@@ -47,7 +49,7 @@ Tous les contenus utilisent des placeholders. Fais un chercher-remplacer global 
 | Canal | Quand | Contenu |
 |-------|-------|---------|
 | **Product Hunt / BetaList / IndieHackers** | Lancement (début nov.) | Voir `contenus/lancement-produit.md` |
-| **Blog SEO** (`{{SITE_URL}}/blog`) | Dès S2, 2 articles/mois | Voir `contenus/blog-seo.md` |
+| **Blog SEO** (`https://atlas-narratif.com/blog`) | Dès S2, 2 articles/mois | Voir `contenus/blog-seo.md` |
 | **BookTubeurs / créateurs FR** | Oct.-nov. (Preptober/NaNo) | Démo offerte, angle « outil gratuit FR » |
 
 ---
@@ -90,12 +92,12 @@ On n'installe **aucun** Google Analytics. On ajoute un suffixe `?ref=` aux liens
 
 | Lien à partager | Suffixe |
 |-----------------|---------|
-| Discord | `{{DEMO_URL}}?ref=discord` |
-| Reddit | `{{DEMO_URL}}?ref=reddit` |
-| X | `{{DEMO_URL}}?ref=x` |
-| Facebook | `{{DEMO_URL}}?ref=fb` |
-| Product Hunt | `{{SITE_URL}}?ref=ph` |
-| Blog (CTA) | `{{SITE_URL}}?ref=blog` |
+| Discord | `https://atlas-narratif.com?ref=discord` |
+| Reddit | `https://atlas-narratif.com?ref=reddit` |
+| X | `https://atlas-narratif.com?ref=x` |
+| Facebook | `https://atlas-narratif.com?ref=fb` |
+| Product Hunt | `https://atlas-narratif.com?ref=ph` |
+| Blog (CTA) | `https://atlas-narratif.com?ref=blog` |
 
 > 🛠️ *Petite tâche dev optionnelle mais rentable : logguer le param `ref` à l'inscription pour savoir quel canal amène des gens qui **restent** (pas juste qui cliquent).*
 
@@ -118,8 +120,8 @@ Personnalité : **le pote scénariste qui a lu tous les bouquins de dramaturgie.
 
 ## ✅ Checklist Semaine 1 (22-28 sept.)
 
-- [ ] Chercher-remplacer les placeholders (`{{SITE_URL}}`, `{{DEMO_URL}}`, etc.)
-- [ ] Vérifier que `{{DEMO_URL}}` s'ouvre **sans compte** (sinon → priorité dev n°1)
+- [x] ~~Config appliquée~~ (URL, prénom, handle X déjà injectés)
+- [ ] Vérifier que **la démo se charge depuis l'accueil sans compte** (sinon → priorité dev n°1)
 - [ ] Figer « Atlas Narratif » + corriger le `<title>`
 - [ ] Créer/soigner le compte X + bio (voir `reseaux-sociaux.md`)
 - [ ] Rejoindre (ou réveiller) 3-4 communautés et s'y **présenter sans vendre**
