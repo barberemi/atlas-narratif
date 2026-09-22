@@ -341,11 +341,14 @@ export async function restoreRelation(snapshot, projectId) {
 
 // ── Chat de requête (niveau 2 — RAG serveur, provider mock par défaut) ────────
 
-export async function askProject(question, projectId) {
+export async function askProject(question, projectId, scope = 'all') {
   // Le chat gère son propre feedback d'erreur (bulle + toast localisés) → silent.
   // timeoutMs = filet de sécurité au-dessus de la chaîne de proxys (~95s) pour ne
   // jamais laisser l'UI tourner indéfiniment si le réseau reste bloqué.
-  return post(`/api/projects/${projectId}/ask`, { question }, { silent: true, timeoutMs: 100_000 });
+  // scope = portée de recherche ('all' | characters | locations | objects |
+  // events | plot | notes | incoherences | custom) — cf. SCOPE_TYPES serveur.
+  const body = scope && scope !== 'all' ? { question, scope } : { question };
+  return post(`/api/projects/${projectId}/ask`, body, { silent: true, timeoutMs: 100_000 });
 }
 
 /**

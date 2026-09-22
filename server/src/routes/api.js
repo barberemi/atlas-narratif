@@ -466,7 +466,7 @@ api.post('/projects/:projectId/ask', wrap(async (c) => {
   if (!checkRateLimit(projectId)) {
     return c.json({ error: 'Trop de requêtes — réessayez dans une minute.' }, 429);
   }
-  const result = await answerAsk({ projectId, question: body.question });
+  const result = await answerAsk({ projectId, question: body.question, scope: body.scope });
   return c.json(result);
 }));
 

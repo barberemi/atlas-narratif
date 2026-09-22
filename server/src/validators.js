@@ -40,6 +40,7 @@ export const mapImage = z.object({
 // ── Chat de requête (niveau 2) ───────────────────────────────────────────────
 export const ask = z.object({
   question: z.string().min(1).max(2000),
+  scope: z.enum(['all', 'characters', 'locations', 'objects', 'events', 'plot', 'notes', 'incoherences', 'custom']).optional(),
 }).strict();
 
 // ── Volumes ──────────────────────────────────────────────────────────────────
