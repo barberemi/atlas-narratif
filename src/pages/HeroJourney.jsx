@@ -4,6 +4,7 @@ import { useHeroJourneyStore } from '../stores/useHeroJourneyStore';
 import { useLoreStore } from '../stores/useLoreStore';
 import { useVolumeStore } from '../stores/useVolumeStore';
 import { useStoreLoader } from '../hooks/useStoreLoader';
+import { useFocusFlash, useFlashScroll } from '../hooks/useFocusFlash';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import Icon from '../components/ui/Icon';
@@ -14,9 +15,10 @@ import { HERO_PHASES, HERO_STAGES, HERO_PHASE_MAP } from '../data/hero_journey_c
 
 // ── StageCard ─────────────────────────────────────────────────────────────────
 
-function StageCard({ stage, entry, onSave, onRemove, t }) {
+function StageCard({ stage, entry, flash, onSave, onRemove, t }) {
   const phase      = HERO_PHASE_MAP[stage.phase];
   const phaseColor = phase?.color ?? '#5cae8e';
+  const { ref: flashRef, flashing } = useFlashScroll(flash);
 
   const [editing,    setEditing]    = useState(false);
   const [chapterNum, setChapterNum] = useState(entry?.chapterNum ?? '');
@@ -56,7 +58,8 @@ function StageCard({ stage, entry, onSave, onRemove, t }) {
 
   return (
     <div
-      className="rounded-none overflow-hidden transition-all duration-150"
+      ref={flashRef}
+      className={`rounded-none overflow-hidden transition-all duration-150${flashing ? ' atlas-flash' : ''}`}
       style={{
         backgroundColor: 'rgba(255,255,255,0.02)',
         borderStyle: 'solid',
@@ -262,6 +265,20 @@ export default function HeroJourney() {
     }
   }, [countPerChar, characterList, heroCharId]);
 
+  // ── Deep-link « aller pile sur une étape » (?focus=<entryId> depuis le chat) ──
+  // La source chat porte l'id d'une entrée : on sélectionne son personnage puis
+  // on flashe la carte de l'étape correspondante (identifiée par stageKey).
+  const flashId = useFocusFlash(allEntries != null);
+  const flashEntry = useMemo(
+    () => (flashId ? (allEntries ?? []).find(e => e.id === flashId) : null),
+    [flashId, allEntries],
+  );
+  useEffect(() => {
+    if (!flashEntry) return;
+    didAutoSelectRef.current = true; // ne pas réécraser par l'auto-sélection
+    setHeroCharId(flashEntry.characterId || '');
+  }, [flashEntry]);
+
   const handleSave = async ({ stageKey, chapterNum, summary }) => {
     await saveEntry({
       stageKey,
@@ -453,6 +470,7 @@ export default function HeroJourney() {
                         key={stage.key}
                         stage={stage}
                         entry={entryMap.get(stage.key) ?? null}
+                        flash={flashEntry?.stageKey === stage.key}
                         onSave={handleSave}
                         onRemove={removeEntry}
                         t={t}

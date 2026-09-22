@@ -221,7 +221,20 @@
       "incoherences": "Incohérences",
       "custom": "Custom"
     },
-    "scopeHint": "Recherche surtout dans : {{scope}}"
+    "scopeHint": "Recherche surtout dans : {{scope}}",
+    "sourceType": {
+      "character": "Personnage",
+      "location": "Lieu",
+      "object": "Objet",
+      "custom": "Entité custom",
+      "event": "Événement",
+      "beat": "Chapitre",
+      "plant": "Amorce",
+      "thread": "Fil narratif",
+      "hero": "Voyage du héros",
+      "incoherence": "Incohérence",
+      "note": "Note"
+    }
   },
   "vault": {
     "title": "Importer un vault Obsidian",

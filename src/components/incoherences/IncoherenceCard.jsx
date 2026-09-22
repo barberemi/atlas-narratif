@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { useIncStore } from '../../stores/useIncStore';
+import { useFlashScroll } from '../../hooks/useFocusFlash';
 import EntityChip from './EntityChip';
 import FixButton from './FixButton';
 import Icon, { ICONS } from '../ui/Icon';
@@ -29,16 +30,18 @@ const TYPE_ICONS = {
   'Plant Cross-Tomes':              'plant',
 };
 
-export default function IncoherenceCard({ inc, resolved, onToggleResolved, onEntityClick, onEntityFilter, onFix }) {
+export default function IncoherenceCard({ inc, resolved, flash, onToggleResolved, onEntityClick, onEntityFilter, onFix }) {
   const { t } = useTranslation();
   const cfg      = SEVERITY_CONFIG[inc.severity];
   const iconName = TYPE_ICONS[inc.type] ?? 'warning';
   const setNote = useIncStore(s => s.setNote);
   const [note, setLocalNote] = useState(inc.resolutionNote ?? '');
+  const { ref: flashRef, flashing } = useFlashScroll(flash);
 
   return (
     <div
-      className="transition-all duration-300 relative"
+      ref={flashRef}
+      className={`transition-all duration-300 relative${flashing ? ' atlas-flash' : ''}`}
       style={{ border: '1px solid var(--color-atlas-line)', backgroundColor: 'rgba(255,255,255,0.02)' }}
     >
       <div className="absolute left-0 top-0 bottom-0 w-[2px] z-10" style={{ backgroundColor: resolved ? 'var(--color-atlas-line)' : cfg.color }} />

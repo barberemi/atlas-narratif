@@ -221,7 +221,20 @@
       "incoherences": "Inconsistencies",
       "custom": "Custom"
     },
-    "scopeHint": "Mostly searching in: {{scope}}"
+    "scopeHint": "Mostly searching in: {{scope}}",
+    "sourceType": {
+      "character": "Character",
+      "location": "Place",
+      "object": "Object",
+      "custom": "Custom entity",
+      "event": "Event",
+      "beat": "Chapter",
+      "plant": "Setup",
+      "thread": "Storyline",
+      "hero": "Hero's journey",
+      "incoherence": "Inconsistency",
+      "note": "Note"
+    }
   },
   "vault": {
     "title": "Import an Obsidian vault",

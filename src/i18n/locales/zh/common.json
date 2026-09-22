@@ -220,7 +220,20 @@
       "incoherences": "矛盾",
       "custom": "自定义"
     },
-    "scopeHint": "主要检索：{{scope}}"
+    "scopeHint": "主要检索：{{scope}}",
+    "sourceType": {
+      "character": "角色",
+      "location": "地点",
+      "object": "物品",
+      "custom": "自定义实体",
+      "event": "事件",
+      "beat": "章节",
+      "plant": "铺垫",
+      "thread": "叙事线",
+      "hero": "英雄之旅",
+      "incoherence": "矛盾",
+      "note": "笔记"
+    }
   },
   "vault": {
     "title": "导入 Obsidian 仓库",

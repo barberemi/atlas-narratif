@@ -6,6 +6,7 @@ import { useLoreStore } from '../stores/useLoreStore';
 import { useVolumeStore } from '../stores/useVolumeStore';
 import { useStcStore } from '../stores/useStcStore';
 import { useStoreLoader } from '../hooks/useStoreLoader';
+import { useFocusFlash, useFlashScroll } from '../hooks/useFocusFlash';
 import EmptyState from '../components/ui/EmptyState';
 import Icon from '../components/ui/Icon';
 import Term from '../components/ui/Term';
@@ -376,17 +377,18 @@ function PlantForm({ initial, chapters, events, onSave, onCancel, volumes, defau
 
 // ── Carte amorce ──────────────────────────────────────────────────────────────
 
-function PlantCard({ plant, onEdit, onDelete, volumes, t }) {
+function PlantCard({ plant, flash, onEdit, onDelete, volumes, t }) {
   const typeCfg   = PLANT_TYPE_MAP[plant.type] ?? PLANT_TYPE_MAP.information;
   const statusCfg = STATUS_CFG[plant.status]   ?? STATUS_CFG.open;
   const entity    = plant.entityId ? getEntityMeta(plant.entityId, plant.entityType) : null;
+  const { ref: flashRef, flashing } = useFlashScroll(flash);
 
   const plantVol  = plant.plantVolumeId  ? volumes?.find(v => v.id === plant.plantVolumeId)  : null;
   const payoffVol = plant.payoffVolumeId ? volumes?.find(v => v.id === plant.payoffVolumeId) : null;
   const isCross   = plantVol && payoffVol && plantVol.id !== payoffVol.id;
 
   return (
-    <div className="flex items-start gap-3 py-3"
+    <div ref={flashRef} className={`flex items-start gap-3 py-3${flashing ? ' atlas-flash' : ''}`}
       style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
       {/* Barre couleur latérale */}
       <div className="w-0.5 self-stretch flex-shrink-0" style={{ backgroundColor: typeCfg.color }} />
@@ -491,6 +493,16 @@ export default function PlantsBrowser() {
   const [typeFilter,   setTypeFilter]   = useState('all');
   const [showForm,     setShowForm]     = useState(false);
   const [editingId,    setEditingId]    = useState(null);
+
+  // Deep-link « aller pile sur une amorce » (?focus=<id> depuis le chat).
+  const flashId = useFocusFlash(_plants != null);
+  useEffect(() => {
+    if (!flashId) return;
+    // Vue liste + filtres neutres pour garantir que l'amorce ciblée est visible.
+    setView('list');
+    setStatusFilter('all');
+    setTypeFilter('all');
+  }, [flashId]);
 
   // Filtre cross-tome : visible si plant OU payoff appartient au tome actif
   const visiblePlants = useMemo(() => {
@@ -653,6 +665,7 @@ export default function PlantsBrowser() {
                   <PlantCard
                     key={plant.id}
                     plant={plant}
+                    flash={plant.id === flashId}
                     volumes={volumes}
                     onEdit={() => { setEditingId(plant.id); setShowForm(false); }}
                     onDelete={() => removePlant(plant.id)}

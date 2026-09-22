@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useThreadStore }   from '../stores/useThreadStore';
 import { useTimelineStore } from '../stores/useTimelineStore';
 import { useStoreLoader }   from '../hooks/useStoreLoader';
+import { useFocusFlash, useFlashScroll } from '../hooks/useFocusFlash';
 import EmptyState from '../components/ui/EmptyState';
 import Skeleton from '../components/ui/Skeleton';
 import Icon from '../components/ui/Icon';
@@ -146,9 +147,10 @@ function ThreadForm({ initial, onSave, onCancel, t }) {
 
 // ── ThreadCard ─────────────────────────────────────────────────────────────────
 
-function ThreadCard({ thread, events, onEdit, onDelete, t }) {
+function ThreadCard({ thread, flash, events, onEdit, onDelete, t }) {
   const [expanded,      setExpanded]      = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { ref: flashRef, flashing } = useFlashScroll(flash);
 
   const roleConfig = getRoleConfig(thread.role);
   const threadEvents = useMemo(
@@ -167,7 +169,8 @@ function ThreadCard({ thread, events, onEdit, onDelete, t }) {
 
   return (
     <div
-      className="overflow-hidden transition-all duration-150"
+      ref={flashRef}
+      className={`overflow-hidden transition-all duration-150${flashing ? ' atlas-flash' : ''}`}
       style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
     >
       {/* En-tête */}
@@ -298,6 +301,9 @@ export default function ThreadsBrowser() {
 
   const events = useTimelineStore(s => s.events) ?? [];
 
+  // Deep-link « aller pile sur un fil » (?focus=<id> depuis le chat).
+  const flashId = useFocusFlash(_threads != null);
+
   const [showForm,   setShowForm]   = useState(false);
   const [editingId,  setEditingId]  = useState(null);
 
@@ -384,6 +390,7 @@ export default function ThreadsBrowser() {
               <ThreadCard
                 key={thread.id}
                 thread={thread}
+                flash={thread.id === flashId}
                 events={events}
                 onEdit={handleEdit}
                 onDelete={handleDelete}

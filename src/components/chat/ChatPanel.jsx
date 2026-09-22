@@ -8,10 +8,10 @@ import { useChatStore } from '../../stores/useChatStore';
 import { useStoreLoader } from '../../hooks/useStoreLoader';
 import { useProject } from '../../db/ProjectContext';
 import { answerQuery } from '../../chat/router';
-import { SCOPE_KEYS, INTENT_SCOPE } from '../../chat/scopes';
+import { SCOPE_KEYS, SCOPE_ICONS, INTENT_SCOPE } from '../../chat/scopes';
 import { askProject, warmProject } from '../../api/client';
 import { toast } from '../../lib/toast';
-import { chatSourceHref } from '../../utils/entityUtils';
+import { chatSourceHref, chatSourceMeta } from '../../utils/entityUtils';
 import Icon from '../ui/Icon';
 import AnswerText from './AnswerText';
 import ChatThreadList from './ChatThreadList';
@@ -131,7 +131,7 @@ export default function ChatPanel() {
       />
 
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        <header className="flex items-center justify-between px-6 py-5 border-b border-atlas-line flex-shrink-0">
+        <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 px-4 md:px-6 py-4 md:py-5 border-b border-atlas-line flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <button onClick={() => setNavOpen(true)} data-testid="chat-nav-toggle" title={t('chat.threads')}
               className="md:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center rounded border border-atlas-line text-atlas-soft hover:text-white">
@@ -139,12 +139,12 @@ export default function ChatPanel() {
             </button>
             <div className="min-w-0">
               <p className="font-grotesk text-[10px] uppercase tracking-[0.2em] mb-1.5" style={{ color: ACCENT }}>{t('chat.kicker')}</p>
-              <h1 className="font-serif text-2xl font-semibold tracking-tight leading-none truncate">
+              <h1 className="font-serif text-xl md:text-2xl font-semibold tracking-tight leading-tight line-clamp-2 break-words">
                 {active?.title || t('chat.title')}
               </h1>
             </div>
           </div>
-          <label data-tour="chat-deep" className="flex items-center gap-2.5 cursor-pointer select-none flex-shrink-0" title={t('chat.deepHint')}>
+          <label data-tour="chat-deep" className="flex items-center gap-2.5 cursor-pointer select-none flex-shrink-0 self-start sm:self-auto" title={t('chat.deepHint')}>
             <span className="font-grotesk text-[11px] font-bold uppercase tracking-[0.08em] transition-colors" style={{ color: deep ? ACCENT : 'var(--color-atlas-mute)' }}>
               {t('chat.deep')}
             </span>
@@ -160,13 +160,13 @@ export default function ChatPanel() {
           </label>
         </header>
 
-        <p className="px-6 pt-3 text-[11px] text-atlas-mute leading-relaxed flex-shrink-0" data-testid="chat-disclaimer">
+        <p className="px-4 md:px-6 pt-3 text-[11px] text-atlas-mute leading-relaxed flex-shrink-0" data-testid="chat-disclaimer">
           ℹ️ {t('chat.disclaimer')}{' '}
           <Link to="/privacy" className="underline hover:text-atlas-soft">{t('chat.disclaimerLink')}</Link>
         </p>
 
         {/* Filtres de portée : restreignent la recherche à un type de contenu. */}
-        <div className="px-6 pt-3 flex gap-1.5 overflow-x-auto flex-shrink-0" data-testid="chat-scopes">
+        <div className="px-4 md:px-6 py-3 flex gap-1.5 overflow-x-auto no-scrollbar border-b border-atlas-line flex-shrink-0" data-testid="chat-scopes">
           {SCOPE_KEYS.map((key) => {
             const activeChip = scope === key;
             return (
@@ -176,18 +176,19 @@ export default function ChatPanel() {
                 onClick={() => setScope(key)}
                 data-testid={`chat-scope-${key}`}
                 aria-pressed={activeChip}
-                className="text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap border transition hover:brightness-125"
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap border transition hover:brightness-125"
                 style={activeChip
                   ? { backgroundColor: `${ACCENT}22`, color: ACCENT, borderColor: `${ACCENT}66` }
                   : { backgroundColor: 'transparent', color: 'var(--color-atlas-mute)', borderColor: 'rgba(255,255,255,0.12)' }}
               >
+                <Icon name={SCOPE_ICONS[key]} size={11} className="flex-shrink-0" />
                 {t(`chat.scopes.${key}`)}
               </button>
             );
           })}
         </div>
 
-        <main ref={listRef} className="flex-1 overflow-y-auto px-6 py-6 space-y-3">
+        <main ref={listRef} className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-3">
           {messages.length === 0 && (
             <div className="text-atlas-mute text-sm space-y-1">
               <p className="font-serif italic">{t('chat.placeholder')}</p>
@@ -215,11 +216,15 @@ export default function ChatPanel() {
                   <div className="flex flex-wrap gap-1 mt-2" data-testid="chat-sources">
                     {m.sources.map((s) => {
                       const href = chatSourceHref(s);
-                      const cls = 'text-[10px] px-1.5 py-0.5 rounded-full';
-                      const style = { backgroundColor: `${ACCENT}18`, color: ACCENT, border: `1px solid ${ACCENT}40` };
+                      const meta = chatSourceMeta(s);
+                      const typeLabel = t(`chat.sourceType.${meta.type}`, '');
+                      const title = typeLabel ? `${typeLabel} · ${s.name}` : s.name;
+                      const cls = 'inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full';
+                      const style = { backgroundColor: `${meta.color}1f`, color: meta.color, border: `1px solid ${meta.color}55` };
+                      const inner = <><Icon name={meta.icon} size={10} className="flex-shrink-0" /> {s.name}</>;
                       return href
-                        ? <button key={s.id} type="button" onClick={() => navigate(href)} className={`${cls} hover:brightness-125 transition`} style={style} title={s.name}>{s.name}</button>
-                        : <span key={s.id} className={cls} style={style}>{s.name}</span>;
+                        ? <button key={s.id} type="button" onClick={() => navigate(href)} className={`${cls} hover:brightness-125 transition`} style={style} title={title}>{inner}</button>
+                        : <span key={s.id} className={cls} style={style} title={title}>{inner}</span>;
                     })}
                   </div>
                 )}

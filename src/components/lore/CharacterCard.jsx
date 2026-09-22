@@ -5,13 +5,15 @@ import { useTimelineStore } from '../../stores/useTimelineStore';
 import DarkCard from '../ui/DarkCard';
 import CustomFieldChips from '../ui/CustomFieldChips';
 import WikiText from '../ui/WikiText';
+import { useSettleFlash } from '../../hooks/useFocusFlash';
 
-export default function CharacterCard({ char, highlighted, onRelations }) {
+export default function CharacterCard({ char, highlighted, flash, onRelations }) {
   const { t } = useTranslation();
   const ref = useRef(null);
   useEffect(() => {
-    if (highlighted && ref.current) ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [highlighted]);
+    if ((highlighted || flash) && ref.current) ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlighted, flash]);
+  const flashing = useSettleFlash(flash, ref);
 
   const groups = useLoreStore(s => s.groups) ?? [];
   const charGroups = groups.filter(g => (g.members ?? []).some(m => m.characterId === char.id));
@@ -31,7 +33,7 @@ export default function CharacterCard({ char, highlighted, onRelations }) {
   const [memoriesOpen, setMemoriesOpen] = useState(false);
 
   return (
-    <DarkCard ref={ref} color={char.color || 'var(--color-atlas-soft)'} accent={char.color || 'var(--color-atlas-soft)'} highlighted={highlighted}>
+    <DarkCard ref={ref} color={char.color || 'var(--color-atlas-soft)'} accent={char.color || 'var(--color-atlas-soft)'} highlighted={highlighted} flash={flashing}>
       <div className="p-4 flex flex-col gap-3">
         <div>
           <h3 className="font-serif text-lg font-semibold text-atlas-text leading-tight">{char.name}</h3>

@@ -4,17 +4,19 @@ import { getEntityMeta, ENTITY_COLORS } from '../../utils/entityUtils';
 import DarkCard from '../ui/DarkCard';
 import CustomFieldChips from '../ui/CustomFieldChips';
 import WikiText from '../ui/WikiText';
+import { useSettleFlash } from '../../hooks/useFocusFlash';
 
-export default function ObjectCard({ obj, highlighted, onCharacterClick, onRelations }) {
+export default function ObjectCard({ obj, highlighted, flash, onCharacterClick, onRelations }) {
   const { t } = useTranslation();
   const ref = useRef(null);
   const [hoveredChar, setHoveredChar] = useState(null);
   useEffect(() => {
-    if (highlighted && ref.current) ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [highlighted]);
+    if ((highlighted || flash) && ref.current) ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlighted, flash]);
+  const flashing = useSettleFlash(flash, ref);
 
   return (
-    <DarkCard ref={ref} color={ENTITY_COLORS.object} accent={ENTITY_COLORS.object} highlighted={highlighted}>
+    <DarkCard ref={ref} color={ENTITY_COLORS.object} accent={ENTITY_COLORS.object} highlighted={highlighted} flash={flashing}>
       <div className="p-4 flex flex-col gap-3">
         <div>
           {obj.type && <span className="text-xs px-2 py-0.5 rounded bg-amber-900/30 text-amber-400 border border-amber-800/40">{obj.type}</span>}

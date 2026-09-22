@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useFlashScroll } from '../../hooks/useFocusFlash';
 import { SEVERITY_CONFIG } from '../../data/severity_config';
 import { getEntityMeta } from '../../utils/entityUtils';
 import { OUTCOME_MAP } from '../../data/outcome_config';
@@ -9,9 +10,10 @@ import EntityChip from './EntityChip';
 import DarkCard from '../ui/DarkCard';
 import Icon from '../ui/Icon';
 
-export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allIncoherences, beat, volumeLabel }) {
+export default function EventCard({ event, isDimmed, flash, onEntityClick, onEdit, allIncoherences, beat, volumeLabel }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const { ref: flashRef, flashing } = useFlashScroll(flash);
 
   const linkedIncs = useMemo(() =>
     (event.incoherenceIds ?? []).map(id => allIncoherences.find(i => i.id === id)).filter(Boolean),
@@ -35,7 +37,9 @@ export default function EventCard({ event, isDimmed, onEntityClick, onEdit, allI
 
   return (
     <DarkCard
+      ref={flashRef}
       dimmed={isDimmed}
+      flash={flashing}
       accent={accentColor}
       onClick={() => setExpanded(p => !p)}
       className="group"

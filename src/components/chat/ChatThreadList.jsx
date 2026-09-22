@@ -106,15 +106,15 @@ export default function ChatThreadList({ threads, activeId, onSelect, onNew, onR
                       {th.title || t('chat.untitled')}
                     </span>
                     {isConfirming ? (
-                      <span className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => { onDelete(th.id); setConfirming(null); }} data-testid="chat-thread-delete-confirm" title={t('chat.delete')} className="text-red-400 hover:text-red-300"><Icon name="checkmark" size={13} /></button>
-                        <button onClick={() => setConfirming(null)} title={t('btn.cancel')} className="text-atlas-mute hover:text-white"><Icon name="close" size={13} /></button>
+                      <span className="flex items-center gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => { onDelete(th.id); setConfirming(null); }} data-testid="chat-thread-delete-confirm" title={t('chat.delete')} className="p-1 text-red-400 hover:text-red-300"><Icon name="checkmark" size={14} /></button>
+                        <button onClick={() => setConfirming(null)} title={t('btn.cancel')} className="p-1 text-atlas-mute hover:text-white"><Icon name="close" size={14} /></button>
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => onTogglePin(th.id)} data-testid="chat-thread-pin" title={th.pinned ? t('chat.unpin') : t('chat.pin')} className={th.pinned ? '' : 'grayscale opacity-70 hover:opacity-100'}>📌</button>
-                        <button onClick={() => startRename(th)} data-testid="chat-thread-rename" title={t('chat.rename')} className="text-atlas-mute hover:text-white"><Icon name="edit" size={12} /></button>
-                        <button onClick={() => setConfirming(th.id)} data-testid="chat-thread-delete" title={t('chat.delete')} className="text-atlas-mute hover:text-red-400"><Icon name="trash" size={12} /></button>
+                      <span className="flex items-center gap-0.5 flex-shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => onTogglePin(th.id)} data-testid="chat-thread-pin" title={th.pinned ? t('chat.unpin') : t('chat.pin')} className={`p-1 text-[13px] leading-none ${th.pinned ? '' : 'grayscale opacity-70 hover:opacity-100'}`}>📌</button>
+                        <button onClick={() => startRename(th)} data-testid="chat-thread-rename" title={t('chat.rename')} className="p-1 text-atlas-mute hover:text-white"><Icon name="edit" size={13} /></button>
+                        <button onClick={() => setConfirming(th.id)} data-testid="chat-thread-delete" title={t('chat.delete')} className="p-1 text-atlas-mute hover:text-red-400"><Icon name="trash" size={13} /></button>
                       </span>
                     )}
                   </div>
