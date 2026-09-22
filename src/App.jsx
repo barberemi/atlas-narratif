@@ -44,6 +44,7 @@ const GlobalSearch  = lazy(() => import('./components/search/GlobalSearch'));
 import TopNav        from './components/nav/TopNav';
 import Footer        from './components/nav/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
+import { INDEX_ITEMS, HERO_SHOT } from './components/home/homeIndexItems';
 import Skeleton from './components/ui/Skeleton';
 import { Toaster } from 'sonner';
 import { toast } from './lib/toast';
@@ -205,13 +206,6 @@ function DemoRoute() {
     </div>
   );
 }
-
-// ── Sommaire éditorial « ce que fait l'outil » (template Maison d'édition) ─────
-const INDEX_ITEMS = [
-  { no: '01', titleKey: 'home.idx1Title', catKey: 'home.idx1Cat', descKey: 'home.idx1Desc' },
-  { no: '02', titleKey: 'home.idx2Title', catKey: 'home.idx2Cat', descKey: 'home.idx2Desc' },
-  { no: '03', titleKey: 'home.idx3Title', catKey: 'home.idx3Cat', descKey: 'home.idx3Desc' },
-];
 
 // ── Page d'accueil / Import ───────────────────────────────────────────────────
 function HomePage() {
@@ -454,6 +448,27 @@ function HomePage() {
               {t('home.reassure')}
             </p>
           </div>
+        </section>
+
+        {/* ── Preuve : l'app, démo LOTR chargée ──
+            La home ne montrait aucune capture de l'outil ; sur un produit dont
+            l'argument est « ton roman sous tes yeux », c'est la première chose
+            qui manquait. Pas de lazy-loading : cette image est juste sous le
+            hero et candidate au LCP. */}
+        <section className="py-12 md:py-16" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+          <figure>
+            <img
+              src={HERO_SHOT.src}
+              alt={t(HERO_SHOT.altKey)}
+              width={HERO_SHOT.width}
+              height={HERO_SHOT.height}
+              className="w-full h-auto"
+              style={{ border: '1px solid var(--color-atlas-line)', boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}
+            />
+            <figcaption className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-mute mt-4">
+              {t(HERO_SHOT.captionKey)}
+            </figcaption>
+          </figure>
         </section>
 
         {/* ── Commencer : onboarding ── */}
@@ -863,24 +878,31 @@ function HomePage() {
             <span>{t('home.indexLabel')}</span>
             <span>{t('home.indexToc')}</span>
           </div>
-          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey }) => (
-            <div
-              key={no}
-              className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline py-7"
-              style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
-            >
-              <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
-              <div>
-                <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
-                  {t(titleKey)}
-                </h3>
-                <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
-                  {t(catKey)}
-                </p>
+          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey, shot, altKey }) => (
+            <div key={no} className="py-7" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+              <div className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline">
+                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
+                <div>
+                  <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
+                    {t(titleKey)}
+                  </h3>
+                  <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
+                    {t(catKey)}
+                  </p>
+                </div>
+                <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
+                  {t(descKey)}
+                </div>
               </div>
-              <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
-                {t(descKey)}
-              </div>
+              <img
+                src={shot}
+                alt={t(altKey)}
+                loading="lazy"
+                width="1600"
+                height="775"
+                className="w-full h-auto mt-6 md:ml-16 md:w-[calc(100%-4rem)]"
+                style={{ border: '1px solid var(--color-atlas-line)' }}
+              />
             </div>
           ))}
         </section>

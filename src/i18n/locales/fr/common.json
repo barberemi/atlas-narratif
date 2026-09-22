@@ -96,7 +96,12 @@
     "idx3Cat": "La cohérence",
     "idx3Desc": "Plus de 12 détecteurs traquent contradictions et oublis ; le suivi d'amorces te rappelle chaque promesse, même trois tomes plus loin.",
     "closerTitle": "Ta saga mérite une carte.",
-    "closerCta": "Créer mon premier projet"
+    "closerCta": "Créer mon premier projet",
+    "heroShotAlt": "La timeline narrative : les chapitres en colonnes, chacun avec ses événements, les personnages présents et le point de vue.",
+    "heroShotCaption": "L'outil, avec la trilogie du Seigneur des Anneaux chargée — c'est la démo, explorable sans compte.",
+    "idx1Alt": "La vue Save the Cat : les 15 beats placés sur les chapitres, répartis en trois actes, avec leur position idéale et les écarts signalés.",
+    "idx2Alt": "La carte interactive d'Atlas Narratif : la Terre du Milieu, chaque lieu du récit placé dessus, projet « Le Seigneur des Anneaux » chargé.",
+    "idx3Alt": "Le détecteur d'incohérences : les contradictions classées par gravité, chacune expliquée et reliée aux personnages et lieux concernés."
   },
   "label": {
     "characters": "Personnages",
