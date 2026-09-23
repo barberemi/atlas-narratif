@@ -10,6 +10,7 @@ const GuidedTour   = lazy(() => import('./components/tour/GuidedTour'));
 const WelcomeModal = lazy(() => import('./components/tour/WelcomeModal'));
 import { shouldShowWelcome } from './components/tour/tourUtils';
 const CookieConsent = lazy(() => import('./components/ui/CookieConsent'));
+const HomeBlogTeaser = lazy(() => import('./components/home/HomeBlogTeaser'));
 import { loadCrisp } from './utils/crisp';
 import { useLotrReseed } from './hooks/useLotrReseed';
 const AtlasMapView         = lazy(() => import('./components/map/AtlasMapView'));
@@ -44,6 +45,7 @@ const GlobalSearch  = lazy(() => import('./components/search/GlobalSearch'));
 import TopNav        from './components/nav/TopNav';
 import Footer        from './components/nav/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
+import { INDEX_ITEMS, HERO_SHOT, FAQ_KEYS } from './components/home/homeIndexItems';
 import Skeleton from './components/ui/Skeleton';
 import { Toaster } from 'sonner';
 import { toast } from './lib/toast';
@@ -205,13 +207,6 @@ function DemoRoute() {
     </div>
   );
 }
-
-// ── Sommaire éditorial « ce que fait l'outil » (template Maison d'édition) ─────
-const INDEX_ITEMS = [
-  { no: '01', titleKey: 'home.idx1Title', catKey: 'home.idx1Cat', descKey: 'home.idx1Desc' },
-  { no: '02', titleKey: 'home.idx2Title', catKey: 'home.idx2Cat', descKey: 'home.idx2Desc' },
-  { no: '03', titleKey: 'home.idx3Title', catKey: 'home.idx3Cat', descKey: 'home.idx3Desc' },
-];
 
 // ── Page d'accueil / Import ───────────────────────────────────────────────────
 function HomePage() {
@@ -398,14 +393,17 @@ function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "mainEntity": [
-          { "@type": "Question", "name": "Mes données restent-elles privées ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Vos données narratives sont stockées dans une base PostgreSQL sécurisée. Les mots de passe sont hashés et les données sensibles sont chiffrées au repos (AES-256-GCM). Aucun outil d'analytics ou de tracking n'est utilisé." } },
-          { "@type": "Question", "name": "Quels outils narratifs sont disponibles ?", "acceptedAnswer": { "@type": "Answer", "text": "Atlas Narratif propose une timeline interactive, un graphe de relations, une carte des lieux, la structure Save the Cat (15 beats), le Voyage du Héros (12 étapes), un arc émotionnel, un détecteur d'incohérences, un tracker d'amorces narratives et la gestion de fils narratifs." } },
-          { "@type": "Question", "name": "Puis-je importer un manuscrit existant ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Générez un prompt d'analyse avec Atlas Narratif, envoyez-le à votre IA favorite (ChatGPT, Gemini, Claude), puis importez le résultat JSON pour extraire automatiquement la timeline, les personnages et les lieux." } },
-          { "@type": "Question", "name": "Atlas Narratif supporte-t-il les séries en plusieurs tomes ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui. Le support multi-tomes permet de filtrer par volume, de suivre les amorces narratives entre les tomes et de visualiser les arcs sur l'ensemble de la série." } },
-        ],
+        "mainEntity": FAQ_KEYS.map(({ q, a }) => ({
+          "@type": "Question",
+          "name": t(q),
+          "acceptedAnswer": { "@type": "Answer", "text": t(a) },
+        })),
       }) }} />
-    <div className="h-full overflow-y-auto no-scrollbar" style={{ backgroundColor: 'var(--color-atlas-ink)' }}>
+    {/* Pas de `no-scrollbar` ici, contrairement au reste de l'app : la home
+        fait plus de trois écrans et son premier écran ne déborde pas
+        visuellement. Sans barre de défilement, plus rien n'indique au
+        visiteur qu'il y a une suite. Ailleurs, la masquer reste voulu. */}
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--color-atlas-ink)' }}>
       <div className="max-w-5xl mx-auto px-6 md:px-10">
 
         {/* ── Hero éditorial (split) ── */}
@@ -442,10 +440,13 @@ function HomePage() {
               >
                 {t('home.ctaStart')}
               </button>
+              {/* Même encombrement que « Commencer » : pour un visiteur venu
+                  d'un lien, explorer la démo sans rien créer est le chemin le
+                  moins coûteux — il ne doit pas passer pour un lien secondaire. */}
               <button
                 onClick={handleLoadDemo}
-                className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] pb-0.5 text-atlas-text transition-colors hover:text-atlas-green"
-                style={{ borderBottom: '2px solid var(--color-atlas-gold)' }}
+                className="font-grotesk text-[13px] font-bold uppercase tracking-[0.08em] px-6 py-3 text-atlas-text transition-colors hover:border-atlas-green hover:text-atlas-green"
+                style={{ border: '2px solid var(--color-atlas-gold)' }}
               >
                 {t('home.ctaDemo')}
               </button>
@@ -454,6 +455,79 @@ function HomePage() {
               {t('home.reassure')}
             </p>
           </div>
+        </section>
+
+        {/* ── Preuve : l'app, démo LOTR chargée ──
+            La home ne montrait aucune capture de l'outil ; sur un produit dont
+            l'argument est « ton roman sous tes yeux », c'est la première chose
+            qui manquait. Pas de lazy-loading : cette image est juste sous le
+            hero et candidate au LCP. */}
+        <section className="py-12 md:py-16" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+          <figure>
+            <img
+              src={HERO_SHOT.src}
+              alt={t(HERO_SHOT.altKey)}
+              width={HERO_SHOT.width}
+              height={HERO_SHOT.height}
+              className="w-full h-auto"
+              style={{ border: '1px solid var(--color-atlas-line)', boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}
+            />
+            <figcaption className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-mute mt-4">
+              {t(HERO_SHOT.captionKey)}
+            </figcaption>
+          </figure>
+        </section>
+
+        {/* ── Bande citation ── */}
+        <section
+          className="py-14 md:py-20"
+          style={{ borderTop: '1px solid var(--color-atlas-line)', borderBottom: '1px solid var(--color-atlas-line)' }}
+        >
+          <p
+            className="font-serif font-medium text-atlas-text"
+            style={{ fontSize: 'clamp(1.5rem, 3.4vw, 2.1rem)', lineHeight: 1.4, maxWidth: '26ch' }}
+          >
+            <span style={{ color: 'var(--color-atlas-green)' }}>{t('home.bandQuoteLead')}</span>{' '}
+            {t('home.bandQuoteRest')}
+          </p>
+        </section>
+
+        {/* ── Sommaire : ce que fait l'outil ── */}
+        <section className="py-14 md:py-16">
+          <div
+            className="flex items-center justify-between font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
+            style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
+          >
+            <span>{t('home.indexLabel')}</span>
+            <span>{t('home.indexToc')}</span>
+          </div>
+          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey, shot, shotW, shotH, altKey }) => (
+            <div key={no} className="py-7" style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+              <div className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline">
+                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
+                <div>
+                  <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
+                    {t(titleKey)}
+                  </h3>
+                  <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
+                    {t(catKey)}
+                  </p>
+                </div>
+                <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
+                  {t(descKey)}
+                </div>
+              </div>
+              <img
+                src={shot}
+                alt={t(altKey)}
+                loading="lazy"
+                width={shotW}
+                height={shotH}
+                className="w-full h-auto mt-6 md:ml-16 md:w-[calc(100%-4rem)]"
+                style={{ border: '1px solid var(--color-atlas-line)' }}
+              />
+            </div>
+          ))}
         </section>
 
         {/* ── Commencer : onboarding ── */}
@@ -476,7 +550,7 @@ function HomePage() {
                 className="group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
                 style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
               >
-                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>01</div>
+                <div className="text-lg leading-none pt-1" style={{ color: 'var(--color-atlas-gold)' }} aria-hidden="true">◆</div>
                 <div>
                   <h3 className="font-serif text-xl font-semibold text-atlas-text leading-snug transition-colors group-hover:text-atlas-green">{t('home.buildTitle')}</h3>
                   <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.buildDesc')}</p>
@@ -490,7 +564,7 @@ function HomePage() {
                 className="group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
                 style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
               >
-                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>02</div>
+                <div className="text-lg leading-none pt-1" style={{ color: 'var(--color-atlas-gold)' }} aria-hidden="true">◆</div>
                 <div>
                   <h3 className="font-serif text-xl font-semibold text-atlas-text leading-snug transition-colors group-hover:text-atlas-green">{t('home.analyzeTitle')}</h3>
                   <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.analyzeDesc')}</p>
@@ -504,7 +578,7 @@ function HomePage() {
                 className="group grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
                 style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
               >
-                <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>03</div>
+                <div className="text-lg leading-none pt-1" style={{ color: 'var(--color-atlas-gold)' }} aria-hidden="true">◆</div>
                 <div>
                   <h3 className="font-serif text-xl font-semibold text-atlas-text leading-snug transition-colors group-hover:text-atlas-green">{t('home.obsidianTitle')}</h3>
                   <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.obsidianDesc')}</p>
@@ -840,50 +914,44 @@ function HomePage() {
 
         </section>
 
-        {/* ── Bande citation ── */}
-        <section
-          className="py-14 md:py-20"
-          style={{ borderTop: '1px solid var(--color-atlas-line)', borderBottom: '1px solid var(--color-atlas-line)' }}
-        >
-          <p
-            className="font-serif font-medium text-atlas-text"
-            style={{ fontSize: 'clamp(1.5rem, 3.4vw, 2.1rem)', lineHeight: 1.4, maxWidth: '26ch' }}
-          >
-            <span style={{ color: 'var(--color-atlas-green)' }}>{t('home.bandQuoteLead')}</span>{' '}
-            {t('home.bandQuoteRest')}
-          </p>
+
+        {/* ── Pourquoi cet outil (D4) ── */}
+        <section className="py-14 md:py-16" style={{ borderTop: '1px solid var(--color-atlas-line)' }}>
+          <div className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute mb-6">
+            {t('home.whyLabel')}
+          </div>
+          <div className="grid md:grid-cols-[1fr_1fr] gap-8 md:gap-14 items-start">
+            <h2 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: 'clamp(1.6rem, 3.2vw, 2.2rem)' }}>
+              {t('home.whyTitle')}
+            </h2>
+            <p className="font-serif text-atlas-soft leading-relaxed" style={{ fontSize: '1.05rem' }}>
+              {t('home.whyBody')}
+            </p>
+          </div>
         </section>
 
-        {/* ── Sommaire : ce que fait l'outil ── */}
-        <section className="py-14 md:py-16">
-          <div
-            className="flex items-center justify-between font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
-            style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}
-          >
-            <span>{t('home.indexLabel')}</span>
-            <span>{t('home.indexToc')}</span>
+        {/* ── FAQ (D2) ──
+            Ces quatre questions existaient déjà en JSON-LD : Google les lisait,
+            pas le visiteur. Le JSON-LD est maintenant construit depuis les mêmes
+            clés i18n, les deux ne peuvent plus diverger. */}
+        <section className="py-14 md:py-16" style={{ borderTop: '1px solid var(--color-atlas-line)' }}>
+          <div className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-atlas-mute pb-3 mb-2"
+            style={{ borderBottom: '1px solid var(--color-atlas-soft)' }}>
+            {t('home.faqLabel')}
           </div>
-          {INDEX_ITEMS.map(({ no, titleKey, catKey, descKey }) => (
-            <div
-              key={no}
-              className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_14rem] gap-x-6 gap-y-2 items-baseline py-7"
-              style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
-            >
-              <div className="font-grotesk text-2xl font-semibold" style={{ color: 'var(--color-atlas-gold)' }}>{no}</div>
-              <div>
-                <h3 className="font-serif font-semibold text-atlas-text leading-tight" style={{ fontSize: '1.5rem' }}>
-                  {t(titleKey)}
-                </h3>
-                <p className="font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-green mt-2">
-                  {t(catKey)}
-                </p>
-              </div>
-              <div className="col-span-2 md:col-span-1 text-sm text-atlas-soft font-serif leading-relaxed">
-                {t(descKey)}
-              </div>
+          {FAQ_KEYS.map(({ q, a }) => (
+            <div key={q} className="grid md:grid-cols-[1fr_1.3fr] gap-x-10 gap-y-2 py-6"
+              style={{ borderBottom: '1px solid var(--color-atlas-line)' }}>
+              <h3 className="font-serif font-semibold text-atlas-text leading-snug" style={{ fontSize: '1.15rem' }}>
+                {t(q)}
+              </h3>
+              <p className="text-sm text-atlas-soft font-serif leading-relaxed">{t(a)}</p>
             </div>
           ))}
         </section>
+
+        {/* ── À lire : derniers articles (chunk séparé, voir HomeBlogTeaser) ── */}
+        <Suspense fallback={null}><HomeBlogTeaser /></Suspense>
 
         {/* ── Closer ── */}
         <section className="text-center py-16 md:py-20">
