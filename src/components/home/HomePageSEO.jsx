@@ -194,6 +194,22 @@ export default function HomePageSEO() {
                   </div>
                   <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-atlas-gold whitespace-nowrap md:justify-self-end md:self-center">{t('home.analyzeAction')}</span>
                 </div>
+
+                {/* Import de vault Obsidian : manquait au prerender alors que la
+                    home cliente l'expose. En <Link> plutôt qu'en <div> : c'est
+                    une vraie route, autant qu'elle soit crawlable. */}
+                <Link
+                  to="/import/obsidian"
+                  className="grid grid-cols-[2.5rem_1fr] md:grid-cols-[4rem_1fr_9rem] gap-x-5 gap-y-1 items-baseline text-left py-6"
+                  style={{ borderBottom: '1px solid var(--color-atlas-line)' }}
+                >
+                  <div className="text-lg leading-none pt-1" style={{ color: 'var(--color-atlas-gold)' }} aria-hidden="true">◆</div>
+                  <div>
+                    <h2 className="font-serif text-xl font-semibold text-atlas-text leading-snug">{t('home.obsidianTitle')}</h2>
+                    <p className="text-sm text-atlas-soft font-serif leading-relaxed mt-1">{t('home.obsidianDesc')}</p>
+                  </div>
+                  <span className="col-start-2 md:col-start-3 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] whitespace-nowrap md:justify-self-end md:self-center" style={{ color: '#a78bfa' }}>{t('home.obsidianAction')}</span>
+                </Link>
               </div>
 
               {/* Démo LOTR (statique) */}
@@ -261,6 +277,9 @@ export default function HomePageSEO() {
             >
               {t('home.closerCta')}
             </span>
+            <p className="font-grotesk text-[11px] uppercase tracking-[0.14em] text-atlas-mute mt-6">
+              {t('home.closerTrust')}
+            </p>
           </section>
 
           {/* ── Footer : liens + maillage interne (blog, légal) ── */}
