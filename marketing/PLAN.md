@@ -109,6 +109,8 @@ Ce n'est pas un manque, c'est **cohérent avec la promesse** « ton IA, tes donn
 Pour savoir *d'où* viennent les gens : pas besoin d'outil, **corrèle à la main**. Tu postes sur un Discord un mardi → tu regardes s'il y a un pic d'inscriptions le mercredi. Amplement suffisant à ton échelle. *(Le header `Referer` est peu fiable : beaucoup de plateformes le suppriment.)*
 
 ### La charte de voix : je dis / je ne dis pas
+> **Règle n°1 : on écrit comme un humain.** Aucun tiret cadratin, aucun tic d'IA, ta voix à toi. Détail et test avant publication dans `COPILOTE-RESEAUX.md` § 0.
+
 | ✅ Je dis | ✕ Je ne dis pas |
 |-----------|-----------------|
 | « Ne pars plus de la page blanche. » | « Notre solution optimise ton workflow. » |

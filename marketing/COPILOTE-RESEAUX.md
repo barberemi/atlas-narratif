@@ -5,17 +5,39 @@
 
 ---
 
-## ✅ À valider avant de démarrer
+## ✅ Validé le 27/09/2026
 
-Coche ce que tu valides, barre ou commente le reste :
+- [x] **Le principe** : je remplis, tu publies. Je ne clique jamais sur Publier / Envoyer / Rejoindre, je ne tape jamais de mot de passe ni de code 2FA.
+- [x] **Les canaux de départ** : X, Discord (2-3 serveurs), Reddit (r/ecriture), 1-2 groupes Facebook, CoCyclics. Instagram / TikTok **depuis ton téléphone** (je prépare textes et visuels).
+- [x] **Les séances de lancement** (§ 2) : 5 séances courtes cette semaine et la suivante.
+- [x] **Les rituels récurrents** (§ 3) : 15-20 min le jour de chaque sortie d'article + 20 min de réponses par semaine.
+- [x] **Le journal de bord** `marketing/JOURNAL.md` (§ 5) : je le tiens à jour après chaque séance, c'est notre seule « mesure » (pas d'analytics).
+- [x] **La vidéo démo** (§ 4) : je pilote la démo pendant que tu enregistres l'écran.
+- [x] **Product Hunt** : on ne demande **pas** d'upvotes (interdit par PH), on prévient et on demande des retours (voir § 6, correction faite dans `CALENDRIER.md`).
 
-- [ ] **Le principe** : je remplis, tu publies. Je ne clique jamais sur Publier / Envoyer / Rejoindre, je ne tape jamais de mot de passe ni de code 2FA.
-- [ ] **Les canaux de départ** : X, Discord (2-3 serveurs), Reddit (r/ecriture), 1-2 groupes Facebook, CoCyclics. Instagram / TikTok **depuis ton téléphone** (je prépare textes et visuels).
-- [ ] **Les séances de lancement** (§ 2) : 5 séances courtes cette semaine et la suivante.
-- [ ] **Les rituels récurrents** (§ 3) : 15-20 min le jour de chaque sortie d'article + 20 min de réponses par semaine.
-- [ ] **Le journal de bord** `marketing/JOURNAL.md` (§ 5) : je le tiens à jour après chaque séance, c'est notre seule « mesure » (pas d'analytics).
-- [ ] **La vidéo démo** (§ 4) : je pilote la démo pendant que tu enregistres l'écran.
-- [ ] **Product Hunt** : on ne demande **pas** d'upvotes (interdit par PH), on prévient et on demande des retours (voir § 6, correction faite dans `CALENDRIER.md`).
+- [x] **Écrire comme un humain** (§ 0) : tout ce qu'on publie doit sonner écrit par toi, pas par une IA.
+
+---
+
+## 0. ✍️ On écrit comme un humain (règle n°1, pour TOUT ce qu'on publie)
+
+Posts, commentaires, réponses, messages, légendes, fils X, textes Product Hunt : **tout doit sonner comme toi qui écris**, pas comme une IA. Un texte qui « sent l'IA » est ignoré, moqué ou supprimé dans les communautés d'auteurs, et il abîme la promesse même d'Atlas (« l'outil structure, c'est toi qui écris »).
+
+**Jamais**
+- De tiret cadratin `—` ni de demi-cadratin `–` pour découper une phrase. Un point, une virgule, des parenthèses ou deux-points à la place.
+- Les tics d'IA : « Dans un monde où… », « Plongeons dans… », « véritable », « crucial », « essentiel », « n'hésitez pas à… », « il est important de noter », « en somme », « game changer », « révolutionner ».
+- Les listes de trois systématiques (« simple, rapide et efficace »), les questions rhétoriques en série, les conclusions qui répètent le début.
+- Les pavés parfaitement structurés (titre, puces, gras partout) dans un commentaire ou une réponse : on parle comme dans une conversation.
+- La rafale d'emojis et de hashtags (🚀✨🔥 #writing #author #books…). Un emoji de temps en temps, zéro à deux hashtags quand le réseau s'y prête.
+- Le ton de vendeur ou de communiqué de presse.
+
+**Toujours**
+- Ta voix : le « je », le tutoiement, des phrases de longueurs variées, des tournures parlées quand ça colle au canal (« franchement », « bon », « j'avoue »).
+- Du concret et du vécu : un détail de ton roman, une galère réelle, un chiffre précis, plutôt qu'une généralité.
+- Court. On coupe tout ce qui n'apporte rien.
+- Adapté à l'endroit : un commentaire Reddit ne ressemble pas à un post LinkedIn ni à un message Discord.
+
+**Le test avant de publier** : relis à voix haute. Si tu ne le dirais pas comme ça à un pote auteur, on réécrit. Et tu as toujours le dernier mot : je propose, tu reformules à ta façon si besoin.
 
 ---
 
