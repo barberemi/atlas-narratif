@@ -27,7 +27,31 @@ Notre seule « mesure » (pas d'analytics dans le code) : ce qu'on a fait, ce qu
 |------|-------|------|------|-----------------|-------|
 | 28/09 | X | Bio mise à jour | profil `@Rem_Barbe` | (à noter) | Bio de 160 car. (`reseaux-sociaux.md`) |
 | 28/09 | X | Bannière | profil `@Rem_Barbe` | | `marketing/visuels/x-banniere.png` |
-| 28/09 | X | Post épinglé (carte de la démo + lien) | (à coller) | (à noter) | |
+| 28/09 | X | Post épinglé (carte de la démo + lien) | https://x.com/Rem_Barbe/status/2104329449588109525 | (à noter) | |
+| 28/09 | Discord · Pluméa | Présentation (forum vos-présentations, titre `cromelu`, sans lien) | https://discord.com/channels/1027089727360344144/1553906254424838294 | (à noter) | Angle « j'écris une saga fantasy en 3 tomes, plein de notes, peu de structure », outil cité en une ligne |
+
+---
+
+## 🌙 Bilan de la séance du 28/09 (soir)
+
+**Fait**
+- X : lien du post épinglé noté.
+- Discord : 3 serveurs rejoints (Pluméa, J'écris un Roman, Forum des Auteurs), règlements lus (tableau plus bas).
+- Pluméa : présentation postée, coucou dans #bienvenue, accueil 3/3 terminé, réponses aux présentations de Soren-L et Sakyuma.
+
+**Ce qu'on a appris**
+- Le ton qui passe : familier, oral, « t'as », « ahah », une question à la fin. Les petites phrases perso que tu ajoutes toi-même (« si il y a bien une partie sur laquelle je suis nul… ») sont ce qui marche le mieux.
+- Pluméa est le serveur le plus vivant : une présentation reçoit vite 3 à 6 réponses. C'est là qu'il faut s'installer en priorité.
+- Pluméa progresse au donnant-donnant : bêta-lectures (1 000 mots lus = 1 jeton = 1 000 mots postés) et participation aux forums pour obtenir le rôle @Pluméen (liens, images, fichiers).
+- Autopromo : la transparence est obligatoire (voir l'épisode plume-locale plus bas) et rien avant d'être connu.
+
+**Demain matin (mardi 29/09), dans l'ordre**
+1. Pluméa : lire les réponses à ta présentation et à tes commentaires (Soren, Sakyuma), y répondre. Je peux préparer les brouillons.
+2. Pluméa : jeter un œil à **forum-écriture** et répondre à 1 ou 2 questions de structure / d'arcs / d'intrigue, sans parler de l'outil.
+3. J'écris un Roman : poster la présentation (texte en bas du journal).
+4. Le soir : fil timeline sur X, puis `make prod-deploy` après la sortie de l'article.
+
+**Idée pour plus tard** : Atlas importe déjà les vaults Obsidian, et beaucoup d'auteurs sur Pluméa gardent leur univers dans Obsidian. C'est l'angle le plus naturel pour le premier partage de l'outil (S3), et peut-être un futur article de blog (« Ton univers est dans Obsidian ? Voilà comment le structurer »).
 
 ---
 
@@ -38,11 +62,15 @@ Notre seule « mesure » (pas d'analytics dans le code) : ce qu'on a fait, ce qu
 - [ ] **Vérifier qu'elles sont bien déployées en prod** (`make prod-deploy` si ce n'est pas fait), sinon l'article du 02/10 sort avec l'ancien titre « NaNoWriMo ».
 
 ### Mardi 29/09
+- [ ] **Discord · J'écris un Roman** : poster la présentation dans #presentez-vous (texte prêt en bas, **rien sur l'outil**).
 - [ ] **Le soir** : publier le **fil timeline** sur X (4 posts, texte prêt ci-dessous). L'article « Créer une timeline pour ton roman » sort le même jour : le post 4 pointe dessus.
 - [ ] Après la sortie de l'article : redéployer (`make prod-deploy`) pour que Google le voie.
 
+### Mercredi 30/09
+- [ ] **Discord · Forum des Auteurs** : cliquer « Terminer » (étapes d'accueil), puis poster la présentation dans #présentation-nouveaux (texte prêt en bas).
+
 ### Dans la semaine (S2)
-- [ ] **Séance 2 · Discord** (45 min) : tu rejoins 2-3 serveurs (J'écris un Roman, Pluméa, Forum des Auteurs), je lis leurs règles et j'adapte ta présentation, sans lien.
+- [ ] **Séance 2 · Discord** (commencée le 28/09) : 3 serveurs rejoints, règlements lus, présentation Pluméa postée. Reste J'écris un Roman (mar. 29/09) et Forum des Auteurs (mer. 30/09), détail ci-dessous.
 - [ ] **Séance 3 · Reddit** (30 min) : vérifier ton compte, lire les règles de r/ecriture, 3 commentaires vraiment utiles, sans lien.
 - [ ] **Séance 4 · Facebook + CoCyclics** (30 min) : 1-2 gros groupes d'auteurs (repérer leur jour « promo ») et présentation sur CoCyclics.
 - [ ] **Vidéo démo** (30 min) : je déroule la démo, tu enregistres l'écran (`Cmd + Shift + 5`), je te donne les sous-titres.
@@ -57,6 +85,27 @@ Notre seule « mesure » (pas d'analytics dans le code) : ce qu'on a fait, ce qu
 ### Chaque semaine
 - [ ] **Séance réponses** (20 min, le lundi par exemple) : on lit tes notifications et je te propose des réponses.
 - [ ] Remplir la colonne « Réactions à J+2 » ci-dessus.
+
+---
+
+## 💬 Discord : ce qu'on sait des serveurs (lu le 28/09)
+
+| Serveur | Activité | Parler de l'outil ? | À savoir |
+|---------|----------|---------------------|----------|
+| **Pluméa** | Très actif (plusieurs présentations par jour, ~10 réponses chacune) | Oui **dans la présentation** uniquement. Pub interdite ailleurs, même en MP | Titre du post = identifiant Discord. Mode lent (1 post / 6 h). Liens et fichiers bloqués jusqu'à ~100 messages (hors catégorie « Espace pluméen »). Salons verrouillés à viser : **logiciels-et-outils**, **question-spécifique-cohérence**. Commentaires générés par IA interdits. |
+| **J'écris un Roman** | Calme (1 présentation tous les 3-4 jours) | **Non** : « auto-promotion, liens et posts hors écriture » interdits | Serveur d'une école d'écriture payante (qui y place ses formations). Pas de conseil non sollicité. Salons utiles : #brainstorming-public, #ecriture-public, #espressmot (lives le mercredi 20 h). |
+| **Forum des Auteurs** | Faible (1-2 présentations / mois), beaucoup de scénaristes | Oui, avec retenue : un membre qui présentait son app a été renvoyé vers le salon **logiciels** | Étapes d'accueil à terminer avant de pouvoir écrire. |
+
+**Suite Discord (S2 → S3)**
+- [x] Pluméa : coucou posté dans #bienvenue (28/09).
+- [ ] Pluméa : répondre à chaque commentaire sur la présentation.
+- [x] Pluméa : réponses aux présentations de Soren-L (saga 3-4 tomes) et Sakyuma (univers fantasy depuis le collège), 28/09.
+- [x] Pluméa : accueil terminé (3/3). Les salons Écriture sont **lisibles et on peut y répondre** ; il faut le rôle @Pluméen pour les liens, images et fichiers.
+- **Salon logiciels-et-outils (lu le 28/09)** : peu actif (6 posts, le dernier le 24/09). Beaucoup d'utilisateurs d'**Obsidian** (notes, univers, cohérence), sinon Word / GDoc. En mai, un membre a posté le lien de son propre outil (plume-locale) comme s'il n'en était pas l'auteur : un membre l'a repris publiquement (« ne fais pas semblant que c'est pas de toi ») et DraftBot a réagi. **Règle : toujours dire que c'est ton outil**, et pas avant d'être connu sur le serveur.
+- [ ] Plus tard (S3, rôle Pluméen) : un post « partage & témoignage » dans logiciels-et-outils, transparent (« j'ai codé ça pour ma saga »). Angle : l'import de vault Obsidian, puisque beaucoup y gardent leur univers.
+- [ ] Être présent quelques minutes par jour : répondre à des questions de structure, d'arcs, d'amorces (ton terrain), sans parler de l'outil.
+- [ ] Viser ~100 messages utiles sur Pluméa pour débloquer les liens et les salons logiciels / cohérence.
+- [ ] S3 : premier partage (appel à beta-testeurs, `communautes.md` § 2) **seulement** sur Pluméa (salon logiciels-et-outils) et Forum des Auteurs (salon logiciels). Jamais sur J'écris un Roman.
 
 ---
 
@@ -101,3 +150,12 @@ https://atlas-narratif.com
 
 À vérifier avant : les tournures perso (« j'ai perdu le fil », « dans mon manuscrit », « plus longtemps que prévu ») doivent être vraies pour toi.
 
+### Présentation J'écris un Roman (mardi 29/09, #presentez-vous)
+```
+Salut tout le monde ! Moi c'est Rémi, je bosse sur une saga de fantasy en trois tomes. J'ai des carnets entiers sur mes persos et mon monde, mais côté structure c'est le gros bazar ahah 😅 Je passe pour les espressmots et le brainstorming, faut que je transforme tout ça en vraie histoire. Et vous, vous êtes sur quoi en ce moment ?
+```
+
+### Présentation Forum des Auteurs (mercredi 30/09, #présentation-nouveaux)
+```
+Salut à tous ! Moi c'est Rémi, je bosse sur une saga de fantasy en trois tomes. De la matière j'en ai à revendre, de la structure beaucoup moins ahah. Du coup je suis devenu un peu maniaque des beats, des arcs et des amorces qu'il faut bien payer un jour. Je suis dev à côté, alors j'ai fini par me bricoler un outil pour m'y retrouver, je le montrerai dans le salon logiciels quand j'aurai pris mes marques. Vous vous organisez comment, vous ?
+```
