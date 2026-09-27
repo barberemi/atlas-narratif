@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import process from 'node:process';
 import { posts, isPublished, getAllPosts, getSitemapEntries } from './posts';
 
 describe('blog — garde-fou de publication (isPublished)', () => {
@@ -45,5 +48,39 @@ describe('blog — registre des articles', () => {
     const sitemap = new Set(getSitemapEntries().map((e) => e.slug));
     const index = new Set(getAllPosts().map((p) => p.slug));
     expect(sitemap).toEqual(index);
+  });
+});
+
+describe('blog — conformité à la charte (ai/marketing/blog-guidelines.md)', () => {
+  const publicDir = resolve(process.cwd(), 'public');
+
+  it('chaque image référencée existe dans public/ (aucune <img> cassée)', () => {
+    for (const p of posts) {
+      for (const [, src] of p.html.matchAll(/<img[^>]+src="([^"]+)"/g)) {
+        expect(existsSync(publicDir + src), `${p.slug} : ${src}`).toBe(true);
+      }
+    }
+  });
+
+  it('metaTitle ≤ 60 car., description ≤ 155 car.', () => {
+    for (const p of posts) {
+      expect(p.metaTitle.length, p.slug).toBeLessThanOrEqual(60);
+      expect(p.description.length, p.slug).toBeLessThanOrEqual(155);
+    }
+  });
+
+  it('aucun tiret cadratin ni demi-cadratin', () => {
+    for (const p of posts) {
+      expect(/[\u2013\u2014]/.test(p.title + p.description + p.excerpt + p.html), p.slug).toBe(false);
+    }
+  });
+
+  it('les liens internes /blog/<slug> pointent vers un article existant', () => {
+    const slugs = new Set(posts.map((p) => p.slug));
+    for (const p of posts) {
+      for (const [, slug] of p.html.matchAll(/href="\/blog\/([a-z0-9-]+)"/g)) {
+        expect(slugs.has(slug), `${p.slug} → ${slug}`).toBe(true);
+      }
+    }
   });
 });

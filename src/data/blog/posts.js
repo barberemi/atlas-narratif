@@ -540,30 +540,30 @@ const nanoPaceDiagram = `
   <figcaption>1667 mots par jour en théorie&#8239;; en pratique, la motivation plonge vers la semaine 2. Un plan solide, c'est ce qui te fait remonter la pente.</figcaption>
 </figure>`;
 
-const planifierNanowrimo = {
-  slug: 'planifier-nanowrimo-methode',
+const planifierRomanNovembre = {
+  slug: 'planifier-roman-novembre-methode',
   pillar: 'P1',
-  metaTitle: 'Planifier son NaNoWriMo : la méthode complète',
-  title: 'Planifie ton NaNoWriMo : la méthode pour tenir 50 000 mots',
+  metaTitle: 'Planifier son roman de novembre : la méthode',
+  title: 'Planifie ton roman de novembre : la méthode pour tenir 50 000 mots',
   description:
-    'Comment planifier ton NaNoWriMo avant le 1er novembre : choisir une structure, poser tes beats et ta timeline pour écrire 50 000 mots sans t\'enliser.',
+    'Préparer ton roman de novembre avant le 1er : choisir une structure, poser tes beats et ta timeline pour écrire 50 000 mots sans t\'enliser.',
   excerpt:
-    'Le secret des auteurs qui finissent le NaNoWriMo ? Ils préparent en octobre. Choisis ta structure, pose tes beats, et écris tes 50 000 mots sans t\'enliser.',
+    'Le secret des auteurs qui finissent leur roman de novembre ? Ils préparent en octobre. Choisis ta structure, pose tes beats, et écris tes 50 000 mots sans t\'enliser.',
   date: '2026-10-02',
   readingTime: '8 min',
-  tags: ['NaNoWriMo', 'Méthode', 'Planification', 'Structure'],
+  tags: ['Défi d\'écriture', 'Méthode', 'Planification', 'Structure'],
   emoji: '📅',
   html: `
-<p>Chaque novembre, des centaines de milliers d'auteurs se lancent le même défi&#8239;: écrire 50 000 mots en 30 jours. C'est le NaNoWriMo. Et chaque année, la même statistique tombe&#8239;: la plupart abandonnent avant la fin. Presque toujours au même endroit, autour de la deuxième semaine, quand l'élan retombe et que l'histoire part dans tous les sens.</p>
+<p>Chaque novembre, des milliers d'auteurs se lancent le même défi&#8239;: écrire 50 000 mots en 30 jours. Longtemps, ce défi s'est appelé NaNoWriMo&#8239;; l'association a fermé en 2025, mais la tradition a survécu, portée par les communautés d'auteurs et des successeurs comme Novel November. Et chaque année, la même statistique tombe&#8239;: la plupart abandonnent avant la fin. Presque toujours au même endroit, autour de la deuxième semaine, quand l'élan retombe et que l'histoire part dans tous les sens.</p>
 <p>La différence entre ceux qui franchissent la ligne et les autres tient rarement au talent ou au temps libre. Elle tient à une chose&#8239;: <strong>un plan préparé avant le 1er novembre</strong>. Voici comment t'y prendre.</p>
 
-<h2>📅 NaNoWriMo, le défi des 50 000 mots</h2>
+<h2>📅 Le défi des 50 000 mots en novembre</h2>
 <p>Le principe est simple&#8239;: écrire un premier jet de roman, 50 000 mots, entre le 1er et le 30 novembre. Soit environ <strong>1667 mots par jour</strong>, tous les jours, pendant un mois. L'idée n'est pas d'écrire un chef-d'œuvre, mais de <em>finir un jet</em>, en imposant silence à ton éditeur intérieur.</p>
 <p>Ce rythme paraît tenable sur le papier. Le piège n'est pas la vitesse d'écriture&#8239;: c'est de savoir <em>quoi</em> écrire chaque jour. C'est là que le plan fait toute la différence.</p>
 ${nanoPaceDiagram}
 
 <h2>🧭 Planifier ou foncer</h2>
-<p>Dans la communauté, deux écoles s'affrontent&#8239;: les <strong>planners</strong> (qui préparent tout) et les <strong>pantsers</strong> (qui écrivent à l'instinct, «&#8239;au feeling&#8239;»). Les deux peuvent gagner le NaNoWriMo, mais pour un premier, planifier change radicalement les chances.</p>
+<p>Dans la communauté, deux écoles s'affrontent&#8239;: les <strong>planners</strong> (qui préparent tout) et les <strong>pantsers</strong> (qui écrivent à l'instinct, «&#8239;au feeling&#8239;»). Les deux peuvent relever le défi, mais pour un premier, planifier change radicalement les chances.</p>
 <p>Pourquoi&#8239;? Parce que le pantsing t'expose à la panne&#8239;: tu ouvres ton document au jour 12, et tu ne sais pas ce qui se passe ensuite. Chaque jour sans plan, tu paies une «&#8239;taxe de décision&#8239;» avant même d'écrire un mot. Un plan, même léger, supprime cette taxe&#8239;: tu sais quelle scène écrire, tu écris.</p>
 <p>D'où la tradition du <strong>«&#8239;Preptober&#8239;»</strong> (le mois d'octobre consacré à la préparation). Pas besoin d'un mois entier&#8239;: une semaine de prep bien menée suffit largement.</p>
 
@@ -582,7 +582,7 @@ ${nanoPaceDiagram}
 <p>Cette prep, tu peux la faire sur papier ou dans un tableur. Mais un outil qui visualise ta structure te fait gagner un temps précieux&#8239;: tu vois d'un coup d'œil les trous, les temps forts qui manquent, les scènes déjà prêtes.</p>
 <p>Dans <strong>Atlas Narratif</strong>, tu choisis ta méthode (Save the Cat ou Voyage du Héros), tu poses tes beats sur tes futurs chapitres, et tu repères aussitôt ceux qui sonnent creux. Ta feuille de route de novembre est là, sous tes yeux, avant même d'avoir écrit la première ligne.</p>
 <figure class="blog-figure">
-  <img src="/blog/save-the-cat-frise.png" alt="La frise Save the Cat dans Atlas Narratif&#8239;: les beats posés sur les chapitres avant le NaNoWriMo, prêts à guider l'écriture jour après jour." loading="lazy" />
+  <img src="/blog/save-the-cat-frise.png" alt="La frise Save the Cat dans Atlas Narratif&#8239;: les beats posés sur les chapitres avant le défi de novembre, prêts à guider l'écriture jour après jour." loading="lazy" />
   <figcaption>Poser ses beats avant le 1er novembre&#8239;: ta feuille de route quotidienne, prête (démo LOTR).</figcaption>
 </figure>
 
@@ -599,14 +599,14 @@ ${nanoPaceDiagram}
 <ul>
   <li><strong>Partir sans aucun plan.</strong> C'est le billet le plus court vers l'abandon en semaine 2.</li>
   <li><strong>Trop planifier.</strong> À l'inverse, passer octobre à peaufiner une bible de 200 pages, c'est fuir l'écriture. Un plan léger suffit&#8239;: garde du carburant pour novembre.</li>
-  <li><strong>Viser la perfection.</strong> Le NaNoWriMo produit un premier jet, pas un manuscrit fini. Confonds les deux et tu cales dès le chapitre 3.</li>
+  <li><strong>Viser la perfection.</strong> Le défi de novembre produit un premier jet, pas un manuscrit fini. Confonds les deux et tu cales dès le chapitre 3.</li>
   <li><strong>Écrire dans le désordre sans repère.</strong> Sauter de scène en scène, c'est permis&#8239;; mais sans timeline, tu perds vite le fil de qui sait quoi et quand.</li>
 </ul>
 
 <h2>✅ En résumé</h2>
-<p>Le NaNoWriMo ne se gagne pas au talent, mais à la préparation. Une semaine de prep en octobre&#8239;: une prémisse claire, une structure choisie, cinq bornes posées, tes scènes découpées. Ensuite, tu écris, sans te relire, sans viser la perfection, en t'appuyant sur ton plan les jours difficiles.</p>
+<p>Le défi de novembre ne se gagne pas au talent, mais à la préparation. Une semaine de prep en octobre&#8239;: une prémisse claire, une structure choisie, cinq bornes posées, tes scènes découpées. Ensuite, tu écris, sans te relire, sans viser la perfection, en t'appuyant sur ton plan les jours difficiles.</p>
 <p><strong>Atlas Narratif</strong> est l'atelier idéal pour ta prep&#8239;: pose ta structure (Save the Cat ou Voyage du Héros), visualise ta timeline et tes personnages, et arrive au 1er novembre avec une carte au lieu d'une page blanche. Gratuit, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
-<p class="blog-cta"><a href="https://atlas-narratif.com">Prépare ton NaNoWriMo gratuitement avec Atlas Narratif.</a> Choisis ta méthode, pose tes beats, et lance-toi le 1er novembre avec un plan.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Prépare ton roman de novembre gratuitement avec Atlas Narratif.</a> Choisis ta méthode, pose tes beats, et lance-toi le 1er novembre avec un plan.</p>
 `,
 };
 
@@ -869,7 +869,964 @@ ${sagaArcsDiagram}
 `,
 };
 
-export const posts = [commentStructurerUnRoman, saveTheCat15Beats, voyageDuHeros, creerTimeline, planifierNanowrimo, structureLOTR, detecterIncoherences, gererPlusieursTomes];
+const saveTheCatOuVoyageDuHerosDiagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 404" role="img" aria-label="Save the Cat et le Voyage du Héros superposés sur la même ligne de temps : en haut, les 15 beats à leur position idéale dans les trois actes ; en bas, les 12 étapes du héros dans les trois phases. Des traits relient les correspondances : élément déclencheur et appel, basculement et seuil, finale et résurrection. L'épreuve suprême flotte entre le milieu et tout est perdu." style="width:100%;height:auto">
+    <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#a9a291">
+      <text x="40" y="22">SAVE THE CAT · CE QUI ARRIVE, ET QUAND</text>
+      <text x="40" y="362">VOYAGE DU HÉROS · CE QUE LE HÉROS DEVIENT</text>
+    </g>
+    <g>
+      <rect x="40" y="34" width="159" height="18" rx="3" fill="#cba15e" fill-opacity="0.14"/>
+      <rect x="201" y="34" width="350" height="18" rx="3" fill="#cba15e" fill-opacity="0.14"/>
+      <rect x="553" y="34" width="127" height="18" rx="3" fill="#cba15e" fill-opacity="0.14"/>
+      <rect x="40" y="322" width="159" height="18" rx="3" fill="#5cae8e" fill-opacity="0.14"/>
+      <rect x="201" y="322" width="350" height="18" rx="3" fill="#5cae8e" fill-opacity="0.14"/>
+      <rect x="553" y="322" width="127" height="18" rx="3" fill="#5cae8e" fill-opacity="0.14"/>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="10.5" text-anchor="middle">
+      <text x="120" y="47" fill="#cba15e">ACTE I</text>
+      <text x="376" y="47" fill="#cba15e">ACTE II</text>
+      <text x="616" y="47" fill="#cba15e">ACTE III</text>
+      <text x="120" y="335" fill="#5cae8e">DÉPART</text>
+      <text x="376" y="335" fill="#5cae8e">INITIATION</text>
+      <text x="616" y="335" fill="#5cae8e">RETOUR</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#ece7db" text-anchor="middle">
+      <text x="104" y="78">Déclencheur</text>
+      <text x="200" y="78">Basculement</text>
+      <text x="360" y="78">Milieu</text>
+      <text x="520" y="78">Tout est perdu</text>
+      <text x="616" y="78">Finale</text>
+      <text x="104" y="308">Appel</text>
+      <text x="200" y="308">Seuil</text>
+      <text x="424" y="308">Épreuve suprême</text>
+      <text x="616" y="308">Résurrection</text>
+    </g>
+    <line x1="40" y1="196" x2="680" y2="196" stroke="#ffffff" stroke-opacity="0.16"/>
+    <g stroke="#ffffff" stroke-opacity="0.3">
+      <line x1="40" y1="191" x2="40" y2="201"/>
+      <line x1="200" y1="191" x2="200" y2="201"/>
+      <line x1="360" y1="191" x2="360" y2="201"/>
+      <line x1="520" y1="191" x2="520" y2="201"/>
+      <line x1="680" y1="191" x2="680" y2="201"/>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="10.5" fill="#a9a291">
+      <text x="44" y="214">0&#8239;%</text>
+      <text x="204" y="214">25&#8239;%</text>
+      <text x="364" y="214">50&#8239;%</text>
+      <text x="524" y="214">75&#8239;%</text>
+      <text x="676" y="214" text-anchor="end">100&#8239;%</text>
+    </g>
+    <g stroke="#ece7db" stroke-opacity="0.28" stroke-width="1.2">
+      <line x1="59.2" y1="269" x2="46.4" y2="111"/>
+      <line x1="104" y1="269" x2="104" y2="111"/>
+      <line x1="142.4" y1="269" x2="155.2" y2="111"/>
+      <line x1="200" y1="269" x2="200" y2="111"/>
+      <line x1="264" y1="269" x2="276.8" y2="111"/>
+      <line x1="475.2" y1="269" x2="443.2" y2="111"/>
+      <line x1="564.8" y1="269" x2="552" y2="111"/>
+      <line x1="616" y1="269" x2="616" y2="111"/>
+      <line x1="673.6" y1="269" x2="673.6" y2="111"/>
+    </g>
+    <g stroke="#cba15e" stroke-width="1.5" stroke-dasharray="5 4">
+      <line x1="424" y1="269" x2="360" y2="111"/>
+      <line x1="424" y1="269" x2="520" y2="111"/>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#cba15e">
+      <text x="378" y="170" text-anchor="end">Vogler</text>
+      <text x="490" y="170">courant</text>
+    </g>
+    <g font-family="'Spectral',Georgia,serif" fill="#0b1621" font-size="12" font-weight="600" text-anchor="middle">
+      <g><circle cx="46.4"  cy="100" r="11" fill="#cba15e"/><text x="46.4"  y="104">1</text></g>
+      <g><circle cx="72"    cy="100" r="11" fill="#cba15e"/><text x="72"    y="104">2</text></g>
+      <g><circle cx="84.8"  cy="128" r="11" fill="#cba15e"/><text x="84.8"  y="132">3</text></g>
+      <g><circle cx="104"   cy="100" r="11" fill="#cba15e"/><text x="104"   y="104">4</text></g>
+      <g><circle cx="155.2" cy="100" r="11" fill="#cba15e"/><text x="155.2" y="104">5</text></g>
+      <g><circle cx="200"   cy="100" r="11" fill="#cba15e"/><text x="200"   y="104">6</text></g>
+      <g><circle cx="232"   cy="100" r="11" fill="#cba15e"/><text x="232"   y="104">7</text></g>
+      <g><circle cx="276.8" cy="100" r="11" fill="#cba15e"/><text x="276.8" y="104">8</text></g>
+      <g><circle cx="360"   cy="100" r="11" fill="#cba15e"/><text x="360"   y="104">9</text></g>
+      <g><circle cx="443.2" cy="100" r="11" fill="#cba15e"/><text x="443.2" y="104">10</text></g>
+      <g><circle cx="520"   cy="100" r="11" fill="#cba15e"/><text x="520"   y="104">11</text></g>
+      <g><circle cx="539.2" cy="128" r="11" fill="#cba15e"/><text x="539.2" y="132">12</text></g>
+      <g><circle cx="552"   cy="100" r="11" fill="#cba15e"/><text x="552"   y="104">13</text></g>
+      <g><circle cx="616"   cy="100" r="11" fill="#cba15e"/><text x="616"   y="104">14</text></g>
+      <g><circle cx="673.6" cy="100" r="11" fill="#cba15e"/><text x="673.6" y="104">15</text></g>
+      <g><circle cx="59.2"  cy="280" r="11" fill="#5cae8e"/><text x="59.2"  y="284">1</text></g>
+      <g><circle cx="104"   cy="280" r="11" fill="#5cae8e"/><text x="104"   y="284">2</text></g>
+      <g><circle cx="142.4" cy="280" r="11" fill="#5cae8e"/><text x="142.4" y="284">3</text></g>
+      <g><circle cx="174.4" cy="280" r="11" fill="#5cae8e"/><text x="174.4" y="284">4</text></g>
+      <g><circle cx="200"   cy="280" r="11" fill="#5cae8e"/><text x="200"   y="284">5</text></g>
+      <g><circle cx="264"   cy="280" r="11" fill="#5cae8e"/><text x="264"   y="284">6</text></g>
+      <g><circle cx="328"   cy="280" r="11" fill="#5cae8e"/><text x="328"   y="284">7</text></g>
+      <g><circle cx="424"   cy="280" r="11" fill="#5cae8e"/><text x="424"   y="284">8</text></g>
+      <g><circle cx="475.2" cy="280" r="11" fill="#5cae8e"/><text x="475.2" y="284">9</text></g>
+      <g><circle cx="564.8" cy="280" r="11" fill="#5cae8e"/><text x="564.8" y="284">10</text></g>
+      <g><circle cx="616"   cy="280" r="11" fill="#5cae8e"/><text x="616"   y="284">11</text></g>
+      <g><circle cx="673.6" cy="280" r="11" fill="#5cae8e"/><text x="673.6" y="284">12</text></g>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#a9a291">
+      <circle cx="46" cy="386" r="6" fill="#cba15e"/>
+      <text x="58" y="390">Beat (position idéale)</text>
+      <circle cx="256" cy="386" r="6" fill="#5cae8e"/>
+      <text x="268" y="390">Étape du héros</text>
+      <line x1="420" y1="386" x2="446" y2="386" stroke="#cba15e" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <text x="452" y="390">Correspondance flottante</text>
+    </g>
+  </svg>
+  <figcaption>Les 15 beats (en haut) et les 12 étapes (en bas) sur la même ligne de temps. Les actes et les phases se recouvrent presque exactement&#8239;; seule l'épreuve suprême change de place selon la lecture que tu choisis.</figcaption>
+</figure>`;
+
+const saveTheCatOuVoyageDuHeros = {
+  slug: 'save-the-cat-ou-voyage-du-heros',
+  pillar: 'P2',
+  metaTitle: 'Save the Cat ou Voyage du Héros : quelle méthode ?',
+  title: 'Save the Cat ou Voyage du Héros : quelle méthode pour ton roman ?',
+  description:
+    'Save the Cat ou Voyage du Héros ? Intrigue ou transformation, genre, profil : le guide pour choisir ta méthode, ou superposer les deux, avant novembre.',
+  excerpt:
+    'L\'une structure ce qui arrive, l\'autre ce que ton héros devient. Forces, limites, genre, profil et mini-quiz pour choisir (ou superposer) avant le 1er novembre.',
+  date: '2026-10-20',
+  readingTime: '9 min',
+  tags: ['Save the Cat', 'Voyage du Héros', 'Méthode', 'Structure'],
+  emoji: '⚖️',
+  html: `
+<p>Fin octobre. Ta prémisse tient en une phrase, ton héros a un prénom, le défi d'écriture de novembre approche, et tu bloques sur une question bête en apparence&#8239;: <strong>Save the Cat ou Voyage du Héros&#8239;?</strong> Et chaque soir de Preptober passé à hésiter est un soir de préparation en moins.</p>
+<p>On ne va pas te réexpliquer les 15 beats ni les 12 étapes&#8239;: on l'a fait en détail dans <a href="/blog/la-methode-save-the-cat-15-beats">la méthode Save the Cat</a> et dans <a href="/blog/voyage-du-heros-12-etapes">les 12 étapes du Voyage du Héros</a>. Ici, on t'aide à <strong>décider</strong>&#8239;: ce que chaque méthode structure vraiment, laquelle colle à ton genre et à ta façon d'écrire, comment les superposer. Et un mini-quiz pour trancher en deux minutes.</p>
+
+<h2>🧭 Deux méthodes, deux questions différentes</h2>
+<p>On les présente comme deux concurrentes. Elles ne répondent pourtant pas à la même question.</p>
+<ul>
+  <li><strong>Save the Cat structure l'intrigue.</strong> Elle te dit <em>ce qui doit arriver, et quand</em>. Chaque beat a une position dans le livre, exprimée en pourcentage&#8239;: l'élément déclencheur (le catalyseur de Snyder) vers 10&#8239;%, le milieu à 50&#8239;%, «&#8239;tout est perdu&#8239;» vers 75&#8239;%. C'est une horloge.</li>
+  <li><strong>Le Voyage du Héros structure la transformation.</strong> Il te dit <em>qui ton héros devient</em>, et par quels passages. Aucune étape n'a d'horaire&#8239;: ce qui compte, c'est l'ordre des mues. C'est une boussole.</li>
+</ul>
+<p>Conséquence souvent oubliée&#8239;: une beat sheet se remplit <strong>une fois par livre</strong> (ou par tome), alors qu'un Voyage du Héros se trace <strong>une fois par personnage</strong>. Frodon, Aragorn et Sam n'ont pas le même voyage, mais <em>La Communauté de l'Anneau</em> n'a qu'un seul milieu.</p>
+<p>Garde cette phrase en tête, elle guide tout le reste&#8239;: <strong>Save the Cat répond à «&#8239;quand&#8239;?&#8239;», le Voyage du Héros répond à «&#8239;pour devenir qui&#8239;?&#8239;»</strong></p>
+
+<h2>⚖️ Forces et limites, sans langue de bois</h2>
+<h3>Save the Cat</h3>
+<ul>
+  <li><strong>Force&#8239;: la précision.</strong> Tu sais où placer chaque temps fort et tu repères un ventre mou avant de l'écrire.</li>
+  <li><strong>Force&#8239;: le diagnostic.</strong> Comme chaque beat a une position idéale, tu peux mesurer l'écart. Un élément déclencheur au chapitre 8 sur 30, ça se voit.</li>
+  <li><strong>Limite&#8239;: l'origine cinéma.</strong> La méthode vient du scénario (Blake Snyder, 2005)&#8239;; Jessica Brody l'a adaptée au roman en 2018, mais un roman de 400 pages respire plus qu'un film de deux heures. Prends les pourcentages comme des repères, pas comme des bornes.</li>
+  <li><strong>Limite&#8239;: un seul arc.</strong> La méthode suit une intrigue principale et une sous-intrigue. Un roman choral à cinq points de vue la fait vite craquer.</li>
+</ul>
+<h3>Le Voyage du Héros</h3>
+<ul>
+  <li><strong>Force&#8239;: la profondeur.</strong> Il t'oblige à penser l'arc intérieur&#8239;: la peur du début, ce que le héros comprend à la fin.</li>
+  <li><strong>Force&#8239;: il passe à l'échelle.</strong> Un voyage par personnage, sur un tome ou toute une saga&#8239;: idéal pour les récits à plusieurs héros.</li>
+  <li><strong>Limite&#8239;: aucun tempo.</strong> Tu peux cocher les 12 étapes et traîner quand même un deuxième acte interminable.</li>
+  <li><strong>Limite&#8239;: la pente du cliché.</strong> Élu, mentor à barbe blanche, objet à rapporter&#8239;: appliqué au premier degré, il fabrique du déjà-vu. Et il colle mal aux histoires sans quête, comme un huis clos familial.</li>
+</ul>
+
+<h2>📚 Quelle méthode selon ton genre</h2>
+<ul>
+  <li><strong>Thriller, polar, romance, comédie, feel-good</strong>&#8239;: Save the Cat. Ces genres vivent de leurs retournements et du «&#8239;encore un chapitre&#8239;»&#8239;: le rythme est le contrat.</li>
+  <li><strong>Fantasy, SF, récit de quête, roman d'apprentissage</strong>&#8239;: le Voyage du Héros. Dès que ton personnage traverse un monde plus grand que lui pour en revenir changé, il est chez lui.</li>
+  <li><strong>Littérature générale, roman intimiste</strong>&#8239;: un Voyage du Héros allégé (l'arc intérieur, sans dragons) et trois beats de sécurité&#8239;: l'élément déclencheur, le milieu, «&#8239;tout est perdu&#8239;».</li>
+  <li><strong>Saga</strong>&#8239;: les deux, à deux échelles. Save the Cat tome par tome, pour que chaque volume ait sa propre courbe&#8239;; le Voyage du Héros personnage par personnage, sur toute la série.</li>
+</ul>
+
+<h2>🌱 Architecte ou jardinier&#8239;?</h2>
+<p>George R. R. Martin distingue deux familles d'auteurs&#8239;: les <strong>architectes</strong>, qui dessinent les plans avant de poser une brique, et les <strong>jardiniers</strong>, qui plantent une graine et regardent ce qui pousse.</p>
+<ul>
+  <li><strong>Tu es architecte&#8239;?</strong> Save the Cat est ton terrain de jeu. Tu poses tes 15 beats en octobre, et novembre devient de l'exécution. Ton risque&#8239;: un plan si serré que tes personnages n'ont plus le droit de te surprendre. Ajoute un Voyage du Héros pour ton protagoniste&#8239;: il te rappellera que l'intrigue sert une transformation.</li>
+  <li><strong>Tu es jardinier&#8239;?</strong> Le Voyage du Héros est une boussole qui ne t'enferme pas&#8239;: tu connais le point de départ intérieur de ton héros et son point d'arrivée, le reste se découvre en écrivant. Garde Save the Cat pour décembre, comme <strong>outil de diagnostic</strong>. Jet fini, tu regardes où sont tombés ton milieu et ton «&#8239;tout est perdu&#8239;», et tu sais quoi retravailler.</li>
+  <li><strong>Tu es entre les deux&#8239;?</strong> Le kit minimal&#8239;: l'arc intérieur en une phrase, plus cinq bornes (élément déclencheur, basculement, milieu, tout est perdu, finale). On détaille cette prep express dans <a href="/blog/planifier-roman-novembre-methode">notre méthode pour planifier ton roman de novembre</a>.</li>
+</ul>
+
+<h2>🔀 Superposer les deux méthodes</h2>
+<p>Bonne nouvelle&#8239;: tu n'as pas vraiment à choisir. Posées sur la même ligne de temps, les deux méthodes se répondent presque point par point.</p>
+${saveTheCatOuVoyageDuHerosDiagram}
+<p>Les correspondances à retenir&#8239;:</p>
+<ul>
+  <li><strong>Élément déclencheur = appel à l'aventure.</strong> Le même événement, vu de l'extérieur et de l'intérieur.</li>
+  <li><strong>Moment de réflexion = refus de l'appel.</strong> Le «&#8239;débat&#8239;» de Snyder, c'est le refus de Campbell. Le mentor, lui, n'a pas de beat attitré chez Snyder&#8239;: à toi de lui trouver une place dans le premier acte.</li>
+  <li><strong>Basculement = franchissement du seuil.</strong> Le passage au deuxième acte de Snyder referme aussi le Départ de Campbell&#8239;: sur ce virage, les deux méthodes s'accordent au millimètre.</li>
+  <li><strong>Finale = résurrection, scène finale = retour avec l'élixir.</strong> Le climax de l'intrigue est aussi la renaissance du héros, et l'image finale montre ce qu'il rapporte.</li>
+</ul>
+<p>Un seul point fait débat, et il est instructif&#8239;: <strong>l'épreuve suprême</strong>. Chez Christopher Vogler, elle tombe au cœur du deuxième acte, près du milieu. Beaucoup d'auteurs la font plutôt coïncider avec «&#8239;tout est perdu&#8239;». Les deux se défendent&#8239;: la première muscle ton milieu, la seconde concentre la crise dans le dernier quart.</p>
+
+<h3>Le test sur Le Seigneur des Anneaux</h3>
+<p>Dans la démo d'Atlas, le premier tome est découpé en 9 chapitres. Côté intrigue, les 15 beats sont posés sur des scènes&#8239;; côté transformation, le Voyage de Frodon est tracé étape par étape. Superpose-les&#8239;:</p>
+<ul>
+  <li><strong>Chapitre 2.</strong> Gandalf révèle la vérité sur l'Anneau. Pour l'intrigue, c'est l'élément déclencheur. Pour Frodon, c'est à la fois l'appel, le refus (il tente de confier l'Anneau à Gandalf) et la rencontre du mentor.</li>
+  <li><strong>Chapitre 7.</strong> Gandalf chute au pont de Khazad-dûm. «&#8239;Tout est perdu&#8239;» côté intrigue, épreuve suprême côté Frodon&#8239;: la Communauté perd son guide, et Frodon doit commencer à assumer seul. Dans <a href="/blog/structure-seigneur-des-anneaux">notre analyse de la structure du Seigneur des Anneaux</a>, on lisait cette chute comme le milieu du tome&#8239;: placer un beat est une lecture, pas un fait.</li>
+  <li><strong>Chapitre 8.</strong> La Lothlórien. Pour l'intrigue, c'est la nuit noire de l'âme&#8239;: on pleure Gandalf. Pour Frodon, c'est la récompense&#8239;: les dons de Galadriel, dont la fiole qui le sauvera plus tard. Deuil et cadeau dans le même chapitre&#8239;: c'est ce double fond qui fait sa force.</li>
+  <li><strong>Chapitre 9.</strong> Boromir tente de prendre l'Anneau, Frodon et Sam traversent le fleuve seuls. Finale et scène finale d'un côté&#8239;; les trois étapes du Retour compressées de l'autre. Mais l'élixir n'est pas encore gagné&#8239;: le voyage de Frodon déborde du tome, et c'est ce qui donne envie d'ouvrir le suivant.</li>
+</ul>
+<p>Regarde aussi les décalages. Le chapitre 4 (Amon Sûl, la blessure du Roi-Sorcier) ne porte aucun beat, mais c'est l'étape des épreuves pour Frodon. Le chapitre 5 porte le milieu de l'intrigue sans étape pour Frodon&#8239;: c'est Gandalf, dont la démo trace aussi le voyage, qui y franchit son seuil. <strong>Un chapitre sans beat ni étape mérite une question. Un chapitre qui n'a de sens que pour une seule des deux méthodes te dit qui il sert vraiment.</strong></p>
+
+<h2>🎯 Mini-quiz&#8239;: cinq questions pour trancher</h2>
+<p>Note tes réponses, A ou B. Pas de bonne réponse, juste ta pente naturelle.</p>
+<ol>
+  <li><strong>Quand tu racontes ton histoire à un ami, tu commences par…</strong> A&#8239;: ce qui arrive («&#8239;un cambriolage tourne mal&#8239;»). B&#8239;: qui change («&#8239;une gamine timide apprend à se battre&#8239;»).</li>
+  <li><strong>Ta plus grande peur pour novembre&#8239;?</strong> A&#8239;: un milieu qui s'enlise. B&#8239;: un héros qui finit comme il a commencé.</li>
+  <li><strong>Combien de personnages portent le récit&#8239;?</strong> A&#8239;: un héros, une intrigue serrée. B&#8239;: plusieurs personnages qui doivent chacun évoluer.</li>
+  <li><strong>Ta façon d'écrire&#8239;?</strong> A&#8239;: tu veux savoir où tu vas avant la première ligne. B&#8239;: tu découvres ton histoire en l'écrivant.</li>
+  <li><strong>Ce que tu rêves d'entendre d'un lecteur&#8239;?</strong> A&#8239;: «&#8239;Impossible de le lâcher.&#8239;» B&#8239;: «&#8239;Je pense encore à ton personnage.&#8239;»</li>
+</ol>
+<ul>
+  <li><strong>4 ou 5 A</strong>&#8239;: Save the Cat. Pose tes 15 beats et garde un œil sur l'arc de ton héros.</li>
+  <li><strong>4 ou 5 B</strong>&#8239;: le Voyage du Héros. Trace le voyage de chaque personnage clé, puis vérifie que ton intrigue a un déclencheur, un milieu et une crise.</li>
+  <li><strong>3 contre 2, dans un sens ou dans l'autre</strong>&#8239;: superpose. Une beat sheet pour le livre, un voyage pour ton protagoniste, et le chapitre comme pont entre les deux.</li>
+</ul>
+
+<h2>🛠️ Save the Cat et Voyage du Héros dans un même projet</h2>
+<p>Dans <strong>Atlas Narratif</strong>, Save the Cat et le Voyage du Héros cohabitent dans le même projet, chacun dans sa vue.</p>
+<ul>
+  <li><strong>Côté Save the Cat</strong>, tu rattaches chaque beat à une scène de ta timeline. Atlas calcule où tombe cette scène et te signale un beat absent ou trop éloigné de sa position idéale. Sur une saga, chaque tome a sa propre frise et ses propres alertes.</li>
+  <li><strong>Côté Voyage du Héros</strong>, tu choisis un personnage et tu notes, pour chacune des 12 étapes, le chapitre où elle se joue et la façon dont elle se manifeste. Un compteur suit chaque héros, et le filtre de tome montre son arc volume par volume.</li>
+</ul>
+<figure class="blog-figure">
+  <img src="/blog/save-the-cat-frise.png" alt="La frise Save the Cat dans Atlas Narratif&#8239;: chaque beat posé sur un chapitre, comparé à sa position idéale, réparti sur les trois actes." loading="lazy" />
+  <figcaption>Côté intrigue&#8239;: la frise montre où tombe chaque beat et s'il s'écarte de sa position idéale (démo LOTR).</figcaption>
+</figure>
+<figure class="blog-figure">
+  <img src="/blog/voyage-du-heros.png" alt="La vue Voyage du Héros dans Atlas Narratif&#8239;: les 12 étapes d'un personnage réparties en trois phases, chacune notée avec son numéro de chapitre." loading="lazy" />
+  <figcaption>Côté transformation&#8239;: la même saga relue à travers un seul personnage, chaque étape datée par son chapitre (démo LOTR).</figcaption>
+</figure>
+<p>Le pont entre les deux vues, c'est le <strong>numéro de chapitre</strong>. Atlas ne fusionne pas les deux méthodes&#8239;: c'est toi qui fais la lecture croisée, chapitre 7 d'un côté, chapitre 7 de l'autre. Et c'est très bien ainsi&#8239;: décider que la chute de Gandalf est aussi l'épreuve suprême de Frodon, c'est un choix d'auteur, pas un calcul.</p>
+
+<h2>⚠️ Les erreurs qui coûtent un mois de novembre</h2>
+<ul>
+  <li><strong>Forcer chaque étape dans un beat.</strong> Si une case ne colle pas, c'est une information, pas une faute.</li>
+  <li><strong>Changer de méthode en plein jet.</strong> Le 12 novembre, note tes doutes et continue&#8239;: tu restructureras en décembre.</li>
+  <li><strong>Remplir 27 cases avant d'écrire une ligne.</strong> 15 beats plus 12 étapes par personnage&#8239;: si ta prep devient un formulaire, reviens au kit minimal.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>Save the Cat structure ce qui arrive et quand&#8239;; le Voyage du Héros structure ce que ton héros devient. Intrigue serrée ou âme d'architecte&#8239;: commence par les beats. Quête, initiation ou âme de jardinier&#8239;: commence par le voyage. Saga ou hésitation&#8239;: superpose, avec le chapitre comme pont.</p>
+<p>Dans <strong>Atlas Narratif</strong>, les deux vues vivent dans le même projet&#8239;: pose tes beats, trace le voyage de chaque personnage, puis lis-les chapitre par chapitre. La démo du Seigneur des Anneaux se charge depuis l'accueil, sans compte. Gratuit, en français, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Superpose Save the Cat et le Voyage du Héros gratuitement avec Atlas Narratif.</a> Démo LOTR sans compte, prête avant le 1er novembre.</p>
+`,
+};
+
+const amorcesPaiementsDiagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 290" role="img" aria-label="Une amorce en trois temps sur trois tomes du Seigneur des Anneaux. Au tome 1, Gandalf parle de la pitié de Bilbo. Au tome 2, Frodon épargne Sméagol, c'est le rappel. Au tome 3, au Mont Destin, Gollum emporte l'Anneau dans l'abîme, c'est le paiement." style="width:100%;height:auto">
+    <line x1="40" y1="220" x2="680" y2="220" stroke="#ffffff" stroke-opacity="0.14"/>
+    <line x1="253" y1="70" x2="253" y2="220" stroke="#ffffff" stroke-opacity="0.08"/>
+    <line x1="467" y1="70" x2="467" y2="220" stroke="#ffffff" stroke-opacity="0.08"/>
+    <path d="M 110,220 Q 250,120 370,220" fill="none" stroke="#5cae8e" stroke-width="2" stroke-opacity="0.8" stroke-dasharray="5 4"/>
+    <path d="M 110,220 Q 360,20 610,220" fill="none" stroke="#cba15e" stroke-width="2.5"/>
+    <circle cx="110" cy="220" r="6" fill="#5cae8e"/>
+    <circle cx="370" cy="220" r="5" fill="#5cae8e" fill-opacity="0.7"/>
+    <circle cx="610" cy="220" r="7" fill="#cba15e"/>
+    <g font-family="'Spectral',Georgia,serif" fill="#ece7db" font-size="14" text-anchor="middle">
+      <text x="110" y="246">L'amorce</text>
+      <text x="370" y="246">Le rappel</text>
+      <text x="610" y="246">Le paiement</text>
+    </g>
+    <g font-family="'Spectral',Georgia,serif" fill="#a9a291" font-size="12" text-anchor="middle">
+      <text x="110" y="264">Gandalf et la pitié de Bilbo</text>
+      <text x="370" y="264">Frodon épargne Sméagol</text>
+      <text x="610" y="264">Gollum au Mont Destin</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" fill="#a9a291" font-size="11" text-anchor="middle">
+      <text x="146" y="90">TOME 1</text>
+      <text x="360" y="90">TOME 2</text>
+      <text x="574" y="90">TOME 3</text>
+    </g>
+  </svg>
+  <figcaption>Une amorce qui traverse toute la trilogie&#8239;: posée par une réplique, rappelée par un geste, payée au moment décisif.</figcaption>
+</figure>`;
+
+const amorcesPaiements = {
+  slug: 'amorces-paiements-plant-payoff',
+  pillar: 'P2',
+  metaTitle: 'Plant and payoff : amorces et paiements dans ton roman',
+  title: 'Amorces et paiements (plant & payoff) : l\'art de préparer ses révélations',
+  description:
+    'Plant and payoff en écriture : types d\'amorces, bon dosage, fausses pistes, amorces sur plusieurs tomes. Prépare des révélations qui frappent juste.',
+  excerpt:
+    'Une révélation réussie se prépare cent pages plus tôt. Objet, réplique, trait de caractère, info de monde : comment semer tes amorces et ne jamais en oublier une.',
+  date: '2026-11-03',
+  readingTime: '8 min',
+  tags: ['Amorces', 'Plant & payoff', 'Révélations', 'Saga'],
+  emoji: '🌱',
+  html: `
+<p>Tu connais ce moment. Tu relis ta grande scène de révélation, celle que tu as en tête depuis le début, et elle tombe à plat. Pas parce qu'elle est mal écrite, mais parce qu'elle sort de nulle part. Le lecteur ne sera pas surpris, il sera floué.</p>
+<p>À l'inverse, tu te souviens sûrement d'un livre où une révélation t'a fait refermer le volume une seconde, le temps de te dire&#8239;: «&#8239;mais c'était là depuis le début&#8239;!&#8239;». Cette sensation a un nom dans le métier&#8239;: <strong>l'amorce et le paiement</strong>, ou <em>plant and payoff</em>. Ce n'est pas un don&#8239;: c'est une technique, et elle se travaille.</p>
+
+<h2>🎯 Le fusil de Tchekhov, et ce qu'il ne dit pas</h2>
+<p>La formule qu'on prête à Tchekhov est célèbre&#8239;: si un fusil est accroché au mur au premier acte, il doit tirer avant la fin. On la cite souvent comme une règle d'économie (ne montre rien d'inutile). Retourne-la, et elle devient bien plus utile pour toi&#8239;: <strong>si un fusil tire au dernier acte, il doit avoir été accroché au mur avant</strong>.</p>
+<p>Une amorce, c'est une promesse faite au lecteur. Un paiement, c'est la promesse tenue. Entre les deux, il y a une tension que le lecteur ressent sans toujours la nommer. Une révélation sans amorce ressemble à de la triche&#8239;; une amorce sans paiement ressemble à un oubli. Les deux abîment la confiance&#8239;; on y revient dans notre guide pour <a href="/blog/detecter-incoherences-roman">détecter les incohérences de ton roman</a>.</p>
+
+<h2>🧰 Les quatre grandes familles d'amorces</h2>
+<p>On pense spontanément à l'objet, mais c'est loin d'être la seule façon de semer. Varier les familles, c'est ce qui empêche le lecteur de repérer ton jeu.</p>
+<h3>L'objet</h3>
+<p>Le plus classique, et le plus lisible. Au moment de quitter la Lórien, Galadriel offre à Frodon une fiole contenant la lumière d'Eärendil, «&#8239;une lumière pour les lieux obscurs&#8239;». Cadeau d'adieu, joli moment, on passe à la suite. Des centaines de pages plus tard, dans l'antre d'Arachne, c'est cette lumière qui repousse le monstre. L'objet était là, nommé, décrit, puis laissé en sommeil.</p>
+<h3>La réplique</h3>
+<p>Une phrase glissée dans un dialogue, qui prend tout son sens plus tard. Au début de <em>La Communauté de l'Anneau</em>, Frodon regrette que Bilbo n'ait pas tué Gollum quand il le pouvait. Gandalf répond, en substance, que la pitié de Bilbo pourrait bien décider du sort de beaucoup. Sur le moment, c'est une leçon morale. À la fin de la trilogie, c'est la clé du dénouement.</p>
+<h3>Le trait de caractère</h3>
+<p>Une faiblesse, une obsession, une valeur que tu installes tôt et qui dictera un choix décisif. Au Conseil d'Elrond, Boromir plaide pour utiliser l'Anneau contre l'ennemi. On l'entend comme un argument politique. Plus tard, à Amon Hen, ce même désir le pousse à tenter de prendre l'Anneau à Frodon. Sa chute n'est pas une surprise gratuite, elle est l'aboutissement de ce qu'on savait de lui.</p>
+<h3>L'information de monde</h3>
+<p>Une règle, une légende, un détail d'histoire qui semble relever du décor. C'est la famille reine en fantasy et en SF, parce qu'elle se fond dans le worldbuilding. Quand Gandalf explique ce que sont les palantíri, ces pierres de vision, c'est un point de lore. C'est aussi ce qui éclaire, un tome plus loin, le désespoir de Denethor&#8239;: l'Intendant regardait dans sa propre pierre, et n'y voyait que ce que Sauron voulait bien lui montrer. Si tu tiens une <a href="/blog/creer-bible-univers-worldbuilding">bible d'univers</a>, c'est une mine d'amorces qui dort.</p>
+
+<h2>⚖️ Le dosage&#8239;: ni néon, ni aiguille dans une botte de foin</h2>
+<p>Tout l'art est là. Une amorce trop visible, et le lecteur devine ta révélation cinquante pages à l'avance. Une amorce trop cachée, et ton paiement passe pour un <em>deus ex machina</em>. Quelques techniques pour trouver le bon réglage&#8239;:</p>
+<ul>
+  <li><strong>Noie l'amorce dans le mouvement.</strong> Place-la au cœur d'une scène qui capte l'attention ailleurs&#8239;: une dispute, un départ précipité, une scène drôle. Les cadeaux de Galadriel arrivent dans une scène d'adieux chargée d'émotion. La fiole est un cadeau parmi d'autres.</li>
+  <li><strong>Donne-lui une fonction immédiate.</strong> Une amorce qui sert déjà à quelque chose dans sa scène (caractériser, faire sourire, installer une ambiance) ne ressemble pas à une amorce. Elle ressemble à du récit.</li>
+  <li><strong>Rappelle-la au moins une fois.</strong> Entre la pose et le paiement, un rappel discret ravive la mémoire du lecteur sans rien trahir. C'est ce qui fait qu'au paiement, il se souvient au lieu de découvrir.</li>
+  <li><strong>Ne la souligne jamais.</strong> Pas de gros plan appuyé, pas de personnage qui fixe l'objet d'un air songeur. Si la narration dit «&#8239;retiens bien ça&#8239;», le lecteur le retient, et il anticipe.</li>
+</ul>
+${amorcesPaiementsDiagram}
+
+<h2>🎭 Amorce ou fausse piste&#8239;?</h2>
+<p>La fausse piste (le <em>red herring</em>) est la cousine rusée de l'amorce. Elle aussi est semée avec soin, elle aussi appelle un paiement. La différence&#8239;: elle oriente le lecteur vers une conclusion que tu vas renverser.</p>
+<p>Dans le premier <em>Harry Potter</em>, tout désigne Rogue&#8239;: son hostilité, ses regards, sa jambe blessée. Le coupable est Quirrell, le professeur bégayant que personne ne soupçonne. La fausse piste fonctionne parce que chaque indice contre Rogue reçoit, au final, une explication cohérente. Tolkien joue le même tour à Bree&#8239;: Sam se méfie de l'inquiétant Grands-Pas, et le rôdeur au visage sombre se révèle être l'héritier d'Isildur.</p>
+<p>La règle d'or&#8239;: <strong>une fausse piste doit être payée aussi</strong>. Si tu laisses des indices trompeurs sans jamais les expliquer, le lecteur ne se sent pas joué avec élégance, il se sent manipulé. Et note-les dans ton registre au même titre que tes amorces&#8239;: c'est le meilleur moyen de ne pas «&#8239;corriger&#8239;» par erreur une ambiguïté voulue lors de ta relecture.</p>
+
+<h2>📚 Amorces et paiements sur plusieurs tomes</h2>
+<p>Sur une saga, l'écart entre la pose et le paiement peut se compter en années, pour toi comme pour ton lecteur. C'est là que naissent les effets les plus mémorables. Au tout premier chapitre de <em>Harry Potter à l'école des sorciers</em>, Hagrid arrive sur une moto volante qu'il dit avoir empruntée au jeune Sirius Black. Un nom en passant. Il faudra attendre le tome 3 pour que ce nom devienne celui du prisonnier évadé d'Azkaban.</p>
+<p>Chez Tolkien, la pitié de Bilbo pour Gollum en est l'exemple parfait. Posée par une réplique de Gandalf au tome 1, rappelée au tome 2 quand Frodon, à son tour, épargne Sméagol, elle ne se paie qu'au Mont Destin&#8239;: c'est parce que Gollum est encore en vie que l'Anneau finit dans l'abîme, quand Frodon lui-même, au bord du gouffre, refuse de le jeter. On a détaillé cette architecture dans notre analyse de <a href="/blog/structure-seigneur-des-anneaux">la structure du Seigneur des Anneaux</a>.</p>
+<p>Le revers de la médaille&#8239;: plus l'écart est long, plus le risque d'oubli grimpe. Une amorce du tome 1 que tu as perdue de vue au tome 3, ton lecteur, lui, l'a peut-être relue la veille. Pour la méthode globale sur plusieurs volumes, voir aussi notre guide pour <a href="/blog/gerer-plusieurs-tomes-saga">gérer plusieurs tomes sans perdre le fil</a>.</p>
+
+<h2>📒 Tenir un registre d'amorces</h2>
+<p>Chaque amorce est une dette narrative. Et comme toute dette, elle se note. Un registre d'amorces n'a pas besoin d'être compliqué, mais il doit répondre à quelques questions pour chaque promesse&#8239;:</p>
+<ol>
+  <li><strong>Quoi&#8239;?</strong> Une phrase qui résume la promesse, pas la scène.</li>
+  <li><strong>De quelle famille&#8239;?</strong> Objet, réplique, trait, info de monde, ou fausse piste.</li>
+  <li><strong>Où est-elle posée&#8239;?</strong> Le tome et le chapitre.</li>
+  <li><strong>Où sera-t-elle payée&#8239;?</strong> Même si c'est «&#8239;pas encore décidé&#8239;».</li>
+  <li><strong>Où en est-elle&#8239;?</strong> En suspens, payée, ou abandonnée en connaissance de cause.</li>
+</ol>
+<p>Ce dernier point compte plus qu'il n'y paraît. Abandonner une amorce est un choix légitime (le récit a changé, la piste ne mène plus nulle part). Ce qui ne l'est pas, c'est de l'oublier. Un statut «&#8239;abandonnée&#8239;» te rappelle d'aller retirer ou adoucir la pose dans le texte.</p>
+<p>Le tracker d'amorces d'<strong>Atlas Narratif</strong> reprend ces questions une à une. Chaque amorce y porte un type (objet, personnage, information, dialogue, thème), son chapitre et son tome de pose, son chapitre et son tome de paiement, et un statut&#8239;: en suspens, résolue ou abandonnée. Tu peux la relier au personnage ou à l'objet concerné et y noter ton intention. Une vue en arcs trace chaque promesse du chapitre où tu la poses à celui où tu la paies&#8239;: les arcs encore en pointillé attendent leur paiement, et ceux qui enjambent plusieurs tomes ressortent en or.</p>
+<figure class="blog-figure">
+  <img src="/blog/amorces-paiements.png" alt="Le tracker d'amorces et paiements d'Atlas Narratif&#8239;: chaque promesse reliée du tome où elle est posée à celui où elle est résolue, avec son statut." loading="lazy" />
+  <figcaption>Chaque amorce suivie de sa mise en place à son paiement, d'un tome à l'autre (démo LOTR).</figcaption>
+</figure>
+<p>Et avant de boucler un tome, le filtre «&#8239;En suspens&#8239;» isole en un clic toutes les promesses qui attendent encore leur paiement. Le détecteur d'incohérences, lui, signale les amorces restées ouvertes et les paiements placés, par erreur, avant leur amorce.</p>
+<figure class="blog-figure">
+  <img src="/blog/amorces-ouvertes.png" alt="Le tracker d'amorces d'Atlas Narratif filtré sur les amorces en suspens&#8239;: les promesses encore non payées sont mises en évidence, avec leur tome et leur chapitre de pose." loading="lazy" />
+  <figcaption>Les amorces encore en suspens, à payer avant le point final (démo LOTR).</figcaption>
+</figure>
+
+<h2>⚠️ Les erreurs classiques</h2>
+<ul>
+  <li><strong>Semer après coup sans relire la suite.</strong> Ajouter une amorce en réécriture est une excellente pratique. L'ajouter au chapitre 2 mais la contredire au chapitre 5, qui date de la première version, l'est beaucoup moins. Relis le chemin entre la pose et le paiement.</li>
+  <li><strong>Le paiement trop proche.</strong> Une amorce payée trois pages plus loin n'est pas une amorce, c'est une explication. Laisse le temps à l'oubli de faire son œuvre.</li>
+  <li><strong>Le paiement qui ne paie pas.</strong> L'objet ressort, mais il ne change rien. Un vrai paiement fait basculer une scène, une décision, un destin.</li>
+  <li><strong>Tout amorcer.</strong> Si chaque détail est une promesse, plus rien ne l'est. Une part de ton décor doit rester du décor.</li>
+  <li><strong>Garder le registre dans ta tête.</strong> Elle tient un roman. Elle ne tient pas une saga.</li>
+</ul>
+
+<h2>🧭 En résumé</h2>
+<p>Une révélation réussie se prépare longtemps à l'avance. Pose ton amorce en variant les familles (objet, réplique, trait de caractère, info de monde), dose-la pour qu'elle passe inaperçue sans être invisible, rappelle-la au moins une fois, et paie-la au moment où elle change tout. Traite tes fausses pistes avec la même rigueur, et tiens un registre dès que ton histoire dépasse un seul volume.</p>
+<p><strong>Atlas Narratif</strong> garde tes promesses sous tes yeux&#8239;: un tracker d'amorces par type, chapitre et tome, une vue en arcs qui montre ce qui reste en suspens, et un détecteur qui te signale les oublis. Gratuit, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Explore le tracker d'amorces sur la démo du Seigneur des Anneaux, sans créer de compte.</a> Puis sème les tiennes.</p>
+`,
+};
+
+const syndromeDuTome2Diagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 300" role="img" aria-label="Courbe de tension d'une trilogie. Au tome 2, une courbe dorée en pointillé reste plate, tandis qu'une courbe verte monte vers un climax propre au tome puis s'achève sur une fin qui renverse, haut placée et non résolue." style="width:100%;height:auto">
+    <!-- axe et séparateurs de tomes -->
+    <line x1="60" y1="240" x2="680" y2="240" stroke="#ffffff" stroke-opacity="0.14"/>
+    <line x1="266" y1="60" x2="266" y2="240" stroke="#ffffff" stroke-opacity="0.1"/>
+    <line x1="473" y1="60" x2="473" y2="240" stroke="#ffffff" stroke-opacity="0.1"/>
+    <text x="48" y="150" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#a9a291" text-anchor="middle" transform="rotate(-90 48 150)">tension</text>
+    <!-- tome 1 et tome 3, communs -->
+    <polyline fill="none" stroke="#5cae8e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+      points="60,215 100,182 150,170 200,150 235,108 250,122 266,165"/>
+    <polyline fill="none" stroke="#5cae8e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+      points="473,100 500,132 540,112 580,92 620,62 645,42 665,80 680,96"/>
+    <!-- tome 2 pont : surplace -->
+    <polyline fill="none" stroke="#cba15e" stroke-width="2.5" stroke-dasharray="6 5" stroke-linejoin="round" stroke-linecap="round"
+      points="266,165 300,158 340,163 380,156 420,161 473,157"/>
+    <!-- tome 2 avec son propre arc -->
+    <polyline fill="none" stroke="#5cae8e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+      points="266,165 292,178 322,142 352,152 382,116 412,132 440,72 456,86 473,100"/>
+    <!-- repères -->
+    <g stroke="#ffffff" stroke-opacity="0.14">
+      <line x1="440" y1="68" x2="405" y2="56"/>
+      <line x1="475" y1="104" x2="480" y2="186"/>
+    </g>
+    <circle cx="440" cy="72" r="4" fill="#cba15e"/>
+    <circle cx="473" cy="100" r="4" fill="#cba15e"/>
+    <g font-family="'Spectral',Georgia,serif" font-size="12.5" fill="#ece7db">
+      <text x="400" y="52" text-anchor="end">climax propre au tome 2</text>
+      <text x="484" y="200">fin qui renverse</text>
+    </g>
+    <text x="370" y="190" font-family="'Spectral',Georgia,serif" font-size="12.5" fill="#cba15e" text-anchor="middle">surplace</text>
+    <g font-family="'Spectral',Georgia,serif" fill="#ece7db" font-size="15" text-anchor="middle">
+      <text x="163" y="268">TOME 1</text>
+      <text x="369" y="268">TOME 2</text>
+      <text x="576" y="268">TOME 3</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5">
+      <rect x="90" y="20" width="12" height="12" rx="3" fill="#cba15e"/>
+      <text x="110" y="30" fill="#a9a291">tome 2 pont, qui fait du surplace</text>
+      <rect x="410" y="20" width="12" height="12" rx="3" fill="#5cae8e"/>
+      <text x="430" y="30" fill="#a9a291">tome 2 avec son propre arc</text>
+    </g>
+  </svg>
+  <figcaption>Deux tomes 2 possibles pour la même trilogie. Le premier fait patienter, le second raconte sa propre histoire et relance la suite par une fin qui renverse.</figcaption>
+</figure>`;
+
+const syndromeDuTome2 = {
+  slug: 'syndrome-du-tome-2',
+  pillar: 'P3',
+  metaTitle: 'Syndrome du tome 2 : écrire un tome 2 qui tient',
+  title: 'Syndrome du tome 2 : pourquoi ta suite s\'enlise (et comment l\'éviter)',
+  description:
+    'Ton tome 2 fait du surplace ? Les causes du syndrome du tome 2 et les remèdes pour écrire un tome 2 qui a son propre arc, exemples à l\'appui.',
+  excerpt:
+    'Un tome 2 qui rejoue le premier, qui fait patienter, qui n\'a pas d\'arc à lui : les cinq causes du syndrome, et comment Les Deux Tours y échappe.',
+  date: '2026-11-17',
+  readingTime: '9 min',
+  tags: ['Saga', 'Tome 2', 'Structure', 'Arc émotionnel'],
+  emoji: '🌀',
+  html: `
+<p>Ton tome 1 est fini. Il a une ouverture qui accroche, un climax dont tu es fier, peut-être même quelques lecteurs qui réclament la suite. Tu attaques le tome 2 avec l'élan du vainqueur… et au chapitre 8, quelque chose coince. Tes personnages voyagent, discutent, se préparent. Il se passe des choses, mais rien ne <em>bouge</em>. Tu relis et une question te glace&#8239;: est-ce que ce tome sert à autre chose qu'à attendre le tome 3&#8239;?</p>
+<p>Bienvenue dans le syndrome du tome 2. Il touche les débutants comme les auteurs confirmés, et ses causes sont précises. Bonne nouvelle&#8239;: ce qui se diagnostique se soigne.</p>
+
+<h2>🌀 Le syndrome du tome 2, c'est quoi&#8239;?</h2>
+<p>Les anglophones parlent de <em>middle book syndrome</em>&#8239;: le livre du milieu qui s'affaisse entre un début éclatant et une fin attendue. On le reconnaît à trois symptômes.</p>
+<ul>
+  <li><strong>Le surplace.</strong> Beaucoup d'allers-retours, de conseils de guerre, de trajets. L'action remplit les pages sans changer la situation.</li>
+  <li><strong>La redite.</strong> Le tome rejoue la partition du premier&#8239;: même menace, même type d'épreuve, même climax, un cran plus fort. Le lecteur a une impression de déjà-lu.</li>
+  <li><strong>Le pont.</strong> Le tome n'existe que pour amener les pièces en place avant le final. Il ne commence rien et ne termine rien.</li>
+</ul>
+<p>Le point commun&#8239;? Un tome 2 malade est un tome qui ne raconte pas <em>sa</em> histoire. Il raconte la transition entre deux autres.</p>
+
+<h2>🔍 Les cinq causes d'un tome 2 qui s'enlise</h2>
+<h3>1. Pas d'arc propre au tome</h3>
+<p>C'est la cause mère. Le tome 2 poursuit le grand arc de la saga, mais n'a ni question à lui, ni climax à lui, ni résolution à lui. Si tu ne peux pas résumer ton tome 2 en une phrase du type «&#8239;dans ce tome, X veut Y, et à la fin il l'obtient ou le perd&#8239;», tu tiens probablement le coupable.</p>
+<h3>2. Des enjeux qui n'escaladent pas</h3>
+<p>Au tome 1, ton héros a risqué sa vie. Au tome 2, il la risque… encore. Même intensité, même nature d'enjeu. Or le lecteur s'habitue vite&#8239;: un danger répété s'use. Escalader, ce n'est pas seulement grossir l'armée d'en face&#8239;; c'est élargir (un royaume au lieu d'un village) ou approfondir (ce qui est menacé devient intime).</p>
+<h3>3. Des personnages figés</h3>
+<p>Le tome 1 a transformé ton héros. Puis, au tome 2, il reste tel quel, comme si son arc était bouclé et qu'il ne restait plus qu'à le déplacer sur la carte. Un personnage qui ne change plus devient un pion. Le tome du milieu est justement le moment où il doit douter, rechuter, payer le prix de ce qu'il est devenu.</p>
+<h3>4. Les amorces du tome 1 oubliées</h3>
+<p>Ton premier tome a semé des promesses&#8239;: un personnage inquiétant à peine entrevu, un objet mis en avant, une prophétie. Si le tome 2 les ignore pour inventer de nouveaux ressorts, le lecteur a la sensation que la saga repart de zéro. À l'inverse, payer une amorce du tome 1 au tome 2, c'est prouver que tout était pensé. On détaille la mécanique dans notre article sur <a href="/blog/amorces-paiements-plant-payoff">les amorces et paiements</a>.</p>
+<h3>5. Des rappels pesants</h3>
+<p>Le lecteur a peut-être lu le tome 1 il y a deux ans. Alors tu recaps&#8239;: trois pages sur la bataille précédente, un dialogue où deux personnages se racontent ce qu'ils savent déjà. Résultat, le tome démarre à l'arrêt. Le rappel utile est bref, glissé dans l'action, et répond à une question que la scène pose maintenant.</p>
+${syndromeDuTome2Diagram}
+
+<h2>🎬 Quatre tomes du milieu qui ont réussi</h2>
+<h3><em>Les Deux Tours</em>&#8239;: la communauté dispersée</h3>
+<p>Tolkien part d'une rupture&#8239;: la Communauté est brisée, et le tome se construit en deux moitiés distinctes, d'un côté Aragorn, Legolas, Gimli, Merry et Pippin, de l'autre Frodon et Sam. Chaque moitié a son propre mouvement. Le Rohan se réveille, Théoden passe du roi envoûté par Grima au roi qui mène la charge, et cette ligne culmine au Gouffre de Helm. Côté Mordor, Gollum, raconté par Gandalf et à peine entrevu dans la Moria au tome 1, devient le guide de Frodon&#8239;: une amorce du premier tome qui porte ses premiers fruits au deuxième, avant son vrai paiement au Mont Destin. Et le thème s'approfondit&#8239;: Faramir refuse l'Anneau là où Boromir a cédé, Gollum montre à Frodon ce qu'il pourrait devenir. Surtout, le livre se clôt sur une fin qui renverse&#8239;: Frodon vivant mais aux mains de l'Ennemi, Sam seul avec l'Anneau. La victoire de Helm ne vaut rien si la quête échoue.</p>
+<h3><em>L'Empire contre-attaque</em>&#8239;: la défaite comme arc</h3>
+<p>Le cas d'école du cinéma. Le film ne rejoue pas <em>Un nouvel espoir</em>, il le prend à rebours&#8239;: les rebelles fuient au lieu de gagner. Luke a un arc complet, de l'apprentissage chez Yoda à la confrontation avec Vador, qu'il perd. Il y laisse une main, apprend que Vador est son père, et Han finit dans la carbonite. Les enjeux ont changé de nature&#8239;: on ne se bat plus seulement contre l'Empire, mais contre la tentation et sa propre filiation.</p>
+<h3><em>Harry Potter</em>&#8239;: le tome 2 contre le tome 3</h3>
+<p>La comparaison est instructive. <em>La Chambre des secrets</em> passe souvent pour le tome le plus proche du premier&#8239;: rentrée à Poudlard, mystère au château, affrontement final avec une incarnation de Voldemort. La mécanique fonctionne, mais elle rejoue. <em>Le Prisonnier d'Azkaban</em> casse le moule&#8239;: pas de Voldemort, une menace qui n'en est pas une, le passé des parents de Harry qui remonte, et une fin sans victoire nette, puisque Pettigrow s'échappe et que Sirius doit fuir. Le tome 3 approfondit au lieu de répéter, et c'est celui que beaucoup de lecteurs citent comme le tournant de la saga.</p>
+<h3><em>Hunger Games&#8239;: L'Embrasement</em>&#8239;: rejouer pour mieux renverser</h3>
+<p>Suzanne Collins prend le risque maximal&#8239;: renvoyer Katniss dans l'arène. Sur le papier, c'est la redite absolue. En pratique, tout est retourné&#8239;: l'arène n'est plus un jeu de survie mais un piège politique, les alliances comptent plus que les victoires, et le tome se termine sur un double choc, le District 12 rasé et Peeta aux mains du Capitole. Rejouer le tome 1, oui, mais pour mieux en inverser le sens.</p>
+
+<h2>🛠️ Cinq remèdes pour écrire un tome 2 qui tient</h2>
+<ol>
+  <li><strong>Donne-lui un arc complet.</strong> Une question propre au tome, posée tôt, qui trouve sa réponse au climax. Pose ce tome sur une structure comme <a href="/blog/la-methode-save-the-cat-15-beats">les 15 beats de Save the Cat</a>&#8239;: s'il n'a ni catalyseur, ni midpoint, ni «&#8239;tout est perdu&#8239;», c'est qu'il n'a pas d'histoire à lui.</li>
+  <li><strong>Fais escalader d'un cran, dans une nouvelle direction.</strong> Plus large (le conflit gagne des peuples entiers), plus profond (l'enjeu devient personnel), ou plus ambigu (l'ennemi n'est plus seulement dehors). Évite simplement «&#8239;plus gros&#8239;».</li>
+  <li><strong>Soigne une fin qui renverse.</strong> Le tome du milieu est l'endroit idéal pour la fin sombre&#8239;: une victoire payée trop cher, une révélation qui change la lecture du tome 1, un héros qui échoue. Elle doit clore l'arc du tome tout en rouvrant la question du grand arc.</li>
+  <li><strong>Approfondis le thème au lieu de le répéter.</strong> Si ton tome 1 disait «&#8239;le courage paie&#8239;», le tome 2 peut demander «&#8239;et à quel prix&#8239;?&#8239;». Un personnage miroir, comme Gollum pour Frodon, est un excellent outil pour ça.</li>
+  <li><strong>Paie des amorces du tome 1, sème celles du tome 3.</strong> Et dose tes rappels&#8239;: une phrase au bon moment vaut mieux qu'un chapitre de résumé.</li>
+</ol>
+<p>Pour l'architecture d'ensemble d'une série (grand arc, arcs de tome, cohérence sur la durée), on a un guide dédié&#8239;: <a href="/blog/gerer-plusieurs-tomes-saga">comment gérer plusieurs tomes sans perdre le fil</a>. Ici, retiens surtout que le tome du milieu doit mériter sa place à lui seul.</p>
+
+<h2>📈 Regarde la courbe de ton tome 2 à part</h2>
+<p>Un tome 2 qui fait du surplace se voit souvent mieux qu'il ne se lit. Note l'intensité dramatique de chaque chapitre sur 10, trace la courbe, et regarde-la <strong>isolée du reste de la saga</strong>. Noyée dans la trilogie, une longue plaine passe inaperçue. Seule, elle saute aux yeux.</p>
+<p>La vue Arc émotionnel d'Atlas Narratif est faite pour ça. Tu choisis le tome 2 dans le sélecteur de tomes, et la courbe ne montre plus que ses chapitres, avec l'intensité moyenne du tome. Dans la démo, <em>Les Deux Tours</em> dessine un vrai arc&#8239;: un départ dans le creux (Emyn Muil, les Marais des Morts), un sursaut au retour de Gandalf le Blanc, puis le sommet de la nuit au Gouffre de Helm, dans le dernier tiers. Sous la courbe, des constats de craft te signalent un «&#8239;ventre mou&#8239;», une «&#8239;courbe plate&#8239;» ou un climax mal placé&#8239;: les symptômes du syndrome, chapitre par chapitre.</p>
+<figure class="blog-figure">
+  <img src="/blog/arc-emotionnel-tome-2.png" alt="La vue Arc émotionnel d'Atlas Narratif filtrée sur le tome 2, Les Deux Tours&#8239;: la courbe de tension chapitre par chapitre, du creux des Marais des Morts au pic du Gouffre de Helm." loading="lazy" />
+  <figcaption>La courbe de tension des <em>Deux Tours</em> seule, chapitre par chapitre&#8239;: un tome qui a son propre climax (démo LOTR).</figcaption>
+</figure>
+
+<h2>✅ En résumé</h2>
+<p>Le syndrome du tome 2 n'est pas une fatalité, c'est un diagnostic. Un tome du milieu s'enlise quand il n'a pas d'arc à lui, que ses enjeux stagnent, que ses personnages se figent, qu'il oublie les promesses du tome 1 ou qu'il s'étouffe sous les rappels. Il décolle quand il raconte sa propre histoire, escalade dans une direction neuve, approfondit le thème et s'achève sur une fin qui renverse. <em>Les Deux Tours</em>, <em>L'Empire contre-attaque</em> ou <em>L'Embrasement</em> le prouvent&#8239;: le tome du milieu peut être le meilleur de la série.</p>
+<p><strong>Atlas Narratif</strong> t'aide à le vérifier&#8239;: filtre ta saga par tome, trace la courbe de tension de ton tome 2 seul, pose-le sur Save the Cat et suis tes amorces d'un volume à l'autre. Gratuit, en français, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Examine la courbe de ton tome 2 avec Atlas Narratif.</a> Charge la démo du Seigneur des Anneaux depuis l'accueil, sans compte, et filtre sur <em>Les Deux Tours</em>.</p>
+`,
+};
+
+const bibleUniversIcebergDiagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 340" role="img" aria-label="Un iceberg coupé par la surface du texte : la pointe visible est ce que lit ton lecteur, la masse immergée est ta bible, et un contour en pointillé plus profond figure le puits sans fond du worldbuilding qui ne servira jamais." style="width:100%;height:auto">
+    <line x1="30" y1="110" x2="470" y2="110" stroke="#5cae8e" stroke-opacity="0.6" stroke-width="2" stroke-dasharray="8 6"/>
+    <text x="30" y="100" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#a9a291">SURFACE DU TEXTE</text>
+    <polygon points="130,160 90,250 160,322 400,322 450,240 400,170" fill="none" stroke="#cba15e" stroke-width="1.5" stroke-dasharray="5 5" stroke-opacity="0.8"/>
+    <polygon points="200,110 330,110 400,170 370,240 260,258 150,222 130,160" fill="#5cae8e" fill-opacity="0.25" stroke="#5cae8e" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="200,110 240,50 265,72 290,38 330,110" fill="#ece7db" fill-opacity="0.9" stroke="#ece7db" stroke-linejoin="round"/>
+    <g font-family="'Spectral',Georgia,serif" font-size="16" font-weight="600">
+      <text x="490" y="62" fill="#ece7db">Ce que lit ton lecteur</text>
+      <text x="490" y="182" fill="#5cae8e">Ta bible</text>
+      <text x="490" y="294" fill="#cba15e">Le puits sans fond</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#a9a291">
+      <text x="490" y="82">scènes, dialogues, détails</text>
+      <text x="490" y="202">règles, lieux, dates, langues</text>
+      <text x="490" y="314">ce qui ne servira jamais</text>
+    </g>
+  </svg>
+  <figcaption>Le lecteur ne voit que la pointe. Ta bible la porte et lui donne sa densité&#8239;; en dessous, le worldbuilding infini ne sert plus ton histoire.</figcaption>
+</figure>`;
+
+const bibleUnivers = {
+  slug: 'creer-bible-univers-worldbuilding',
+  pillar: 'P1',
+  metaTitle: 'Bible d\'univers : créer celle de ta saga (worldbuilding)',
+  title: 'Comment créer une bible d\'univers pour ta saga (worldbuilding)',
+  description:
+    'Créer une bible d\'univers pour ton roman : personnages, lieux, factions, règles du monde, le piège de l\'iceberg et la méthode pas-à-pas pour une saga.',
+  excerpt:
+    'Ta magie coûtait du sang ou du sommeil, déjà ? Ce qu\'on met dans une bible d\'univers, comment éviter le worldbuilding infini, et la méthode pour la tenir sur toute une saga.',
+  date: '2026-12-01',
+  readingTime: '9 min',
+  tags: ['Worldbuilding', 'Bible', 'Saga', 'Méthode'],
+  emoji: '📖',
+  html: `
+<p>Tu reprends ton tome 2 après six mois de pause. Au chapitre 3, ton héroïne lance un sort. Et là, le doute&#8239;: dans le tome 1, la magie lui coûtait du sang ou du sommeil&#8239;? Combien de jours de cheval entre la capitale et le port&#8239;? Et le frère du roi, il s'appelait Aldric ou Aldwin&#8239;? Tu fouilles le manuscrit, et ta matinée y passe.</p>
+<p>Ce qui te manque porte un nom&#8239;: une <strong>bible d'univers</strong>. Pas un second roman à écrire à côté du tien, mais un document de référence où ton monde tient debout tout seul. Voici comment en bâtir une qui serve vraiment, sans tomber dans le piège du worldbuilding sans fin.</p>
+
+<h2>📖 Une bible d'univers, c'est quoi&#8239;?</h2>
+<p>Le mot vient de la télévision. Dans une série, la <strong>bible</strong> est le document qu'on remet à chaque scénariste qui rejoint l'équipe&#8239;: les personnages et leur passé, les lieux récurrents, le ton, et surtout ce qui ne doit jamais arriver. Dix auteurs écrivent, et le public doit croire qu'une seule main tient l'ensemble.</p>
+<p>En roman, tu es souvent seul, mais le problème est le même avec un décalage dans le temps&#8239;: l'auteur qui écrit le tome 3 n'est plus celui qui a écrit le tome 1. Il a oublié, changé d'avis, mûri. La bible, c'est la mémoire que ton «&#8239;toi&#8239;» d'hier transmet à ton «&#8239;toi&#8239;» de demain.</p>
+<p>Tolkien en est l'exemple extrême. Les appendices du <em>Seigneur des Anneaux</em> réunissent les annales des rois, la chronologie des Âges, des arbres généalogiques, les calendriers, des notes sur l'écriture et la prononciation des langues. Une bible publiée en fin de volume. Et Tolkien expliquait lui-même avoir inventé ses histoires pour donner un monde à ses langues, plutôt que l'inverse.</p>
+
+<h2>🧱 Ce que tu mets dans ta bible</h2>
+<p>Une bible solide s'organise en cinq tiroirs. Inutile de tous les remplir le premier jour&#8239;: l'important est de savoir où ranger chaque chose quand elle apparaît.</p>
+<h3>Les personnages</h3>
+<p>Identité, alias, origine, traits, ce qu'ils veulent, ce qu'ils cachent. Ajoute les détails qu'on oublie le plus vite&#8239;: âge, couleur des yeux, cicatrices, taille. Frodon a cinquante ans quand il quitte la Comté&#8239;: c'est exactement le genre de chiffre qui doit être écrit quelque part, pas flotter dans ta tête.</p>
+<h3>Les lieux</h3>
+<p>Type de lieu, régime politique, habitants, endroits clés, et surtout les <strong>distances</strong>. Un lieu sans distance, c'est un voyage qui prendra trois jours à l'aller et une semaine au retour.</p>
+<h3>Les objets</h3>
+<p>Qui l'a créé, qui le détient, ce qu'il fait, dans quel état il se trouve. L'Anneau Unique tient en une fiche courte et redoutable&#8239;: forgé par Sauron, il rend invisible, prolonge la vie sans la rendre éternelle, corrompt son porteur et attire l'Œil. Quatre lignes, et toute l'intrigue en découle.</p>
+<h3>Les groupes et factions</h3>
+<p>Peuples, ordres, maisons nobles, guildes, religions. Un groupe a une identité, un territoire, des membres. La Communauté de l'Anneau est une faction de neuf compagnons&#8239;; les Istari, un ordre de magiciens&#8239;; les Hobbits, un peuple rattaché à la Comté. C'est souvent au croisement de deux appartenances que naissent les loyautés contradictoires.</p>
+<h3>Les règles du monde</h3>
+<p>C'est le tiroir le plus précieux, et le plus négligé. Il contient tout ce qui fait fonctionner ton monde&#8239;:</p>
+<ul>
+  <li><strong>La magie ou la technologie</strong>&#8239;: ce qu'elle permet, ce qu'elle coûte, ce qu'elle ne peut pas faire.</li>
+  <li><strong>Le calendrier</strong>&#8239;: comment on compte les jours, les saisons, les années. Celui de la Comté aligne douze mois de trente jours, plus quelques jours de fête hors des mois.</li>
+  <li><strong>Les langues</strong>&#8239;: qui parle quoi, comment chaque peuple nomme les choses. Le quenya et le sindarin n'ont pas les mêmes locuteurs, et un nom elfique ne se forge pas au hasard.</li>
+  <li><strong>L'histoire</strong>&#8239;: les grands événements d'avant le roman, ceux qui pèsent encore sur le présent.</li>
+</ul>
+
+<h2>🧊 Le piège de l'iceberg</h2>
+<p>C'est le danger qui guette tout amoureux du worldbuilding&#8239;: construire indéfiniment au lieu d'écrire. Trois ans de généalogies et de grammaire elfique, et pas un chapitre. Les anglophones ont même un nom pour ça&#8239;: la <em>worldbuilder's disease</em>, la maladie du bâtisseur de mondes.</p>
+<p>La bonne image, c'est l'iceberg. Ton lecteur ne voit que la pointe&#8239;: une scène, un dialogue, un nom glissé au détour d'une phrase. Sous la surface, ta bible porte cette pointe et lui donne sa densité. Mais sous la bible s'ouvre un puits sans fond&#8239;: tout ce que tu pourrais inventer et qui ne servira jamais.</p>
+${bibleUniversIcebergDiagram}
+<p>Quand Aragorn chante le lai de Beren et Lúthien près de Montauvent, Tolkien ne raconte pas toute l'histoire&#8239;: il en montre un fragment, et le lecteur sent qu'un monde immense existe derrière. C'est ça, la profondeur. Pas tout dire, mais laisser deviner qu'on pourrait.</p>
+<p>Le test est simple. Avant de développer un élément, demande-toi&#8239;: <strong>est-ce que ça change une scène&#8239;?</strong> Si non, note l'idée en une ligne et passe à la suite&#8239;: tu la creuseras quand une scène en aura besoin.</p>
+
+<h2>⚖️ Des règles qui tiennent sur la durée</h2>
+<p>Une règle de ton monde est une promesse faite au lecteur. S'il a compris que la magie coûte cher, il tremble quand ton héros s'en sert. Si la règle plie dès que l'intrigue coince, il décroche. Brandon Sanderson l'a formulé dans ses «&#8239;lois de la magie&#8239;»&#8239;: plus le lecteur comprend un système, plus tu peux t'en servir pour dénouer un conflit, et <strong>les limites sont plus intéressantes que les pouvoirs</strong>.</p>
+<p>Pour chaque règle, écris quatre choses&#8239;:</p>
+<ol>
+  <li><strong>Ce qu'elle permet.</strong> L'Anneau rend invisible.</li>
+  <li><strong>Ce qu'elle coûte.</strong> Il ronge celui qui le porte, un peu plus à chaque usage.</li>
+  <li><strong>Ce qu'elle ne peut pas faire.</strong> Il ne peut être détruit que dans les feux où il a été forgé.</li>
+  <li><strong>Qui la connaît.</strong> Au début du récit, presque personne ne sait ce qu'il est vraiment. Ce savoir est lui-même une information à suivre.</li>
+</ol>
+<p>Formulée ainsi, une règle devient vérifiable. Au moindre doute, tu relis la fiche au lieu de te fier à ta mémoire. C'est la première ligne de défense contre les failles d'univers, celles que recense notre <a href="/blog/detecter-incoherences-roman">checklist des incohérences</a>.</p>
+
+<h2>🌱 Bible vivante ou bible figée&#8239;?</h2>
+<p>Il y a deux écoles. La bible <strong>figée</strong> est écrite avant le premier chapitre, complète, et on n'y touche plus. Elle rassure, mais elle ment dès que ton histoire te surprend, ce qui arrive toujours. La bible <strong>vivante</strong> grandit avec le manuscrit&#8239;: chaque détail inventé en cours d'écriture rejoint sa fiche.</p>
+<p>La bonne réponse tient des deux&#8239;: un <strong>socle figé</strong> (les règles fondamentales, celles qui ne bougent pas sans conséquence) et une <strong>couche vivante</strong> pour tout le reste. Si tu décides de toucher au socle, ce n'est plus une retouche&#8239;: c'est une réécriture, et il faut repasser sur chaque scène qui s'appuie sur la règle.</p>
+<p>Le réflexe qui change tout&#8239;: <strong>une invention, une ligne</strong>. Tu baptises une auberge au chapitre 12&#8239;? Elle entre dans la bible avant la fin de la séance. Deux minutes maintenant, deux heures gagnées au tome suivant.</p>
+
+<h2>📚 Une bible pour plusieurs tomes</h2>
+<p>Sur une saga, la bible change de nature. Elle ne décrit plus seulement ton monde&#8239;: elle doit aussi dire <strong>ce que le lecteur en sait, et depuis quand</strong>. Un secret révélé au tome 2 ne peut plus être traité comme un mystère au tome 3.</p>
+<ul>
+  <li><strong>Date chaque révélation.</strong> Note le tome et le chapitre où une vérité sur ton monde est dévoilée.</li>
+  <li><strong>Fais vieillir ton monde.</strong> Les personnages prennent des années, les alliances bougent, des lieux tombent ou se relèvent. Ta bible doit refléter l'état du monde à chaque tome.</li>
+  <li><strong>Relie les éléments aux promesses.</strong> Une lame, une prophétie, une langue oubliée posées au tome 1 sont souvent des <a href="/blog/amorces-paiements-plant-payoff">amorces qui attendent leur paiement</a>.</li>
+</ul>
+<p>Pour l'architecture d'ensemble d'une série, grand arc et arc de chaque tome, on en parle dans <a href="/blog/gerer-plusieurs-tomes-saga">comment gérer plusieurs tomes sans perdre le fil</a>.</p>
+
+<h2>🪜 Construire ta bible pas-à-pas</h2>
+<ol>
+  <li><strong>Pars du manuscrit, pas du vide.</strong> Liste les personnages, lieux et objets déjà nommés dans tes pages&#8239;: c'est ta bible minimale.</li>
+  <li><strong>Remplis les fiches personnages</strong>, détails physiques compris.</li>
+  <li><strong>Range-les dans des groupes.</strong> Les appartenances révèlent les conflits.</li>
+  <li><strong>Écris tes règles en quatre lignes.</strong> Permet, coûte, interdit, qui sait.</li>
+  <li><strong>Crée tes propres catégories.</strong> Sortilèges, dieux, navires&#8239;: ce que ton genre exige et qu'aucun modèle ne prévoit.</li>
+  <li><strong>Tisse les liens.</strong> Qui porte quoi, qui vient d'où, qui parle quelle langue.</li>
+  <li><strong>Applique le test de l'iceberg</strong>, puis mets ta bible à jour à chaque séance.</li>
+</ol>
+
+<h2>🛠️ Ta bible dans Atlas Narratif</h2>
+<p>Un dossier de fichiers texte suffit pour démarrer, jusqu'au jour où tu cherches plus que tu n'écris. <strong>Atlas Narratif</strong> range ta bible dans une base où chaque élément se retrouve en deux secondes&#8239;:</p>
+<ul>
+  <li><strong>La base lore</strong> réunit personnages, lieux, objets et groupes. Chaque fiche porte les champs utiles (alias, traits, origine, détenteur d'un objet, lieux visités), et tu y ajoutes <strong>tes propres champs</strong> quand le modèle ne suffit pas&#8239;: dans la démo, la fiche de Frodon porte ainsi son âge au départ, son anniversaire et sa taille.</li>
+  <li><strong>Les groupes</strong> (peuple, faction, ordre, maison noble…) ont leurs membres, leur couleur et leur territoire d'origine. Un personnage peut appartenir à plusieurs groupes.</li>
+  <li><strong>Les catégories personnalisées</strong> accueillent ce que ton monde invente&#8239;: tu crées un type «&#8239;Sortilèges&#8239;» ou «&#8239;Factions&#8239;» avec ses propres champs. La démo en donne un exemple avec une catégorie «&#8239;Langue&#8239;»&#8239;: quenya et sindarin, avec leur famille, leurs locuteurs et leur écriture.</li>
+  <li><strong>Le graphe des relations</strong> fait apparaître les liens&#8239;: qui porte l'Anneau, qui est membre de quoi, et les relations que tu nommes toi-même (Aragorn «&#8239;parle&#8239;» le quenya).</li>
+  <li><strong>La recherche globale</strong> (Ctrl+K) retrouve un nom, un alias ou un détail dans tout le projet, même si tu oublies les accents.</li>
+  <li><strong>Le chat de requête</strong> répond aux questions simples à partir de tes fiches&#8239;: «&#8239;qui est Grands-Pas&#8239;?&#8239;», «&#8239;quels objets porte Frodo&#8239;?&#8239;», «&#8239;chapitre 5&#8239;». Rien d'inventé&#8239;: il lit ta bible, et seulement elle.</li>
+  <li><strong>Ta bible vit déjà dans Obsidian&#8239;?</strong> Importe ton vault (fichiers .md ou archive .zip)&#8239;: Atlas lit le frontmatter et les liens entre notes, te montre un aperçu et te laisse ajuster la correspondance des champs avant de créer le projet.</li>
+</ul>
+<figure class="blog-figure">
+  <img src="/blog/bible-univers-lore.png" alt="La base lore d'Atlas Narratif sur la démo du Seigneur des Anneaux&#8239;: onglets personnages, lieux, objets et groupes, et des fiches de personnages avec leurs surnoms, leurs groupes et leur lieu d'origine." loading="lazy" />
+  <figcaption>La base lore&#8239;: personnages, lieux, objets et groupes rangés au même endroit, chaque fiche reliée à ses factions (démo LOTR).</figcaption>
+</figure>
+<p>Et le jour où tu dois transmettre ta bible à un éditeur ou à un co-auteur, Atlas l'exporte pour toi&#8239;: une bible des personnages prête à imprimer, ou la bible complète en Markdown.</p>
+
+<h2>⚠️ Les erreurs classiques</h2>
+<ul>
+  <li><strong>Écrire la bible au lieu du roman.</strong> Si ta bible grossit plus vite que ton manuscrit, arrête-toi et écris une scène.</li>
+  <li><strong>Des règles sans limites.</strong> Un pouvoir sans coût résout tout, donc plus rien ne compte.</li>
+  <li><strong>La bible éparpillée.</strong> Trois carnets, un tableur, des notes dans ton téléphone&#8239;: une information introuvable n'existe pas.</li>
+  <li><strong>Oublier de dater.</strong> Sur une saga, une fiche sans «&#8239;depuis quand&#8239;» finit toujours par contredire l'un de tes tomes.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>Une bible d'univers, c'est la mémoire de ton monde&#8239;: personnages, lieux, objets, groupes, et surtout des règles écrites avec leurs limites. Garde l'iceberg en tête (ce qui ne change aucune scène tient en une ligne), fais-la vivre au rythme de ton manuscrit, et date tes révélations dès que ta saga passe au deuxième tome.</p>
+<p><strong>Atlas Narratif</strong> te donne une base lore taillée pour ça&#8239;: fiches, groupes, catégories à toi, graphe des relations, recherche instantanée. Gratuit, en français, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Construis la bible de ta saga gratuitement avec Atlas Narratif.</a> Et pour voir une bible complète, charge la démo du Seigneur des Anneaux depuis l'accueil, sans créer de compte.</p>
+`,
+};
+
+const outilsGratuitsMatrix = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 540" role="img" aria-label="Matrice des outils gratuits pour écrire un roman selon cinq besoins : écrire, organiser, structurer, construire l'univers, se motiver. Un rond plein marque un point fort, un cercle un usage partiel." style="width:100%;height:auto">
+    <g font-family="'Spectral',Georgia,serif" fill="#ece7db" font-size="14" text-anchor="middle">
+      <text x="287" y="46">Écrire</text>
+      <text x="383" y="46">Organiser</text>
+      <text x="479" y="46">Structurer</text>
+      <text x="575" y="46">Univers</text>
+      <text x="671" y="46">Motivation</text>
+    </g>
+    <line x1="20" y1="62" x2="700" y2="62" stroke="#ffffff" stroke-opacity="0.14"/>
+    <rect x="14" y="73" width="692" height="30" rx="6" fill="#ffffff" fill-opacity="0.03"/>
+    <rect x="14" y="133" width="692" height="30" rx="6" fill="#ffffff" fill-opacity="0.03"/>
+    <rect x="14" y="193" width="692" height="30" rx="6" fill="#ffffff" fill-opacity="0.03"/>
+    <rect x="14" y="253" width="692" height="30" rx="6" fill="#ffffff" fill-opacity="0.03"/>
+    <rect x="14" y="313" width="692" height="30" rx="6" fill="#ffffff" fill-opacity="0.03"/>
+    <rect x="14" y="373" width="692" height="30" rx="6" fill="#ffffff" fill-opacity="0.03"/>
+    <rect x="14" y="433" width="692" height="30" rx="6" fill="#5cae8e" fill-opacity="0.1" stroke="#5cae8e" stroke-opacity="0.4"/>
+    <g font-family="'Spectral',Georgia,serif" fill="#ece7db" font-size="13.5">
+      <text x="28" y="93">LibreOffice Writer</text>
+      <text x="28" y="123">Google Docs</text>
+      <text x="28" y="153">Reedsy Studio</text>
+      <text x="28" y="183">novelWriter</text>
+      <text x="28" y="213">Manuskript</text>
+      <text x="28" y="243">bibisco</text>
+      <text x="28" y="273">yWriter</text>
+      <text x="28" y="303">oStorybook</text>
+      <text x="28" y="333">Obsidian</text>
+      <text x="28" y="363">Notion</text>
+      <text x="28" y="393">Campfire *</text>
+      <text x="28" y="423">World Anvil *</text>
+      <text x="28" y="453">Atlas Narratif</text>
+    </g>
+    <g>
+      <circle cx="287" cy="88" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="88" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="118" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="118" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="148" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="148" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="671" cy="148" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="178" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="178" r="7" fill="#5cae8e"/>
+      <circle cx="575" cy="178" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="208" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="208" r="7" fill="#5cae8e"/>
+      <circle cx="479" cy="208" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="575" cy="208" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="671" cy="208" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="238" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="238" r="7" fill="#5cae8e"/>
+      <circle cx="479" cy="238" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="575" cy="238" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="671" cy="238" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="268" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="383" cy="268" r="7" fill="#5cae8e"/>
+      <circle cx="575" cy="268" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="298" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="383" cy="298" r="7" fill="#5cae8e"/>
+      <circle cx="479" cy="298" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="575" cy="298" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="287" cy="328" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="383" cy="328" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="575" cy="328" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="358" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="575" cy="358" r="7" fill="#5cae8e"/>
+      <circle cx="287" cy="388" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="383" cy="388" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="479" cy="388" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="575" cy="388" r="7" fill="#5cae8e"/>
+      <circle cx="575" cy="418" r="7" fill="#5cae8e"/>
+      <circle cx="383" cy="448" r="6" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <circle cx="479" cy="448" r="7" fill="#5cae8e"/>
+      <circle cx="575" cy="448" r="7" fill="#5cae8e"/>
+    </g>
+    <line x1="20" y1="484" x2="700" y2="484" stroke="#ffffff" stroke-opacity="0.14"/>
+    <g font-family="ui-monospace,Menlo,monospace" fill="#a9a291" font-size="11.5">
+      <circle cx="34" cy="510" r="6" fill="#5cae8e"/>
+      <text x="48" y="514">point fort</text>
+      <circle cx="160" cy="510" r="5" fill="none" stroke="#cba15e" stroke-width="2"/>
+      <text x="174" y="514">usage partiel</text>
+      <text x="300" y="514">* offre gratuite limitée</text>
+    </g>
+  </svg>
+  <figcaption>Cinq besoins, treize outils gratuits ou freemium&#8239;: aucun ne coche toutes les cases, d'où l'intérêt de les combiner.</figcaption>
+</figure>`;
+
+const outilsGratuits = {
+  slug: 'outils-gratuits-ecrire-roman',
+  pillar: 'P3',
+  metaTitle: 'Outils gratuits pour écrire un roman : comparatif 2026',
+  title: 'Les meilleurs outils gratuits pour écrire un roman en 2026',
+  description:
+    'Logiciel d\'écriture de roman gratuit : le comparatif honnête 2026 par besoin (écrire, organiser, structurer, univers, motivation), limites comprises.',
+  excerpt:
+    'Écrire, organiser, structurer, construire ton univers, tenir le rythme : les outils vraiment gratuits pour chaque besoin, leurs limites, et les combos qui marchent.',
+  date: '2026-12-15',
+  readingTime: '9 min',
+  tags: ['Outils', 'Logiciels gratuits', 'Écriture', 'Comparatif'],
+  emoji: '🧰',
+  html: `
+<p>Tu as une histoire en tête, peut-être déjà quelques chapitres, et tu te demandes où l'écrire. Tu tapes «&#8239;logiciel écriture roman gratuit&#8239;» et tu tombes sur des listes de vingt outils, tous «&#8239;les meilleurs&#8239;», dont la moitié sont en réalité payants, abandonnés depuis des années ou limités au point d'être inutilisables passé le chapitre 5.</p>
+<p>Ce comparatif prend le problème à l'envers. Au lieu de chercher <em>le</em> logiciel parfait, on part de ce dont tu as besoin, et pour chaque besoin, les outils gratuits qui tiennent vraiment la route en 2026. On a vérifié chaque offre sur le site de l'éditeur à l'automne 2026. Et une précision d'emblée, par honnêteté&#8239;: l'un des outils cités, Atlas Narratif, est l'outil que nous développons. On te dira donc aussi ce qu'il ne fait pas.</p>
+
+<h2>🧰 Cinq besoins, pas un logiciel magique</h2>
+<p>Écrire un roman, ce n'est pas une seule tâche. Ce sont au moins cinq métiers qui se chevauchent&#8239;:</p>
+<ol>
+  <li><strong>Écrire le texte</strong>&#8239;: aligner des phrases, confortablement, sans rien perdre.</li>
+  <li><strong>Organiser le manuscrit</strong>&#8239;: découper en chapitres et en scènes, les déplacer, retrouver un passage.</li>
+  <li><strong>Structurer l'intrigue</strong>&#8239;: poser tes temps forts, vérifier que l'histoire tient debout et reste cohérente.</li>
+  <li><strong>Construire l'univers</strong>&#8239;: tes personnages, tes lieux, tes règles du monde.</li>
+  <li><strong>Te motiver</strong>&#8239;: suivre ton avancée, tenir un rythme.</li>
+</ol>
+<p>Aucun outil gratuit ne fait tout bien. Le logiciel «&#8239;tout-en-un&#8239;» de référence, Scrivener, est payant (environ 60 dollars la licence sur ordinateur, avec un essai de 30 jours d'utilisation). Bonne nouvelle&#8239;: en combinant deux outils gratuits bien choisis, tu couvres l'essentiel. Et un mot sur le vocabulaire, parce qu'il compte&#8239;: <strong>gratuit</strong> (tout est offert), <strong>freemium</strong> (offre gratuite limitée, le reste est payant) et <strong>essai gratuit</strong> (payant après quelques semaines) sont trois choses très différentes.</p>
+${outilsGratuitsMatrix}
+
+<h2>✍️ Écrire le texte</h2>
+<p>Pour aligner les mots, un bon traitement de texte suffit largement. Beaucoup de romans publiés ont été écrits dans un simple fichier.</p>
+<ul>
+  <li><strong>LibreOffice Writer.</strong> Libre, gratuit, en français, sur Windows, macOS et Linux. Ses styles de titres et son navigateur te permettent de sauter d'un chapitre à l'autre dans un long document, et il exporte en PDF. Tes fichiers restent sur ton ordinateur.</li>
+  <li><strong>Google Docs.</strong> Gratuit avec un compte Google, dans le navigateur. Son vrai atout&#8239;: les commentaires et le partage, parfaits pour tes bêta-lecteurs. Revers de la médaille&#8239;: ton texte vit sur les serveurs de Google.</li>
+  <li><strong>Reedsy Studio.</strong> Un éditeur en ligne pensé pour les livres. L'écriture et la mise en page sont gratuites, avec export PDF et EPUB. L'offre gratuite est limitée sur le reste&#8239;: 30 jours d'historique, un seul objectif, tableau de planification en vue cartes uniquement.</li>
+</ul>
+<p>Leur limite commune&#8239;: au-delà de 300 pages, un document unique devient pénible à manipuler. C'est là qu'entrent en scène les logiciels d'organisation.</p>
+
+<h2>🗂️ Organiser le manuscrit</h2>
+<p>Ces logiciels découpent ton roman en chapitres et en scènes que tu réorganises à volonté, avec des fiches pour tes personnages et tes lieux. C'est la famille la plus riche en outils gratuits, et de loin.</p>
+<ul>
+  <li><strong>novelWriter.</strong> Libre et gratuit, sur Windows, Linux et macOS (sur Mac, l'installation demande un peu de bricolage). Tu écris en texte brut avec une syntaxe légère proche du Markdown, ce qui rend tes fichiers lisibles pour toujours. Interface traduite en français, développement très actif (nouvelle version en septembre 2026).</li>
+  <li><strong>Manuskript.</strong> Libre et gratuit, disponible en français. Plan hiérarchique, mode sans distraction, objectifs de mots, et un assistant fondé sur la méthode du flocon. Il est officiellement proposé sur Windows et Linux, et ses développeurs préviennent qu'il reste en chantier&#8239;: sauvegarde souvent.</li>
+  <li><strong>bibisco.</strong> Très apprécié pour ses fiches personnages sous forme d'interview. L'édition Community est gratuite, en français, sur Windows, macOS et Linux&#8239;: chapitres, scènes, lieux, chronologie, objectifs d'écriture, export DOCX, PDF et EPUB. Une édition Supporters payante (69 dollars, en une fois) et une synchronisation mobile par abonnement existent à côté.</li>
+  <li><strong>yWriter.</strong> Le vétéran, gratuit, conçu par un romancier. Il découpe le roman en scènes et suit personnages, lieux et objets. Pour Windows d'abord, avec des versions mobiles. Si tu préfères écrire dans LibreOffice, <strong>novelibre</strong> (libre) reprend l'approche en s'appuyant sur ton traitement de texte, et sait importer les projets yWriter grâce à un module dédié.</li>
+  <li><strong>oStorybook.</strong> Libre, gratuit, disponible en français et mis à jour plusieurs fois par an depuis une décennie (dernière version en avril 2026). Personnages, lieux, scènes, objets, idées&#8239;: une vraie base de travail pour l'auteur méthodique.</li>
+</ul>
+
+<h2>🧭 Structurer l'intrigue et garder la cohérence</h2>
+<p>C'est le besoin le moins bien servi par le gratuit. Les outils ci-dessus rangent ton texte&#8239;; peu t'aident à voir si ton intrigue tient. Où tombe ton midpoint&#8239;? Tel personnage disparaît-il pendant dix chapitres&#8239;? Cette amorce du chapitre 3 est-elle payée&#8239;? La référence du secteur, <strong>Plottr</strong>, n'a pas d'offre gratuite (essai de 30 jours, puis abonnement ou licence).</p>
+<p>C'est précisément ce vide qu'<strong>Atlas Narratif</strong> essaie de combler. Rappel&#8239;: c'est l'outil que nous développons, alors lis ce paragraphe avec le recul qui s'impose. Atlas est gratuit, en français, et tes textes y sont chiffrés, sans tracking. Tu y poses ta structure (les 15 beats de Save the Cat ou les 12 étapes du Voyage du Héros), ta timeline, tes personnages, lieux et objets, une carte avec les trajets de tes personnages, et un détecteur signale les incohérences. Le tableau de bord résume le tout&#8239;: un score de santé narrative (un diagnostic, pas un verdict), et des recommandations concrètes comme les beats manquants ou les personnages absents de la timeline.</p>
+<figure class="blog-figure">
+  <img src="/blog/atlas-tableau-de-bord.png" alt="Le tableau de bord d'Atlas Narratif sur la démo du Seigneur des Anneaux&#8239;: statistiques du projet, score de santé narrative et vue série, avec pour chaque tome la structure, l'arc et les incohérences à traiter." loading="lazy" />
+  <figcaption>Le tableau de bord&#8239;: statistiques, score de santé et bilan tome par tome de la trilogie en un coup d'œil (démo LOTR).</figcaption>
+</figure>
+<p>Ses limites, maintenant, parce qu'elles comptent autant&#8239;:</p>
+<ul>
+  <li><strong>Ce n'est pas un traitement de texte.</strong> Tu n'y écris pas ton roman&#8239;: tu écris ailleurs, et Atlas garde la carte de ton histoire. Tu peux y prendre des notes par chapitre, rien de plus.</li>
+  <li><strong>C'est une application web</strong>&#8239;: il te faut une connexion, et un compte pour créer ton propre projet (la démo, elle, se charge sans compte).</li>
+  <li><strong>Pas de suivi du nombre de mots</strong> ni d'objectifs d'écriture&#8239;: ce n'est pas son rôle.</li>
+</ul>
+<p>Si tu débutes sur ces notions, notre guide pour <a href="/blog/detecter-incoherences-roman">détecter les incohérences de ton roman</a> te donne la méthode, outil ou pas.</p>
+
+<h2>🌍 Construire ton univers</h2>
+<p>Pour la fantasy, la SF ou toute saga, tu auras vite besoin d'une «&#8239;bible&#8239;»&#8239;: fiches, règles, chronologies, cartes.</p>
+<ul>
+  <li><strong>Obsidian.</strong> Gratuit sans limite pour un usage personnel, sans inscription. Tes notes sont de simples fichiers Markdown sur ton disque, reliées entre elles par des liens. Idéal pour un wiki d'univers qui grandit avec toi. Seuls la synchronisation et la publication en ligne sont payantes.</li>
+  <li><strong>Notion.</strong> Gratuit pour un usage individuel, en français. Ses bases de données font d'excellentes fiches personnages filtrables. Limites de l'offre gratuite&#8239;: fichiers de 5 Mo maximum et 7 jours d'historique. Tout est en ligne.</li>
+  <li><strong>Campfire</strong> (offre gratuite limitée). Des modules dédiés au worldbuilding&#8239;: personnages, cartes, timeline, systèmes de magie. Le gratuit plafonne vite&#8239;: 25 000 mots de manuscrit, 10 personnages, 20 événements, 2 cartes.</li>
+  <li><strong>World Anvil</strong> (offre gratuite limitée). Le wiki d'univers le plus complet, très prisé des rôlistes. En gratuit, tes mondes ne sont pas vraiment privés et les fonctions avancées sont réservées aux abonnés.</li>
+</ul>
+<p>Pour savoir quoi mettre dans cette bible avant de choisir l'outil, lis notre guide pour <a href="/blog/creer-bible-univers-worldbuilding">créer la bible de ton univers</a>.</p>
+
+<h2>🔥 Te motiver et tenir le rythme</h2>
+<p>Aucun outil n'écrira à ta place, mais certains rendent la régularité visible&#8239;: Manuskript et bibisco proposent des objectifs de mots, Reedsy Studio un objectif de manuscrit dans son offre gratuite. Le reste est affaire d'habitude&#8239;: une heure fixe, un compteur, et un plan qui te dit quelle scène écrire aujourd'hui. Si tu prépares le défi d'écriture de novembre, notre méthode pour <a href="/blog/planifier-roman-novembre-methode">planifier ton roman de novembre</a> t'aidera à arriver le 1er avec une feuille de route.</p>
+
+<h2>🔗 Trois combos d'outils gratuits qui marchent</h2>
+<ul>
+  <li><strong>Le minimaliste&#8239;: LibreOffice Writer + Atlas Narratif.</strong> Tu écris dans un traitement de texte que tu maîtrises, et tu tiens ta structure, ta timeline et tes personnages dans Atlas. Deux fenêtres, presque rien à apprendre.</li>
+  <li><strong>L'architecte&#8239;: novelWriter ou bibisco + Atlas Narratif.</strong> L'un organise tes scènes et ton texte, l'autre vérifie que l'intrigue tient sur la durée&#8239;: beats, amorces, incohérences.</li>
+  <li><strong>Le bâtisseur de mondes&#8239;: Obsidian + Atlas Narratif.</strong> Tu construis ton univers dans Obsidian, puis tu importes ton vault (fichiers .md ou .zip) dans Atlas pour y retrouver tes personnages, lieux et objets, prêts à prendre place sur ta timeline et ta carte.</li>
+</ul>
+
+<h2>⚠️ Les pièges du «&#8239;gratuit&#8239;»</h2>
+<ul>
+  <li><strong>Le freemium qui te rattrape au chapitre 12.</strong> Une limite de 10 personnages ou 25 000 mots paraît large au début. Regarde les plafonds avant d'y verser trois ans de travail.</li>
+  <li><strong>Le format prisonnier.</strong> Vérifie que tu peux exporter ton texte dans un format ouvert (DOCX, ODT, texte brut, Markdown). Ton roman doit pouvoir survivre à l'outil.</li>
+  <li><strong>Le projet abandonné.</strong> Regarde la date de la dernière version. Tous les outils de cette liste ont été mis à jour récemment, mais ce n'est pas le cas de tous ceux qu'on te recommande ailleurs.</li>
+  <li><strong>Collectionner les outils au lieu d'écrire.</strong> Tester douze logiciels est une forme élégante de procrastination. Choisis-en deux, et écris.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>Pas besoin de payer pour écrire un roman en 2026. Pour le texte, LibreOffice Writer ou Google Docs. Pour organiser un long manuscrit, novelWriter, bibisco, Manuskript, yWriter ou oStorybook. Pour l'univers, Obsidian ou Notion, et Campfire ou World Anvil si leurs limites gratuites te suffisent. Pour la structure et la cohérence, le gratuit est plus rare&#8239;: c'est la place que veut tenir Atlas Narratif, notre outil, à côté de ton traitement de texte et non à sa place.</p>
+<p>Le plus simple pour juger, c'est de voir. Sur <strong>Atlas Narratif</strong>, la démo du Seigneur des Anneaux se charge depuis l'accueil sans créer de compte&#8239;: trois tomes, leurs beats, leur carte et leurs incohérences. Gratuit, en français, tes textes chiffrés, sans aucun tracking&#8239;: l'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Explore la démo d'Atlas Narratif</a>, puis garde ton traitement de texte préféré pour écrire et Atlas pour tenir la carte de ton histoire.</p>
+`,
+};
+
+const carteLotrSeparationsDiagram = `
+<figure class="blog-figure">
+  <svg viewBox="0 0 720 340" role="img" aria-label="Schéma des séparations et convergences de la Communauté de l'Anneau au fil des chapitres de la démo&#8239;: réunie à Fondcombe, brisée à Amon Hen en trois routes, Gandalf retrouvé à Fangorn, Merry et Pippin retrouvés à Isengard, nouvelle dispersion, rassemblement au Pelennor, Porte Noire et Mont Destin le même jour, tous réunis au couronnement." style="width:100%;height:auto">
+    <!-- repères verticaux des chapitres clés -->
+    <g stroke="#ffffff" stroke-opacity="0.08">
+      <line x1="60" y1="26" x2="60" y2="288"/>
+      <line x1="114" y1="26" x2="114" y2="288"/>
+      <line x1="168" y1="26" x2="168" y2="288"/>
+      <line x1="276" y1="26" x2="276" y2="288"/>
+      <line x1="438" y1="26" x2="438" y2="288"/>
+      <line x1="573" y1="26" x2="573" y2="288"/>
+      <line x1="690" y1="26" x2="690" y2="288"/>
+    </g>
+    <!-- Gandalf : présent, puis disparu après la Moria, puis revenu -->
+    <polyline fill="none" stroke="#a9a291" stroke-width="2" points="60,152 114,152"/>
+    <polyline fill="none" stroke="#a9a291" stroke-width="1.5" stroke-dasharray="2 5" stroke-opacity="0.6" points="114,152 136,60 256,60"/>
+    <polyline fill="none" stroke="#a9a291" stroke-width="2" stroke-linejoin="round" points="256,60 276,96 438,96 465,36 546,36 573,90 627,90 690,128"/>
+    <!-- Aragorn, Legolas, Gimli -->
+    <polyline fill="none" stroke="#5cae8e" stroke-width="2.5" stroke-linejoin="round" points="60,156 168,156 195,100 627,100 690,130"/>
+    <!-- Pippin -->
+    <polyline fill="none" stroke="#ece7db" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round" points="60,160 168,160 195,178 411,178 438,104 465,40 546,40 573,94 627,94 690,132"/>
+    <!-- Merry -->
+    <polyline fill="none" stroke="#ece7db" stroke-width="2" stroke-linejoin="round" points="60,164 168,164 195,182 411,182 438,108 465,150 546,150 573,106 600,150 660,150 690,134"/>
+    <!-- Frodon et Sam -->
+    <polyline fill="none" stroke="#cba15e" stroke-width="2.5" stroke-linejoin="round" points="60,168 168,168 195,260 654,260 690,138"/>
+    <!-- 25 mars : même jour, deux chapitres -->
+    <line x1="627" y1="100" x2="654" y2="260" stroke="#cba15e" stroke-width="1" stroke-dasharray="3 3" stroke-opacity="0.8"/>
+    <circle cx="627" cy="98" r="3.5" fill="#cba15e"/>
+    <circle cx="654" cy="260" r="3.5" fill="#cba15e"/>
+    <!-- rassemblements (losange plein) et scissions (losange creux) -->
+    <g>
+      <rect x="55" y="155" width="10" height="10" transform="rotate(45 60 160)" fill="#5cae8e"/>
+      <rect x="109" y="147" width="10" height="10" transform="rotate(45 114 152)" fill="none" stroke="#cba15e" stroke-width="1.5"/>
+      <rect x="163" y="155" width="10" height="10" transform="rotate(45 168 160)" fill="none" stroke="#cba15e" stroke-width="1.5"/>
+      <rect x="271" y="93" width="10" height="10" transform="rotate(45 276 98)" fill="#5cae8e"/>
+      <rect x="433" y="97" width="10" height="10" transform="rotate(45 438 102)" fill="#5cae8e"/>
+      <rect x="568" y="93" width="10" height="10" transform="rotate(45 573 98)" fill="#5cae8e"/>
+      <rect x="685" y="127" width="10" height="10" transform="rotate(45 690 132)" fill="#5cae8e"/>
+    </g>
+    <!-- étiquettes des groupes -->
+    <g font-family="'Spectral',Georgia,serif" font-size="12.5">
+      <text x="142" y="52" fill="#a9a291">Gandalf, disparu en Moria</text>
+      <text x="204" y="120" fill="#5cae8e">Aragorn, Legolas, Gimli</text>
+      <text x="204" y="200" fill="#ece7db">Merry et Pippin</text>
+      <text x="204" y="280" fill="#cba15e">Frodon et Sam</text>
+      <text x="470" y="60" fill="#a9a291">Gandalf et Pippin</text>
+      <text x="470" y="168" fill="#ece7db">Merry</text>
+      <text x="636" y="215" fill="#cba15e" font-size="11.5" text-anchor="end">même jour</text>
+    </g>
+    <!-- lieux des convergences -->
+    <g font-family="'Spectral',Georgia,serif" fill="#ece7db" font-size="12.5" text-anchor="middle">
+      <text x="114" y="18">Moria</text>
+      <text x="276" y="18">Fangorn</text>
+      <text x="573" y="18">Pelennor</text>
+      <text x="690" y="18" text-anchor="end">Couronnement</text>
+      <text x="60" y="306">Fondcombe</text>
+      <text x="168" y="306">Amon Hen</text>
+      <text x="438" y="306">Isengard</text>
+      <text x="610" y="306">Porte Noire et Mont Destin</text>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" fill="#a9a291" font-size="10.5" text-anchor="middle">
+      <text x="60" y="326">ch. 5</text>
+      <text x="168" y="326">ch. 9</text>
+      <text x="438" y="326">ch. 19</text>
+      <text x="690" y="326" text-anchor="end">ch. 28</text>
+    </g>
+  </svg>
+  <figcaption>La Communauté au fil des chapitres de la démo&#8239;: losange plein = rassemblement, losange creux = scission. Les deux points dorés se passent le même jour, à deux chapitres d'écart.</figcaption>
+</figure>`;
+
+const carteLotrEtudeDeCas = {
+  slug: 'carte-seigneur-des-anneaux-etude-de-cas',
+  pillar: 'P3',
+  metaTitle: 'Créer la carte de son roman : le cas du Seigneur des Anneaux',
+  title: 'Créer la carte de ton roman : le Seigneur des Anneaux, trajet par trajet',
+  description:
+    "Distances, temps de voyage, séparations et retrouvailles : la carte du Seigneur des Anneaux trajet par trajet, et la méthode pour créer celle de ton roman.",
+  excerpt:
+    "Après Amon Hen, la Communauté éclate en plusieurs routes. On suit chaque trajet sur la carte, puis on construit celle de ton roman, chapitre par chapitre.",
+  date: '2027-01-12',
+  readingTime: '9 min',
+  tags: ['Carte', 'Le Seigneur des Anneaux', 'Étude de cas', 'Worldbuilding'],
+  emoji: '🗺️',
+  html: `
+<p>Ta carte est magnifique. Tu l'as dessinée à la main ou montée dans un générateur, elle a ses montagnes, ses fleuves, ses noms qui sonnent juste. Elle trône en tête de ton dossier. Et pourtant, au chapitre 14, quand tu te demandes où se trouve ton second rôle et combien de jours il lui faut pour rejoindre les autres, elle ne te répond rien.</p>
+<p>C'est normal&#8239;: une carte posée à plat est un décor. Pour qu'elle serve ta structure, il faut la faire bouger avec ton récit. Tolkien l'avait compris mieux que personne. Dans une lettre de 1954, il écrit avoir «&#8239;sagement commencé par une carte&#8239;» et ajusté l'histoire dessus, «&#8239;avec un soin méticuleux pour les distances&#8239;». On va suivre ses personnages trajet par trajet, puis voir comment faire la carte de ton propre roman.</p>
+
+<h2>🧭 Une carte, c'est une horloge</h2>
+<p>Une carte de roman répond à trois questions que ton plan de chapitres ne pose jamais.</p>
+<ul>
+  <li><strong>Combien de temps&#8239;?</strong> Une distance, c'est une durée. Si ton héros traverse un royaume en une nuit, il faut un cheval, un sortilège ou une bonne excuse.</li>
+  <li><strong>Qui est où, à tel chapitre&#8239;?</strong> Dès que tes personnages ne voyagent plus ensemble, chacun vit sur sa propre horloge. Ton lecteur, lui, les suit à tour de rôle.</li>
+  <li><strong>Qui se sépare, qui se retrouve&#8239;?</strong> Chaque séparation ouvre une question («&#8239;vont-ils se revoir&#8239;?&#8239;»), chaque réunion la referme. Ce sont des beats à part entière.</li>
+</ul>
+<p>Tolkien a poussé la rigueur très loin&#8239;: il a calé tous ses fils sur un calendrier commun, jusqu'aux phases de la lune, et ses tableaux de dates finiront en appendice. La Communauté quitte Fondcombe le 25 décembre, se brise le 26 février, et l'Anneau est détruit le 25 mars. Entre ces dates, tout le monde est quelque part, et ça doit tenir.</p>
+<p>Si tu veux revoir la charpente générale de la saga (beats, arcs, amorces), on l'a décortiquée dans <a href="/blog/structure-seigneur-des-anneaux">la structure du Seigneur des Anneaux</a>. Ici, on zoome sur la géographie.</p>
+
+<h2>💍 Amon Hen, le jour où la carte se fend</h2>
+<p>Jusqu'à Parth Galen, la carte du <em>Seigneur des Anneaux</em> est simple&#8239;: un seul trait, parfois deux. Frodon, Sam, Merry et Pippin quittent la Comté, rencontrent Grands-Pas à Bree, et la Communauté se forme à Fondcombe. Gandalf la guide jusqu'à la Moria, où il tombe. Un premier personnage sort de la carte.</p>
+<p>Puis vient Amon Hen, à la fin du premier tome. Boromir tente de prendre l'Anneau, Frodon s'enfuit avec Sam, Merry et Pippin sont capturés par les Uruk-hai, Boromir meurt en les défendant. En quelques pages, un trait unique devient trois routes, et Gandalf en ouvrira bientôt une quatrième. Tout le deuxième tome repose sur cette dispersion.</p>
+${carteLotrSeparationsDiagram}
+<p>Ce qui frappe, c'est l'économie du dispositif. Il n'y a que quelques points de convergence, et chacun est un temps fort&#8239;: Gandalf revenu à Fangorn, Merry et Pippin assis dans les ruines d'Isengard, le Pelennor, le couronnement. Entre ces points, chaque groupe a son propre rythme.</p>
+
+<h2>🚶 Les quatre trajets, un par un</h2>
+<h3>Frodon et Sam&#8239;: la route la plus courte, et la plus longue</h3>
+<p>Emyn Muil, où ils capturent Gollum. Les Marais des Morts. La Porte Noire, fermée. L'Ithilien, où Faramir les arrête. Puis l'escalier de Cirith Ungol, l'antre d'Arachne, la tour, le plateau de Gorgoroth et le Mont Destin. Sur la carte, c'est le trajet le plus court de tous. À la lecture, c'est le plus long&#8239;: chaque kilomètre coûte. La lenteur <em>est</em> le sujet, et la carte le rend visible.</p>
+<h3>Aragorn, Legolas et Gimli&#8239;: la course</h3>
+<p>À l'opposé, les trois chasseurs avalent le Rohan à la poursuite des Uruk-hai. Quand Éomer les croise, il n'en revient pas&#8239;: quarante-cinq lieues à pied en moins de quatre jours, plus de deux cents kilomètres. Tolkien fait de la distance un exploit, donc un trait de caractère. Puis Fangorn, Edoras, le Gouffre de Helm, Isengard, les Chemins des Morts, Pelargir, et l'arrivée au Pelennor par le fleuve, sur les navires des Corsaires.</p>
+<h3>Merry et Pippin&#8239;: séparés deux fois</h3>
+<p>Capturés à Amon Hen, ils s'échappent dans Fangorn, rencontrent Sylvebarbe et suivent les Ents jusqu'à Isengard, où les autres les retrouvent. Belles retrouvailles, qui ne durent pas. Après le palantír, Pippin part avec Gandalf pour Minas Tirith&#8239;; Merry reste avec le Rohan et chevauche jusqu'au Pelennor, où il frappe le Roi-Sorcier aux côtés d'Éowyn. Deux hobbits inséparables, rendus indépendants par la carte. C'est leur arc.</p>
+<h3>Gandalf&#8239;: l'absence comme information</h3>
+<p>Gandalf est le seul dont le trajet a un trou. Tombé en Moria au premier tome, il disparaît jusqu'à Fangorn, où il revient en Gandalf le Blanc. Ce vide est un outil dramatique&#8239;: le lecteur le croit mort, et chaque chapitre sans lui pèse. Sur ta propre carte, qu'un personnage s'efface doit être un choix, jamais un oubli.</p>
+<h3>Le 25 mars&#8239;: la convergence invisible</h3>
+<p>Le plus beau rendez-vous du livre n'a pas lieu au même endroit. Le 25 mars, Aragorn mène l'armée de l'Ouest devant la Porte Noire pour attirer l'Œil de Sauron, pendant que Frodon et Sam gravissent le Mont Destin. La diversion n'a de sens que si les deux fils sont synchronisés au jour près. Tolkien les raconte dans des chapitres différents&#8239;: c'est la carte et la chronologie, ensemble, qui garantissent que ça tient.</p>
+
+<h2>🔭 Ce que la carte montre qu'aucun plan ne montre</h2>
+<p>Tous ces trajets vivent dans la démo d'Atlas Narratif. La carte ne les invente pas&#8239;: elle les déduit de ta timeline. Chaque scène a un chapitre, un lieu et des personnages présents&#8239;; la carte relie les points dans l'ordre.</p>
+<p>Le <strong>curseur de chapitre</strong> pilote le temps pour tout le monde à la fois. Tu le glisses après Amon Hen, et chaque personnage se place là où il est à ce moment du récit. Le long de la piste, des repères signalent les rassemblements et les scissions, et une légende te dit qui est ensemble, et où. Un bouton de lecture animée fait défiler le récit chapitre par chapitre, pour voir la Communauté se disperser puis se recomposer.</p>
+<figure class="blog-figure">
+  <img src="/blog/carte-curseur-chapitre.png" alt="La carte d'Atlas Narratif avec le curseur placé au chapitre 13, la forêt de Fangorn&#8239;: trois trajets y convergent tandis que celui de Frodon poursuit seul vers l'est." loading="lazy" />
+  <figcaption>Chapitre 13, après la dissolution de la Communauté&#8239;: trois trajets se rejoignent à Fangorn, Frodon poursuit seul sa route (démo LOTR).</figcaption>
+</figure>
+<p>La <strong>frise de présence</strong> répond à la question «&#8239;qui est où&#8239;?&#8239;» sans même regarder la carte. Une barre par personnage, une case par chapitre, colorée selon le lieu où il se trouve. Un point marque les chapitres où il porte le point de vue. Tu cliques sur une colonne, le curseur saute à ce chapitre. D'un coup d'œil, tu vois les couleurs se séparer après Amon Hen et se rejoindre à Isengard.</p>
+<figure class="blog-figure">
+  <img src="/blog/carte-frise-presence.png" alt="La frise de présence d'Atlas Narratif&#8239;: une barre par personnage du Seigneur des Anneaux, une case par chapitre, colorée selon le lieu où il se trouve." loading="lazy" />
+  <figcaption>Qui est où, chapitre par chapitre&#8239;: une couleur par lieu, un point pour le point de vue (démo LOTR).</figcaption>
+</figure>
+<p>Enfin, les <strong>mini-cartes</strong> affichent le trajet complet de chaque personnage côte à côte. Frodon d'un côté, Aragorn de l'autre&#8239;: la route courte et lente face à la grande boucle rapide, en une seule image.</p>
+
+<h2>✏️ Créer la carte de ton roman, pas à pas</h2>
+<ol>
+  <li><strong>Pose un fond de carte.</strong> Un dessin scanné, une carte générée, même un croquis photographié&#8239;: n'importe quelle image fait l'affaire. Elle n'a pas besoin d'être belle, elle a besoin d'être à l'échelle de ton histoire.</li>
+  <li><strong>Place tes lieux.</strong> En mode placement, tu cliques sur la carte et tu choisis quel lieu de ton univers se trouve là. Choisis la bonne granularité&#8239;: un lieu doit correspondre à l'endroit où tes personnages peuvent réellement se croiser.</li>
+  <li><strong>Relie chaque scène à un lieu et à ses personnages.</strong> Dans ta timeline, indique où se passe chaque scène et qui y est présent. Les trajets se dessinent tout seuls, chapitre après chapitre. Tu peux aussi tracer un trajet à la main, étape par étape, si tu n'as pas encore découpé tes scènes.</li>
+  <li><strong>Marque les morts.</strong> Si un personnage meurt, indique-le sur sa fiche&#8239;: son trajet s'arrête sur la carte, et le <a href="/blog/detecter-incoherences-roman">détecteur d'incohérences</a> te signale s'il réapparaît dans une scène postérieure.</li>
+</ol>
+<h3>Les vérifications à faire, chapitre par chapitre</h3>
+<p>Une fois tes trajets posés, fais glisser le curseur du début à la fin et pose-toi ces questions. C'est toi qui juges&#8239;: la carte met simplement les réponses sous tes yeux.</p>
+<ul>
+  <li><strong>Personne à deux endroits.</strong> Un personnage ne peut pas être à la frontière au chapitre 12 et à la capitale au chapitre 13 si trois semaines de route les séparent. Sur la frise, chaque changement de couleur est un voyage&#8239;: vérifie qu'il est faisable.</li>
+  <li><strong>Des distances qui tiennent.</strong> Compare l'écart entre deux points au temps écoulé dans ta chronologie. Les chasseurs de Tolkien courent quatre jours, et l'exploit est commenté dans le texte&#8239;: fais de même si tes personnages vont trop vite.</li>
+  <li><strong>Des retrouvailles justifiées.</strong> Quand deux fils se rejoignent, demande-toi comment chacun sait où aller. Un rendez-vous fixé, un message, un hasard assumé&#8239;?</li>
+  <li><strong>Des personnages oubliés.</strong> Une barre qui garde la même couleur pendant dix chapitres, c'est un personnage mis de côté. Silence voulu, comme Gandalf, ou oubli&#8239;?</li>
+</ul>
+
+<h2>⚠️ Les erreurs classiques</h2>
+<ul>
+  <li><strong>Des lieux trop vastes.</strong> Si ton lieu s'appelle «&#8239;Fangorn&#8239;», tous les personnages qui y passent semblent réunis. Or chez Tolkien, les trois chasseurs et les hobbits sont dans la même forêt sans jamais se croiser&#8239;: ils ne se retrouvent qu'à Isengard. Découpe tes grandes zones en endroits précis.</li>
+  <li><strong>Confondre chapitre et jour.</strong> Deux chapitres consécutifs peuvent se passer le même jour, ou à un mois d'écart. Tolkien raconte le 25 mars deux fois, à deux endroits. Ta carte dit <em>où</em>, ta <a href="/blog/creer-une-timeline-roman">timeline</a> dit <em>quand</em>&#8239;: il te faut les deux.</li>
+  <li><strong>Une carte figée.</strong> Tu la dessines avant d'écrire, puis tu déplaces une ville au tome 2 sans la mettre à jour. La carte doit vivre avec le manuscrit, ou elle finit par te mentir.</li>
+  <li><strong>Des personnages qui se téléportent.</strong> Le classique des sagas&#8239;: un personnage secondaire réapparaît pile où l'intrigue a besoin de lui. Si la carte ne peut pas expliquer son trajet, ton lecteur non plus.</li>
+</ul>
+
+<h2>✅ En résumé</h2>
+<p>La carte du <em>Seigneur des Anneaux</em> n'est pas une illustration, c'est un outil de structure. Elle transforme les distances en temps, montre qui est où à chaque chapitre, et fait de chaque séparation et de chaque réunion un moment dramatique. Après Amon Hen, quatre routes, quelques convergences bien choisies, et un rendez-vous tenu au jour près.</p>
+<p>Ta carte peut jouer le même rôle. Pose ton fond, place tes lieux, relie tes scènes, puis fais défiler le récit pour vérifier que tout le monde est bien là où il doit être. Atlas Narratif est gratuit, en français, tes textes sont chiffrés et il n'y a aucun tracking. L'outil structure, c'est toi qui écris.</p>
+<p class="blog-cta"><a href="https://atlas-narratif.com">Explore la carte du Seigneur des Anneaux dans la démo</a>, sans créer de compte, puis dessine les trajets de ton propre roman.</p>
+`,
+};
+
+export const posts = [commentStructurerUnRoman, saveTheCat15Beats, voyageDuHeros, creerTimeline, planifierRomanNovembre, structureLOTR, detecterIncoherences, gererPlusieursTomes,
+  saveTheCatOuVoyageDuHeros, amorcesPaiements, syndromeDuTome2, bibleUnivers, outilsGratuits, carteLotrEtudeDeCas];
 
 // Date du jour au format YYYY-MM-DD (comparaison lexicographique avec `date`).
 const todayISO = () => new Date().toISOString().slice(0, 10);
