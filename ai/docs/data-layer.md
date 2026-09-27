@@ -167,9 +167,17 @@ Modèle en 3 couches pour ne rien jeter à l'import (Obsidian, IA) :
 
 `entity_relations` (`source_id/source_type`, `target_id/target_type`, `label` **chiffré**, `directed`, `source`) : liens explicites, orientés ou symétriques, entre deux entités quelconques (noyau ou custom). Polymorphe (types en TEXT libre, pas de FK sur source/target). Alimentés à l'import Obsidian (les wikilinks résolus → relations, `source='obsidian'`) et, à terme, via une UI manuelle. `buildGraph` lit ces relations (cache `setRelationCache`, chargé partout par `loadCore`) et **prime** sur les arêtes dérivées des champs pour une même paire. Libellé libre affiché tel quel dans le graphe (ou traduit si une clé `graph.rel_<label>` existe). CRUD `*Relation` (préfixe `rel`) + routes `/projects/:id/relations`.
 
+### Cascade des tables de jonction (migration 007)
+
+`event_entities`, `incoherence_links`, `stc_chapter_beats`, `stc_chapter_entities` et `character_groups` portent une FK `project_id → projects(id) ON DELETE CASCADE`. Le bloc équivalent d'`init.sql` ne s'exécutant que sur une base neuve, les bases plus anciennes en étaient dépourvues : supprimer un projet y laissait des lignes orphelines, ressuscitées quand un projet était recréé au même id (démo LOTR, id déterministe par user/device). La migration 007 purge ces orphelins puis ajoute les FK (idempotente).
+
+### Correctifs des démos LOTR existantes (migration 008)
+
+Le seed LOTR ne s'applique qu'aux nouveaux chargements. La migration 008 aligne les démos déjà chargées (`project_id LIKE 'lotr%'`) sur les corrections exprimables par identifiants : suppression des amorces « open » doublées par leur version résolue au T3 (`plant_008`, `plant_t2_02`, `plant_t2_05`) et du lien `evt_t3_09` ↔ `char_merry`. Les correctifs de texte (champs chiffrés par projet et traduits) exigent de supprimer puis recharger la démo.
+
 ### Conventions
 
-- Toutes les tables app ont `project_id` → isolation multi-projets
+- Toutes les tables app ont `project_id` → isolation multi-projets ; **toute nouvelle table portant `project_id` doit déclarer `REFERENCES projects(id) ON DELETE CASCADE`** (dans la migration, pas seulement dans `init.sql`)
 - `volume_id = NULL` → appartient au tome 1 implicite (rétrocompat mono-tome)
 - `source TEXT` sur characters/locations/objects/timeline_events : `'import'` (IA), `'manual'`, `'modified'` ou `'obsidian'`
 - `custom_fields JSONB` (chiffré) sur characters/locations/objects → champs custom (couche 2)
