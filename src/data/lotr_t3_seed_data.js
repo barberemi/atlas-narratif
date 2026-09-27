@@ -1192,7 +1192,7 @@ export const t3AragornJourney = [
     lieu: 'Morannon — La Porte Noire', sous_lieu: 'Devant les portes du Mordor',
     chapitre: 'Le Retour du Roi, V-10',
     action: 'Aragorn mène l\'armée devant la Porte Noire — diversion pour Frodo. Pourparler avec la Bouche de Sauron. La bataille éclate. Sauron s\'effondre quand l\'Anneau est détruit.',
-    allies: ['char_gandalf', 'char_legolas', 'char_gimli', 'char_pippin', 'char_merry'],
+    allies: ['char_gandalf', 'char_legolas', 'char_gimli', 'char_pippin'],
     x: 70, y: 56,
   },
   {
