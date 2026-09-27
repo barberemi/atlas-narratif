@@ -1201,9 +1201,10 @@ ${amorcesPaiementsDiagram}
   <figcaption>Chaque amorce suivie de sa mise en place à son paiement, d'un tome à l'autre (démo LOTR).</figcaption>
 </figure>
 <p>Et avant de boucler un tome, le filtre «&#8239;En suspens&#8239;» isole en un clic toutes les promesses qui attendent encore leur paiement. Le détecteur d'incohérences, lui, signale les amorces restées ouvertes et les paiements placés, par erreur, avant leur amorce.</p>
+<p>Dans la démo du Seigneur des Anneaux, il n'en reste qu'une&#8239;: les Ents femelles, que Sylvebarbe demande aux hobbits de chercher et que Tolkien ne retrouve jamais. Une amorce ouverte n'est pas forcément une faute, à condition qu'elle soit un choix et pas un oubli.</p>
 <figure class="blog-figure">
-  <img src="/blog/amorces-ouvertes.png" alt="Le tracker d'amorces d'Atlas Narratif filtré sur les amorces en suspens&#8239;: les promesses encore non payées sont mises en évidence, avec leur tome et leur chapitre de pose." loading="lazy" />
-  <figcaption>Les amorces encore en suspens, à payer avant le point final (démo LOTR).</figcaption>
+  <img src="/blog/amorces-ouvertes.png" alt="Le tracker d'amorces d'Atlas Narratif filtré sur les amorces en suspens&#8239;: une seule reste ouverte, les Ents femelles, posée au chapitre 12 du tome 2 et jamais payée." loading="lazy" />
+  <figcaption>Le filtre «&#8239;En suspens&#8239;»&#8239;: les Ents femelles, la promesse que Tolkien laisse ouverte (démo LOTR).</figcaption>
 </figure>
 
 <h2>⚠️ Les erreurs classiques</h2>

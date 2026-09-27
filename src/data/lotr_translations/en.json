@@ -1198,7 +1198,7 @@
     },
     "grp_army_dead": {
       "name": "The Army of the Dead",
-      "description": "Spectres of the Men of the Mountains who had sworn allegiance to Isildur and betrayed him. Cursed to find no rest until their oath was honored. Aragorn, heir of Isildur, summons them and offers redemption for their betrayal by fighting at the Pelennor.",
+      "description": "Spectres of the Men of the Mountains who had sworn allegiance to Isildur and betrayed him. Cursed to find no rest until their oath was honored. Aragorn, heir of Isildur, summons them and offers redemption for their betrayal by fighting at his side as far as Pelargir.",
       "type": "Faction"
     }
   },
@@ -1454,8 +1454,8 @@
       "chapterTitle": "The Battle of the Pelennor Fields"
     },
     "evt_t3_08": {
-      "title": "Aragorn arrives with the Army of the Dead -- victory at the Pelennor",
-      "description": "As the battle seems to turn against the defenders again -- Mumakil from Harad, the Corsair army -- the black ships sail up the Anduin. But it is Aragorn who disembarks, with the Army of the Dead and the Rangers of the South. The Pelennor is won. The Army of the Dead is freed from their curse.",
+      "title": "Aragorn arrives on the black ships -- victory at the Pelennor",
+      "description": "As the battle seems to turn against the defenders again, with the Mumakil of Harad, black sails come up the Anduin: everyone expects the Corsairs. But it is Aragorn who unfurls the banner of Elendil, with the Rangers of the North, Legolas, Gimli and the men of the South raised along the way. The Army of the Dead was released at Pelargir. The Pelennor is won.",
       "chapterTitle": "The Battle of the Pelennor Fields"
     },
     "evt_t3_09": {
@@ -1657,17 +1657,9 @@
       "label": "Gandalf and Saruman's secret",
       "notes": "Gandalf goes to consult Saruman and is imprisoned. At the Council, he reveals the betrayal of the head of the Istari."
     },
-    "plant_008": {
-      "label": "The Phial of Galadriel for the darkness",
-      "notes": "Galadriel gives her Phial to Frodo -- 'a light for you in dark places'. The resolution will come in later volumes."
-    },
     "plant_t2_01": {
       "label": "Gollum announced by Gandalf in V1, guide in V2",
       "notes": "Gandalf mentions to Frodo that Gollum had been tracking the Ring for centuries. This shadow-character, planted in chapter 2, becomes the pivotal guide of the entire second volume."
-    },
-    "plant_t2_02": {
-      "label": "The Phial of Galadriel -- light in the darkness",
-      "notes": "Given to Frodo 'for dark places when all other lights go out'. The resolution will come in Volume 3 against Shelob in Cirith Ungol."
     },
     "plant_t2_03": {
       "label": "Saruman's hold on Theoden",
@@ -1677,9 +1669,9 @@
       "label": "The Palantir of Orthanc -- Sauron's vision",
       "notes": "The Seeing Stone is planted from Gandalf's imprisonment at Orthanc. Its revelation in V2 (Pippin looks, Sauron sees) accelerates the war -- and sets up the Minas Tirith arc in V3."
     },
-    "plant_t2_05": {
-      "label": "Frodo's pity for Gollum",
-      "notes": "Frodo chooses to spare Gollum and trust him against Sam's advice. This pity, incomprehensible to Sam, will prove of capital importance at Mount Doom (V3). Open seed."
+    "plant_t2_06": {
+      "label": "The Entwives, lost for ages",
+      "notes": "Treebeard tells the hobbits that the Ents have lost their companions, the Entwives, who left to tend gardens in the east; he asks them to report any sighting. Tolkien never resolves this quest: a genuine promise left open."
     },
     "plant_t3_01": {
       "label": "The Phial of Galadriel -- light against Shelob",
@@ -1798,8 +1790,8 @@
       "explanation": "The Palantiri show the truth -- but Sauron controlled what Denethor could see, showing him only visions of defeat and overwhelming power. The Palantir does not lie, but its user can be manipulated by a stronger mind. The Stone's 'omnipotence' is therefore conditional, which the narrative does not always make explicit."
     },
     "inc_t3_02": {
-      "title": "The Army of the Dead vanishes after the Pelennor -- why not use them against Mordor?",
-      "explanation": "Aragorn releases the Army of the Dead from their oath as soon as the Pelennor is won, even though they could have marched on Mordor and crushed Sauron. Explanation: the oath was tied to a specific act (defending Gondor), and keeping the dead beyond that would have been an act of domination -- contrary to Aragorn's nature. Nevertheless, the narrative does not explicitly detail this limitation."
+      "title": "The Army of the Dead released at Pelargir -- why not keep it against Mordor?",
+      "explanation": "Aragorn releases the Army of the Dead from their oath as soon as the ships are taken at Pelargir, although an invincible army could have marched on Mordor. Explanation: the oath broken to Isildur is redeemed by this precise act, and holding the dead any longer would have been an act of domination, contrary to Aragorn's nature. Still, the story does not spell out this limit."
     },
     "inc_t3_03": {
       "title": "The mithril coat taken at Cirith Ungol then shown at the Black Gate",
