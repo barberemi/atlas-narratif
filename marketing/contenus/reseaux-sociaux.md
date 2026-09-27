@@ -9,9 +9,10 @@
 
 > C'est un compte **perso** (Rémi), pas un compte marque : parfait pour le build-in-public. Je parle à la première personne, je montre les coulisses. Le produit est le fil rouge, pas le seul sujet.
 
-> Rémi · dev & auteur 🗺️
-> Je construis **Atlas Narratif** : l'atlas de ton roman : structure ta saga (Save the Cat / Voyage du Héros), visualise ton histoire, traque les incohérences. Gratuit, FR, sans IA qui écrit à ta place.
-> 👉 https://atlas-narratif.com
+> **Nom** : Rémi · Atlas Narratif
+> **Bio (160 car. max)** : Dev et auteur. Je construis Atlas Narratif, un outil gratuit pour structurer ton roman sans perdre le fil de ta saga. En français, sans IA qui écrit à ta place.
+> **Site** : https://atlas-narratif.com
+> **Bannière** : `marketing/visuels/x-banniere.png` (1500×500)
 
 > 💡 Épingle un tweet de présentation du projet en haut du profil (reprends le Tweet 1 du thread de lancement, ou une version courte).
 
