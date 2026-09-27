@@ -83,7 +83,7 @@
 
 - [ ] Publier sur Product Hunt **tôt** (00:01 PT = ~9h Paris) pour maximiser la journée
 - [ ] Poster le 1er commentaire maker immédiatement
-- [ ] Prévenir beta-testeurs + proches → upvote/partage honnête (pas de faux comptes)
+- [ ] Prévenir beta-testeurs + proches que c'est en ligne → retour ou commentaire honnête (jamais « upvote », interdit par PH ; pas de faux comptes)
 - [ ] Lancer en parallèle : thread X, posts Discord/FB/Reddit (voir autres fichiers)
 - [ ] Bloquer la journée pour **répondre à tout** en < 1 h
 - [ ] Le soir : screenshot des chiffres → post build-in-public « voilà comment s'est passé le lancement »

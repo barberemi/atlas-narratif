@@ -77,7 +77,7 @@ Les 14 articles sont déjà écrits et programmés dans le code (`src/data/blog/
 ### Semaine 6 · 27 oct. - 2 nov. : *veille du lancement*
 - [ ] 🔴 Finaliser le kit Product Hunt (visuels, tagline, 1er commentaire prêt)
 - [ ] 🔴 Programmer le post de lancement pour le **1er nov.** (jour 1 du défi d'écriture de novembre)
-- [ ] 🟠 Prévenir les beta-testeurs → leur demander un upvote/partage le jour J
+- [ ] 🟠 Prévenir les beta-testeurs que c'est en ligne → leur demander un retour ou un commentaire honnête (PH interdit de solliciter des upvotes)
 - [ ] 🟠 💬 Chauffer : teaser « demain je lance » sur X + Discord
 
 ### Semaine 7 · 3-9 nov. : 🎉 **LANCEMENT**
