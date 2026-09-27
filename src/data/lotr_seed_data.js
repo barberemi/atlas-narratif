@@ -1280,12 +1280,12 @@ export const aragornJourney = [
     x: 43, y: 33,
   },
   {
-    id: 2, etape: 3, scene: "hauts_galgals",
-    lieu: "Hauts-des-Galgals", sous_lieu: "Landes brumeuses et tumulus",
-    chapitre: "La Communauté de l'Anneau, I-8",
-    action: "Traversée des terres hantées par les Galagals (Barrow-wights). Nuits de veille au milieu des tumulus. Aragorn maintient le groupe en sécurité malgré le danger des anciennes malédictions.",
+    id: 2, etape: 3, scene: "marais_moucherons",
+    lieu: "Marais des Moucherons", sous_lieu: "Hors des routes, au nord-est de Bree",
+    chapitre: "La Communauté de l'Anneau, I-11",
+    action: "Pour semer les Cavaliers Noirs, Grands-Pas quitte la Grande Route et entraîne les hobbits à travers les marais infestés de moucherons. Jours de marche pénible, nuits froides, avant d'apercevoir Amon Sûl.",
     allies: ["Frodo", "Sam", "Merry", "Pippin"],
-    x: 38, y: 32,
+    x: 45, y: 32,
   },
   {
     id: 3, etape: 4, scene: "amon_sul",
@@ -1660,19 +1660,6 @@ export const plantsDB = [
     entity_type: 'character',
     status: 'resolved',
     notes: "Gandalf part consulter Saroumane et est emprisonné. Au Conseil, il révèle la trahison du chef des Istari.",
-  },
-  {
-    id: 'plant_008',
-    label: "La Phiale de Galadriel pour les ténèbres",
-    type: 'object',
-    plant_chapter_num: 8,
-    plant_event_id: 'evt_023',
-    payoff_chapter_num: null,
-    payoff_event_id: null,
-    entity_id: 'char_galadriel',
-    entity_type: 'character',
-    status: 'open',
-    notes: "Galadriel offre sa Phiale à Frodo — 'lumière pour toi dans les endroits sombres'. La résolution interviendra dans les tomes suivants.",
   },
 ];
 

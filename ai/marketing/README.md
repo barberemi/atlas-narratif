@@ -19,7 +19,7 @@ Dossier des livrables marketing/comm produit (généré en collaboration IA, sep
 | Fichier | Contenu |
 |---------|---------|
 | `blog-guidelines.md` | **Charte éditoriale du blog** (règles obligatoires : ton, pas de tiret cadratin, emoji par section, visuel, double relecture) |
-| `calendrier-editorial.md` | **Planning 6 mois** (2 articles/mois, calé NaNoWriMo) + intentions SEO + canaux |
+| `calendrier-editorial.md` | **Planning 6 mois** (2 articles/mois, calé sur le défi d’écriture de novembre) + intentions SEO + canaux |
 | `article-comment-structurer-un-roman.md` | Brouillon source du 1er article (converti et publié dans `src/data/blog/posts.js`) |
 | `og-image-v2.html` / `.svg` / `.png` / `@2x.png` | Source + exports de l'OG image (charte actuelle) |
 | `favicon-v2.svg` | Source du favicon (boussole, charte actuelle) |
@@ -38,4 +38,4 @@ https://claude.ai/code/artifact/1dd733a2-f6b2-4e4d-a5cc-2b01e75adbcd
 ## Trois convictions
 1. Le fossé = « le meilleur outil d'écriture structurée **en français**, gratuit ». Concurrents anglophones et payants.
 2. La **démo partageable `/demo`** (implémentée) transforme chaque lien partagé en démonstration — sans mur d'inscription.
-3. Viser **novembre (NaNoWriMo)** : le pic annuel où toute la cible planifie un roman.
+3. Viser **novembre (défi d’écriture, ex-NaNoWriMo)** : le pic annuel où toute la cible planifie un roman.

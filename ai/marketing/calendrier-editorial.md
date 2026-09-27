@@ -1,33 +1,38 @@
 # Calendrier éditorial du blog — Atlas Narratif
 
-Séquence sur 6 mois (sept. 2026 → fév. 2027), rythme **2 articles/mois**, calée sur le pic **NaNoWriMo (novembre)**. Chaque article capte une intention de recherche puis renvoie vers l'outil. Règles : `ai/marketing/blog-guidelines.md`. Relecture obligatoire par les 2 agents avant publication.
+Séquence sur 6 mois (sept. 2026 → fév. 2027), rythme **2 articles/mois**, calée sur le pic du **défi d'écriture de novembre** (ex-NaNoWriMo, l'association a fermé en 2025). Chaque article capte une intention de recherche puis renvoie vers l'outil. Règles : `ai/marketing/blog-guidelines.md`. Relecture obligatoire par les 2 agents avant publication.
 
 Piliers : **P1** = fondation SEO (fort volume, intention claire) · **P2** = approfondissement · **P3** = conversion / social proof.
 
 ## Vue d'ensemble
 
-| Mois | Phase | Article | Pilier | Intention / mot-clé cible | Canal d'amorçage |
-|------|-------|---------|--------|---------------------------|------------------|
-| **Sept.** | M1 Fondations | Comment structurer un roman : le guide complet ✅ *(publié)* | P1 | « comment structurer un roman » | r/ecriture, un Discord FR |
-| **Sept.** | M1 | La méthode Save the Cat expliquée (les 15 beats) ✅ *(publié)* | P1 | « save the cat beats français » | Reddit + groupe FB écriture |
-| **Oct.** | M2 Rodage | Le Voyage du Héros : les 12 étapes ✍️ *(rédigé, PR oct.)* | P1 | « voyage du héros étapes » | CoCyclics, Scribay |
-| **Oct.** | M2 | Créer une timeline pour son roman : méthode + outils ✍️ *(rédigé, PR oct.)* | P1 | « timeline roman outil » | Discord + démo `/demo` en appui |
-| **Nov.** | 🚀 M3 NaNoWriMo | Planifie ton NaNoWriMo avec une méthode ✍️ *(rédigé, PR nov.)* | P1 | « préparer nanowrimo plan » | Groupes NaNoWriMo FR, X #TeamÉcriture |
-| **Nov.** | 🚀 M3 Lancement | La structure du Seigneur des Anneaux décortiquée *(démo déguisée)* ✍️ *(rédigé, PR nov.)* | P3 | « structure seigneur des anneaux » | Lancement : Reddit, FB, BookTok, PH/BetaList |
-| **Déc.** | M4 Capitaliser | Détecter les incohérences dans son roman : la checklist ✍️ *(rédigé, PR déc.)* | P1 | « incohérences roman vérifier » | Discord (aide), newsletter |
-| **Déc.** | M4 | Comment gérer plusieurs tomes sans perdre le fil ✍️ *(rédigé, PR déc.)* | P2 | « écrire une saga plusieurs tomes » | r/fantasy_fr, groupes saga |
-| **Janv.** | M5 Communauté | Amorces et paiements (plant & payoff) : l'art de préparer ses révélations | P2 | « plant and payoff écriture » | Discord Atlas (si ouvert), X |
-| **Janv.** | M5 | Comment créer une bible d'univers (worldbuilding) pour ta saga | P1 | « bible d'univers worldbuilding » | r/JeuxDeRole, worldbuilders |
-| **Fév.** | M6 Bilan | Save the Cat vs Voyage du Héros : quelle méthode pour ton roman ? | P2 | « save the cat ou voyage du héros » | Reddit, FB |
-| **Fév.** | M6 | Les meilleurs outils gratuits pour écrire un roman en 2026 | P3 | « outils gratuits écrire roman » | comparatif, capte le trafic transactionnel |
+Toutes les dates sont les dates de sortie réelles (champ `date` de `src/data/blog/posts.js`, garde-fou `isPublished`).
+
+| Sortie | Phase | Article | Pilier | Intention / mot-clé cible | Canal d'amorçage |
+|--------|-------|---------|--------|---------------------------|------------------|
+| 10/09 | M1 Fondations | Comment structurer un roman : le guide complet | P1 | « comment structurer un roman » | r/ecriture, un Discord FR |
+| 15/09 | M1 | La méthode Save the Cat expliquée (les 15 beats) | P1 | « save the cat beats français » | Reddit + groupe FB écriture |
+| 25/09 | M1 | Le Voyage du Héros : les 12 étapes | P1 | « voyage du héros étapes » | CoCyclics, Scribay |
+| 29/09 | M1 | Créer une timeline pour son roman | P1 | « timeline roman outil » | Discord + démo en appui |
+| 02/10 | M2 Preptober | Planifie ton roman de novembre (ex-« NaNoWriMo », renommé : l'orga a fermé en 2025) | P1 | « préparer défi écriture novembre » | Communautés du défi de novembre, X |
+| 06/10 | M2 | La structure du Seigneur des Anneaux décortiquée *(démo déguisée)* | P3 | « structure seigneur des anneaux » | r/fantasy_fr, FB |
+| 09/10 | M2 | Détecter les incohérences dans son roman : la checklist | P1 | « incohérences roman vérifier » | Discord (aide) |
+| 13/10 | M2 | Comment gérer plusieurs tomes sans perdre le fil | P2 | « écrire une saga plusieurs tomes » | r/fantasy_fr, groupes saga |
+| 20/10 | M2 Preptober | Save the Cat ou Voyage du Héros : quelle méthode ? | P2 | « save the cat ou voyage du héros » | Reddit, FB (choix de méthode avant novembre) |
+| 03/11 | 🚀 M3 Lancement | Amorces et paiements (plant & payoff) | P2 | « plant and payoff écriture » | Discord, X |
+| 17/11 | 🚀 M3 | Syndrome du tome 2 : pourquoi ta suite s'enlise | P3 | « syndrome du tome 2 » | Groupes saga, r/fantasy_fr |
+| 01/12 | M4 Capitaliser | Créer une bible d'univers (worldbuilding) | P1 | « bible d'univers worldbuilding » | r/JeuxDeRole, worldbuilders |
+| 15/12 | M4 | Les meilleurs outils gratuits pour écrire un roman en 2026 | P3 | « outils gratuits écrire roman » | comparatif, trafic transactionnel |
+| 12/01 | M5 Communauté | Créer la carte de ton roman : le Seigneur des Anneaux, trajet par trajet | P3 | « carte de son roman » | Discord/BookTok, worldbuilders |
+
+Rythme : ~2 articles/mois, avec un effort resserré autour du défi d'écriture de novembre (pas de trou pendant le lancement).
 
 ## Backlog (à caser si un créneau se libère ou en bonus)
-- Pourquoi ton tome 2 part en vrille (et comment l'éviter) — P3, très partageable en communauté saga.
-- Étude de cas : la carte de LOTR dans Atlas Narratif — P3, appui visuel Discord/BookTok.
+- (vide : tous les sujets du plan initial sont rédigés et programmés. Pistes suivantes : « Écrire un bon antagoniste », « Les fils narratifs (subplots) », « Rythmer ses chapitres avec l'arc émotionnel ».)
 
 ## Principes de séquençage
 1. **Tout le M1-M2 prépare novembre.** Les 4 premiers articles (piliers P1) doivent être en ligne avant le pic pour commencer à ranker (le SEO paie en 3 à 6 mois).
-2. **Novembre = double effort** : contenu NaNoWriMo (intention chaude) + lancement coordonné (la démo LOTR sans compte est l'aimant).
+2. **Novembre = double effort** : contenu « roman de novembre » (intention chaude) + lancement coordonné (la démo LOTR sans compte est l'aimant).
 3. **Chaque article = 1 amorçage communauté** : on répond à une vraie question, on ne spamme pas le lien.
 4. **Un visuel minimum par article** (schéma inline, capture annotée, ou GIF/vidéo). Voir la charte.
 5. **Mesure** : suivre quel article amène des inscrits qui *reviennent* (rétention W4), pas les vues brutes. Doubler la mise sur le format qui convertit.
