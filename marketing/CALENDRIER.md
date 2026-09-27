@@ -3,7 +3,28 @@
 Dates réelles, du 22 sept. 2026 à fin février 2027. Coche au fur et à mesure.
 Chaque contenu référencé est rédigé dans `contenus/`.
 
-**Légende :** 🔴 priorité absolue · 🟠 important · ⚪ bonus · 📝 contenu à publier · 💬 présence communautaire · 🛠️ tâche dev
+**Légende :** 🔴 priorité absolue · 🟠 important · ⚪ bonus · 📝 contenu à publier · 📣 partager un article · 💬 présence communautaire · 🛠️ tâche dev
+
+## 📰 Blog : les articles sortent tout seuls
+
+Les 14 articles sont déjà écrits et programmés dans le code (`src/data/blog/posts.js`, PR #18 et #30) : chacun apparaît sur `/blog` à sa date, **sans rien faire**. Ton travail n'est plus de *publier* mais de **partager** chaque article le jour de sa sortie (lignes 📣 ci-dessous), et de **redéployer** après chaque sortie pour que Google le voie (prerender + sitemap calculés au build).
+
+| Sortie | Article | Où le partager en priorité |
+|--------|---------|----------------------------|
+| 10/09 ✅ | Comment structurer un roman | r/ecriture, Discord |
+| 15/09 ✅ | La méthode Save the Cat (15 beats) | Reddit, groupe FB |
+| 25/09 ✅ | Le Voyage du Héros : les 12 étapes | CoCyclics, X |
+| 29/09 | Créer une timeline pour ton roman | Discord |
+| 02/10 | Planifie ton roman de novembre | communautés du défi de novembre, X |
+| 06/10 | La structure du Seigneur des Anneaux décortiquée | r/fantasy_fr, FB |
+| 09/10 | Détecter les incohérences : la checklist | Discord (réponse à une question) |
+| 13/10 | Gérer plusieurs tomes sans perdre le fil | r/fantasy_fr, groupes saga |
+| 20/10 | Save the Cat ou Voyage du Héros ? | Reddit, FB |
+| 03/11 | Amorces et paiements (plant & payoff) | Discord, X |
+| 17/11 | Syndrome du tome 2 | groupes saga, r/fantasy_fr |
+| 01/12 | Créer une bible d'univers | r/JeuxDeRole, worldbuilders |
+| 15/12 | Outils gratuits pour écrire un roman en 2026 | X, FB |
+| 12/01 | Créer la carte de ton roman (LOTR trajet par trajet) | Discord, BookTok |
 
 ---
 
@@ -12,10 +33,10 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 *But : que le produit se vende tout seul dès que tu le découvres, et s'installer dans les communautés en ami.*
 
 ### Semaine 1 · 22-28 sept.
-- [ ] 🔴 Config placeholders + vérifier démo sans compte + `<title>` (voir `PLAN.md`)
+- [x] 🔴 Config placeholders + vérifier démo sans compte + `<title>` (voir `PLAN.md`)
 - [ ] 🔴 💬 Se présenter (sans vendre) dans : 1 Discord écriture FR, r/ecriture, 1 gros groupe FB, CoCyclics
 - [ ] 🟠 Créer/soigner le compte X + bio (`reseaux-sociaux.md` § bio)
-- [ ] 🟠 📝 Publier l'article #1 « Comment structurer un roman » (`blog-seo.md`)
+- [ ] 🟠 📣 Partager « Voyage du Héros » (sorti le 25/09) sur X ; garder « Structurer un roman » et « Save the Cat » (déjà en ligne) pour répondre aux questions en communauté
 - [ ] ⚪ 🛠️ Remplacer l'`og-image.png` générique (« Structure ton roman. Garde ta plume. » + capture)
 
 ### Semaine 2 · 29 sept. - 5 oct.
@@ -23,22 +44,27 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 - [ ] 🟠 📝 Poster la démo sur X + Instagram/TikTok (post « une histoire, 4 vues »)
 - [ ] 🟠 💬 Reddit : 2-3 commentaires *utiles* (pas de lien) pour chauffer le compte
 - [ ] ⚪ 📝 Programmer 3 posts X de la semaine (`reseaux-sociaux.md` § banque)
+- [ ] 🟠 📣 29/09 : partager « Créer une timeline pour ton roman »
+- [ ] 🔴 📣 02/10 : partager « Planifie ton roman de novembre » (X + communautés du défi : c'est le cœur du Preptober)
+- [ ] ⚪ 🛠️ Redéployer après le 29/09 et le 02/10 (SEO)
 
 ### Semaine 3 · 6-12 oct. : *Preptober commence*
 - [ ] 🔴 💬 Recruter 5-10 beta-testeurs dans les communautés (message dans `communautes.md` § beta)
-- [ ] 🟠 📝 Publier l'article #2 « La méthode Save the Cat expliquée » (`blog-seo.md`)
+- [ ] 🟠 📣 06/10 : partager « La structure du Seigneur des Anneaux décortiquée » (r/fantasy_fr, démo en lien)
+- [ ] 🟠 📣 09/10 : « Détecter les incohérences » en réponse à une vraie question sur Discord
 - [ ] 🟠 📝 X : mini-thread « Preptober : planifie ton roman avec une méthode »
-- [ ] ⚪ 💬 Facebook : partager l'article #1 dans 1-2 groupes (jour promo autorisé)
+- [ ] ⚪ 💬 Facebook : partager « Comment structurer un roman » dans 1-2 groupes (jour promo autorisé)
 
 ### Semaine 4 · 13-19 oct.
 - [ ] 🔴 Récolter le feedback beta → lister les frictions d'onboarding
 - [ ] 🟠 📝 Reddit r/ecriture : post « valeur » (retour d'expérience, pas pub : `communautes.md`)
 - [ ] 🟠 📝 TikTok/Reels : 2e vidéo courte (angle « détecter les incohérences »)
 - [ ] ⚪ 🛠️ Corriger les 2-3 pires frictions d'onboarding remontées
+- [ ] 🟠 📣 13/10 : partager « Gérer plusieurs tomes sans perdre le fil » (groupes saga)
 
 ### Semaine 5 · 20-26 oct. : *cœur du Preptober*
-- [ ] 🔴 📝 Publier l'article #3 « Le Voyage du Héros : les 12 étapes » (`blog-seo.md`)
-- [ ] 🔴 📝 Contenu « Planifie ton roman de novembre avec une méthode » (X thread + post communautés)
+- [ ] 🔴 📣 20/10 : partager « Save the Cat ou Voyage du Héros ? » (le choix de méthode juste avant novembre)
+- [ ] 🔴 📝 Thread X « Planifie ton roman de novembre » (reprend l'article du 02/10) + post communautés
 - [ ] 🟠 Récolter 3-4 témoignages beta → les mettre sur la landing
 - [ ] 🟠 Préparer le kit de lancement (`lancement-produit.md`) : textes, visuels, comptes créés
 
@@ -60,9 +86,9 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 - [ ] 🔴 📝 Thread de lancement X (`reseaux-sociaux.md` § thread lancement)
 - [ ] 🟠 💬 Répondre à TOUS les commentaires le jour J (dispo max)
 - [ ] 🟠 Solliciter 1-2 BookTubeurs/créateurs FR pour une démo
+- [ ] 🟠 📣 03/11 : partager « Amorces et paiements » (Discord, X) : bon contenu de valeur en pleine semaine de lancement
 
 ### Semaine 8 · 10-16 nov.
-- [ ] 🟠 📝 Publier l'article #4 « Comment gérer plusieurs tomes sans perdre le fil »
 - [ ] 🟠 💬 Partager les premiers retours/chiffres du lancement (build-in-public)
 - [ ] ⚪ 📝 Reddit : « la structure de LOTR décortiquée » (démo déguisée : `communautes.md`)
 
@@ -70,9 +96,9 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 - [ ] 🟠 Activer la **séquence email onboarding** (`emails-onboarding.md`) pour les nouveaux
 - [ ] ⚪ 📝 X : retours d'usage, captures d'utilisateurs (avec accord)
 - [ ] ⚪ 💬 Répondre aux questions dans les communautés (le trafic de novembre bat son plein)
+- [ ] 🟠 📣 17/11 : partager « Syndrome du tome 2 » (groupes saga, r/fantasy_fr)
 
 ### Semaine 10 · 24-30 nov.
-- [ ] 🟠 📝 Article #5 « Détecter les incohérences dans son roman : la checklist »
 - [ ] ⚪ Bilan intermédiaire : quels canaux ont amené des inscrits qui *reviennent* ?
 
 ---
@@ -83,13 +109,15 @@ Chaque contenu référencé est rédigé dans `contenus/`.
 
 ### Déc. (S11-14)
 - [ ] 🟠 Vérifier/roder la séquence email (bienvenue → 1er atlas → détection)
-- [ ] 🟠 📝 2 articles SEO (voir banque dans `blog-seo.md`)
+- [ ] 🟠 📣 01/12 : partager « Créer une bible d'univers » (r/JeuxDeRole, worldbuilders)
+- [ ] 🟠 📣 15/12 : partager « Outils gratuits pour écrire un roman en 2026 » (X, FB)
 - [ ] ⚪ 🛠️ Boucle 2 : partage public d'une carte/bible avec badge « Créé avec Atlas Narratif »
 - [ ] ⚪ Analyser la 1re rétention W4 des inscrits de novembre
 
 ### Janv. (S15-18)
 - [ ] 🟠 Envisager un espace communautaire (canal Discord Atlas + roadmap ouverte)
-- [ ] 🟠 📝 2 articles SEO ; mesurer le trafic des 1ers articles (ils commencent à ranker)
+- [ ] 🟠 📣 12/01 : partager « Créer la carte de ton roman » (Discord, BookTok : très visuel)
+- [ ] 🟠 Mesurer le trafic des 1ers articles (ils commencent à ranker) ; décider des prochains sujets
 - [ ] ⚪ 📝 Contenu social proof « La structure de LOTR dans Atlas »
 
 ### Fév. (S19-22) : *Bilan & décision*
