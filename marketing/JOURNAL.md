@@ -26,6 +26,7 @@ Notre seule « mesure » (pas d'analytics dans le code) : ce qu'on a fait, ce qu
 | Date | Canal | Quoi | Lien | Réactions à J+2 | Notes |
 |------|-------|------|------|-----------------|-------|
 | 28/09 | X | Bio mise à jour | profil `@Rem_Barbe` | (à noter) | Bio de 160 car. (`reseaux-sociaux.md`) |
+| 28/09 | X | Bannière | profil `@Rem_Barbe` | | `marketing/visuels/x-banniere.png` |
 | 28/09 | X | Post épinglé (carte de la démo + lien) | (à coller) | (à noter) | |
 
 ---
@@ -33,12 +34,12 @@ Notre seule « mesure » (pas d'analytics dans le code) : ce qu'on a fait, ce qu
 ## 📅 À faire les prochains jours
 
 ### ⚠️ Avant jeudi 02/10
-- [ ] **Merger et déployer la PR #30** (sinon l'article du 02/10 sort avec l'ancien titre « NaNoWriMo »). Faire `make prod-backup` avant. La PR #31 peut partir en même temps.
+- [x] **PRs #30 et #31 mergées** (28/09).
+- [ ] **Vérifier qu'elles sont bien déployées en prod** (`make prod-deploy` si ce n'est pas fait), sinon l'article du 02/10 sort avec l'ancien titre « NaNoWriMo ».
 
 ### Mardi 29/09
 - [ ] **Le soir** : publier le **fil timeline** sur X (4 posts, texte prêt ci-dessous). L'article « Créer une timeline pour ton roman » sort le même jour : le post 4 pointe dessus.
 - [ ] Après la sortie de l'article : redéployer (`make prod-deploy`) pour que Google le voie.
-- [ ] Optionnel : bannière X (`marketing/visuels/x-banniere.png`) si ce n'est pas encore fait.
 
 ### Dans la semaine (S2)
 - [ ] **Séance 2 · Discord** (45 min) : tu rejoins 2-3 serveurs (J'écris un Roman, Pluméa, Forum des Auteurs), je lis leurs règles et j'adapte ta présentation, sans lien.
