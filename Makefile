@@ -98,24 +98,41 @@ prod-down: ## Supprimer la stack Swarm
 prod-deploy: ## Déploiement zero downtime (pull + build + stack deploy : config + images)
 	@echo "📥 Pull du code…"
 	git pull origin main
-	@TAG=$$(date +%s); \
+	@set -e; TAG=$$(date +%s); \
 	echo "🔨 Build des images (tag: $$TAG)…"; \
 	IMAGE_TAG=$$TAG $(DC_PROD) build; \
 	echo "🚀 Redéploiement de la stack (config docker-compose.prod.yml + images)…"; \
 	set -a; . ./.env.prod; set +a; \
 	IMAGE_TAG=$$TAG docker stack deploy --resolve-image=never --detach=false -c docker-compose.prod.yml $(STACK); \
+	$(MAKE) --no-print-directory prod-verify; \
 	echo "🧹 Nettoyage images orphelines…"; \
 	docker image prune -f
 	@echo "✅ Déploiement terminé"
 
 prod-swap: ## Swap rapide (sans git pull) — build + stack deploy (config + images) sur le VPS
-	@TAG=$$(date +%s); \
+	@set -e; TAG=$$(date +%s); \
 	echo "🔨 Build des images (tag: $$TAG)…"; \
 	IMAGE_TAG=$$TAG $(DC_PROD) build; \
 	echo "🚀 Redéploiement de la stack (config docker-compose.prod.yml + images)…"; \
 	set -a; . ./.env.prod; set +a; \
 	IMAGE_TAG=$$TAG docker stack deploy --resolve-image=never --detach=false -c docker-compose.prod.yml $(STACK); \
+	$(MAKE) --no-print-directory prod-verify; \
 	echo "✅ Swap terminé"
+
+# Échoue si Swarm a fait un rollback (failure_action: rollback) ou mis l'update en
+# pause : sans ça, le job Deploy passerait au vert alors que la prod tourne encore
+# sur l'ancienne image. Seuls api/frontend changent d'image à chaque déploiement
+# (IMAGE_TAG), donc leur UpdateStatus reflète bien CE déploiement.
+prod-verify: ## Vérifie que le dernier déploiement n'a pas été rollback par Swarm
+	@fail=0; for svc in api frontend; do \
+		state=$$(docker service inspect -f '{{if .UpdateStatus}}{{.UpdateStatus.State}}{{end}}' $(STACK)_$$svc); \
+		msg=$$(docker service inspect -f '{{if .UpdateStatus}}{{.UpdateStatus.Message}}{{end}}' $(STACK)_$$svc); \
+		case "$$state" in \
+			completed|"") echo "✅ $(STACK)_$$svc : $${state:-inchangé}";; \
+			*) echo "❌ $(STACK)_$$svc : $$state — $$msg"; fail=1;; \
+		esac; \
+	done; \
+	exit $$fail
 
 prod-ps: ## État des services
 	docker stack services $(STACK)
@@ -147,4 +164,4 @@ prod-restore: ## Restaurer un backup (f=…)
 	gunzip -c "$(f)" | docker exec -i $$(docker ps -q -f name=$(STACK)_postgres) psql -U atlas atlas
 	@echo "✅ Restauration terminée depuis $(f)"
 
-.PHONY: help dev stop logs logs-s dev-rebuild lint lint-do test server-test e2e e2e-file build install server-install server-add add prod-up prod-down prod-ps prod-logs prod-deploy prod-swap prod-health prod-backup prod-restore
+.PHONY: help dev stop logs logs-s dev-rebuild lint lint-do test server-test e2e e2e-file build install server-install server-add add prod-up prod-down prod-ps prod-logs prod-deploy prod-swap prod-verify prod-health prod-backup prod-restore
