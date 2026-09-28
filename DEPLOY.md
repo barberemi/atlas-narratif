@@ -261,7 +261,9 @@ Cas nécessitant un stack deploy complet :
 
 ### 2.4 Rollback
 
-En cas de problème après un déploiement :
+**Automatique (Swarm)** : `api` et `frontend` ont `failure_action: rollback` (monitor 60 s pour l'API, 30 s pour le front). Si un conteneur neuf tombe dans cette fenêtre, Swarm remet l'image précédente tout seul. `make prod-deploy` lance ensuite `make prod-verify`, qui fait échouer le job Deploy quand un service a été rollback (sinon il passerait au vert). Le rollback ne touche que l'image : une migration SQL déjà appliquée reste en base, d'où des migrations additives.
+
+**Manuel**, si le problème vient après la fenêtre de monitor :
 
 ```bash
 # 1. Revenir au commit précédent

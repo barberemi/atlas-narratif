@@ -99,12 +99,19 @@ services:
         - traefik.http.middlewares.www-redirect.redirectregex.regex=^https?://www\.(.+)
         - traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}
         - traefik.http.middlewares.www-redirect.redirectregex.permanent=true
+      # failure_action: rollback + monitor : si une réplique neuve tombe dans les
+      # 30 s après son passage healthy, Swarm remet l'image précédente tout seul.
+      # nginx statique : risque faible, 30 s suffisent (et 2 réplicas = ×2 la durée).
       update_config:
         order: stop-first
         parallelism: 1
         delay: 5s
+        failure_action: rollback
+        monitor: 30s
       rollback_config:
         order: stop-first
+        parallelism: 1
+        monitor: 30s
       resources:
         limits:
           memory: 128M
@@ -165,12 +172,23 @@ services:
       # relance en quelques secondes). Acceptable à petite échelle ; pour scaler,
       # externaliser l'état vers Redis (cf. TODO(multi-instance) dans routes/ask.js).
       replicas: 1
+      # failure_action: rollback + monitor 60s : le monitor démarre APRÈS que le
+      # nouveau conteneur est healthy (le healthcheck bloque déjà un conteneur qui
+      # ne démarre pas : start_period 15s + 3 × 10s ≈ 45s). Les 60s couvrent donc
+      # le crash tardif (1res requêtes, OOM à 512M, pool PG…). Crash dans la
+      # fenêtre ⇒ Swarm relance l'image précédente (start-first : pas de coupure).
+      # ⚠️ Le rollback ne concerne QUE l'image : une migration SQL déjà appliquée
+      # reste en base ⇒ migrations additives (compatibles avec l'ancien code).
       update_config:
         order: start-first
         parallelism: 1
         delay: 5s
+        failure_action: rollback
+        monitor: 60s
       rollback_config:
         order: start-first
+        parallelism: 1
+        monitor: 60s
       resources:
         limits:
           memory: 512M
